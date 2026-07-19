@@ -229,8 +229,8 @@ insert into public.workout_sets (session_id, exercise_id, set_number, is_warmup,
 
 -- Comidas de ayer con snapshots calculados desde el catalogo.
 insert into public.meals (id, user_id, date, meal_type, name, status) values
-  ('00000000-0000-4000-8000-000000000401', '11111111-1111-4111-8111-111111111111', current_date - 1, 'desayuno', 'Avena con banano', 'completada'),
-  ('00000000-0000-4000-8000-000000000402', '11111111-1111-4111-8111-111111111111', current_date - 1, 'almuerzo', 'Pollo con arroz y frijoles', 'completada');
+  ('00000000-0000-4000-8000-000000000401', '11111111-1111-4111-8111-111111111111', current_date, 'desayuno', 'Avena con banano', 'completada'),
+  ('00000000-0000-4000-8000-000000000402', '11111111-1111-4111-8111-111111111111', current_date, 'almuerzo', 'Pollo con arroz y frijoles', 'completada');
 
 -- Snapshots = cantidad x macros por 100 g del catalogo al momento del registro.
 insert into public.meal_items (meal_id, food_id, quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot) values
