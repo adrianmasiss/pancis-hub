@@ -433,6 +433,7 @@ export type Database = {
           grams_per_serving: number;
           id: string;
           name: string;
+          owner_user_id: string | null;
           protein_g: number;
           serving_amount: number;
           serving_unit: string;
@@ -453,6 +454,7 @@ export type Database = {
           grams_per_serving?: number;
           id?: string;
           name: string;
+          owner_user_id?: string | null;
           protein_g: number;
           serving_amount?: number;
           serving_unit?: string;
@@ -473,6 +475,7 @@ export type Database = {
           grams_per_serving?: number;
           id?: string;
           name?: string;
+          owner_user_id?: string | null;
           protein_g?: number;
           serving_amount?: number;
           serving_unit?: string;

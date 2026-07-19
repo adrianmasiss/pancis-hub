@@ -1,0 +1,161 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Apple, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
+import { FoodRow } from "@/features/foods/components/food-row";
+import { getFoodsLibrary } from "@/features/foods/queries";
+import {
+  FOOD_GROUPS,
+  FOOD_VIEWS,
+  type FoodGroup,
+  type FoodView,
+} from "@/features/foods/schemas";
+import { createClient } from "@/lib/supabase/server";
+import { messages } from "@/i18n/es-419";
+import { cn } from "@/lib/utils";
+
+const t = messages.foods;
+
+export const metadata: Metadata = { title: t.title };
+
+function buildHref(params: {
+  q?: string;
+  grupo?: string;
+  vista?: string;
+}): string {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.grupo) search.set("grupo", params.grupo);
+  if (params.vista && params.vista !== "todos")
+    search.set("vista", params.vista);
+  const qs = search.toString();
+  return `/nutricion/alimentos${qs ? `?${qs}` : ""}`;
+}
+
+export default async function FoodsLibraryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; grupo?: string; vista?: string }>;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const params = await searchParams;
+  const query = params.q?.trim() || undefined;
+  const group = FOOD_GROUPS.includes(params.grupo as FoodGroup)
+    ? (params.grupo as FoodGroup)
+    : undefined;
+  const view: FoodView = FOOD_VIEWS.includes(params.vista as FoodView)
+    ? (params.vista as FoodView)
+    : "todos";
+
+  const foods = await getFoodsLibrary(user.id, { query, group, view });
+
+  return (
+    <>
+      <PageHeader
+        title={t.title}
+        description={t.subtitle}
+        actions={<FoodFormDialog />}
+      />
+
+      <form
+        action="/nutricion/alimentos"
+        method="get"
+        className="flex items-center gap-2"
+      >
+        {view !== "todos" ? (
+          <input type="hidden" name="vista" value={view} />
+        ) : null}
+        {group ? <input type="hidden" name="grupo" value={group} /> : null}
+        <div className="relative flex-1">
+          <Search
+            className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder={t.searchPlaceholder}
+            className="pl-9"
+            aria-label={t.searchPlaceholder}
+          />
+        </div>
+        <Button type="submit" variant="outline">
+          {t.searchButton}
+        </Button>
+      </form>
+
+      <nav aria-label={t.title} className="flex flex-wrap gap-1.5">
+        {FOOD_VIEWS.map((candidate) => (
+          <Link
+            key={candidate}
+            href={buildHref({ q: query, grupo: group, vista: candidate })}
+            aria-current={view === candidate ? "page" : undefined}
+            className={cn(
+              "rounded-full border px-3 py-1 text-sm",
+              view === candidate
+                ? "bg-primary text-primary-foreground border-primary"
+                : "text-muted-foreground hover:bg-accent",
+            )}
+          >
+            {t.views[candidate]}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        <Link
+          href={buildHref({ q: query, vista: view })}
+          aria-current={!group ? "page" : undefined}
+          className={cn(
+            "shrink-0 rounded-full border px-3 py-1 text-xs",
+            !group
+              ? "bg-secondary text-secondary-foreground"
+              : "text-muted-foreground hover:bg-accent",
+          )}
+        >
+          {t.groups.all}
+        </Link>
+        {FOOD_GROUPS.map((candidate) => (
+          <Link
+            key={candidate}
+            href={buildHref({ q: query, grupo: candidate, vista: view })}
+            aria-current={group === candidate ? "page" : undefined}
+            className={cn(
+              "shrink-0 rounded-full border px-3 py-1 text-xs",
+              group === candidate
+                ? "bg-secondary text-secondary-foreground"
+                : "text-muted-foreground hover:bg-accent",
+            )}
+          >
+            {t.groups[candidate]}
+          </Link>
+        ))}
+      </div>
+
+      {foods.length > 0 ? (
+        <ul className="divide-y rounded-xl border px-3">
+          {foods.map((food) => (
+            <FoodRow key={food.id} food={food} />
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          title={t.emptyTitle}
+          description={t.emptyDescription}
+          icon={Apple}
+        />
+      )}
+    </>
+  );
+}

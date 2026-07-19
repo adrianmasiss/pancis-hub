@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Utensils } from "lucide-react";
+import { Apple, Utensils } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { DateSelector } from "@/components/shared/date-selector";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -56,6 +58,12 @@ export default async function NutritionPage({
         title={messages.nav.nutrition}
         actions={
           <>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/nutricion/alimentos">
+                <Apple className="size-4" aria-hidden="true" />
+                {messages.foods.title}
+              </Link>
+            </Button>
             <DuplicateDayButton date={date} />
             <AddMealDialog date={date} />
           </>
