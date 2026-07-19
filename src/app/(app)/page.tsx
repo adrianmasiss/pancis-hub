@@ -1,14 +1,37 @@
-import { Home } from "lucide-react";
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { messages } from "@/i18n/es-419";
+import { redirect } from "next/navigation";
+import { AdherenceCard } from "@/features/dashboard/components/adherence-card";
+import { CheckinCard } from "@/features/dashboard/components/checkin-card";
+import { NutritionCard } from "@/features/dashboard/components/nutrition-card";
+import { ProgressCard } from "@/features/dashboard/components/progress-card";
+import { SummarySection } from "@/features/dashboard/components/summary-section";
+import { TrainingCard } from "@/features/dashboard/components/training-card";
+import { getDashboardData } from "@/features/dashboard/queries";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const data = await getDashboardData(user.id);
+
   return (
-    <ModulePlaceholder
-      title={messages.nav.home}
-      emptyTitle={messages.emptyStates.dashboard.title}
-      emptyDescription={messages.emptyStates.dashboard.description}
-      icon={Home}
-    />
+    <div className="space-y-6">
+      <SummarySection data={data} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <NutritionCard data={data} />
+        <TrainingCard data={data} />
+      </div>
+      <ProgressCard data={data} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <CheckinCard data={data} />
+        <AdherenceCard data={data} />
+      </div>
+    </div>
   );
 }
