@@ -6,13 +6,26 @@ Pancis Hub es una herramienta educativa y de seguimiento. No sustituye la evalua
 
 ## Modelo de seguridad
 
-- Supabase Auth para identidad.
-- Row Level Security en tablas privadas.
-- Control por propietario con `user_id = auth.uid()`.
-- Validacion de entrada en servidor con Zod.
-- Errores seguros sin detalles internos.
-- Buckets privados para fotografias y archivos corporales.
-- URLs firmadas para descargas privadas.
+- Supabase Auth para identidad; sesion refrescada en `src/proxy.ts`
+  (la convencion de Next.js 16 que reemplaza a middleware) y validada con
+  `supabase.auth.getUser()` en servidor.
+- Dos capas en base de datos: GRANT por rol + Row Level Security habilitado
+  en TODAS las tablas (ver docs/DATABASE.md). `anon` no tiene privilegios
+  sobre datos.
+- Control por propietario con `user_id = auth.uid()`; tablas hijas validan
+  contra el padre con `EXISTS`.
+- Rutas privadas protegidas en el proxy y de nuevo en los layouts de
+  servidor (defensa en profundidad).
+- Validacion en servidor con Zod dentro de cada Server Action, ademas de la
+  validacion de cliente.
+- Errores seguros: los mensajes al usuario son genericos y en espanol; no se
+  filtran codigos internos. La recuperacion de contrasena responde igual
+  exista o no el correo (sin enumeracion de cuentas).
+- Redirecciones solo a rutas internas (previene open redirects en `next=`).
+- Buckets privados (`progress-photos`, `inbody-files`) con politicas por
+  propietario, limite de tamano y validacion MIME; lectura via URLs firmadas.
+- Claves solo en variables de entorno; `SUPABASE_SERVICE_ROLE_KEY` jamas se
+  usa en codigo de cliente.
 
 ## Datos sensibles
 
