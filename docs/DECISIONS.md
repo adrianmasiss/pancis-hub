@@ -72,6 +72,34 @@ BMR con Mifflin-St Jeor, TDEE con factores de actividad 1.2 a 1.725, ajuste por 
 
 En Fases B y C solo se usa Vitest + React Testing Library. Playwright y los flujos end-to-end se agregan en la fase de calidad, cuando exista el MVP completo que probar.
 
+## 2026-07-19 - proxy.ts en lugar de middleware.ts
+
+Next.js 16 renombro la convencion `middleware` a `proxy`. La proteccion de
+rutas y el refresco de sesion viven en `src/proxy.ts` + `src/lib/supabase/proxy.ts`.
+El gate de onboarding se resuelve en layouts de servidor para no consultar
+la base de datos en cada request del proxy.
+
+## 2026-07-19 - GRANT explicitos ademas de RLS
+
+El stack local no otorga por defecto privilegios de datos a `authenticated`.
+La migracion `20260719120008_grants.sql` concede `select/insert/update/delete`
+sobre `public` a `authenticated` (y todo a `service_role`), incluyendo
+default privileges para tablas futuras. `anon` no recibe privilegios: la
+autorizacion fila a fila sigue siendo responsabilidad de RLS.
+
+## 2026-07-19 - Numeros de formulario con setValueAs
+
+Los inputs numericos se registran en react-hook-form con
+`setValueAs: toOptionalNumber` (src/lib/forms.ts): cadena vacia pasa a
+`undefined` antes de validar. Se evito `z.preprocess`, que rompe la
+inferencia de tipos entre react-hook-form y zodResolver.
+
+## 2026-07-19 - Usuario demo sembrado en auth.users
+
+El seed inserta el usuario demo directamente en `auth.users` con los campos
+de token como cadena vacia (GoTrue falla con NULL). Es un patron valido solo
+para el stack local; en cloud los usuarios se crean via Auth API.
+
 ## 2026-07-19 - Buckets privados
 
 `progress-photos` e `inbody-files`, ambos privados, con limite de tamano y validacion MIME, rutas con prefijo `user_id/` y politicas de storage por propietario. Acceso de lectura mediante URLs firmadas de corta duracion.

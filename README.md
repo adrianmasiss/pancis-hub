@@ -8,9 +8,13 @@ El objetivo inicial del producto es ayudar a personas hispanohablantes que entre
 
 ## Estado del proyecto
 
-El repositorio esta en Fase A: auditoria, arquitectura y preparacion documental.
+Fases A, B y C completadas:
 
-Todavia no contiene la aplicacion Next.js. La implementacion se hara por fases para mantener el proyecto ejecutable y revisable despues de cada cambio importante.
+- **A — Arquitectura**: documentacion reorganizada en `docs/` y decisiones registradas.
+- **B — Fundamentos**: Next.js 16 (App Router, TypeScript estricto), Tailwind v4, shadcn/ui, AppShell responsive (sidebar escritorio + navegacion inferior movil), tema claro/oscuro/sistema, i18n es-419 y tooling de calidad (Vitest, Prettier, ESLint).
+- **C — Datos y autenticacion**: 8 migraciones con RLS en 23 tablas, buckets privados, autenticacion completa (registro, login, logout, recuperacion), onboarding de 6 pasos con objetivos nutricionales estimados, configuracion persistente, seed demo y pruebas.
+
+Siguiente: Fase D (modulos del MVP: dashboard, nutricion, alimentos, equivalencias, entrenamiento, progreso, diario, recetas, academia, asistente).
 
 ## Principios del producto
 
@@ -101,12 +105,10 @@ pancis-hub/
 
 ## Requisitos
 
-Estos requisitos aplicaran a partir de Fase B, cuando se cree la aplicacion:
-
 - Node.js 20 LTS o superior.
 - npm como gestor de paquetes.
-- Cuenta de Supabase.
-- Proyecto de Vercel para despliegue.
+- Docker Desktop y Supabase CLI para el desarrollo local.
+- Cuenta de Supabase y proyecto de Vercel solo para despliegue futuro.
 
 ## Variables de entorno
 
@@ -122,42 +124,46 @@ Variables previstas:
 
 ## Instalacion
 
-La aplicacion aun no esta creada. El flujo esperado para Fase B sera:
-
 ```bash
 npm install
+supabase start        # requiere Docker corriendo
+supabase db reset     # aplica migraciones + seed
 npm run dev
 ```
 
+Crea `.env.local` a partir de `.env.example` con los valores de
+`supabase status`. Guia completa en [docs/SETUP.md](docs/SETUP.md).
+
+Usuario demo local: `demo@pancis.local` / `demo12345`.
+
 ## Migraciones y seeds
 
-La base Supabase vivira en `supabase/migrations/` y `supabase/seed.sql`.
-
-Flujo esperado cuando existan migraciones reales:
+La base vive en `supabase/migrations/` (8 migraciones por dominio con RLS)
+y `supabase/seed.sql` (datos ficticios de desarrollo). Detalle en
+[docs/DATABASE.md](docs/DATABASE.md).
 
 ```bash
-supabase db reset
-supabase db push
+supabase db reset     # local: recrea la base desde cero
+supabase db push      # cloud: aplica migraciones al proyecto enlazado
 ```
 
-Los datos de desarrollo deben ser ficticios y marcar el contenido cientifico no verificado como demostrativo o pendiente de verificacion.
+Los datos de desarrollo son ficticios y el contenido cientifico no
+verificado esta marcado como demostrativo o pendiente de verificacion.
 
 ## Pruebas
-
-La estrategia objetivo incluye:
-
-- Unitarias para calculos, validaciones, equivalencias, recetas, tendencias y permisos.
-- Integracion para autenticacion, onboarding, comidas, intercambios, entrenamientos, mediciones y diario.
-- End-to-end para el flujo minimo completo de usuario.
-
-Comandos esperados en Fase B/E:
 
 ```bash
 npm run typecheck
 npm run lint
-npm run test
-npm run test:e2e
+npm run test          # Vitest: calculos nutricionales, schemas, navegacion
+
+# Verificacion de RLS contra el stack local
+set -a && source .env.local && set +a
+node scripts/verify-rls.mjs
 ```
+
+Playwright (end-to-end) se incorpora en la Fase E. Estrategia completa en
+[docs/TESTING.md](docs/TESTING.md).
 
 ## Despliegue
 

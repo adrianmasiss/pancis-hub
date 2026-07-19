@@ -4,12 +4,33 @@
 
 Construir confianza en calculos, permisos y flujos criticos del MVP.
 
-## Herramientas objetivo
+## Herramientas
 
-- Vitest para pruebas unitarias.
-- React Testing Library para componentes e integracion.
-- Playwright para end-to-end.
-- TypeScript estricto como primera linea de verificacion.
+- Vitest para pruebas unitarias (configurado; `npm run test`).
+- React Testing Library para componentes (configurado).
+- Playwright para end-to-end (se agrega en Fase E).
+- TypeScript estricto como primera linea de verificacion (`npm run typecheck`).
+
+## Estado actual (Fase C)
+
+Pruebas existentes:
+
+- `src/tests/navigation.test.ts`: consistencia navegacion e i18n.
+- `src/tests/empty-state.test.tsx`: render de componentes compartidos.
+- `src/features/onboarding/lib/nutrition-targets.test.ts`: BMR, TDEE,
+  ajustes por objetivo, piso de seguridad y reparto de macros.
+- `src/features/onboarding/schemas.test.ts`: validaciones Zod del onboarding.
+
+Verificacion de RLS contra el stack local (requiere `supabase start` y seed):
+
+```bash
+set -a && source .env.local && set +a
+node scripts/verify-rls.mjs
+```
+
+El script registra dos usuarios, comprueba el trigger de perfiles, el
+aislamiento entre usuarios, la lectura/escritura de catalogos y el
+usuario demo del seed.
 
 ## Unitarias
 
