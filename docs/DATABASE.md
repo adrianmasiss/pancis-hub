@@ -69,7 +69,7 @@ Tablas privadas deben filtrar por `auth.uid()`:
 Buckets privados previstos:
 
 - `progress-photos`
-- `body-scan-files`
+- `inbody-files`
 
 El acceso debe hacerse con URLs firmadas y validacion de propietario.
 

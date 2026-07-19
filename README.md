@@ -104,7 +104,7 @@ pancis-hub/
 Estos requisitos aplicaran a partir de Fase B, cuando se cree la aplicacion:
 
 - Node.js 20 LTS o superior.
-- npm, pnpm o bun. La herramienta se fijara al crear `package.json`.
+- npm como gestor de paquetes.
 - Cuenta de Supabase.
 - Proyecto de Vercel para despliegue.
 
@@ -118,7 +118,7 @@ Variables previstas:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
-- `OPENAI_API_KEY`, opcional para una futura integracion de IA real.
+- `AI_PROVIDER_API_KEY`, opcional para una futura integracion de IA real detras de la capa de abstraccion del asistente.
 
 ## Instalacion
 
