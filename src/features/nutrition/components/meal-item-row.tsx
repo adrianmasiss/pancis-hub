@@ -9,6 +9,7 @@ import {
   deleteMealItem,
   updateMealItemQuantity,
 } from "@/features/nutrition/actions";
+import { FoodSwapSheet } from "@/features/nutrition/components/food-swap-sheet";
 import type { MealItemView } from "@/features/nutrition/queries";
 import { messages } from "@/i18n/es-419";
 
@@ -81,6 +82,7 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             <Check className="size-4" />
           </Button>
         ) : null}
+        <FoodSwapSheet item={item} />
         <Button
           size="icon"
           variant="ghost"

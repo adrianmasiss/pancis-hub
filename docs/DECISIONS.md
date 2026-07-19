@@ -100,6 +100,33 @@ El seed inserta el usuario demo directamente en `auth.users` con los campos
 de token como cadena vacia (GoTrue falla con NULL). Es un patron valido solo
 para el stack local; en cloud los usuarios se crean via Auth API.
 
+## 2026-07-19 - Formula del motor de equivalencias
+
+Puntaje de similitud (menor = mas similar), implementado en
+`src/features/foods/lib/equivalence.ts`:
+
+```
+score = 1  x |dif calorias (kcal)|
+      + 10 x |dif proteina (g)|
+      + 4  x |dif carbohidratos (g)|
+      + 6  x |dif grasas (g)|
+      + 2  x |dif fibra (g)|
+      + 120 si el grupo alimentario es distinto
+      + 15  si el estado crudo/cocido es distinto
+      - 12  si la alternativa es favorita del usuario
+      - 6   si la alternativa fue usada recientemente
+```
+
+La cantidad sugerida iguala el "macro ancla" del grupo del alimento
+original (carbohidratos para carbohidratos/frutas/legumbres, proteina
+para proteinas, grasas para grasas, calorias para el resto), redondeada
+a multiplos de 5 g y acotada a 5-1500 g. Si la alternativa casi no
+aporta el macro ancla, se iguala por calorias. Las alergias,
+restricciones y alimentos no deseados declarados se excluyen por
+coincidencia de nombre (conservador y visible). Los intercambios se
+presentan siempre como aproximaciones con sus diferencias visibles,
+nunca como equivalencias exactas.
+
 ## 2026-07-19 - Buckets privados
 
 `progress-photos` e `inbody-files`, ambos privados, con limite de tamano y validacion MIME, rutas con prefijo `user_id/` y politicas de storage por propietario. Acceso de lectura mediante URLs firmadas de corta duracion.
