@@ -269,6 +269,43 @@ export const messages = {
     saved: "Cambios guardados.",
     saveFailed: "No pudimos guardar los cambios. Intenta de nuevo.",
   },
+  checkins: {
+    title: "Diario",
+    todayTitle: "Tu dia en menos de un minuto",
+    todayDescription:
+      "Escalas de 1 (bajo) a 5 (alto). Solo toma unos segundos y alimenta tus tendencias.",
+    editToday: "Editar el diario de hoy",
+    saved: "Diario guardado.",
+    actionFailed: "No pudimos guardar el diario. Intenta de nuevo.",
+    fields: {
+      sleepHours: "Horas de sueno",
+      sleepQuality: "Calidad del sueno",
+      hunger: "Hambre",
+      energy: "Energia",
+      stress: "Estres",
+      soreness: "Dolor muscular",
+      mood: "Estado de animo",
+      nutritionAdherence: "Adherencia nutricional",
+      trainingCompleted: "¿Entrenaste hoy?",
+      notes: "Nota (opcional)",
+      yes: "Si",
+      no: "No",
+    },
+    historyTitle: "Ultimos 14 dias",
+    noHistory: "Aun no hay registros del diario.",
+    patternsTitle: "Patrones observados",
+    patternsNote:
+      "Estas son observaciones de tus propios datos, no relaciones de causa y efecto.",
+    patterns: {
+      lowSleep:
+        "En los ultimos 7 dias tu sueno promedio fue menor a 6.5 horas.",
+      highStress: "Tu estres promedio de la semana esta alto (4 o mas de 5).",
+      highHunger: "Reportaste hambre alta (4 o mas) en varios dias recientes.",
+      persistentSoreness:
+        "El dolor muscular se ha mantenido alto varios dias seguidos.",
+      goodStreak: "Buena constancia: llevas varios dias completando el diario.",
+    },
+  },
   progress: {
     title: "Progreso",
     addMeasurement: "Registrar medicion",
