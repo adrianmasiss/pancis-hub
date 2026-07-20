@@ -269,6 +269,68 @@ export const messages = {
     saved: "Cambios guardados.",
     saveFailed: "No pudimos guardar los cambios. Intenta de nuevo.",
   },
+  academy: {
+    title: "Academia",
+    subtitle:
+      "Contenido educativo basado en evidencia. Aprende el porque detras de tu plan.",
+    allCategories: "Todas",
+    readingTime: "min de lectura",
+    level: "Nivel",
+    levels: {
+      basico: "Basico",
+      intermedio: "Intermedio",
+      avanzado: "Avanzado",
+    },
+    evidenceLabel: "Nivel de evidencia",
+    evidenceLevels: {
+      alta: "Evidencia alta",
+      moderada: "Evidencia moderada",
+      baja: "Evidencia baja",
+      demostrativo: "Contenido demostrativo",
+    },
+    demoNotice:
+      "Este articulo es contenido demostrativo; sus referencias estan pendientes de verificacion.",
+    keyPointsTitle: "Puntos clave",
+    referencesTitle: "Referencias",
+    reviewedAt: "Revisado",
+    relatedTitle: "Contenido relacionado",
+    backToList: "Academia",
+    empty: "Aun no hay articulos publicados en esta categoria.",
+  },
+  assistant: {
+    title: "Asistente",
+    subtitle:
+      "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",
+    demoBadge: "Demo sin IA",
+    demoNotice:
+      "El asistente funciona hoy con reglas deterministicas de demostracion, sin un modelo de IA. Sus respuestas usan tus datos reales pero son orientativas.",
+    inputPlaceholder: "Escribe tu pregunta…",
+    send: "Enviar",
+    thinking: "Pensando…",
+    suggestionsTitle: "Prueba con",
+    suggestions: [
+      "No tengo arroz",
+      "Hoy voy a comer pizza",
+      "No llegue a la proteina",
+      "Dormi poco",
+      "Mi peso no cambia",
+      "No tengo la maquina de un ejercicio",
+    ],
+    sections: {
+      observation: "Observacion",
+      interpretation: "Interpretacion",
+      confidence: "Confianza",
+      action: "Accion sugerida",
+      alternative: "Alternativa",
+      reason: "Motivo",
+      reevaluate: "Reevaluar",
+    },
+    confidences: { baja: "baja", media: "media", alta: "alta" },
+    limitsTitle: "Limites del asistente",
+    limits:
+      "No diagnostica, no prescribe medicamentos ni sustituye a profesionales de la salud. No modifica tu plan sin tu confirmacion. Si tienes sintomas o dudas clinicas, consulta a un profesional.",
+    actionFailed: "No pudimos responder. Intenta de nuevo.",
+  },
   recipes: {
     title: "Recetas",
     subtitle: "Crea recetas y sus macros se calculan desde los ingredientes.",
