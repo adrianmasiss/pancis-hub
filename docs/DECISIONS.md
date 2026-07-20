@@ -127,6 +127,20 @@ coincidencia de nombre (conservador y visible). Los intercambios se
 presentan siempre como aproximaciones con sus diferencias visibles,
 nunca como equivalencias exactas.
 
+## 2026-07-19 - Service worker conservador
+
+El SW nunca cachea peticiones a Supabase ni datos personales: red
+primero con fallback a /offline en navegaciones y cache primero solo
+para estaticos inmutables (_next/static, iconos, logos). Se registra
+solo en produccion. Cumple el principio de no exponer datos corporales
+sensibles en caches del navegador.
+
+## 2026-07-19 - Fechas por defecto en cliente con zona local
+
+`toISOString().slice(0,10)` da la fecha UTC y cerca de medianoche es
+"manana" local (bug encontrado por la suite E2E). Todo valor por defecto
+de fecha en formularios cliente usa `todayLocalISO()` (src/lib/dates.ts).
+
 ## 2026-07-19 - Buckets privados
 
 `progress-photos` e `inbody-files`, ambos privados, con limite de tamano y validacion MIME, rutas con prefijo `user_id/` y politicas de storage por propietario. Acceso de lectura mediante URLs firmadas de corta duracion.

@@ -54,11 +54,13 @@ export async function completeOnboarding(
       primary_goal: data.primaryGoal,
       experience_level: data.experienceLevel,
       training_days_per_week: data.trainingDaysPerWeek,
-      training_type: data.trainingType ?? null,
+      // Los opcionales de texto pueden llegar como cadena vacia: || null
+      // evita insertar "" en columnas time/text.
+      training_type: data.trainingType || null,
       activity_level: data.activityLevel,
       daily_steps: data.dailySteps ?? null,
       meals_per_day: data.mealsPerDay,
-      usual_training_time: data.usualTrainingTime ?? null,
+      usual_training_time: data.usualTrainingTime || null,
       onboarding_completed_at: new Date().toISOString(),
     })
     .eq("id", user.id);

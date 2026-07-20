@@ -35,6 +35,7 @@ import {
 import { scaleIngredientsToServings } from "@/features/recipes/lib/recipe-macros";
 import type { RecipeDetail } from "@/features/recipes/queries";
 import { MEAL_TYPES } from "@/features/nutrition/schemas";
+import { todayLocalISO } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.recipes;
@@ -134,7 +135,7 @@ export function RecipeActions({ recipe }: { recipe: RecipeDetail }) {
               name="date"
               type="date"
               required
-              defaultValue={new Date().toISOString().slice(0, 10)}
+              defaultValue={todayLocalISO()}
             />
             <SelectField
               label={t.planMealType}
