@@ -17,7 +17,14 @@ import {
 export type AuthActionResult = { error: string } | { success: true };
 
 /** Traduce errores de Supabase a mensajes seguros en espanol. */
-function mapAuthError(code: string | undefined): string {
+function mapAuthError(error: any): string {
+  const code = error?.code;
+  
+  if (!code) {
+    console.error("[Auth Error - No Code]", error);
+    return messages.auth.errors.generic;
+  }
+
   switch (code) {
     case "invalid_credentials":
       return messages.auth.errors.invalidCredentials;
@@ -28,8 +35,14 @@ function mapAuthError(code: string | undefined): string {
       return messages.auth.errors.weakPassword;
     case "otp_expired":
       return messages.auth.errors.sessionExpired;
+    case "email_not_confirmed":
+      return "Debes confirmar tu correo antes de iniciar sesión.";
+    case "over_email_send_rate_limit":
+      return "Has superado el límite de correos. Intenta más tarde o revisa tu bandeja de entrada.";
     default:
-      return messages.auth.errors.generic;
+      console.error("[Auth Error - Unhandled Code]", error);
+      // Retorna el mensaje original si existe, para facilitar el debug, o el genérico
+      return error?.message || messages.auth.errors.generic;
   }
 }
 
@@ -45,7 +58,7 @@ export async function signIn(
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
-    return { error: mapAuthError(error.code) };
+    return { error: mapAuthError(error) };
   }
 
   // Solo rutas internas para evitar open redirects.
@@ -71,7 +84,7 @@ export async function signUp(input: RegisterInput): Promise<AuthActionResult> {
     },
   });
   if (error) {
-    return { error: mapAuthError(error.code) };
+    return { error: mapAuthError(error) };
   }
 
   redirect("/onboarding");
@@ -116,7 +129,7 @@ export async function updatePassword(
     password: parsed.data.password,
   });
   if (error) {
-    return { error: mapAuthError(error.code) };
+    return { error: mapAuthError(error) };
   }
 
   redirect("/");
