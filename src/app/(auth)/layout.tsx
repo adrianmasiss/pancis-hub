@@ -11,7 +11,7 @@ export default function AuthLayout({
       <main className="animate-fade-up w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <h1>
-            <BrandLogo height={40} />
+            <BrandLogo height={64} />
           </h1>
           <p className="text-muted-foreground text-sm">
             {messages.app.tagline}

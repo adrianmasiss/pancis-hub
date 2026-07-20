@@ -14,7 +14,7 @@ export function Sidebar() {
     <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-60 shrink-0 flex-col border-r lg:flex">
       <div className="flex h-14 items-center px-6">
         <Link href="/" aria-label={messages.app.name}>
-          <BrandLogo height={26} />
+          <BrandLogo height={38} />
         </Link>
       </div>
       <nav

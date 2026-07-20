@@ -31,7 +31,7 @@ export default async function OnboardingPage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-4 py-10">
       <main className="animate-fade-up space-y-6">
         <div className="flex flex-col items-center gap-2 text-center">
-          <BrandLogo height={32} />
+          <BrandLogo height={48} />
           <h1 className="text-2xl font-semibold tracking-tight">
             {messages.onboarding.title}
           </h1>
