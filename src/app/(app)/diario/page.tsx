@@ -90,8 +90,8 @@ export default async function CheckinsPage() {
 
   return (
     <>
-      <PageHeader 
-        title={t.title} 
+      <PageHeader
+        title={t.title}
         description="Lleva el control de tus niveles de energía, estrés y adherencia diariamente."
       />
       <CheckinForm defaults={defaults} />

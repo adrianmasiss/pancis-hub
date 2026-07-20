@@ -20,11 +20,19 @@ export function SelectField({
   help,
   placeholder,
   className,
+  value,
+  defaultValue,
   ...selectProps
 }: SelectFieldProps) {
   const id = useId();
   const errorId = `${id}-error`;
   const helpId = `${id}-help`;
+  // El select es controlado (value) o no controlado (defaultValue), nunca
+  // ambos a la vez: React lanza error si un <select> recibe los dos.
+  const uncontrolledProps =
+    value === undefined
+      ? { defaultValue: defaultValue ?? (placeholder ? "" : undefined) }
+      : { value };
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -39,9 +47,7 @@ export function SelectField({
           "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
           "disabled:cursor-not-allowed disabled:opacity-50",
         )}
-        defaultValue={
-          selectProps.defaultValue ?? (placeholder ? "" : undefined)
-        }
+        {...uncontrolledProps}
         {...selectProps}
       >
         {placeholder ? (

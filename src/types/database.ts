@@ -279,39 +279,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      dietary_preferences: {
-        Row: {
-          created_at: string;
-          id: string;
-          notes: string | null;
-          preference_type: string;
-          severity: string | null;
-          updated_at: string;
-          user_id: string;
-          value: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          notes?: string | null;
-          preference_type: string;
-          severity?: string | null;
-          updated_at?: string;
-          user_id: string;
-          value: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          notes?: string | null;
-          preference_type?: string;
-          severity?: string | null;
-          updated_at?: string;
-          user_id?: string;
-          value?: string;
-        };
-        Relationships: [];
-      };
       diet_template_items: {
         Row: {
           created_at: string;
@@ -431,6 +398,39 @@ export type Database = {
           target_protein?: number;
           updated_at?: string;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      dietary_preferences: {
+        Row: {
+          created_at: string;
+          id: string;
+          notes: string | null;
+          preference_type: string;
+          severity: string | null;
+          updated_at: string;
+          user_id: string;
+          value: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          preference_type: string;
+          severity?: string | null;
+          updated_at?: string;
+          user_id: string;
+          value: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          preference_type?: string;
+          severity?: string | null;
+          updated_at?: string;
+          user_id?: string;
+          value?: string;
         };
         Relationships: [];
       };

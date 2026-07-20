@@ -45,7 +45,10 @@ export function MealItemRow({ item }: { item: MealItemView }) {
   const equivalence =
     item.servingEquivalence && Number(quantity) === item.quantityG
       ? item.servingEquivalence
-      : formatHouseholdEquivalence(Number(quantity) || 0, item.foodPortions || []);
+      : formatHouseholdEquivalence(
+          Number(quantity) || 0,
+          item.foodPortions || [],
+        );
 
   return (
     <li className="flex items-center gap-2 py-2 text-sm">
@@ -59,7 +62,7 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             </span>
           ) : null}
           {equivalence ? (
-            <span className="text-muted-foreground text-xs ml-1.5 font-normal">
+            <span className="text-muted-foreground ml-1.5 text-xs font-normal">
               ({equivalence})
             </span>
           ) : null}

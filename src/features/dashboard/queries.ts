@@ -16,6 +16,38 @@ export type MacroTotals = {
   fiberG: number;
 };
 
+export type DietTemplateItemView = {
+  id: string;
+  foodId: string;
+  foodName: string;
+  isCustom: boolean;
+  quantityG: number;
+  servingEquivalence: string | null;
+  foodPortions: { label: string; grams: number }[];
+  macros: MacroTotals;
+};
+
+export type DietTemplateMealView = {
+  id: string;
+  name: string | null;
+  mealType: string;
+  orderIndex: number;
+  items: DietTemplateItemView[];
+  totals: MacroTotals;
+  /** true si ya existe una comida registrada hoy con este mismo nombre. */
+  loggedToday: boolean;
+};
+
+export type DietTemplateView = {
+  id: string;
+  name: string;
+  targetCalories: number;
+  targetProtein: number;
+  targetCarbs: number;
+  targetFat: number;
+  meals: DietTemplateMealView[];
+};
+
 export type DashboardData = {
   displayName: string;
   timezone: string;
@@ -30,7 +62,7 @@ export type DashboardData = {
     waterMl: number;
     source: string;
   } | null;
-  dietTemplate: any | null;
+  dietTemplate: DietTemplateView | null;
   consumed: MacroTotals;
   mealsLoggedToday: number;
   training: {
@@ -114,6 +146,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     mealDays7Result,
     recommendationResult,
     dietTemplateResult,
+    todayMealNamesResult,
   ] = await Promise.all([
     supabase
       .from("nutrition_targets")
@@ -182,10 +215,18 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .maybeSingle(),
     supabase
       .from("diet_templates")
-      .select("id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, diet_template_items(quantity_g, serving_equivalence, foods(name, food_portions(label, grams))))")
+      .select(
+        "id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, diet_template_items(id, quantity_g, serving_equivalence, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))))",
+      )
       .eq("user_id", userId)
       .eq("is_active", true)
       .maybeSingle(),
+    supabase
+      .from("meals")
+      .select("name")
+      .eq("user_id", userId)
+      .eq("date", today)
+      .is("deleted_at", null),
   ]);
 
   // Nutricion: suma de snapshots de las comidas del dia (omitidas excluidas).
@@ -269,33 +310,104 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     .size;
   const checkinToday = checkins.find((row) => row.date === today) ?? null;
 
+  // El objetivo diario siempre viene de nutrition_targets (versionado,
+  // editable desde el onboarding/configuracion). La dieta importada con IA
+  // es un plan de comidas complementario, no reemplaza el objetivo.
+  const targets = targetsResult.data
+    ? {
+        calories: targetsResult.data.calories,
+        proteinG: Number(targetsResult.data.protein_g),
+        carbohydrateG: Number(targetsResult.data.carbohydrate_g),
+        fatG: Number(targetsResult.data.fat_g),
+        fiberG: Number(targetsResult.data.fiber_g),
+        waterMl: targetsResult.data.water_ml,
+        source: targetsResult.data.source,
+      }
+    : null;
+
+  const todayMealNames = new Set(
+    (todayMealNamesResult.data ?? []).map((row) => row.name),
+  );
+
+  const dietTemplate: DietTemplateView | null = dietTemplateResult.data
+    ? {
+        id: dietTemplateResult.data.id,
+        name: dietTemplateResult.data.name,
+        targetCalories: Number(dietTemplateResult.data.target_calories),
+        targetProtein: Number(dietTemplateResult.data.target_protein),
+        targetCarbs: Number(dietTemplateResult.data.target_carbs),
+        targetFat: Number(dietTemplateResult.data.target_fat),
+        meals: [...dietTemplateResult.data.diet_template_meals]
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((meal) => {
+            const items: DietTemplateItemView[] = meal.diet_template_items.map(
+              (item) => {
+                const factor = Number(item.quantity_g) / 100;
+                const food = item.foods;
+                return {
+                  id: item.id,
+                  foodId: food?.id ?? "",
+                  foodName: food?.name ?? "",
+                  isCustom: food?.owner_user_id !== null,
+                  quantityG: Number(item.quantity_g),
+                  servingEquivalence: item.serving_equivalence,
+                  foodPortions: (food?.food_portions ?? []).map((portion) => ({
+                    label: portion.label,
+                    grams: Number(portion.grams),
+                  })),
+                  macros: {
+                    calories: Math.round(Number(food?.calories ?? 0) * factor),
+                    proteinG:
+                      Math.round(Number(food?.protein_g ?? 0) * factor * 10) /
+                      10,
+                    carbohydrateG:
+                      Math.round(
+                        Number(food?.carbohydrate_g ?? 0) * factor * 10,
+                      ) / 10,
+                    fatG:
+                      Math.round(Number(food?.fat_g ?? 0) * factor * 10) / 10,
+                    fiberG:
+                      Math.round(Number(food?.fiber_g ?? 0) * factor * 10) / 10,
+                  },
+                };
+              },
+            );
+            const totals = items.reduce<MacroTotals>(
+              (acc, item) => ({
+                calories: acc.calories + item.macros.calories,
+                proteinG: acc.proteinG + item.macros.proteinG,
+                carbohydrateG: acc.carbohydrateG + item.macros.carbohydrateG,
+                fatG: acc.fatG + item.macros.fatG,
+                fiberG: acc.fiberG + item.macros.fiberG,
+              }),
+              {
+                calories: 0,
+                proteinG: 0,
+                carbohydrateG: 0,
+                fatG: 0,
+                fiberG: 0,
+              },
+            );
+            return {
+              id: meal.id,
+              name: meal.name,
+              mealType: meal.meal_type,
+              orderIndex: meal.order_index,
+              items,
+              totals,
+              loggedToday: Boolean(meal.name) && todayMealNames.has(meal.name),
+            };
+          }),
+      }
+    : null;
+
   return {
     displayName: profile?.display_name ?? "",
     timezone,
     today,
     primaryGoal: profile?.primary_goal ?? null,
-    targets: dietTemplateResult.data 
-      ? {
-          calories: Number(dietTemplateResult.data.target_calories),
-          proteinG: Number(dietTemplateResult.data.target_protein),
-          carbohydrateG: Number(dietTemplateResult.data.target_carbs),
-          fatG: Number(dietTemplateResult.data.target_fat),
-          fiberG: 0,
-          waterMl: 0,
-          source: dietTemplateResult.data.name,
-        }
-      : targetsResult.data
-      ? {
-          calories: targetsResult.data.calories,
-          proteinG: Number(targetsResult.data.protein_g),
-          carbohydrateG: Number(targetsResult.data.carbohydrate_g),
-          fatG: Number(targetsResult.data.fat_g),
-          fiberG: Number(targetsResult.data.fiber_g),
-          waterMl: targetsResult.data.water_ml,
-          source: targetsResult.data.source,
-        }
-      : null,
-    dietTemplate: dietTemplateResult.data ?? null,
+    targets,
+    dietTemplate,
     consumed,
     mealsLoggedToday,
     training: {

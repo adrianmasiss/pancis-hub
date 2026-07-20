@@ -203,7 +203,7 @@ export function rankAlternatives({
  */
 export function formatHouseholdEquivalence(
   quantityG: number,
-  portions: { label: string; grams: number }[]
+  portions: { label: string; grams: number }[],
 ): string | null {
   if (!portions || portions.length === 0 || quantityG <= 0) return null;
 
@@ -212,7 +212,7 @@ export function formatHouseholdEquivalence(
   if (!portion || portion.grams <= 0) return null;
 
   const ratio = quantityG / portion.grams;
-  
+
   // Redondear a 1 decimal o a un número entero si está muy cerca.
   let value = Math.round(ratio * 10) / 10;
   if (Math.abs(value - Math.round(value)) < 0.05) {
@@ -227,7 +227,7 @@ export function formatHouseholdEquivalence(
     const baseNumber = parseFloat(match[1]);
     const unit = match[2];
     const totalCount = value * baseNumber;
-    
+
     // Formatear el número total
     let totalCountStr: string;
     if (Math.abs(totalCount - Math.round(totalCount)) < 0.01) {
@@ -249,7 +249,8 @@ export function formatHouseholdEquivalence(
       else if (unit === "pieza") pluralizedUnit = "piezas";
       else if (unit === "plato") pluralizedUnit = "platos";
       else if (unit === "vaso") pluralizedUnit = "vasos";
-      else if (unit.endsWith("a") || unit.endsWith("e") || unit.endsWith("o")) pluralizedUnit = unit + "s";
+      else if (unit.endsWith("a") || unit.endsWith("e") || unit.endsWith("o"))
+        pluralizedUnit = unit + "s";
       else if (unit.endsWith("n")) pluralizedUnit = unit + "es";
     }
 
@@ -265,4 +266,3 @@ export function formatHouseholdEquivalence(
   }
   return `${valueStr} x ${label}`;
 }
-

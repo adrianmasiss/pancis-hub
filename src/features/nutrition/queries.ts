@@ -81,10 +81,12 @@ export async function getDayPlan(
           cookedState: item.foods?.cooked_state ?? null,
           quantityG: Number(item.quantity_g),
           servingEquivalence: item.serving_equivalence ?? null,
-          foodPortions: (item.foods?.food_portions ?? []).map((p: { label: string; grams: number }) => ({
-            label: p.label,
-            grams: Number(p.grams),
-          })),
+          foodPortions: (item.foods?.food_portions ?? []).map(
+            (p: { label: string; grams: number }) => ({
+              label: p.label,
+              grams: Number(p.grams),
+            }),
+          ),
           macros: {
             calories: Number(item.calories_snapshot),
             proteinG: Number(item.protein_snapshot),
