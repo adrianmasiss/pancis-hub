@@ -1,0 +1,161 @@
+"use client";
+
+import { useEffect, useRef, useState, useTransition } from "react";
+import { Send, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { askAssistant } from "@/features/assistant/actions";
+import type { AssistantReply } from "@/features/assistant/types";
+import { messages } from "@/i18n/es-419";
+
+const t = messages.assistant;
+
+type ChatEntry =
+  { role: "user"; text: string } | { role: "assistant"; reply: AssistantReply };
+
+function ReplyCard({ reply }: { reply: AssistantReply }) {
+  const sections: { label: string; value: string | undefined }[] = [
+    { label: t.sections.observation, value: reply.observation },
+    { label: t.sections.interpretation, value: reply.interpretation },
+    { label: t.sections.action, value: reply.action },
+    { label: t.sections.alternative, value: reply.alternative },
+    { label: t.sections.reason, value: reply.reason },
+    { label: t.sections.reevaluate, value: reply.reevaluate },
+  ];
+
+  return (
+    <Card className="max-w-[92%] self-start">
+      <CardContent className="space-y-2 py-4 text-sm">
+        <div className="flex items-center gap-2">
+          <Sparkles className="text-primary size-4" aria-hidden="true" />
+          <Badge variant="outline" className="font-normal">
+            {t.demoBadge}
+          </Badge>
+          <Badge variant="secondary" className="font-normal">
+            {t.sections.confidence}: {t.confidences[reply.confidence]}
+          </Badge>
+        </div>
+        <dl className="space-y-1.5">
+          {sections
+            .filter((section): section is { label: string; value: string } =>
+              Boolean(section.value),
+            )
+            .map((section) => (
+              <div key={section.label}>
+                <dt className="text-muted-foreground text-xs font-medium">
+                  {section.label}
+                </dt>
+                <dd>{section.value}</dd>
+              </div>
+            ))}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function AssistantChat() {
+  const [entries, setEntries] = useState<ChatEntry[]>([]);
+  const [message, setMessage] = useState("");
+  const [pending, startTransition] = useTransition();
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [entries.length]);
+
+  const send = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || pending) return;
+    setEntries((previous) => [...previous, { role: "user", text: trimmed }]);
+    setMessage("");
+    startTransition(async () => {
+      const result = await askAssistant({ message: trimmed });
+      if ("error" in result) {
+        toast.error(result.error);
+      } else {
+        setEntries((previous) => [
+          ...previous,
+          { role: "assistant", reply: result.reply },
+        ]);
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="bg-muted text-muted-foreground rounded-lg p-3 text-xs text-balance">
+        {t.demoNotice}
+      </p>
+
+      <div className="flex min-h-64 flex-col gap-3">
+        {entries.map((entry, index) =>
+          entry.role === "user" ? (
+            <p
+              key={index}
+              className="bg-brand-button text-primary-foreground max-w-[85%] self-end rounded-2xl rounded-br-sm px-4 py-2 text-sm"
+            >
+              {entry.text}
+            </p>
+          ) : (
+            <ReplyCard key={index} reply={entry.reply} />
+          ),
+        )}
+        {pending ? (
+          <p className="text-muted-foreground self-start text-sm">
+            {t.thinking}
+          </p>
+        ) : null}
+        <div ref={endRef} />
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="space-y-2">
+          <p className="text-muted-foreground text-xs font-medium">
+            {t.suggestionsTitle}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {t.suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => send(suggestion)}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-full border px-3 py-1 text-sm"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          send(message);
+        }}
+        className="flex items-center gap-2"
+      >
+        <Input
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          placeholder={t.inputPlaceholder}
+          maxLength={500}
+          aria-label={t.inputPlaceholder}
+        />
+        <Button type="submit" disabled={pending || !message.trim()}>
+          <Send className="size-4" aria-hidden="true" />
+          {t.send}
+        </Button>
+      </form>
+
+      <p className="text-muted-foreground text-xs text-balance">
+        <span className="font-medium">{t.limitsTitle}: </span>
+        {t.limits}
+      </p>
+    </div>
+  );
+}

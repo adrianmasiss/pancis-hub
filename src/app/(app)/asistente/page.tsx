@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Sparkles } from "lucide-react";
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
+import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/shared/page-header";
+import { AssistantChat } from "@/features/assistant/components/assistant-chat";
+import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
-export const metadata: Metadata = { title: messages.nav.assistant };
+const t = messages.assistant;
 
-export default function AssistantPage() {
+export const metadata: Metadata = { title: t.title };
+
+export default async function AssistantPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
   return (
-    <ModulePlaceholder
-      title={messages.nav.assistant}
-      emptyTitle={messages.emptyStates.assistant.title}
-      emptyDescription={messages.emptyStates.assistant.description}
-      icon={Sparkles}
-    />
+    <>
+      <PageHeader title={t.title} description={t.subtitle} />
+      <AssistantChat />
+    </>
   );
 }
