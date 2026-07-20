@@ -1,9 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PwaRuntime } from "@/components/shared/pwa-runtime";
 import { Toaster } from "@/components/ui/sonner";
 import { messages } from "@/i18n/es-419";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1410" },
+  ],
+};
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -21,6 +29,14 @@ export const metadata: Metadata = {
     template: `%s | ${messages.app.name}`,
   },
   description: messages.app.description,
+  appleWebApp: {
+    capable: true,
+    title: messages.app.name,
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -43,6 +59,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
+          <PwaRuntime />
         </ThemeProvider>
       </body>
     </html>

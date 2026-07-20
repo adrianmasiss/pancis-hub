@@ -2,7 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Rutas accesibles sin sesion. */
-const PUBLIC_PATHS = ["/login", "/registro", "/recuperar", "/auth"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/registro",
+  "/recuperar",
+  "/auth",
+  "/offline",
+  "/manifest.webmanifest",
+  "/sw.js",
+];
 
 /** Rutas de autenticacion que no deben verse con sesion activa. */
 const AUTH_ONLY_PATHS = ["/login", "/registro", "/recuperar"];
