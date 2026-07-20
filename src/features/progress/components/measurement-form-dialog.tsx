@@ -18,6 +18,7 @@ import { SelectField } from "@/components/shared/select-field";
 import { saveMeasurement } from "@/features/progress/actions";
 import type { MeasurementView } from "@/features/progress/queries";
 import { MEASUREMENT_SOURCES } from "@/features/progress/schemas";
+import { todayLocalISO } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.progress;
@@ -94,9 +95,7 @@ export function MeasurementFormDialog({
               name="measuredAt"
               type="date"
               required
-              defaultValue={
-                measurement?.measuredAt ?? new Date().toISOString().slice(0, 10)
-              }
+              defaultValue={measurement?.measuredAt ?? todayLocalISO()}
             />
             <SelectField
               label={t.fields.source}

@@ -10,6 +10,7 @@ import {
   baselineSchema,
   type BaselineInput,
 } from "@/features/onboarding/schemas";
+import { todayLocalISO } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 
 const f = messages.onboarding.fields;
@@ -33,8 +34,7 @@ export function BaselineStep({
       bodyFatPercentage: defaultValues.bodyFatPercentage,
       skeletalMuscleKg: defaultValues.skeletalMuscleKg,
       waistCm: defaultValues.waistCm,
-      measuredAt:
-        defaultValues.measuredAt ?? new Date().toISOString().slice(0, 10),
+      measuredAt: defaultValues.measuredAt ?? todayLocalISO(),
       measurementSource: defaultValues.measurementSource ?? "manual",
     },
   });

@@ -6,10 +6,24 @@ Construir confianza en calculos, permisos y flujos criticos del MVP.
 
 ## Herramientas
 
-- Vitest para pruebas unitarias (configurado; `npm run test`).
-- React Testing Library para componentes (configurado).
-- Playwright para end-to-end (se agrega en Fase E).
+- Vitest para pruebas unitarias (`npm run test`) — 108 tests.
+- React Testing Library para componentes.
+- Playwright para end-to-end (`npm run test:e2e`).
 - TypeScript estricto como primera linea de verificacion (`npm run typecheck`).
+
+## End-to-end (e2e/flujo-minimo.spec.ts)
+
+Requiere `supabase start` (con seed aplicado); Playwright levanta la app
+en modo produccion automaticamente.
+
+```bash
+npm run test:e2e
+```
+
+Cubre el flujo minimo completo del MVP: registrar cuenta → onboarding de
+6 pasos → registrar comida → intercambiar un alimento → sesion de
+entrenamiento con serie → registrar peso → completar diario → cambiar
+tema → cerrar sesion → iniciar sesion → verificar persistencia.
 
 ## Estado actual (Fase C)
 

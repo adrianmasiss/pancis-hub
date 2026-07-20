@@ -24,6 +24,7 @@ import {
 } from "@/features/progress/actions";
 import type { PhotoViewItem } from "@/features/progress/queries";
 import { PHOTO_VIEWS } from "@/features/progress/schemas";
+import { todayLocalISO } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.progress.photos;
@@ -100,7 +101,7 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
                 name="capturedAt"
                 type="date"
                 required
-                defaultValue={new Date().toISOString().slice(0, 10)}
+                defaultValue={todayLocalISO()}
               />
               <FormField
                 label={`${t.notes} (${messages.common.optional.toLowerCase()})`}

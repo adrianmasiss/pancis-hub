@@ -8,13 +8,26 @@ El objetivo inicial del producto es ayudar a personas hispanohablantes que entre
 
 ## Estado del proyecto
 
-Fases A, B y C completadas:
+**MVP completo (Fases A-E).** Todos los modulos funcionan con datos
+reales por usuario:
 
-- **A — Arquitectura**: documentacion reorganizada en `docs/` y decisiones registradas.
-- **B — Fundamentos**: Next.js 16 (App Router, TypeScript estricto), Tailwind v4, shadcn/ui, AppShell responsive (sidebar escritorio + navegacion inferior movil), tema claro/oscuro/sistema, i18n es-419 y tooling de calidad (Vitest, Prettier, ESLint).
-- **C — Datos y autenticacion**: 8 migraciones con RLS en 23 tablas, buckets privados, autenticacion completa (registro, login, logout, recuperacion), onboarding de 6 pasos con objetivos nutricionales estimados, configuracion persistente, seed demo y pruebas.
+- **Nucleo**: autenticacion, onboarding de 6 pasos con objetivos
+  estimados (Mifflin-St Jeor), dashboard con datos reales.
+- **Nutricion**: plan diario, biblioteca de alimentos (favoritos y
+  personalizados), motor de equivalencias con formula ponderada
+  documentada, recetas con macros desde ingredientes y lista de compras.
+- **Entrenamiento**: rutinas por dias, sesion activa, historial con
+  mejores marcas y frecuencia muscular, sustitucion de ejercicios.
+- **Seguimiento**: mediciones completas + InBody manual con adjunto
+  privado, fotos de progreso privadas, tendencias con promedios moviles.
+- **Diario inteligente** con deteccion de patrones; **Academia** con
+  niveles de evidencia; **Asistente** contextual deterministico (capa de
+  abstraccion lista para IA real).
+- **PWA instalable** con offline seguro, identidad visual propia,
+  108 tests unitarios y suite E2E de Playwright en verde.
 
-Siguiente: Fase D (modulos del MVP: dashboard, nutricion, alimentos, equivalencias, entrenamiento, progreso, diario, recetas, academia, asistente).
+Pendiente: despliegue a Vercel + Supabase Cloud (guia en
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
 ## Principios del producto
 
@@ -162,8 +175,11 @@ set -a && source .env.local && set +a
 node scripts/verify-rls.mjs
 ```
 
-Playwright (end-to-end) se incorpora en la Fase E. Estrategia completa en
-[docs/TESTING.md](docs/TESTING.md).
+```bash
+npm run test:e2e      # Playwright: flujo completo (requiere supabase start)
+```
+
+Estrategia completa en [docs/TESTING.md](docs/TESTING.md).
 
 ## Despliegue
 
