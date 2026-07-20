@@ -9,6 +9,10 @@ const t = messages.assistant;
 
 export const metadata: Metadata = { title: t.title };
 
+// Gemini + consultas de contexto pueden tardar mas que el limite por
+// defecto de una Server Action en Vercel.
+export const maxDuration = 30;
+
 export default async function AssistantPage() {
   const supabase = await createClient();
   const {

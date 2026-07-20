@@ -17,9 +17,12 @@ import {
 export type AuthActionResult = { error: string } | { success: true };
 
 /** Traduce errores de Supabase a mensajes seguros en espanol. */
-function mapAuthError(error: any): string {
-  const code = error?.code;
-  
+function mapAuthError(error: unknown): string {
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? String((error as { code?: unknown }).code)
+      : undefined;
+
   if (!code) {
     console.error("[Auth Error - No Code]", error);
     return messages.auth.errors.generic;
@@ -40,9 +43,10 @@ function mapAuthError(error: any): string {
     case "over_email_send_rate_limit":
       return "Has superado el límite de correos. Intenta más tarde o revisa tu bandeja de entrada.";
     default:
-      console.error("[Auth Error - Unhandled Code]", error);
-      // Retorna el mensaje original si existe, para facilitar el debug, o el genérico
-      return error?.message || messages.auth.errors.generic;
+      // Se registra en el servidor para depurar; nunca se expone el
+      // detalle interno al usuario (docs/SECURITY.md).
+      console.error("[Auth Error - Unhandled Code]", code, error);
+      return messages.auth.errors.generic;
   }
 }
 

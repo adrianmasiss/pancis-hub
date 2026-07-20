@@ -681,6 +681,92 @@ export const messages = {
   },
   nutrition: {
     title: "Nutricion",
+    aiDiet: {
+      pageTitle: "Importar dieta con IA",
+      pageDescription:
+        "Sube una foto, captura o PDF de tu plan y revisalo antes de guardarlo. La IA puede cometer errores: edita cada alimento libremente.",
+      uploadTitle: "Sube tu dieta",
+      uploadDescription:
+        "Foto, captura de pantalla o PDF de tu plan alimenticio (max. 5 MB).",
+      fileLabel: "Archivo de tu dieta",
+      analyze: "Analizar con IA",
+      analyzing: "Analizando…",
+      reviewTitle: "Revisa y edita antes de guardar",
+      reviewDescription:
+        "Estos valores son estimaciones de la IA. Corrige el alimento, la cantidad o los macros de cada fila antes de guardar.",
+      dietName: "Nombre de la dieta",
+      dailyTargets: "Objetivos diarios",
+      mealName: "Nombre de la comida",
+      mealType: "Tipo de comida",
+      addItem: "Agregar alimento",
+      removeItem: "Quitar alimento",
+      addMealButton: "Agregar comida",
+      removeMeal: "Quitar comida",
+      itemOriginalLabel: "Texto original de la IA",
+      linkedFood: "Alimento vinculado del catalogo",
+      noLinkedFood: "Sin vincular — se creara un alimento personalizado",
+      searchToLink: "Buscar y vincular alimento…",
+      unlink: "Desvincular (editar macros manualmente)",
+      quantityLabel: "Cantidad (g)",
+      manualMacrosNote:
+        "Sin alimento vinculado: estos macros son para la cantidad indicada y se guardaran como un alimento personalizado.",
+      linkedMacrosNote: "Macros tomados del catalogo para esta cantidad.",
+      saveDiet: "Guardar dieta revisada",
+      saving: "Guardando…",
+      saved: "Dieta guardada y activada.",
+      errors: {
+        notAuthenticated: "Debes iniciar sesion.",
+        aiUnavailable:
+          "El analisis con IA no esta disponible en este momento. Intenta mas tarde.",
+        unsupportedFormat: "Formato no soportado. Sube JPG, PNG, WebP o PDF.",
+        fileTooLarge: "El archivo es muy grande. Sube uno de 5 MB o menos.",
+        parseFailed:
+          "No pudimos leer el archivo. Asegurate de que sea claro e intenta de nuevo.",
+        searchFailed: "No pudimos buscar alimentos. Intenta de nuevo.",
+        saveFailed: "No pudimos guardar la dieta. Intenta de nuevo.",
+        missingMacros: "Faltan macros para un alimento sin vincular",
+        readFailed: "No se pudo leer el archivo.",
+      },
+    },
+    dietPlan: {
+      title: "Mi dieta de hoy",
+      todayChecklist:
+        "Completa tus comidas para descontarlas de tu meta diaria.",
+      logMeal: "Marcar como comida",
+      logged: "Registrada hoy",
+      logging: "Registrando…",
+      loggedToast: "Comida registrada en tu diario de hoy.",
+      swapMeal: "Ver sustitutos",
+      noTemplate: "Aun no tienes una dieta activa.",
+      uploadCta: "Importar con IA",
+      customFoodBadge: "Personalizado",
+    },
+    compare: {
+      title: "Comparar comidas",
+      subtitle:
+        "Elige dos comidas y mira la diferencia de macronutrientes entre ellas.",
+      slotA: "Comida A",
+      slotB: "Comida B",
+      sourceDiet: "De mi dieta",
+      sourceToday: "Registrada hoy",
+      sourceCustom: "Construir una nueva",
+      selectMeal: "Selecciona una comida…",
+      addFood: "Agregar alimento",
+      empty: "Agrega alimentos o elige una comida para comparar.",
+      totals: "Totales",
+      difference: "Diferencia (B − A)",
+      differenceNote:
+        "Positivo = B aporta mas que A. Son aproximaciones, no valores exactos.",
+      compensationTitle: "Como compensar en el resto del dia",
+      compensationMore:
+        "Comida B aporta mas calorias y macros. Si la eliges, considera reducir porciones similares en otra comida del dia para mantenerte cerca de tu objetivo.",
+      compensationLess:
+        "Comida B aporta menos calorias y macros. Si la eliges, considera agregar una fuente de proteina o un acompanante en otra comida para no quedarte corto.",
+      compensationSimilar:
+        "Ambas comidas aportan valores muy similares: el cambio no deberia afectar tu dia de forma relevante.",
+      noData: "Elige ambas comidas para ver la comparacion.",
+      needMacros: "Necesitas datos completos en ambas comidas para comparar.",
+    },
     dayPlan: "Plan del dia",
     todayButton: "Hoy",
     previousDay: "Dia anterior",
