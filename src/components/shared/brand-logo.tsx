@@ -5,28 +5,39 @@ import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
-  /** Alto del logo en px cuando existe /logo.png. */
+  /** Alto del logo en px. */
   height?: number;
   className?: string;
 };
 
 /**
- * Logo de Pancis Hub. Usa public/logo.png si existe; mientras no este
- * el archivo, muestra el wordmark con el gradiente de marca.
+ * Logo de Pancis Hub con variante por tema: logo.png (texto oscuro)
+ * en claro y logo-dark.png (texto blanco) en oscuro. Si las imagenes
+ * faltan, cae al wordmark con gradiente de marca.
  */
-export function BrandLogo({ height = 28, className }: BrandLogoProps) {
+export function BrandLogo({ height = 36, className }: BrandLogoProps) {
   const [imageAvailable, setImageAvailable] = useState(true);
 
   if (imageAvailable) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src="/logo.png"
-        alt={messages.app.name}
-        style={{ height }}
-        className={cn("w-auto", className)}
-        onError={() => setImageAvailable(false)}
-      />
+      <span className={cn("inline-flex", className)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt={messages.app.name}
+          style={{ height }}
+          className="w-auto dark:hidden"
+          onError={() => setImageAvailable(false)}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-dark.png"
+          alt={messages.app.name}
+          style={{ height }}
+          className="hidden w-auto dark:block"
+          onError={() => setImageAvailable(false)}
+        />
+      </span>
     );
   }
 
