@@ -5,6 +5,7 @@ import {
   matchesRestriction,
   nutritionalDistance,
   rankAlternatives,
+  formatHouseholdEquivalence,
   type EquivalenceFood,
 } from "./equivalence";
 
@@ -205,3 +206,34 @@ describe("rankAlternatives", () => {
     expect(results[0]!.score).toBeLessThanOrEqual(results[1]!.score);
   });
 });
+
+describe("formatHouseholdEquivalence", () => {
+  it("retorna null si no hay porciones o cantidad es cero", () => {
+    expect(formatHouseholdEquivalence(0, [{ label: "1 unidad", grams: 50 }])).toBeNull();
+    expect(formatHouseholdEquivalence(150, [])).toBeNull();
+  });
+
+  it("calcula equivalencias enteras de porciones", () => {
+    const portions = [{ label: "1 unidad", grams: 50 }];
+    expect(formatHouseholdEquivalence(150, portions)).toBe("3 unidades");
+    expect(formatHouseholdEquivalence(50, portions)).toBe("1 unidad");
+  });
+
+  it("calcula equivalencias con punto decimal si no es entero", () => {
+    const portions = [{ label: "1 unidad", grams: 50 }];
+    expect(formatHouseholdEquivalence(75, portions)).toBe("1.5 unidades");
+  });
+
+  it("pluraliza correctamente unidades en español", () => {
+    expect(formatHouseholdEquivalence(64, [{ label: "1 rebanada", grams: 32 }])).toBe("2 rebanadas");
+    expect(formatHouseholdEquivalence(316, [{ label: "1 taza", grams: 158 }])).toBe("2 tazas");
+    expect(formatHouseholdEquivalence(28, [{ label: "1 cucharada", grams: 14 }])).toBe("2 cucharadas");
+    expect(formatHouseholdEquivalence(340, [{ label: "1 envase", grams: 170 }])).toBe("2 envases");
+  });
+
+  it("maneja etiquetas no numericas con formato de multiplicador", () => {
+    const portions = [{ label: "Envase familiar", grams: 500 }];
+    expect(formatHouseholdEquivalence(1000, portions)).toBe("2 x Envase familiar");
+  });
+});
+

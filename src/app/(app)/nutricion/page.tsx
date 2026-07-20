@@ -56,6 +56,7 @@ export default async function NutritionPage({
     <>
       <PageHeader
         title={messages.nav.nutrition}
+        description="Gestiona tus comidas del día y controla tus macros."
         actions={
           <>
             <Button asChild variant="ghost" size="sm">
@@ -63,6 +64,9 @@ export default async function NutritionPage({
                 <Apple className="size-4" aria-hidden="true" />
                 {messages.foods.title}
               </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/nutricion/dieta">Importar Dieta</Link>
             </Button>
             <DuplicateDayButton date={date} />
             <AddMealDialog date={date} />

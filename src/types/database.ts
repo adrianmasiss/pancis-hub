@@ -312,6 +312,128 @@ export type Database = {
         };
         Relationships: [];
       };
+      diet_template_items: {
+        Row: {
+          created_at: string;
+          food_id: string;
+          id: string;
+          quantity_g: number;
+          serving_equivalence: string | null;
+          template_meal_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          food_id: string;
+          id?: string;
+          quantity_g: number;
+          serving_equivalence?: string | null;
+          template_meal_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          food_id?: string;
+          id?: string;
+          quantity_g?: number;
+          serving_equivalence?: string | null;
+          template_meal_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "diet_template_items_food_id_fkey";
+            columns: ["food_id"];
+            isOneToOne: false;
+            referencedRelation: "foods";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "diet_template_items_template_meal_id_fkey";
+            columns: ["template_meal_id"];
+            isOneToOne: false;
+            referencedRelation: "diet_template_meals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      diet_template_meals: {
+        Row: {
+          created_at: string;
+          id: string;
+          meal_type: string;
+          name: string | null;
+          order_index: number;
+          template_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          meal_type: string;
+          name?: string | null;
+          order_index?: number;
+          template_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          meal_type?: string;
+          name?: string | null;
+          order_index?: number;
+          template_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "diet_template_meals_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "diet_templates";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      diet_templates: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          target_calories: number;
+          target_carbs: number;
+          target_fat: number;
+          target_protein: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          target_calories?: number;
+          target_carbs?: number;
+          target_fat?: number;
+          target_protein?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          target_calories?: number;
+          target_carbs?: number;
+          target_fat?: number;
+          target_protein?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       exercise_catalog: {
         Row: {
           created_at: string;
@@ -497,6 +619,7 @@ export type Database = {
           meal_id: string;
           protein_snapshot: number;
           quantity_g: number;
+          serving_equivalence: string | null;
           updated_at: string;
         };
         Insert: {
@@ -510,6 +633,7 @@ export type Database = {
           meal_id: string;
           protein_snapshot: number;
           quantity_g: number;
+          serving_equivalence?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -523,6 +647,7 @@ export type Database = {
           meal_id?: string;
           protein_snapshot?: number;
           quantity_g?: number;
+          serving_equivalence?: string | null;
           updated_at?: string;
         };
         Relationships: [

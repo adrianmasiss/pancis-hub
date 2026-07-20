@@ -196,3 +196,73 @@ export function rankAlternatives({
     .sort((a, b) => a.score - b.score)
     .slice(0, maxResults);
 }
+
+/**
+ * Calcula y formatea la equivalencia en porciones domésticas para una cantidad en gramos dada.
+ * Por ejemplo: 150g de huevo (donde 1 unidad = 50g) -> "3 unidades".
+ */
+export function formatHouseholdEquivalence(
+  quantityG: number,
+  portions: { label: string; grams: number }[]
+): string | null {
+  if (!portions || portions.length === 0 || quantityG <= 0) return null;
+
+  // Encontrar la porción disponible.
+  const portion = portions[0];
+  if (!portion || portion.grams <= 0) return null;
+
+  const ratio = quantityG / portion.grams;
+  
+  // Redondear a 1 decimal o a un número entero si está muy cerca.
+  let value = Math.round(ratio * 10) / 10;
+  if (Math.abs(value - Math.round(value)) < 0.05) {
+    value = Math.round(value);
+  }
+
+  const label = portion.label.trim();
+  // Busca un número al inicio, ej. "1 unidad", "1.5 tazas"
+  const match = label.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
+
+  if (match && match[1] && match[2]) {
+    const baseNumber = parseFloat(match[1]);
+    const unit = match[2];
+    const totalCount = value * baseNumber;
+    
+    // Formatear el número total
+    let totalCountStr: string;
+    if (Math.abs(totalCount - Math.round(totalCount)) < 0.01) {
+      totalCountStr = String(Math.round(totalCount));
+    } else {
+      totalCountStr = totalCount.toFixed(1);
+    }
+
+    // Pluralizar unidades en español si es mayor que 1
+    let pluralizedUnit = unit;
+    if (totalCount > 1) {
+      if (unit === "unidad") pluralizedUnit = "unidades";
+      else if (unit === "rebanada") pluralizedUnit = "rebanadas";
+      else if (unit === "taza") pluralizedUnit = "tazas";
+      else if (unit === "cucharada") pluralizedUnit = "cucharadas";
+      else if (unit === "envase") pluralizedUnit = "envases";
+      else if (unit === "porcion") pluralizedUnit = "porciones";
+      else if (unit === "porción") pluralizedUnit = "porciones";
+      else if (unit === "pieza") pluralizedUnit = "piezas";
+      else if (unit === "plato") pluralizedUnit = "platos";
+      else if (unit === "vaso") pluralizedUnit = "vasos";
+      else if (unit.endsWith("a") || unit.endsWith("e") || unit.endsWith("o")) pluralizedUnit = unit + "s";
+      else if (unit.endsWith("n")) pluralizedUnit = unit + "es";
+    }
+
+    return `${totalCountStr} ${pluralizedUnit}`;
+  }
+
+  // Si no coincide con el regex, e.g. "Un envase entero"
+  let valueStr: string;
+  if (Math.abs(value - Math.round(value)) < 0.01) {
+    valueStr = String(Math.round(value));
+  } else {
+    valueStr = value.toFixed(1);
+  }
+  return `${valueStr} x ${label}`;
+}
+

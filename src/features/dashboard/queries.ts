@@ -30,6 +30,7 @@ export type DashboardData = {
     waterMl: number;
     source: string;
   } | null;
+  dietTemplate: any | null;
   consumed: MacroTotals;
   mealsLoggedToday: number;
   training: {
@@ -112,6 +113,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     sessions7Result,
     mealDays7Result,
     recommendationResult,
+    dietTemplateResult,
   ] = await Promise.all([
     supabase
       .from("nutrition_targets")
@@ -177,6 +179,12 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .in("status", ["nueva", "vista"])
       .order("created_at", { ascending: false })
       .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("diet_templates")
+      .select("id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, diet_template_items(quantity_g, serving_equivalence, foods(name, food_portions(label, grams))))")
+      .eq("user_id", userId)
+      .eq("is_active", true)
       .maybeSingle(),
   ]);
 
@@ -266,7 +274,17 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     timezone,
     today,
     primaryGoal: profile?.primary_goal ?? null,
-    targets: targetsResult.data
+    targets: dietTemplateResult.data 
+      ? {
+          calories: Number(dietTemplateResult.data.target_calories),
+          proteinG: Number(dietTemplateResult.data.target_protein),
+          carbohydrateG: Number(dietTemplateResult.data.target_carbs),
+          fatG: Number(dietTemplateResult.data.target_fat),
+          fiberG: 0,
+          waterMl: 0,
+          source: dietTemplateResult.data.name,
+        }
+      : targetsResult.data
       ? {
           calories: targetsResult.data.calories,
           proteinG: Number(targetsResult.data.protein_g),
@@ -277,6 +295,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
           source: targetsResult.data.source,
         }
       : null,
+    dietTemplate: dietTemplateResult.data ?? null,
     consumed,
     mealsLoggedToday,
     training: {

@@ -310,9 +310,9 @@ export const messages = {
     title: "Asistente",
     subtitle:
       "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",
-    demoBadge: "Demo sin IA",
+    demoBadge: "IA contextual",
     demoNotice:
-      "El asistente funciona hoy con reglas deterministicas de demostracion, sin un modelo de IA. Sus respuestas usan tus datos reales pero son orientativas.",
+      "El asistente usa Gemini cuando esta configurado y conserva reglas locales como respaldo. Sus respuestas usan tus datos reales pero son orientativas.",
     inputPlaceholder: "Escribe tu pregunta…",
     send: "Enviar",
     thinking: "Pensando…",

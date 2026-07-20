@@ -8,6 +8,8 @@ import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { createClient } from "@/lib/supabase/server";
 
+import { DietChecklist } from "@/features/dashboard/components/diet-checklist";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -23,6 +25,11 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <SummarySection data={data} />
+      
+      {data.dietTemplate && (
+        <DietChecklist template={data.dietTemplate} />
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <NutritionCard data={data} />
         <TrainingCard data={data} />

@@ -49,6 +49,7 @@ export default async function TrainingPage() {
     <>
       <PageHeader
         title={t.title}
+        description="Organiza tus rutinas y registra tus series y descansos."
         actions={
           <>
             {overview.sessionInProgress ? (

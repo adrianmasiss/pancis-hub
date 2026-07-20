@@ -1,6 +1,8 @@
 "use server";
 
+import { generateObject } from "ai";
 import { z } from "zod";
+import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { windowDifference, trendDirection } from "@/lib/trends";
@@ -21,6 +23,33 @@ import type {
 } from "@/features/assistant/types";
 
 const askSchema = z.object({ message: z.string().trim().min(1).max(500) });
+
+const assistantReplySchema = z.object({
+  observation: z.string().min(1),
+  interpretation: z.string().min(1),
+  confidence: z.enum(["baja", "media", "alta"]),
+  action: z.string().min(1),
+  alternative: z.string().min(1).optional(),
+  reason: z.string().min(1),
+  reevaluate: z.string().min(1),
+});
+
+const GEMINI_ASSISTANT_SYSTEM_PROMPT = `Eres el asistente contextual de Pancis Hub, una app de nutricion, entrenamiento y progreso.
+
+Responde en espanol latinoamericano, con tono claro, prudente y accionable.
+Usa solo el contexto entregado por la app y no inventes datos del usuario.
+No diagnostiques, no indiques medicamentos y no sustituyas profesionales de la salud.
+No modifiques objetivos, planes, rutinas ni dietas; solo sugiere proximos pasos.
+Si la pregunta requiere atencion clinica o sintomas preocupantes, recomienda consultar a un profesional.
+
+Debes responder en el formato estructurado solicitado:
+- observation: que observas del mensaje/contexto.
+- interpretation: que significa de forma prudente.
+- confidence: baja, media o alta.
+- action: una accion concreta y reversible.
+- alternative: una opcion alternativa si aplica.
+- reason: por que esa accion tiene sentido.
+- reevaluate: cuando revisar de nuevo.`;
 
 function todayInTimezone(timezone: string): string {
   try {
@@ -193,6 +222,34 @@ async function findFoodAlternatives(
   }));
 }
 
+async function generateGeminiReply(input: {
+  message: string;
+  context: AssistantContext;
+  intent: ReturnType<typeof detectIntent>;
+  foodAlternatives?: FoodAlternativeSuggestion[];
+}): Promise<AssistantReply> {
+  const { object } = await generateObject({
+    model: getGeminiModel(),
+    schema: assistantReplySchema,
+    schemaName: "assistant_reply",
+    schemaDescription:
+      "Respuesta estructurada del asistente contextual de Pancis Hub.",
+    system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
+    prompt: JSON.stringify(
+      {
+        userMessage: input.message,
+        detectedIntent: input.intent,
+        userContext: input.context,
+        foodAlternatives: input.foodAlternatives ?? [],
+      },
+      null,
+      2,
+    ),
+  });
+
+  return object;
+}
+
 export async function askAssistant(
   input: unknown,
 ): Promise<{ error: string } | { reply: AssistantReply }> {
@@ -211,12 +268,30 @@ export async function askAssistant(
     intent.kind === "foodMissing"
       ? await findFoodAlternatives(user.id, intent.foodName)
       : undefined;
+  const fallbackReply = deterministicProvider.generateReply({
+    context,
+    intent,
+    foodAlternatives,
+  });
 
-  return {
-    reply: deterministicProvider.generateReply({
+  if (!hasGeminiApiKey()) {
+    return { reply: fallbackReply };
+  }
+
+  try {
+    const reply = await generateGeminiReply({
+      message: parsed.data.message,
       context,
       intent,
       foodAlternatives,
-    }),
+    });
+
+    return { reply };
+  } catch (error) {
+    console.error("Gemini assistant error:", error);
+  }
+
+  return {
+    reply: fallbackReply,
   };
 }

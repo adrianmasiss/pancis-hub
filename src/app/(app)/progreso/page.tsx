@@ -35,7 +35,11 @@ export default async function ProgressPage() {
 
   return (
     <>
-      <PageHeader title={t.title} actions={<MeasurementFormDialog />} />
+      <PageHeader 
+        title={t.title} 
+        description="Lleva un registro de tus mediciones y compara tu progreso en el tiempo."
+        actions={<MeasurementFormDialog />} 
+      />
 
       {hasData ? (
         <>

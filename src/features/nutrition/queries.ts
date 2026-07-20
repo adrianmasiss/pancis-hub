@@ -13,6 +13,8 @@ export type MealItemView = {
   foodBrand: string | null;
   cookedState: string | null;
   quantityG: number;
+  servingEquivalence: string | null;
+  foodPortions: { label: string; grams: number }[];
   macros: MacroSet;
 };
 
@@ -53,7 +55,7 @@ export async function getDayPlan(
     supabase
       .from("meals")
       .select(
-        "id, meal_type, name, status, notes, created_at, meal_items(id, food_id, quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, created_at, foods(name, brand, cooked_state))",
+        "id, meal_type, name, status, notes, created_at, meal_items(id, food_id, quantity_g, serving_equivalence, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, created_at, foods(name, brand, cooked_state, food_portions(label, grams)))",
       )
       .eq("user_id", userId)
       .eq("date", date)
@@ -78,6 +80,11 @@ export async function getDayPlan(
           foodBrand: item.foods?.brand ?? null,
           cookedState: item.foods?.cooked_state ?? null,
           quantityG: Number(item.quantity_g),
+          servingEquivalence: item.serving_equivalence ?? null,
+          foodPortions: (item.foods?.food_portions ?? []).map((p: { label: string; grams: number }) => ({
+            label: p.label,
+            grams: Number(p.grams),
+          })),
           macros: {
             calories: Number(item.calories_snapshot),
             proteinG: Number(item.protein_snapshot),

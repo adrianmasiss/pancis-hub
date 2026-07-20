@@ -5,6 +5,7 @@ import { Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatHouseholdEquivalence } from "@/features/foods/lib/equivalence";
 import {
   deleteMealItem,
   updateMealItemQuantity,
@@ -41,6 +42,11 @@ export function MealItemRow({ item }: { item: MealItemView }) {
     });
   };
 
+  const equivalence =
+    item.servingEquivalence && Number(quantity) === item.quantityG
+      ? item.servingEquivalence
+      : formatHouseholdEquivalence(Number(quantity) || 0, item.foodPortions || []);
+
   return (
     <li className="flex items-center gap-2 py-2 text-sm">
       <div className="min-w-0 flex-1">
@@ -50,6 +56,11 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             <span className="text-muted-foreground">
               {" "}
               ({t.cookedState[item.cookedState as "crudo" | "cocido"]})
+            </span>
+          ) : null}
+          {equivalence ? (
+            <span className="text-muted-foreground text-xs ml-1.5 font-normal">
+              ({equivalence})
             </span>
           ) : null}
         </p>
