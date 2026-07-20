@@ -47,6 +47,7 @@ export const messages = {
     signOut: "Cerrar sesion",
     openMenu: "Abrir menu",
     mainNavigation: "Navegacion principal",
+    skipToContent: "Saltar al contenido",
     themeToggle: "Cambiar tema",
     themeLight: "Claro",
     themeDark: "Oscuro",
@@ -268,6 +269,14 @@ export const messages = {
     profileDescription: "Tu informacion basica y preferencias de la cuenta.",
     saved: "Cambios guardados.",
     saveFailed: "No pudimos guardar los cambios. Intenta de nuevo.",
+  },
+  pwa: {
+    offlineTitle: "Sin conexion",
+    offlineDescription:
+      "No hay internet en este momento. Tus datos estan seguros; vuelve a intentarlo cuando recuperes la conexion.",
+    retry: "Reintentar",
+    wentOffline: "Sin conexion. Algunas acciones no estaran disponibles.",
+    backOnline: "Conexion restablecida.",
   },
   academy: {
     title: "Academia",
