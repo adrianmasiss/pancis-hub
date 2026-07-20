@@ -55,9 +55,15 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Marca: esmeralda deportivo (contraste AA con texto blanco) */
-  --primary: oklch(0.51 0.12 166);
+  /* Marca Pancis Hub: rojo-naranja del logo (contraste AA con texto blanco) */
+  --primary: oklch(0.55 0.19 33);
   --primary-foreground: oklch(0.985 0 0);
+  /* Gradiente de marca (rojo -> naranja). Version vivida para elementos
+     grandes y version -btn con contraste AA para texto de botones. */
+  --brand-from: oklch(0.55 0.22 27);
+  --brand-to: oklch(0.7 0.18 50);
+  --brand-btn-from: oklch(0.52 0.2 28);
+  --brand-btn-to: oklch(0.6 0.18 42);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -67,7 +73,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.65 0.1 166);
+  --ring: oklch(0.65 0.17 40);
   /* Paleta categorica validada (dataviz) para superficie clara */
   --chart-1: #2a78d6;
   --chart-2: #008300;
@@ -77,7 +83,7 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.51 0.12 166);
+  --sidebar-primary: oklch(0.55 0.19 33);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
@@ -86,16 +92,20 @@
 }
 
 .dark {
-  /* Fondo profundo, nunca negro puro (docs/07_DESIGN_SYSTEM.md) */
-  --background: oklch(0.18 0.008 260);
+  /* Fondo profundo calido, nunca negro puro (docs/07_DESIGN_SYSTEM.md) */
+  --background: oklch(0.17 0.008 40);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.22 0.009 260);
+  --card: oklch(0.21 0.01 45);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.22 0.009 260);
+  --popover: oklch(0.21 0.01 45);
   --popover-foreground: oklch(0.985 0 0);
-  /* Marca en oscuro: esmeralda claro con texto oscuro */
-  --primary: oklch(0.77 0.15 163);
-  --primary-foreground: oklch(0.2 0.03 166);
+  /* Marca en oscuro: naranja brillante con texto oscuro */
+  --primary: oklch(0.72 0.17 45);
+  --primary-foreground: oklch(0.18 0.05 40);
+  --brand-from: oklch(0.62 0.21 30);
+  --brand-to: oklch(0.76 0.17 55);
+  --brand-btn-from: oklch(0.66 0.2 33);
+  --brand-btn-to: oklch(0.75 0.17 52);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -105,16 +115,16 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.11 166);
+  --ring: oklch(0.65 0.15 45);
   /* Paleta categorica validada (dataviz) para superficie oscura */
   --chart-1: #3987e5;
   --chart-2: #008300;
   --chart-3: #d55181;
   --chart-4: #c98500;
   --chart-5: #199e70;
-  --sidebar: oklch(0.22 0.009 260);
+  --sidebar: oklch(0.21 0.01 45);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.77 0.15 163);
+  --sidebar-primary: oklch(0.72 0.17 45);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
@@ -132,6 +142,45 @@
   html {
     @apply font-sans;
   }
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 25%, transparent);
+  }
+}
+
+/* Utilidades de marca */
+.bg-brand-gradient {
+  background-image: linear-gradient(100deg, var(--brand-from), var(--brand-to));
+}
+
+.bg-brand-button {
+  background-image: linear-gradient(
+    115deg,
+    var(--brand-btn-from),
+    var(--brand-btn-to)
+  );
+}
+
+.text-brand-gradient {
+  background-image: linear-gradient(100deg, var(--brand-from), var(--brand-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Entrada suave del contenido (se anula con prefers-reduced-motion) */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -43,7 +43,7 @@ export function BottomNavigation() {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-medium",
-                active ? "text-foreground" : "text-muted-foreground",
+                active ? "text-primary" : "text-muted-foreground",
               )}
             >
               <Icon className="size-5" aria-hidden="true" />

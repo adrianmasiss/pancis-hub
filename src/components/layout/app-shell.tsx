@@ -15,7 +15,9 @@ export function AppShell({ children, topBarActions }: AppShellProps) {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar actions={topBarActions} />
         <main className="flex-1 px-4 py-6 pb-24 lg:px-8 lg:pb-8">
-          <div className="mx-auto w-full max-w-5xl space-y-6">{children}</div>
+          <div className="animate-fade-up mx-auto w-full max-w-5xl space-y-6">
+            {children}
+          </div>
         </main>
       </div>
       <BottomNavigation />
