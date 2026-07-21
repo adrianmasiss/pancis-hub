@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { uploadPrivateFile } from "@/lib/storage/upload-private-file";
 import { messages } from "@/i18n/es-419";
 import {
   measurementIdSchema,
@@ -62,28 +63,6 @@ function measurementFromForm(formData: FormData) {
     bodyWaterPercentage: formNumber(formData.get("bodyWaterPercentage")),
     notes: formText(formData.get("notes")),
   };
-}
-
-function fileExtension(file: File): string {
-  const byName = file.name.split(".").pop()?.toLowerCase();
-  if (byName && byName.length <= 5) return byName;
-  return file.type.split("/").pop() ?? "bin";
-}
-
-async function uploadPrivateFile(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  bucket: string,
-  userId: string,
-  file: File,
-  allowedMime: string[],
-  maxBytes: number,
-): Promise<string | null> {
-  if (!allowedMime.includes(file.type) || file.size > maxBytes) return null;
-  const path = `${userId}/${crypto.randomUUID()}.${fileExtension(file)}`;
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, { contentType: file.type });
-  return error ? null : path;
 }
 
 export async function saveMeasurement(

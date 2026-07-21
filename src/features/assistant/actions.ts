@@ -42,6 +42,8 @@ No diagnostiques, no indiques medicamentos y no sustituyas profesionales de la s
 No modifiques objetivos, planes, rutinas ni dietas; solo sugiere proximos pasos.
 Si la pregunta requiere atencion clinica o sintomas preocupantes, recomienda consultar a un profesional.
 
+Si userContext.activeDiet esta presente, es la dieta real que el usuario esta tratando de cumplir: usala como base concreta para responder preguntas sobre que comer, sustituciones dentro del plan, o si algo encaja con su dieta. Menciona comidas y alimentos tal como aparecen ahi, no inventes alimentos que no esten en el contexto.
+
 Debes responder en el formato estructurado solicitado:
 - observation: que observas del mensaje/contexto.
 - interpretation: que significa de forma prudente.
@@ -77,8 +79,14 @@ async function buildContext(userId: string): Promise<AssistantContext> {
     .toISOString()
     .slice(0, 10);
 
-  const [targetsResult, mealsResult, weightsResult, checkinResult, planResult] =
-    await Promise.all([
+  const [
+    targetsResult,
+    mealsResult,
+    weightsResult,
+    checkinResult,
+    planResult,
+    dietResult,
+  ] = await Promise.all([
       supabase
         .from("nutrition_targets")
         .select("calories, protein_g, carbohydrate_g, fat_g")
@@ -112,6 +120,14 @@ async function buildContext(userId: string): Promise<AssistantContext> {
         .eq("user_id", userId)
         .eq("active", true)
         .is("deleted_at", null)
+        .maybeSingle(),
+      supabase
+        .from("diet_templates")
+        .select(
+          "name, diet_template_meals(name, meal_type, order_index, diet_template_items(quantity_g, foods(name)))",
+        )
+        .eq("user_id", userId)
+        .eq("is_active", true)
         .maybeSingle(),
     ]);
 
@@ -151,6 +167,20 @@ async function buildContext(userId: string): Promise<AssistantContext> {
         ? Number(checkinResult.data.sleep_hours)
         : null,
     activePlanName: planResult.data?.name ?? null,
+    activeDiet: dietResult.data
+      ? {
+          name: dietResult.data.name,
+          meals: [...dietResult.data.diet_template_meals]
+            .sort((a, b) => a.order_index - b.order_index)
+            .map((meal) => ({
+              name: meal.name || meal.meal_type,
+              items: meal.diet_template_items.map((item) => ({
+                foodName: item.foods?.name ?? "",
+                quantityG: Number(item.quantity_g),
+              })),
+            })),
+        }
+      : null,
   };
 }
 

@@ -29,6 +29,9 @@ type FoodSearchResult = {
   caloriesPer100g: number;
   proteinPer100g: number;
   portions: { id: string; label: string; grams: number }[];
+  imageUrl: string | null;
+  defaultServingAmount: number;
+  defaultServingUnit: string;
 };
 
 async function requireUser() {
@@ -320,7 +323,7 @@ export async function searchFoods(
   const { data, error } = await supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, food_portions(id, label, grams)",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, image_url, serving_amount, serving_unit, food_portions(id, label, grams)",
     )
     .ilike("name", `%${parsed.data.term}%`)
     .is("deleted_at", null)
@@ -342,6 +345,9 @@ export async function searchFoods(
         label: portion.label,
         grams: Number(portion.grams),
       })),
+      imageUrl: food.image_url,
+      defaultServingAmount: Number(food.serving_amount ?? 100),
+      defaultServingUnit: food.serving_unit ?? "g",
     })),
   };
 }

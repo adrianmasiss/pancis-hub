@@ -58,6 +58,7 @@ const context: AssistantContext = {
   weightTrend: "estable",
   sleepHoursToday: 5.5,
   activePlanName: "Full body",
+  activeDiet: null,
 };
 
 describe("deterministicProvider", () => {

@@ -7,9 +7,16 @@ type AppShellProps = {
   children: React.ReactNode;
   /** Acciones extra para la TopBar (por ejemplo, menu de usuario). */
   topBarActions?: React.ReactNode;
+  displayName?: string;
+  avatarUrl?: string | null;
 };
 
-export function AppShell({ children, topBarActions }: AppShellProps) {
+export function AppShell({
+  children,
+  topBarActions,
+  displayName,
+  avatarUrl,
+}: AppShellProps) {
   return (
     <div className="flex min-h-dvh w-full">
       <a
@@ -18,7 +25,7 @@ export function AppShell({ children, topBarActions }: AppShellProps) {
       >
         {messages.common.skipToContent}
       </a>
-      <Sidebar />
+      <Sidebar displayName={displayName} avatarUrl={avatarUrl} />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar actions={topBarActions} />
         <main id="contenido" className="flex-1 px-4 py-6 pb-24 lg:px-8 lg:pb-8">
@@ -27,7 +34,7 @@ export function AppShell({ children, topBarActions }: AppShellProps) {
           </div>
         </main>
       </div>
-      <BottomNavigation />
+      <BottomNavigation displayName={displayName} avatarUrl={avatarUrl} />
     </div>
   );
 }

@@ -24,6 +24,7 @@ export type RecipeSummary = {
   isPublic: boolean;
   perServing: MacroSet;
   ingredientCount: number;
+  imageUrl: string | null;
 };
 
 export type RecipeDetail = RecipeSummary & {
@@ -44,6 +45,7 @@ type RecipeRow = {
   tags: string[];
   allergens: string[];
   visibility: string;
+  image_url: string | null;
   recipe_ingredients: {
     id: string;
     food_id: string;
@@ -61,7 +63,7 @@ type RecipeRow = {
 };
 
 const RECIPE_SELECT =
-  "id, owner_user_id, name, description, servings, instructions, preparation_minutes, difficulty, tags, allergens, visibility, recipe_ingredients(id, food_id, quantity_g, foods(name, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g))";
+  "id, owner_user_id, name, description, servings, instructions, preparation_minutes, difficulty, tags, allergens, visibility, image_url, recipe_ingredients(id, food_id, quantity_g, foods(name, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g))";
 
 function mapIngredients(row: RecipeRow): RecipeIngredientView[] {
   return row.recipe_ingredients.map((ingredient) => ({
@@ -99,6 +101,7 @@ function mapDetail(row: RecipeRow, userId: string): RecipeDetail {
     perServing: perServing(totals, Number(row.servings)),
     ingredients,
     ingredientCount: ingredients.length,
+    imageUrl: row.image_url,
   };
 }
 

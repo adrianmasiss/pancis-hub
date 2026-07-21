@@ -4,6 +4,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import { messages } from "@/i18n/es-419";
 import { FOOD_GROUPS } from "@/features/foods/schemas";
 
@@ -283,6 +284,15 @@ export async function saveReviewedDiet(
   if (!parsed.success || !user) return { error: t.errors.saveFailed };
   const data = parsed.data;
 
+  // Solo una dieta activa a la vez: desactiva cualquier plantilla previa
+  // antes de insertar la nueva (si no, Inicio/comparador quedan con dos
+  // filas is_active=true y las consultas .maybeSingle() fallan).
+  await supabase
+    .from("diet_templates")
+    .update({ is_active: false })
+    .eq("user_id", user.id)
+    .eq("is_active", true);
+
   const { data: template, error: templateError } = await supabase
     .from("diet_templates")
     .insert({
@@ -347,6 +357,18 @@ export async function saveReviewedDiet(
           .single();
         if (foodError || !customFood) return { error: t.errors.saveFailed };
         foodId = customFood.id;
+
+        const imageUrl = await fetchAndStoreFoodImage({
+          query: `${item.name} comida`,
+          pathPrefix: "foods",
+          id: customFood.id,
+        });
+        if (imageUrl) {
+          await supabase
+            .from("foods")
+            .update({ image_url: imageUrl })
+            .eq("id", customFood.id);
+        }
       }
 
       const { error: itemError } = await supabase

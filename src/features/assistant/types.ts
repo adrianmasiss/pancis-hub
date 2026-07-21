@@ -37,6 +37,13 @@ export type AssistantContext = {
   weightTrend: "sube" | "baja" | "estable" | null;
   sleepHoursToday: number | null;
   activePlanName: string | null;
+  activeDiet: {
+    name: string;
+    meals: {
+      name: string;
+      items: { foodName: string; quantityG: number }[];
+    }[];
+  } | null;
 };
 
 export type AssistantIntent =

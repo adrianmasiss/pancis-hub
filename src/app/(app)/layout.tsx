@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { UserMenu } from "@/features/auth/components/user-menu";
 import { createClient } from "@/lib/supabase/server";
+import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
 
 export default async function AppLayout({
@@ -21,7 +22,7 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, onboarding_completed_at")
+    .select("display_name, onboarding_completed_at, avatar_storage_path")
     .eq("id", user.id)
     .single();
 
@@ -29,12 +30,21 @@ export default async function AppLayout({
     redirect("/onboarding");
   }
 
+  const avatarUrl = await resolveAvatarUrl(
+    supabase,
+    profile.avatar_storage_path,
+  );
+  const displayName = profile.display_name ?? user.email ?? "";
+
   return (
     <AppShell
+      displayName={displayName}
+      avatarUrl={avatarUrl}
       topBarActions={
         <UserMenu
-          displayName={profile.display_name ?? user.email ?? ""}
+          displayName={displayName}
           email={user.email ?? ""}
+          avatarUrl={avatarUrl}
         />
       }
     >

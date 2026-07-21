@@ -5,6 +5,7 @@ import { Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { formatHouseholdEquivalence } from "@/features/foods/lib/equivalence";
 import {
   deleteMealItem,
@@ -67,9 +68,15 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             </span>
           ) : null}
         </p>
-        <p className="text-muted-foreground text-xs tabular-nums">
-          {item.macros.calories} {t.kcal} · P {item.macros.proteinG} g · C{" "}
-          {item.macros.carbohydrateG} g · G {item.macros.fatG} g
+        <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+          <MacroChip type="calories" value={item.macros.calories} />
+          <MacroChip type="protein" value={item.macros.proteinG} />
+          <MacroChip type="carbs" value={item.macros.carbohydrateG} />
+          <MacroChip type="fat" value={item.macros.fatG} />
+        </p>
+        <p className="text-muted-foreground text-xs">
+          {t.defaultPortionLabel}: {item.defaultServingAmount}{" "}
+          {item.defaultServingUnit}
         </p>
       </div>
       <div className="flex items-center gap-1">

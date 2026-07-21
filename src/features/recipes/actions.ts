@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
 import { parseCommaList } from "@/features/onboarding/schemas";
 import {
@@ -53,6 +54,18 @@ export async function createRecipe(
     .select("id")
     .single();
   if (error || !created) return fail;
+
+  const imageUrl = await fetchAndStoreFoodImage({
+    query: parsed.data.name,
+    pathPrefix: "recipes",
+    id: created.id,
+  });
+  if (imageUrl) {
+    await supabase
+      .from("recipes")
+      .update({ image_url: imageUrl })
+      .eq("id", created.id);
+  }
 
   revalidatePath("/recetas");
   redirect(`/recetas/${created.id}`);

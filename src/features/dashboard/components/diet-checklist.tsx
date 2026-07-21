@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { formatHouseholdEquivalence } from "@/features/foods/lib/equivalence";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
 import { DietItemSwapSheet } from "@/features/dashboard/components/diet-item-swap-sheet";
@@ -52,9 +53,10 @@ function MealCard({
         </h4>
         <Badge
           variant="secondary"
-          className="shrink-0 font-normal tabular-nums"
+          className="flex shrink-0 items-center gap-2 font-normal"
         >
-          {meal.totals.calories} {n.kcal} · P {meal.totals.proteinG} g
+          <MacroChip type="calories" value={meal.totals.calories} />
+          <MacroChip type="protein" value={meal.totals.proteinG} />
         </Badge>
       </div>
 

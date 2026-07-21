@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { FoodThumbnail } from "@/components/shared/food-thumbnail";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { RecipeFormDialog } from "@/features/recipes/components/recipe-form-dialog";
 import { getRecipes, type RecipeFilters } from "@/features/recipes/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -108,7 +110,12 @@ export default async function RecipesPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recipes.map((recipe) => (
             <Link key={recipe.id} href={`/recetas/${recipe.id}`}>
-              <Card className="h-full transition-shadow hover:shadow-md">
+              <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+                <FoodThumbnail
+                  src={recipe.imageUrl}
+                  alt={recipe.name}
+                  className="aspect-video w-full rounded-none"
+                />
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-start justify-between gap-2 text-base">
                     <span>{recipe.name}</span>
@@ -120,9 +127,9 @@ export default async function RecipesPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-sm font-medium tabular-nums">
-                    {recipe.perServing.calories} {messages.nutrition.kcal} · P{" "}
-                    {recipe.perServing.proteinG} g{" "}
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium">
+                    <MacroChip type="calories" value={recipe.perServing.calories} />
+                    <MacroChip type="protein" value={recipe.perServing.proteinG} />
                     <span className="text-muted-foreground font-normal">
                       {t.perServing}
                     </span>

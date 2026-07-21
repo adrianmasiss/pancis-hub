@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
+import { FoodThumbnail } from "@/components/shared/food-thumbnail";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { IngredientList } from "@/features/recipes/components/ingredient-list";
 import { RecipeActions } from "@/features/recipes/components/recipe-actions";
 import { RecipeFormDialog } from "@/features/recipes/components/recipe-form-dialog";
@@ -14,7 +16,6 @@ import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.recipes;
-const d = messages.dashboard.nutrition;
 
 export const metadata: Metadata = { title: t.title };
 
@@ -35,6 +36,11 @@ export default async function RecipeDetailPage({
 
   return (
     <>
+      <FoodThumbnail
+        src={recipe.imageUrl}
+        alt={recipe.name}
+        className="aspect-[21/9] w-full"
+      />
       <PageHeader
         title={recipe.name}
         description={recipe.description ?? undefined}
@@ -100,7 +106,7 @@ export default async function RecipeDetailPage({
             <CardTitle className="text-base">{t.macrosTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
+            <div className="space-y-1.5">
               <p className="text-2xl font-semibold tracking-tight tabular-nums">
                 {recipe.perServing.calories} {messages.nutrition.kcal}
                 <span className="text-muted-foreground text-sm font-normal">
@@ -108,17 +114,19 @@ export default async function RecipeDetailPage({
                   {t.perServing}
                 </span>
               </p>
-              <p className="text-muted-foreground text-sm tabular-nums">
-                {d.protein} {recipe.perServing.proteinG} g · {d.carbs}{" "}
-                {recipe.perServing.carbohydrateG} g · {d.fat}{" "}
-                {recipe.perServing.fatG} g · {d.fiber}{" "}
-                {recipe.perServing.fiberG} g
-              </p>
+              <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <MacroChip type="protein" value={recipe.perServing.proteinG} variant="full" />
+                <MacroChip type="carbs" value={recipe.perServing.carbohydrateG} variant="full" />
+                <MacroChip type="fat" value={recipe.perServing.fatG} variant="full" />
+                <MacroChip type="fiber" value={recipe.perServing.fiberG} variant="full" />
+              </div>
             </div>
-            <p className="text-muted-foreground text-xs tabular-nums">
-              {t.totalRecipe}: {recipe.totals.calories}{" "}
-              {messages.nutrition.kcal} · P {recipe.totals.proteinG} g · C{" "}
-              {recipe.totals.carbohydrateG} g · G {recipe.totals.fatG} g
+            <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+              <span>{t.totalRecipe}:</span>
+              <MacroChip type="calories" value={recipe.totals.calories} />
+              <MacroChip type="protein" value={recipe.totals.proteinG} />
+              <MacroChip type="carbs" value={recipe.totals.carbohydrateG} />
+              <MacroChip type="fat" value={recipe.totals.fatG} />
             </p>
           </CardContent>
         </Card>

@@ -3,7 +3,6 @@ import {
   Dumbbell,
   GraduationCap,
   Home,
-  NotebookPen,
   Settings,
   Sparkles,
   TrendingUp,
@@ -12,7 +11,12 @@ import {
 } from "lucide-react";
 import { messages } from "@/i18n/es-419";
 
-type NavLabelKey = keyof typeof messages.nav;
+export type NavLabelKey = {
+  [K in keyof typeof messages.nav]: (typeof messages.nav)[K] extends string
+    ? K
+    : never;
+}[keyof typeof messages.nav];
+type NavSection = "principal" | "nutricion" | "entrenamiento" | "aprender";
 
 export type NavItem = {
   href: string;
@@ -23,11 +27,14 @@ export type NavItem = {
   showInSidebar: boolean;
   /** Los items sin lugar en la barra inferior se muestran en el sheet "Mas". */
   showInBottomNav: boolean;
+  /** Grupo visual en el sidebar/hoja "Mas". Configuracion se ancla aparte. */
+  section: NavSection;
 };
 
 /**
  * Unica fuente de verdad de la navegacion (docs/05_INFORMATION_ARCHITECTURE.md).
- * Sidebar de escritorio: 9 entradas. Barra inferior movil: 4 entradas + "Mas".
+ * Sidebar de escritorio: 9 entradas agrupadas por seccion + Configuracion
+ * anclada abajo. Barra inferior movil: 4 entradas + "Mas".
  */
 export const navItems: readonly NavItem[] = [
   {
@@ -36,6 +43,7 @@ export const navItems: readonly NavItem[] = [
     icon: Home,
     showInSidebar: true,
     showInBottomNav: true,
+    section: "principal",
   },
   {
     href: "/nutricion",
@@ -43,6 +51,7 @@ export const navItems: readonly NavItem[] = [
     icon: Utensils,
     showInSidebar: true,
     showInBottomNav: true,
+    section: "nutricion",
   },
   {
     href: "/recetas",
@@ -50,6 +59,7 @@ export const navItems: readonly NavItem[] = [
     icon: ChefHat,
     showInSidebar: true,
     showInBottomNav: false,
+    section: "nutricion",
   },
   {
     href: "/entrenamiento",
@@ -58,6 +68,7 @@ export const navItems: readonly NavItem[] = [
     icon: Dumbbell,
     showInSidebar: true,
     showInBottomNav: true,
+    section: "entrenamiento",
   },
   {
     href: "/progreso",
@@ -65,13 +76,7 @@ export const navItems: readonly NavItem[] = [
     icon: TrendingUp,
     showInSidebar: true,
     showInBottomNav: true,
-  },
-  {
-    href: "/diario",
-    labelKey: "checkins",
-    icon: NotebookPen,
-    showInSidebar: true,
-    showInBottomNav: false,
+    section: "entrenamiento",
   },
   {
     href: "/academia",
@@ -79,6 +84,7 @@ export const navItems: readonly NavItem[] = [
     icon: GraduationCap,
     showInSidebar: true,
     showInBottomNav: false,
+    section: "aprender",
   },
   {
     href: "/asistente",
@@ -86,6 +92,7 @@ export const navItems: readonly NavItem[] = [
     icon: Sparkles,
     showInSidebar: true,
     showInBottomNav: false,
+    section: "aprender",
   },
   {
     href: "/configuracion",
@@ -93,12 +100,53 @@ export const navItems: readonly NavItem[] = [
     icon: Settings,
     showInSidebar: true,
     showInBottomNav: false,
+    section: "principal",
   },
 ] as const;
+
+export const SETTINGS_HREF = "/configuracion";
 
 export const sidebarItems = navItems.filter((item) => item.showInSidebar);
 export const bottomNavItems = navItems.filter((item) => item.showInBottomNav);
 export const moreSheetItems = navItems.filter((item) => !item.showInBottomNav);
+
+const SECTION_ORDER: { key: NavSection; labelKey: keyof typeof messages.nav.sections }[] = [
+  { key: "nutricion", labelKey: "nutricion" },
+  { key: "entrenamiento", labelKey: "entrenamiento" },
+  { key: "aprender", labelKey: "aprender" },
+];
+
+export type NavSectionGroup = {
+  key: NavSection;
+  label: string;
+  items: NavItem[];
+};
+
+/** Agrupa items (excluyendo Inicio y Configuracion, que se anclan aparte) por seccion. */
+function groupBySection(items: readonly NavItem[]): NavSectionGroup[] {
+  return SECTION_ORDER.map(({ key, labelKey }) => ({
+    key,
+    label: messages.nav.sections[labelKey],
+    items: items.filter(
+      (item) => item.section === key && item.href !== SETTINGS_HREF,
+    ),
+  })).filter((group) => group.items.length > 0);
+}
+
+/** Secciones del sidebar de escritorio (Configuracion se ancla en el pie). */
+export function getSidebarSections(): NavSectionGroup[] {
+  return groupBySection(sidebarItems);
+}
+
+/** Secciones de la hoja "Mas" movil (Configuracion se ancla en el encabezado). */
+export function getMoreSheetSections(): NavSectionGroup[] {
+  return groupBySection(moreSheetItems);
+}
+
+export const homeNavItem = navItems.find((item) => item.href === "/")!;
+export const settingsNavItem = navItems.find(
+  (item) => item.href === SETTINGS_HREF,
+)!;
 
 export function isActiveRoute(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";

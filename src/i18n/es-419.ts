@@ -24,12 +24,17 @@ export const messages = {
     training: "Entrenamiento",
     trainingShort: "Entrenar",
     progress: "Progreso",
-    checkins: "Diario",
     academy: "Academia",
     assistant: "Asistente",
     settings: "Configuracion",
     more: "Mas",
     moreDescription: "Otras secciones de Pancis Hub",
+    sections: {
+      principal: "Principal",
+      nutricion: "Nutricion",
+      entrenamiento: "Entrenamiento",
+      aprender: "Aprender",
+    },
   },
   common: {
     loading: "Cargando…",
@@ -46,6 +51,7 @@ export const messages = {
     recommended: "Recomendado",
     signOut: "Cerrar sesion",
     openMenu: "Abrir menu",
+    moreOptions: "Mas opciones",
     mainNavigation: "Navegacion principal",
     skipToContent: "Saltar al contenido",
     themeToggle: "Cambiar tema",
@@ -79,11 +85,6 @@ export const messages = {
       title: "Aun no hay mediciones",
       description:
         "Registra tu peso y tus medidas para ver tendencias y promedios moviles.",
-    },
-    checkins: {
-      title: "Aun no hay registros del diario",
-      description:
-        "Completa tu diario en menos de un minuto: sueno, hambre, energia, estres y mas.",
     },
     academy: {
       title: "Contenido educativo en camino",
@@ -269,6 +270,14 @@ export const messages = {
     profileDescription: "Tu informacion basica y preferencias de la cuenta.",
     saved: "Cambios guardados.",
     saveFailed: "No pudimos guardar los cambios. Intenta de nuevo.",
+    avatarSection: "Foto de perfil",
+    avatarDescription: "Se muestra en el menu y la barra de navegacion.",
+    avatarUpload: "Subir foto",
+    avatarRemove: "Quitar foto",
+    avatarUploaded: "Foto de perfil actualizada.",
+    avatarRemoved: "Foto de perfil eliminada.",
+    avatarUploadFailed:
+      "No pudimos subir la imagen. Usa JPG, PNG o WEBP de hasta 5 MB.",
   },
   pwa: {
     offlineTitle: "Sin conexion",
@@ -401,43 +410,6 @@ export const messages = {
     copyList: "Copiar lista",
     listCopied: "Lista copiada al portapapeles.",
     allergensLabel: "Alergenos",
-  },
-  checkins: {
-    title: "Diario",
-    todayTitle: "Tu dia en menos de un minuto",
-    todayDescription:
-      "Escalas de 1 (bajo) a 5 (alto). Solo toma unos segundos y alimenta tus tendencias.",
-    editToday: "Editar el diario de hoy",
-    saved: "Diario guardado.",
-    actionFailed: "No pudimos guardar el diario. Intenta de nuevo.",
-    fields: {
-      sleepHours: "Horas de sueno",
-      sleepQuality: "Calidad del sueno",
-      hunger: "Hambre",
-      energy: "Energia",
-      stress: "Estres",
-      soreness: "Dolor muscular",
-      mood: "Estado de animo",
-      nutritionAdherence: "Adherencia nutricional",
-      trainingCompleted: "¿Entrenaste hoy?",
-      notes: "Nota (opcional)",
-      yes: "Si",
-      no: "No",
-    },
-    historyTitle: "Ultimos 14 dias",
-    noHistory: "Aun no hay registros del diario.",
-    patternsTitle: "Patrones observados",
-    patternsNote:
-      "Estas son observaciones de tus propios datos, no relaciones de causa y efecto.",
-    patterns: {
-      lowSleep:
-        "En los ultimos 7 dias tu sueno promedio fue menor a 6.5 horas.",
-      highStress: "Tu estres promedio de la semana esta alto (4 o mas de 5).",
-      highHunger: "Reportaste hambre alta (4 o mas) en varios dias recientes.",
-      persistentSoreness:
-        "El dolor muscular se ha mantenido alto varios dias seguidos.",
-      goodStreak: "Buena constancia: llevas varios dias completando el diario.",
-    },
   },
   progress: {
     title: "Progreso",
@@ -807,6 +779,7 @@ export const messages = {
     grams: "g",
     portion: "Porcion",
     customGrams: "Gramos exactos",
+    defaultPortionLabel: "Porcion por defecto",
     itemAdded: "Alimento agregado.",
     itemUpdated: "Cantidad actualizada.",
     itemDeleted: "Alimento eliminado.",
@@ -821,6 +794,9 @@ export const messages = {
     remainingTitle: "Restante para tu objetivo",
     consumedOf: "de",
     kcal: "kcal",
+    todaysMealsTitle: "Comidas registradas hoy",
+    todaysMealsNote: "Esto es lo que ya registraste. Para ver tu plan de dieta, anda al",
+    todaysMealsNoteLink: "Inicio",
     noMealsTitle: "Sin comidas este dia",
     noMealsDescription:
       "Agrega tu primera comida y registra los alimentos que consumiste.",
@@ -828,6 +804,14 @@ export const messages = {
     noTargetsNote:
       "Aun no tienes objetivos nutricionales activos; completa el onboarding para calcularlos.",
     cookedState: { crudo: "crudo", cocido: "cocido" },
+  },
+  /** Fuente canonica de etiqueta/unidad por macro, usada por MacroChip. */
+  macros: {
+    calories: { label: "Calorias", short: "Cal", unit: "kcal" },
+    protein: { label: "Proteinas", short: "P", unit: "g" },
+    carbs: { label: "Carbohidratos", short: "C", unit: "g" },
+    fat: { label: "Grasas", short: "G", unit: "g" },
+    fiber: { label: "Fibra", short: "F", unit: "g" },
   },
   dashboard: {
     greetingMorning: "Buenos dias",
@@ -909,12 +893,8 @@ export const messages = {
     },
     adherence: {
       title: "Adherencia (7 dias)",
-      checkins: "Diarios",
       workouts: "Entrenamientos",
       meals: "Dias con comidas",
-      streak: "Racha de diario",
-      days: "dias",
-      day: "dia",
     },
   },
 } as const;

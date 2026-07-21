@@ -5,6 +5,7 @@ import { Check, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MacroChip } from "@/components/shared/macro-chip";
 import {
   Sheet,
   SheetContent,
@@ -117,6 +118,8 @@ type SearchResult = {
   name: string;
   cookedState: string | null;
   caloriesPer100g: number;
+  defaultServingAmount: number;
+  defaultServingUnit: string;
 };
 
 function AddIngredientSheet({ recipeId }: { recipeId: string }) {
@@ -191,12 +194,16 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
                   <li key={food.id}>
                     <button
                       type="button"
-                      onClick={() => setSelected(food)}
+                      onClick={() => {
+                        setSelected(food);
+                        setGrams(String(food.defaultServingAmount));
+                      }}
                       className="hover:bg-accent/60 flex w-full items-baseline justify-between gap-2 rounded-md px-2 py-2.5 text-left text-sm"
                     >
                       <span>{food.name}</span>
-                      <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
-                        {food.caloriesPer100g} {n.kcal} {n.per100g}
+                      <span className="text-muted-foreground flex items-center gap-1 text-xs whitespace-nowrap">
+                        <MacroChip type="calories" value={food.caloriesPer100g} />
+                        {n.per100g}
                       </span>
                     </button>
                   </li>
@@ -221,6 +228,10 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
                   value={grams}
                   onChange={(event) => setGrams(event.target.value)}
                 />
+                <p className="text-muted-foreground text-xs">
+                  {n.defaultPortionLabel}: {selected.defaultServingAmount}{" "}
+                  {selected.defaultServingUnit}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button

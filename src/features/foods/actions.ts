@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import {
   foodFormSchema,
   foodIdSchema,
@@ -30,21 +31,38 @@ export async function createCustomFood(
   const { supabase, user } = await requireUser();
   if (!parsed.success || !user) return fail;
 
-  const { error } = await supabase.from("foods").insert({
-    owner_user_id: user.id,
-    name: parsed.data.name,
-    brand: parsed.data.brand || null,
-    food_group: parsed.data.foodGroup,
-    cooked_state: parsed.data.cookedState ?? null,
-    calories: parsed.data.calories,
-    protein_g: parsed.data.proteinG,
-    carbohydrate_g: parsed.data.carbohydrateG,
-    fat_g: parsed.data.fatG,
-    fiber_g: parsed.data.fiberG,
-    source: "personalizado",
-    verified: false,
-  });
+  const { data: created, error } = await supabase
+    .from("foods")
+    .insert({
+      owner_user_id: user.id,
+      name: parsed.data.name,
+      brand: parsed.data.brand || null,
+      food_group: parsed.data.foodGroup,
+      cooked_state: parsed.data.cookedState ?? null,
+      calories: parsed.data.calories,
+      protein_g: parsed.data.proteinG,
+      carbohydrate_g: parsed.data.carbohydrateG,
+      fat_g: parsed.data.fatG,
+      fiber_g: parsed.data.fiberG,
+      source: "personalizado",
+      verified: false,
+    })
+    .select("id")
+    .single();
   if (error) return fail;
+
+  const imageUrl = await fetchAndStoreFoodImage({
+    query: `${parsed.data.name} comida`,
+    pathPrefix: "foods",
+    id: created.id,
+  });
+  if (imageUrl) {
+    await supabase
+      .from("foods")
+      .update({ image_url: imageUrl })
+      .eq("id", created.id);
+  }
+
   revalidatePath("/nutricion/alimentos");
   return { success: true };
 }

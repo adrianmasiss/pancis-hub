@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 /**
  * Flujo minimo end-to-end del MVP (docs/TESTING.md):
  * registro -> onboarding -> comida -> intercambio -> entrenamiento ->
- * peso -> diario -> tema -> logout -> login -> persistencia.
+ * peso -> tema -> logout -> login -> persistencia.
  */
 
 const email = `e2e-${Date.now()}@pancis.local`;
@@ -97,7 +97,7 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await expect(page.getByText("Alimento intercambiado.")).toBeVisible();
 });
 
-test("registrar entrenamiento, peso y diario", async ({ page }) => {
+test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);
   await page.getByLabel("Contrasena", { exact: true }).fill(password);
@@ -127,17 +127,6 @@ test("registrar entrenamiento, peso y diario", async ({ page }) => {
   await page.getByLabel("Peso (kg)").fill("67.8");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Medicion guardada.")).toBeVisible();
-
-  // Diario
-  await page.goto("/diario");
-  await page.getByLabel("Horas de sueno").fill("7.5");
-  await page
-    .getByRole("radiogroup")
-    .first()
-    .getByText("4", { exact: true })
-    .click();
-  await page.getByRole("button", { name: "Guardar" }).click();
-  await expect(page.getByText("Diario guardado.")).toBeVisible();
 });
 
 test("tema, cierre de sesion y persistencia", async ({ page }) => {

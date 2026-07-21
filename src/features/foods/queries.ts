@@ -19,6 +19,7 @@ export type LibraryFood = {
   verified: boolean;
   isOwn: boolean;
   isFavorite: boolean;
+  imageUrl: string | null;
 };
 
 export type LibraryFilters = {
@@ -67,7 +68,7 @@ export async function getFoodsLibrary(
   let query = supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, verified, owner_user_id",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, verified, owner_user_id, image_url",
     )
     .is("deleted_at", null)
     .order("name")
@@ -103,6 +104,7 @@ export async function getFoodsLibrary(
     verified: food.verified,
     isOwn: food.owner_user_id === userId,
     isFavorite: favoriteIds.has(food.id),
+    imageUrl: food.image_url,
   }));
 
   if (filters.view === "recientes") {

@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   movingAverage,
-  streakDays,
   trendDirection,
   windowDifference,
   type DatedValue,
@@ -81,17 +80,9 @@ export type DashboardData = {
     trend: TrendDirection | null;
     lastMeasurementDate: string | null;
   };
-  checkinToday: {
-    sleepHours: number | null;
-    hunger: number | null;
-    energy: number | null;
-    stress: number | null;
-  } | null;
   adherence: {
-    checkins7: number;
     workouts7: number;
     mealDays7: number;
-    streak: number;
   };
   recommendation: {
     title: string;
@@ -139,7 +130,6 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     targetsResult,
     mealsResult,
     measurementsResult,
-    checkinsResult,
     planResult,
     lastSessionResult,
     sessions7Result,
@@ -170,12 +160,6 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .eq("user_id", userId)
       .gte("measured_at", since60)
       .order("measured_at", { ascending: true }),
-    supabase
-      .from("daily_checkins")
-      .select("date, sleep_hours, hunger, energy, stress")
-      .eq("user_id", userId)
-      .gte("date", since60)
-      .order("date", { ascending: false }),
     supabase
       .from("workout_plans")
       .select(
@@ -304,11 +288,8 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       : null;
 
   // Adherencia sobre los ultimos 7 dias.
-  const checkins = checkinsResult.data ?? [];
-  const checkins7 = checkins.filter((row) => row.date >= since7).length;
   const mealDays7 = new Set((mealDays7Result.data ?? []).map((row) => row.date))
     .size;
-  const checkinToday = checkins.find((row) => row.date === today) ?? null;
 
   // El objetivo diario siempre viene de nutrition_targets (versionado,
   // editable desde el onboarding/configuracion). La dieta importada con IA
@@ -437,25 +418,9 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       trend: trendDirection(weeklyChange),
       lastMeasurementDate,
     },
-    checkinToday: checkinToday
-      ? {
-          sleepHours:
-            checkinToday.sleep_hours !== null
-              ? Number(checkinToday.sleep_hours)
-              : null,
-          hunger: checkinToday.hunger,
-          energy: checkinToday.energy,
-          stress: checkinToday.stress,
-        }
-      : null,
     adherence: {
-      checkins7,
       workouts7: sessions7Result.count ?? 0,
       mealDays7,
-      streak: streakDays(
-        checkins.map((row) => row.date),
-        new Date(`${today}T00:00:00Z`),
-      ),
     },
     recommendation: recommendationResult.data ?? null,
   };

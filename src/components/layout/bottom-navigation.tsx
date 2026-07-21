@@ -12,20 +12,43 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { messages } from "@/i18n/es-419";
 import {
   bottomNavItems,
   isActiveRoute,
-  moreSheetItems,
+  getMoreSheetSections,
+  settingsNavItem,
 } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-export function BottomNavigation() {
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((word) => word[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+type BottomNavigationProps = {
+  displayName?: string;
+  avatarUrl?: string | null;
+};
+
+export function BottomNavigation({
+  displayName,
+  avatarUrl,
+}: BottomNavigationProps) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreActive = moreSheetItems.some((item) =>
-    isActiveRoute(pathname, item.href),
-  );
+  const moreSheetSections = getMoreSheetSections();
+  const moreActive =
+    isActiveRoute(pathname, settingsNavItem.href) ||
+    moreSheetSections.some((group) =>
+      group.items.some((item) => isActiveRoute(pathname, item.href)),
+    );
 
   return (
     <nav
@@ -66,7 +89,7 @@ export function BottomNavigation() {
           </SheetTrigger>
           <SheetContent
             side="bottom"
-            className="pb-[env(safe-area-inset-bottom)]"
+            className="max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
           >
             <SheetHeader>
               <SheetTitle>{messages.nav.more}</SheetTitle>
@@ -74,29 +97,60 @@ export function BottomNavigation() {
                 {messages.nav.moreDescription}
               </SheetDescription>
             </SheetHeader>
-            <nav className="grid grid-cols-2 gap-2 px-4 pb-6">
-              {moreSheetItems.map((item) => {
-                const active = isActiveRoute(pathname, item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMoreOpen(false)}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
-                      active
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-accent/60",
-                    )}
-                  >
-                    <Icon className="size-4.5" aria-hidden="true" />
-                    {messages.nav[item.labelKey]}
-                  </Link>
-                );
-              })}
-            </nav>
+            <div className="space-y-5 px-4 pb-6">
+              <Link
+                href={settingsNavItem.href}
+                onClick={() => setMoreOpen(false)}
+                className="bg-accent/40 hover:bg-accent flex items-center gap-3 rounded-lg border px-4 py-3"
+              >
+                <Avatar className="size-9">
+                  {avatarUrl && displayName ? (
+                    <AvatarImage src={avatarUrl} alt={displayName} />
+                  ) : null}
+                  <AvatarFallback className="text-xs">
+                    {initialsOf(displayName ?? "") || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {displayName || messages.nav.settings}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {messages.nav.settings}
+                  </p>
+                </div>
+              </Link>
+              {moreSheetSections.map((group) => (
+                <div key={group.key} className="space-y-2">
+                  <p className="text-muted-foreground px-1 text-xs font-medium tracking-wide uppercase">
+                    {group.label}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {group.items.map((item) => {
+                      const active = isActiveRoute(pathname, item.href);
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMoreOpen(false)}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
+                            active
+                              ? "bg-accent text-accent-foreground"
+                              : "text-muted-foreground hover:bg-accent/60",
+                          )}
+                        >
+                          <Icon className="size-4.5" aria-hidden="true" />
+                          {messages.nav[item.labelKey]}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </SheetContent>
         </Sheet>
       </div>

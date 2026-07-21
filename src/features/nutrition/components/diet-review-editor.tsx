@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/shared/form-field";
 import { SelectField } from "@/components/shared/select-field";
+import { MacroChip, macroLabel } from "@/components/shared/macro-chip";
 import {
   saveReviewedDiet,
   searchCatalogFoodsFull,
@@ -160,8 +161,9 @@ function FoodLinkSearch({
                 className="hover:bg-accent flex w-full items-baseline justify-between gap-2 px-2 py-1.5 text-left text-xs"
               >
                 <span>{food.name}</span>
-                <span className="text-muted-foreground tabular-nums">
-                  {food.calories} {n.kcal} {n.per100g}
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <MacroChip type="calories" value={food.calories} />
+                  {n.per100g}
                 </span>
               </button>
             </li>
@@ -252,9 +254,12 @@ function ItemRow({
       </div>
 
       {item.linkedFood ? (
-        <p className="text-muted-foreground text-xs tabular-nums">
-          {t.linkedMacrosNote} {macros.calories} {n.kcal} · P {macros.proteinG}{" "}
-          g · C {macros.carbohydrateG} g · G {macros.fatG} g
+        <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+          <span>{t.linkedMacrosNote}</span>
+          <MacroChip type="calories" value={macros.calories} />
+          <MacroChip type="protein" value={macros.proteinG} />
+          <MacroChip type="carbs" value={macros.carbohydrateG} />
+          <MacroChip type="fat" value={macros.fatG} />
         </p>
       ) : (
         <div className="space-y-2">
@@ -285,7 +290,7 @@ function ItemRow({
               }
             />
             <FormField
-              label="P (g)"
+              label={`${macroLabel("protein")} (g)`}
               type="number"
               inputMode="decimal"
               value={item.proteinG}
@@ -294,7 +299,7 @@ function ItemRow({
               }
             />
             <FormField
-              label="C (g)"
+              label={`${macroLabel("carbs")} (g)`}
               type="number"
               inputMode="decimal"
               value={item.carbohydrateG}
@@ -306,7 +311,7 @@ function ItemRow({
               }
             />
             <FormField
-              label="G (g)"
+              label={`${macroLabel("fat")} (g)`}
               type="number"
               inputMode="decimal"
               value={item.fatG}
@@ -408,7 +413,7 @@ export function DietReviewEditor({
             }
           />
           <FormField
-            label="Proteina (g)"
+            label={`${macroLabel("protein")} (g)`}
             type="number"
             inputMode="decimal"
             value={targets.protein}
@@ -420,7 +425,7 @@ export function DietReviewEditor({
             }
           />
           <FormField
-            label="Carbohidratos (g)"
+            label={`${macroLabel("carbs")} (g)`}
             type="number"
             inputMode="decimal"
             value={targets.carbs}
@@ -432,7 +437,7 @@ export function DietReviewEditor({
             }
           />
           <FormField
-            label="Grasas (g)"
+            label={`${macroLabel("fat")} (g)`}
             type="number"
             inputMode="decimal"
             value={targets.fat}
@@ -488,10 +493,10 @@ export function DietReviewEditor({
                   />
                   <Badge
                     variant="secondary"
-                    className="ml-auto font-normal tabular-nums"
+                    className="ml-auto flex items-center gap-2 font-normal"
                   >
-                    {Math.round(mealTotals.calories)} {n.kcal} · P{" "}
-                    {Math.round(mealTotals.proteinG)} g
+                    <MacroChip type="calories" value={mealTotals.calories} />
+                    <MacroChip type="protein" value={mealTotals.proteinG} />
                   </Badge>
                   <Button
                     type="button"

@@ -14,14 +14,9 @@ export function AdherenceCard({ data }: { data: DashboardData }) {
         <CardTitle className="text-base">{t.title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <MetricCard label={t.checkins} value={`${adherence.checkins7} / 7`} />
+        <div className="grid grid-cols-2 gap-4">
           <MetricCard label={t.workouts} value={`${adherence.workouts7}`} />
           <MetricCard label={t.meals} value={`${adherence.mealDays7} / 7`} />
-          <MetricCard
-            label={t.streak}
-            value={`${adherence.streak} ${adherence.streak === 1 ? t.day : t.days}`}
-          />
         </div>
       </CardContent>
     </Card>

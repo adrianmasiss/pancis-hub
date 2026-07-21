@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import { MacroChip } from "@/components/shared/macro-chip";
 import {
   copyMeal,
   deleteMeal,
@@ -174,9 +175,11 @@ export function MealCard({ meal }: { meal: MealView }) {
         )}
 
         {meal.items.length > 0 ? (
-          <p className="text-muted-foreground text-xs tabular-nums">
-            P {meal.totals.proteinG} g · C {meal.totals.carbohydrateG} g · G{" "}
-            {meal.totals.fatG} g · Fibra {meal.totals.fiberG} g
+          <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+            <MacroChip type="protein" value={meal.totals.proteinG} />
+            <MacroChip type="carbs" value={meal.totals.carbohydrateG} />
+            <MacroChip type="fat" value={meal.totals.fatG} />
+            <MacroChip type="fiber" value={meal.totals.fiberG} />
           </p>
         ) : null}
 

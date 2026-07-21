@@ -3,6 +3,7 @@ import { Utensils } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MacroProgress } from "@/components/shared/macro-progress";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
 
@@ -28,10 +29,9 @@ export function NutritionCard({ data }: { data: DashboardData }) {
         {targets ? (
           <>
             <div>
-              <p className="text-3xl font-semibold tracking-tight tabular-nums">
-                {consumed.calories}
+              <p className="flex items-baseline gap-2 text-3xl font-semibold tracking-tight tabular-nums">
+                <MacroChip type="calories" value={consumed.calories} variant="full" />
                 <span className="text-muted-foreground text-base font-normal">
-                  {" "}
                   / {targets.calories} kcal
                 </span>
               </p>

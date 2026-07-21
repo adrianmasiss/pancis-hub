@@ -7,6 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/shared/select-field";
 import {
+  MacroChip,
+  macroLabel,
+  macroUnit,
+  type MacroType,
+} from "@/components/shared/macro-chip";
+import {
   searchCatalogFoodsFull,
   type CatalogFoodMatch,
 } from "@/features/nutrition/ai-actions";
@@ -103,8 +109,9 @@ function CustomFoodAdder({
                 className="hover:bg-accent flex w-full items-baseline justify-between gap-2 px-2 py-1.5 text-left text-xs disabled:opacity-50"
               >
                 <span>{food.name}</span>
-                <span className="text-muted-foreground tabular-nums">
-                  {food.calories} {n.kcal} {n.per100g}
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <MacroChip type="calories" value={food.calories} />
+                  {n.per100g}
                 </span>
               </button>
             </li>
@@ -246,19 +253,11 @@ function slotTotals(
   return meal ? meal.totals : null;
 }
 
-function DeltaRow({
-  label,
-  value,
-  unit,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-}) {
+function DeltaRow({ type, value }: { type: MacroType; value: number }) {
   const sign = value > 0 ? "+" : "";
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground">{macroLabel(type)}</span>
       <span
         className={
           value === 0
@@ -269,7 +268,7 @@ function DeltaRow({
         }
       >
         {sign}
-        {value} {unit}
+        {value} {macroUnit(type)}
       </span>
     </div>
   );
@@ -360,33 +359,33 @@ export function CompareTool({
                 <p className="text-muted-foreground text-xs font-medium">
                   {t.slotA}
                 </p>
-                <p className="tabular-nums">
-                  {totalsA.calories} {n.kcal} · P {totalsA.proteinG} g · C{" "}
-                  {totalsA.carbohydrateG} g · G {totalsA.fatG} g
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+                  <MacroChip type="calories" value={totalsA.calories} />
+                  <MacroChip type="protein" value={totalsA.proteinG} />
+                  <MacroChip type="carbs" value={totalsA.carbohydrateG} />
+                  <MacroChip type="fat" value={totalsA.fatG} />
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs font-medium">
                   {t.slotB}
                 </p>
-                <p className="tabular-nums">
-                  {totalsB.calories} {n.kcal} · P {totalsB.proteinG} g · C{" "}
-                  {totalsB.carbohydrateG} g · G {totalsB.fatG} g
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+                  <MacroChip type="calories" value={totalsB.calories} />
+                  <MacroChip type="protein" value={totalsB.proteinG} />
+                  <MacroChip type="carbs" value={totalsB.carbohydrateG} />
+                  <MacroChip type="fat" value={totalsB.fatG} />
                 </p>
               </div>
             </div>
 
             <div className="space-y-1 border-t pt-3">
               <p className="mb-2 text-sm font-medium">{t.difference}</p>
-              <DeltaRow label={n.kcal} value={diff.calories} unit="" />
-              <DeltaRow label="Proteina" value={diff.proteinG} unit="g" />
-              <DeltaRow
-                label="Carbohidratos"
-                value={diff.carbohydrateG}
-                unit="g"
-              />
-              <DeltaRow label="Grasas" value={diff.fatG} unit="g" />
-              <DeltaRow label="Fibra" value={diff.fiberG} unit="g" />
+              <DeltaRow type="calories" value={diff.calories} />
+              <DeltaRow type="protein" value={diff.proteinG} />
+              <DeltaRow type="carbs" value={diff.carbohydrateG} />
+              <DeltaRow type="fat" value={diff.fatG} />
+              <DeltaRow type="fiber" value={diff.fiberG} />
               <p className="text-muted-foreground pt-1 text-xs">
                 {t.differenceNote}
               </p>

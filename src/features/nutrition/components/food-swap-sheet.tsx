@@ -6,6 +6,12 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  MacroChip,
+  macroLabel,
+  macroUnit,
+  type MacroType,
+} from "@/components/shared/macro-chip";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -27,6 +33,14 @@ const n = messages.nutrition;
 function sign(value: number): string {
   return value > 0 ? `+${value}` : `${value}`;
 }
+
+const DIFF_MACROS: { type: MacroType; key: keyof SwapSuggestions["alternatives"][number]["diff"] }[] = [
+  { type: "calories", key: "calories" },
+  { type: "protein", key: "proteinG" },
+  { type: "carbs", key: "carbohydrateG" },
+  { type: "fat", key: "fatG" },
+  { type: "fiber", key: "fiberG" },
+];
 
 export function FoodSwapSheet({ item }: { item: MealItemView }) {
   const [open, setOpen] = useState(false);
@@ -85,9 +99,11 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
             <span className="font-medium">
               {item.quantityG} g de {item.foodName}
             </span>{" "}
-            <span className="text-muted-foreground tabular-nums">
-              ({item.macros.calories} {n.kcal})
-            </span>
+            <MacroChip
+              type="calories"
+              value={item.macros.calories}
+              className="text-muted-foreground"
+            />
           </p>
 
           {loading ? (
@@ -135,16 +151,20 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
                     <span className="font-medium">
                       {alternative.suggestedQuantityG} g
                     </span>{" "}
-                    <span className="text-muted-foreground">
-                      ≈ {alternative.macros.calories} {n.kcal}
-                    </span>
+                    <MacroChip
+                      type="calories"
+                      value={alternative.macros.calories}
+                      className="text-muted-foreground"
+                    />
                   </p>
-                  <p className="text-muted-foreground text-xs tabular-nums">
-                    {t.differences}: {sign(alternative.diff.calories)} {n.kcal}{" "}
-                    · P {sign(alternative.diff.proteinG)} g · C{" "}
-                    {sign(alternative.diff.carbohydrateG)} g · G{" "}
-                    {sign(alternative.diff.fatG)} g · Fibra{" "}
-                    {sign(alternative.diff.fiberG)} g
+                  <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+                    <span>{t.differences}:</span>
+                    {DIFF_MACROS.map(({ type, key }) => (
+                      <span key={type} className="tabular-nums">
+                        {macroLabel(type)} {sign(alternative.diff[key])}{" "}
+                        {macroUnit(type)}
+                      </span>
+                    ))}
                   </p>
                   <Button
                     size="sm"

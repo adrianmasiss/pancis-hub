@@ -16,6 +16,8 @@ import {
 import { deleteCustomFood, toggleFavoriteFood } from "@/features/foods/actions";
 import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
 import type { LibraryFood } from "@/features/foods/queries";
+import { FoodThumbnail } from "@/components/shared/food-thumbnail";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +63,11 @@ export function FoodRow({ food }: { food: LibraryFood }) {
           )}
         />
       </Button>
+      <FoodThumbnail
+        src={food.imageUrl}
+        alt={food.name}
+        className="size-10"
+      />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-1.5 text-sm">
           <span className="truncate font-medium">{food.name}</span>
@@ -78,10 +85,13 @@ export function FoodRow({ food }: { food: LibraryFood }) {
             </Badge>
           ) : null}
         </p>
-        <p className="text-muted-foreground text-xs tabular-nums">
-          {food.calories} {n.kcal} · P {food.proteinG} g · C{" "}
-          {food.carbohydrateG} g · G {food.fatG} g · Fibra {food.fiberG} g{" "}
-          {n.per100g}
+        <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+          <MacroChip type="calories" value={food.calories} />
+          <MacroChip type="protein" value={food.proteinG} />
+          <MacroChip type="carbs" value={food.carbohydrateG} />
+          <MacroChip type="fat" value={food.fatG} />
+          <MacroChip type="fiber" value={food.fiberG} />
+          <span>{n.per100g}</span>
         </p>
       </div>
       <span className="text-muted-foreground hidden text-xs sm:block">

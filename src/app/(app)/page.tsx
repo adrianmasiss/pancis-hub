@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdherenceCard } from "@/features/dashboard/components/adherence-card";
-import { CheckinCard } from "@/features/dashboard/components/checkin-card";
 import { DietChecklist } from "@/features/dashboard/components/diet-checklist";
 import { NutritionCard } from "@/features/dashboard/components/nutrition-card";
-import { ProgressCard } from "@/features/dashboard/components/progress-card";
 import { SummarySection } from "@/features/dashboard/components/summary-section";
 import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
@@ -29,13 +27,10 @@ export default async function DashboardPage() {
         <DietChecklist template={data.dietTemplate} today={data.today} />
       ) : null}
 
+      <NutritionCard data={data} />
+
       <div className="grid gap-6 lg:grid-cols-2">
-        <NutritionCard data={data} />
         <TrainingCard data={data} />
-      </div>
-      <ProgressCard data={data} />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <CheckinCard data={data} />
         <AdherenceCard data={data} />
       </div>
     </div>

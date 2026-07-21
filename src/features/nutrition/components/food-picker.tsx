@@ -15,6 +15,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SelectField } from "@/components/shared/select-field";
+import { FoodThumbnail } from "@/components/shared/food-thumbnail";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { addMealItem, searchFoods } from "@/features/nutrition/actions";
 import { messages } from "@/i18n/es-419";
 
@@ -28,6 +30,9 @@ type FoodResult = {
   caloriesPer100g: number;
   proteinPer100g: number;
   portions: { id: string; label: string; grams: number }[];
+  imageUrl: string | null;
+  defaultServingAmount: number;
+  defaultServingUnit: string;
 };
 
 const CUSTOM_PORTION = "custom";
@@ -153,10 +158,16 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                         onClick={() => {
                           setSelected(food);
                           setPortionId(food.portions[0]?.id ?? CUSTOM_PORTION);
+                          setGrams(String(food.defaultServingAmount));
                         }}
-                        className="hover:bg-accent/60 flex w-full items-baseline justify-between gap-2 rounded-md px-2 py-2.5 text-left text-sm"
+                        className="hover:bg-accent/60 flex w-full items-center justify-between gap-2 rounded-md px-2 py-2.5 text-left text-sm"
                       >
-                        <span>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <FoodThumbnail
+                            src={food.imageUrl}
+                            alt={food.name}
+                            className="size-8"
+                          />
                           {food.name}
                           {food.cookedState ? (
                             <span className="text-muted-foreground">
@@ -177,8 +188,9 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                             </span>
                           ) : null}
                         </span>
-                        <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
-                          {food.caloriesPer100g} {t.kcal} {t.per100g}
+                        <span className="text-muted-foreground flex items-center gap-1 text-xs whitespace-nowrap">
+                          <MacroChip type="calories" value={food.caloriesPer100g} />
+                          {t.per100g}
                         </span>
                       </button>
                     </li>
@@ -188,12 +200,20 @@ export function FoodPicker({ mealId }: { mealId: string }) {
             </>
           ) : (
             <div className="space-y-4">
-              <div>
-                <p className="font-medium">{selected.name}</p>
-                <p className="text-muted-foreground text-xs">
-                  {selected.caloriesPer100g} {t.kcal} ·{" "}
-                  {selected.proteinPer100g} g proteina {t.per100g}
-                </p>
+              <div className="flex items-center gap-2">
+                <FoodThumbnail
+                  src={selected.imageUrl}
+                  alt={selected.name}
+                  className="size-10"
+                />
+                <div>
+                  <p className="font-medium">{selected.name}</p>
+                  <p className="text-muted-foreground flex items-center gap-2 text-xs">
+                    <MacroChip type="calories" value={selected.caloriesPer100g} />
+                    <MacroChip type="protein" value={selected.proteinPer100g} />
+                    <span>{t.per100g}</span>
+                  </p>
+                </div>
               </div>
               {selected.portions.length > 0 ? (
                 <SelectField
@@ -234,6 +254,10 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                     value={grams}
                     onChange={(event) => setGrams(event.target.value)}
                   />
+                  <p className="text-muted-foreground text-xs">
+                    {t.defaultPortionLabel}: {selected.defaultServingAmount}{" "}
+                    {selected.defaultServingUnit}
+                  </p>
                 </div>
               )}
               <p className="text-muted-foreground text-sm tabular-nums">

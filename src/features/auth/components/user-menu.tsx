@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,9 +17,10 @@ import { messages } from "@/i18n/es-419";
 type UserMenuProps = {
   displayName: string;
   email: string;
+  avatarUrl?: string | null;
 };
 
-export function UserMenu({ displayName, email }: UserMenuProps) {
+export function UserMenu({ displayName, email, avatarUrl }: UserMenuProps) {
   const initials = displayName
     .split(/\s+/)
     .map((word) => word[0])
@@ -37,6 +38,7 @@ export function UserMenu({ displayName, email }: UserMenuProps) {
           aria-label={messages.common.openMenu}
         >
           <Avatar className="size-7">
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
             <AvatarFallback className="text-xs">
               {initials || "?"}
             </AvatarFallback>
