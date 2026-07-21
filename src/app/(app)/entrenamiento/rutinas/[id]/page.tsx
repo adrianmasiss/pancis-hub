@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { AddDayButton } from "@/features/training/components/add-day-button";
 import { PlanDayCard } from "@/features/training/components/plan-day-card";
-import { getPlanDetail } from "@/features/training/queries";
+import { RoutineAnalysisSection } from "@/features/training/components/routine-analysis-section";
+import {
+  getPlanDetail,
+  getRoutineAnalysis,
+} from "@/features/training/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
@@ -27,7 +31,10 @@ export default async function PlanEditorPage({
   if (!user) redirect("/login");
 
   const { id } = await params;
-  const plan = await getPlanDetail(user.id, id);
+  const [plan, analysis] = await Promise.all([
+    getPlanDetail(user.id, id),
+    getRoutineAnalysis(user.id, id),
+  ]);
   if (!plan) notFound();
 
   return (
@@ -52,6 +59,7 @@ export default async function PlanEditorPage({
           <PlanDayCard key={day.id} day={day} />
         ))}
         <AddDayButton planId={plan.id} />
+        {analysis ? <RoutineAnalysisSection analysis={analysis} /> : null}
       </div>
     </>
   );

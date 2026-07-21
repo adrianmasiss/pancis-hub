@@ -19,6 +19,10 @@ import {
   type ExerciseComparison,
 } from "@/features/training/lib/exercise-comparison";
 import {
+  recommendPrescription,
+  type Prescription,
+} from "@/features/training/lib/prescription";
+import {
   addDaySchema,
   addPlanExerciseSchema,
   addSessionExerciseSchema,
@@ -477,6 +481,12 @@ export type ExerciseDetail = {
   setupNotes: string | null;
   executionNotes: string | null;
   ratings: ExerciseRating[];
+  /**
+   * Esquema sugerido de series, repeticiones, RIR y descanso. Se muestra
+   * APARTE y no modifica la rutina: aplicarlo es decision del usuario
+   * (requisito 13).
+   */
+  prescription: Prescription;
 };
 
 /**
@@ -502,6 +512,8 @@ export async function getExerciseDetail(
   const exercise = toBiomechanicalExercise(row);
   const context = await getRatingContext(user.id);
 
+  const positionInSession = planExercise.position ?? undefined;
+
   return {
     exercise,
     setupNotes: row.setup_notes ?? null,
@@ -509,7 +521,11 @@ export async function getExerciseDetail(
     ratings: rateExercise(exercise, {
       ...context,
       // `position` ya es 1-indexado en workout_plan_exercises.
-      positionInSession: planExercise.position ?? undefined,
+      positionInSession,
+    }),
+    prescription: recommendPrescription(exercise, {
+      ...context,
+      positionInSession,
     }),
   };
 }

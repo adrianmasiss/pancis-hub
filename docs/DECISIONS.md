@@ -274,3 +274,32 @@ explicitamente que no es un sustituto.
 Se elimino rankExerciseAlternatives (lib/alternatives.ts), que ordenaba
 sin explicar: mantener dos motores de sustitucion competiendo habria sido
 deuda tecnica inmediata.
+
+## 2026-07-21 - Prescripcion y analisis de rutina
+
+**Prescripcion (requisito 13).** El requisito prohibe explicitamente
+repetir un esquema fijo tipo "4x12 para todo", asi que el esquema se
+deriva de: si el ejercicio es compuesto o de aislamiento (deducido de
+articulaciones y fatiga, no de una lista de nombres), el objetivo, la
+experiencia, la demanda tecnica, la posicion en la sesion, la fatiga
+sistemica y el volumen semanal que ya acumula ese musculo.
+
+Efectos concretos: un principiante recibe mas RIR y menos series (la
+tecnica se degrada antes que el musculo); un ejercicio tecnico exige mas
+descanso y no llegar al fallo; a partir de la posicion 4 se recorta una
+serie; un musculo con ~20 series semanales deja de sumar. Los unilaterales
+avisan de que las series son POR LADO.
+
+La prescripcion se muestra APARTE con sus motivos y no modifica la rutina:
+aplicarla es siempre decision del usuario.
+
+**Analisis de rutina (requisito 14).** Volumen semanal por musculo
+(contando secundarios a la mitad, porque el estimulo es parcial),
+frecuencia, patrones cubiertos y ausentes, redundancia por dia, orden
+(ejercicios muy fatigantes al final) y ejercicios sin prescripcion.
+
+Los hallazgos se clasifican en alta / mejora / opcional / observacion /
+sin cambios, y siempre explican por que se emiten. Las referencias de
+volumen (~6 series semanales como piso, ~22 como techo) son orientaciones
+generales, no limites exactos, y el texto lo dice. Si no hay nada que
+corregir se afirma explicitamente: el silencio no comunica lo mismo.

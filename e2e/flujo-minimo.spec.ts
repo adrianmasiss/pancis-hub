@@ -234,6 +234,40 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   await expect(page.getByText("Que pierdes").first()).toBeVisible();
 });
 
+test("esquema sugerido y analisis de la rutina", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/entrenamiento");
+  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
+
+  // Requisito 13: la prescripcion se muestra aparte, con sus motivos.
+  await page
+    .getByRole("button", { name: /Ficha del ejercicio — Sentadilla con barra/ })
+    .click();
+  await expect(page.getByText("Esquema sugerido")).toBeVisible();
+  // No es "4x12 para todo": a un compuesto le toca rango bajo y descanso largo.
+  await expect(page.getByText(/RIR \d · \d+s/)).toBeVisible();
+  await expect(page.getByText("Como progresar")).toBeVisible();
+  await expect(page.getByText(/no modifica tu rutina/)).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // Requisito 14: analisis con hallazgos priorizados.
+  await expect(page.getByText("Analisis de la rutina")).toBeVisible();
+  await expect(page.getByText("Series semanales por musculo")).toBeVisible();
+  // La rutina tiene un solo ejercicio: faltan patrones por cubrir y el
+  // rango de repeticiones no esta definido (el alta se reserva a no tener
+  // series, y al agregar un ejercicio se crean 3 por defecto).
+  await expect(page.getByText("Mejora recomendada").first()).toBeVisible();
+  await expect(
+    page.getByText("Patrones de movimiento sin cubrir"),
+  ).toBeVisible();
+  await expect(page.getByText(/empuje horizontal/).first()).toBeVisible();
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

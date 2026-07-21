@@ -18,6 +18,7 @@ import {
   type ExerciseDetail,
 } from "@/features/training/actions";
 import { RESISTANCE_PROFILE_DESCRIPTIONS } from "@/features/training/lib/biomechanics";
+import { formatPrescription } from "@/features/training/lib/prescription";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
@@ -179,6 +180,28 @@ export function ExerciseDetailSheet({
                   </p>
                 </Section>
               ) : null}
+
+              {/*
+                Requisito 13: la recomendacion se muestra APARTE y nunca
+                modifica la rutina por su cuenta.
+              */}
+              <Section title={t.prescriptionTitle}>
+                <p className="text-lg font-semibold tabular-nums">
+                  {formatPrescription(detail.prescription)}
+                </p>
+                <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
+                  {detail.prescription.reasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground text-xs">
+                  <span className="font-medium">{t.progressionLabel}:</span>{" "}
+                  {detail.prescription.progression}
+                </p>
+                <p className="text-muted-foreground text-xs italic">
+                  {t.prescriptionNote}
+                </p>
+              </Section>
 
               <Section title={t.ratingsTitle}>
                 <ul className="space-y-2">

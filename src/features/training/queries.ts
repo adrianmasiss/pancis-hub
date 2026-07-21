@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import {
+  analyzeRoutine,
+  type RoutineAnalysis,
+  type RoutineDay,
+} from "@/features/training/lib/routine-analysis";
+import {
   effectiveSetCount,
   muscleFrequency,
   personalRecords,
@@ -347,4 +352,71 @@ export async function getTrainingOverview(
     records: personalRecords(allSets).slice(0, 5),
     muscleSets7d: [...muscleFrequency(recentSets).entries()],
   };
+}
+
+/**
+ * Analisis completo de una rutina (requisito 14). Se consulta aparte del
+ * detalle del plan porque necesita datos biomecanicos que la vista de
+ * edicion no usa.
+ */
+export async function getRoutineAnalysis(
+  userId: string,
+  planId: string,
+): Promise<RoutineAnalysis | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("workout_plans")
+    .select(
+      "id, workout_plan_days(day_index, name, workout_plan_exercises(position, sets, target_reps_min, target_reps_max, target_rir, exercise_catalog(name, primary_muscle, secondary_muscles, movement_pattern, systemic_fatigue)))",
+    )
+    .eq("id", planId)
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!data) return null;
+
+  type AnalysisRow = {
+    workout_plan_days: {
+      day_index: number;
+      name: string | null;
+      workout_plan_exercises: {
+        position: number;
+        sets: number | null;
+        target_reps_min: number | null;
+        target_reps_max: number | null;
+        target_rir: number | null;
+        exercise_catalog: {
+          name: string;
+          primary_muscle: string;
+          secondary_muscles: string[] | null;
+          movement_pattern: string | null;
+          systemic_fatigue: number | null;
+        } | null;
+      }[];
+    }[];
+  };
+
+  const days: RoutineDay[] = (data as unknown as AnalysisRow).workout_plan_days
+    .sort((a, b) => a.day_index - b.day_index)
+    .map((day) => ({
+      dayIndex: day.day_index,
+      name: day.name,
+      exercises: day.workout_plan_exercises
+        .filter((exercise) => exercise.exercise_catalog !== null)
+        .map((exercise) => ({
+          name: exercise.exercise_catalog!.name,
+          primaryMuscle: exercise.exercise_catalog!.primary_muscle,
+          secondaryMuscles: exercise.exercise_catalog!.secondary_muscles ?? [],
+          movementPattern: exercise.exercise_catalog!.movement_pattern,
+          position: exercise.position,
+          sets: exercise.sets,
+          repsMin: exercise.target_reps_min,
+          repsMax: exercise.target_reps_max,
+          rir: exercise.target_rir === null ? null : Number(exercise.target_rir),
+          systemicFatigue: exercise.exercise_catalog!.systemic_fatigue,
+        })),
+    }));
+
+  return analyzeRoutine(days);
 }

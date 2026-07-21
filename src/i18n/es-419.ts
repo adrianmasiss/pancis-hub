@@ -587,6 +587,26 @@ export const messages = {
       },
       disclaimer:
         "Estas valoraciones son orientativas y dependen de tu objetivo, tu experiencia y tu equipo. La anatomia y la movilidad individuales pueden cambiar la respuesta: no son verdades universales.",
+      prescriptionTitle: "Esquema sugerido",
+      prescriptionNote:
+        "Es una sugerencia: no modifica tu rutina. Si te convence, edita el ejercicio con estos valores.",
+      progressionLabel: "Como progresar",
+      analysisTitle: "Analisis de la rutina",
+      analysisDescription:
+        "Volumen semanal, frecuencia, patrones cubiertos y ajustes sugeridos.",
+      weeklyVolume: "Series semanales por musculo",
+      frequency: "Frecuencia semanal",
+      frequencyValue: "{days} dia(s)",
+      missingPatterns: "Patrones sin cubrir",
+      priorities: {
+        alta: "Prioridad alta",
+        mejora: "Mejora recomendada",
+        opcional: "Opcional",
+        observacion: "Observacion",
+        sin_cambios: "Sin cambios necesarios",
+      },
+      analysisDisclaimer:
+        "Las referencias de volumen y frecuencia son orientaciones generales. La tolerancia individual varia: usalas como punto de partida, no como limites exactos.",
       compatibility: "Compatibilidad como sustituto",
       similarities: "En que se parecen",
       advantages: "Que ganas",
