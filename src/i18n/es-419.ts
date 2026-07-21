@@ -317,6 +317,7 @@ export const messages = {
     empty: "Aun no hay articulos publicados en esta categoria.",
   },
   assistant: {
+    openAssistant: "Abrir asistente",
     title: "Asistente",
     subtitle:
       "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",

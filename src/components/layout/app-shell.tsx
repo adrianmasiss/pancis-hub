@@ -1,4 +1,5 @@
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
+import { AssistantFab } from "@/features/assistant/components/assistant-fab";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { messages } from "@/i18n/es-419";
@@ -34,6 +35,7 @@ export function AppShell({
           </div>
         </main>
       </div>
+      <AssistantFab />
       <BottomNavigation displayName={displayName} avatarUrl={avatarUrl} />
     </div>
   );

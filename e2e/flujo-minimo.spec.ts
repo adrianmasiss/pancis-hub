@@ -292,6 +292,31 @@ test("bienestar diario e historial de cambios", async ({ page }) => {
   await expect(page.getByText("Lo hiciste tu").first()).toBeVisible();
 });
 
+test("asistente accesible y conectado a los motores", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Requisito 15: acceso al asistente desde cualquier pantalla.
+  await page.goto("/progreso");
+  const fab = page.getByRole("link", { name: "Abrir asistente" });
+  await expect(fab).toBeVisible();
+  await fab.click();
+  await expect(page).toHaveURL(/\/asistente/, { timeout: 20_000 });
+  // En su propia pagina el acceso flotante seria redundante.
+  await expect(
+    page.getByRole("link", { name: "Abrir asistente" }),
+  ).toHaveCount(0);
+
+  // Pregunta de entrenamiento resuelta con el motor de prescripcion.
+  const input = page.getByRole("textbox").first();
+  await input.fill("cuantas series de sentadilla hago");
+  await page.getByRole("button", { name: /Enviar|Preguntar/ }).first().click();
+  await expect(page.getByText(/RIR/).first()).toBeVisible({ timeout: 30_000 });
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

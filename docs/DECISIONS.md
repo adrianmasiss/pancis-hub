@@ -330,3 +330,31 @@ ahora viven DENTRO de /progreso en vez de en una seccion propia: son parte
 de como se lee el progreso junto a las mediciones, no un diario aparte.
 Un registro por dia (indice unico user_id+date, upsert), con la fecha
 local del usuario y no UTC.
+
+## 2026-07-21 - El asistente usa los motores, no los reemplaza
+
+El asistente conocia la dieta y los alimentos, pero no el entrenamiento
+ni como quedaba el dia. Ahora recibe el resultado de los motores
+deterministas ya calculados: alternativas de alimentos, alternativas de
+ejercicio (`rankComparisons`), esquema sugerido (`recommendPrescription`)
+y el analisis de la rutina activa (`analyzeRoutine`).
+
+**Los motores mandan sobre el modelo.** Los numeros se calculan siempre
+en codigo y se le pasan a Gemini ya resueltos, con instruccion explicita
+de citarlos tal cual y no recalcular. Asi el asistente y las pantallas
+nunca se contradicen: el 8.2/10 que dice el chat es el mismo que muestra
+la hoja de sustitucion.
+
+Al verificar en navegador aparecio que la ruta de Gemini (la que se usa
+cuando hay clave) recibia solo `foodAlternatives`: los motores nuevos
+alimentaban unicamente al proveedor deterministico de respaldo, que en
+produccion casi nunca corre. Corregido pasando todo por ambas rutas.
+
+**Busqueda tolerante de ejercicios.** Lo que el usuario escribe no coincide
+literal con el catalogo ("cuantas series de sentadilla hago" deja
+"sentadilla hago"). `findCatalogExercise` prueba la frase completa y va
+soltando palabras del final hasta encontrar coincidencia.
+
+**Acceso desde cualquier pantalla** (requisito 15) mediante boton
+flotante, oculto en la propia pagina del asistente y por encima de la
+barra inferior en movil.

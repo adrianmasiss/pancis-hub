@@ -37,6 +37,12 @@ export type AssistantContext = {
   weightTrend: "sube" | "baja" | "estable" | null;
   sleepHoursToday: number | null;
   activePlanName: string | null;
+  /** Comidas del dia que siguen pendientes. */
+  pendingMeals: number;
+  /** Hallazgo mas prioritario de la rutina activa, si lo hay. */
+  routineTopFinding: { priority: string; title: string; detail: string } | null;
+  /** Series semanales por musculo de la rutina activa. */
+  weeklySetsByMuscle: { muscle: string; sets: number }[];
   activeDiet: {
     name: string;
     meals: {
@@ -55,6 +61,9 @@ export type AssistantIntent =
   | { kind: "weightStall" }
   | { kind: "recipeIdea"; ingredients: string }
   | { kind: "timingShift" }
+  | { kind: "exerciseSubstitute"; exerciseName: string }
+  | { kind: "setsAndReps"; exerciseName: string }
+  | { kind: "routineReview" }
   | { kind: "fallback" };
 
 export type FoodAlternativeSuggestion = {
@@ -63,10 +72,27 @@ export type FoodAlternativeSuggestion = {
   caloriesDiff: number;
 };
 
+/** Alternativa de ejercicio ya comparada por el motor biomecanico. */
+export type ExerciseAlternativeSuggestion = {
+  name: string;
+  compatibility: number;
+  recommendation: string;
+};
+
+/** Esquema sugerido por el motor de prescripcion. */
+export type PrescriptionSuggestion = {
+  exerciseName: string;
+  summary: string;
+  topReason: string;
+  progression: string;
+};
+
 export interface AssistantProvider {
   generateReply(input: {
     context: AssistantContext;
     intent: AssistantIntent;
     foodAlternatives?: FoodAlternativeSuggestion[];
+    exerciseAlternatives?: ExerciseAlternativeSuggestion[];
+    prescription?: PrescriptionSuggestion | null;
   }): AssistantReply;
 }

@@ -51,6 +51,33 @@ export function detectIntent(message: string): AssistantIntent {
   ) {
     return { kind: "timingShift" };
   }
+  // Entrenamiento: sustituir un ejercicio concreto.
+  const substituteMatch = text.match(
+    /(?:no puedo hacer|cambiar|sustituir|reemplazar|otra opcion para)\s+(?:el |la |los |las )?([a-z\s]{3,40})/,
+  );
+  if (substituteMatch?.[1]) {
+    return {
+      kind: "exerciseSubstitute",
+      exerciseName: substituteMatch[1].trim(),
+    };
+  }
+
+  // Cuantas series/repeticiones para un ejercicio.
+  const setsMatch = text.match(
+    /(?:cuantas series|cuantas repeticiones|series y repeticiones|cuanto peso).*?(?:de|para|en)\s+(?:el |la )?([a-z\s]{3,40})/,
+  );
+  if (setsMatch?.[1]) {
+    return { kind: "setsAndReps", exerciseName: setsMatch[1].trim() };
+  }
+
+  if (
+    /(mi rutina|la rutina|mi entrenamiento).*(esta bien|como va|revisa|analiza|opinas)|(revisa|analiza).*(mi rutina|mi entrenamiento)/.test(
+      text,
+    )
+  ) {
+    return { kind: "routineReview" };
+  }
+
   const foodMatch = text.match(
     /no tengo (?:el |la |los |las )?([a-z\s]{3,40})/,
   );
@@ -65,7 +92,13 @@ const REEVALUATE_TWO_WEEKS =
   "En 2 semanas, comparando promedios semanales de peso.";
 
 export const deterministicProvider: AssistantProvider = {
-  generateReply({ context, intent, foodAlternatives }): AssistantReply {
+  generateReply({
+    context,
+    intent,
+    foodAlternatives,
+    exerciseAlternatives,
+    prescription,
+  }): AssistantReply {
     const remainingProtein = context.targets
       ? Math.max(
           0,
@@ -135,6 +168,74 @@ export const deterministicProvider: AssistantProvider = {
             "Distribuir la proteina entre comidas facilita alcanzar el total sin forzar una sola comida enorme.",
           reevaluate: "Al final de la semana, viendo tu adherencia promedio.",
         };
+      case "exerciseSubstitute": {
+        const options =
+          exerciseAlternatives && exerciseAlternatives.length > 0
+            ? exerciseAlternatives
+                .map(
+                  (alternative) =>
+                    `${alternative.name} (compatibilidad ${alternative.compatibility}/10)`,
+                )
+                .join(", ")
+            : null;
+        return {
+          observation: `Quieres una alternativa a ${intent.exerciseName}.`,
+          interpretation: options
+            ? "Hay ejercicios que comparten musculo principal y patron de movimiento, aunque el estimulo nunca es identico."
+            : "No encontre ese ejercicio en el catalogo con ese nombre.",
+          confidence: options ? "media" : "baja",
+          action: options
+            ? `Las opciones mas cercanas son: ${options}. ${exerciseAlternatives![0]!.recommendation}`
+            : "Abre tu rutina y usa el boton de sustituir (⇄) sobre el ejercicio: ahi comparo musculo, patron, articulaciones y estabilidad.",
+          alternative:
+            "En la ficha del ejercicio (boton de informacion) puedes ver que se gana y que se pierde en cada cambio.",
+          reason:
+            "La comparacion pondera musculo principal, patron de movimiento y articulaciones implicadas; dos ejercicios nunca son equivalentes exactos.",
+          reevaluate: "Tras un par de sesiones con la alternativa.",
+        };
+      }
+      case "setsAndReps": {
+        return {
+          observation: prescription
+            ? `Preguntas por el esquema de ${prescription.exerciseName}.`
+            : `Preguntas por el esquema de ${intent.exerciseName}.`,
+          interpretation:
+            "El esquema depende del tipo de ejercicio, tu objetivo, tu experiencia y la fatiga que ya acumulas; no existe un 4x12 universal.",
+          confidence: prescription ? "media" : "baja",
+          action: prescription
+            ? `Como punto de partida: ${prescription.summary}. ${prescription.topReason}`
+            : "Abre la ficha del ejercicio en tu rutina: ahi calculo series, repeticiones, RIR y descanso segun tu contexto.",
+          alternative: prescription?.progression,
+          reason:
+            "Los rangos salen de tu objetivo y de las caracteristicas del ejercicio (articulaciones implicadas y fatiga que deja).",
+          reevaluate: "Cuando completes el rango objetivo en todas las series.",
+        };
+      }
+      case "routineReview": {
+        const finding = context.routineTopFinding;
+        const volume = context.weeklySetsByMuscle
+          .slice(0, 3)
+          .map((entry) => `${entry.muscle} ${entry.sets}`)
+          .join(", ");
+        return {
+          observation: context.activePlanName
+            ? `Tu rutina activa es ${context.activePlanName}.`
+            : "Aun no tienes una rutina activa.",
+          interpretation: finding
+            ? `Lo mas relevante ahora mismo: ${finding.title}.`
+            : "No encontre ajustes prioritarios en tu rutina.",
+          confidence: finding ? "media" : "baja",
+          action:
+            finding?.detail ??
+            "Crea o activa una rutina para que pueda analizar volumen, frecuencia y patrones.",
+          alternative: volume
+            ? `Series semanales por musculo (top 3): ${volume}.`
+            : undefined,
+          reason:
+            "El analisis revisa volumen semanal, frecuencia, patrones cubiertos, redundancias y orden de los ejercicios.",
+          reevaluate: "Cada vez que cambies la estructura de la rutina.",
+        };
+      }
       case "poorSleep":
         return {
           observation:

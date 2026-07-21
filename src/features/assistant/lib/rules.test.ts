@@ -47,6 +47,23 @@ describe("detectIntent", () => {
   it("cae al fallback con mensajes fuera de alcance", () => {
     expect(detectIntent("hola").kind).toBe("fallback");
   });
+
+  it("detecta que el usuario quiere sustituir un ejercicio", () => {
+    const intent = detectIntent("no puedo hacer sentadilla, me molesta la rodilla");
+    expect(intent.kind).toBe("exerciseSubstitute");
+    if (intent.kind === "exerciseSubstitute") {
+      expect(intent.exerciseName).toContain("sentadilla");
+    }
+  });
+
+  it("detecta preguntas de series y repeticiones", () => {
+    const intent = detectIntent("cuantas series de press de banca hago");
+    expect(intent.kind).toBe("setsAndReps");
+  });
+
+  it("detecta la peticion de revisar la rutina", () => {
+    expect(detectIntent("revisa mi rutina").kind).toBe("routineReview");
+  });
 });
 
 const context: AssistantContext = {
@@ -58,6 +75,16 @@ const context: AssistantContext = {
   weightTrend: "estable",
   sleepHoursToday: 5.5,
   activePlanName: "Full body",
+  pendingMeals: 2,
+  routineTopFinding: {
+    priority: "mejora",
+    title: "Patrones de movimiento sin cubrir",
+    detail: "No aparece ningun ejercicio de: bisagra de cadera.",
+  },
+  weeklySetsByMuscle: [
+    { muscle: "cuadriceps", sets: 12 },
+    { muscle: "espalda", sets: 10 },
+  ],
   activeDiet: null,
 };
 
@@ -110,5 +137,58 @@ describe("deterministicProvider", () => {
       expect(reply.reason.length).toBeGreaterThan(0);
       expect(reply.reevaluate.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("respuestas de entrenamiento", () => {
+  it("usa las alternativas del motor biomecanico y su compatibilidad", () => {
+    const reply = deterministicProvider.generateReply({
+      context,
+      intent: { kind: "exerciseSubstitute", exerciseName: "sentadilla" },
+      exerciseAlternatives: [
+        {
+          name: "Prensa de pierna",
+          compatibility: 8.2,
+          recommendation: "Sustituto muy cercano de Sentadilla.",
+        },
+      ],
+    });
+    expect(reply.action).toContain("Prensa de pierna");
+    expect(reply.action).toContain("8.2/10");
+    expect(reply.confidence).toBe("media");
+  });
+
+  it("baja la confianza si no encuentra el ejercicio", () => {
+    const reply = deterministicProvider.generateReply({
+      context,
+      intent: { kind: "exerciseSubstitute", exerciseName: "inventado" },
+      exerciseAlternatives: [],
+    });
+    expect(reply.confidence).toBe("baja");
+  });
+
+  it("responde series y repeticiones con el motor de prescripcion", () => {
+    const reply = deterministicProvider.generateReply({
+      context,
+      intent: { kind: "setsAndReps", exerciseName: "sentadilla" },
+      prescription: {
+        exerciseName: "Sentadilla con barra",
+        summary: "4 x 5-10 · RIR 2 · 150s",
+        topReason: "Es un ejercicio compuesto.",
+        progression: "Cuando completes 10 repeticiones, sube la carga.",
+      },
+    });
+    expect(reply.action).toContain("4 x 5-10");
+    // El requisito 13 exige que no exista un esquema universal.
+    expect(reply.interpretation).toContain("no existe un 4x12 universal");
+  });
+
+  it("resume la rutina con el hallazgo mas prioritario", () => {
+    const reply = deterministicProvider.generateReply({
+      context,
+      intent: { kind: "routineReview" },
+    });
+    expect(reply.interpretation).toContain("Patrones de movimiento sin cubrir");
+    expect(reply.alternative).toContain("cuadriceps 12");
   });
 });
