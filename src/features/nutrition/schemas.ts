@@ -8,7 +8,14 @@ export const MEAL_TYPES = [
   "otro",
 ] as const;
 
-export const MEAL_STATUSES = ["planificada", "completada", "omitida"] as const;
+export const MEAL_STATUSES = [
+  "planificada",
+  "completada",
+  // Se completo pero con sustituciones: suma igual al consumo del dia y
+  // ademas explica por que el dia no cuadra con el plan original.
+  "completada_con_cambios",
+  "omitida",
+] as const;
 
 const isoDate = z
   .string()

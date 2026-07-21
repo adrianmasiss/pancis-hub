@@ -75,7 +75,12 @@ export function MealCard({ meal }: { meal: MealView }) {
             </span>
           ) : null}
           <Badge
-            variant={meal.status === "completada" ? "default" : "outline"}
+            variant={
+              meal.status === "completada" ||
+              meal.status === "completada_con_cambios"
+                ? "default"
+                : "outline"
+            }
             className="font-normal"
           >
             {t.statuses[meal.status]}
@@ -95,7 +100,8 @@ export function MealCard({ meal }: { meal: MealView }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {meal.status !== "completada" ? (
+              {meal.status !== "completada" &&
+              meal.status !== "completada_con_cambios" ? (
                 <DropdownMenuItem
                   onClick={() =>
                     run(

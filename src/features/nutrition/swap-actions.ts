@@ -8,7 +8,11 @@ import {
   type EquivalenceFood,
   type SwapCandidate,
 } from "@/features/foods/lib/equivalence";
-import { scaleMacros } from "@/features/nutrition/lib/macros";
+import { scaleMacros, type MacroSet } from "@/features/nutrition/lib/macros";
+import {
+  rebalanceDay,
+  type RebalanceReport,
+} from "@/features/nutrition/lib/rebalance";
 import { getFavoriteFoodIds, getRecentFoodIds } from "@/features/foods/queries";
 import type { FoodGroup } from "@/features/foods/schemas";
 import { z } from "zod";
@@ -120,7 +124,9 @@ export async function getSwapSuggestions(
 /** Reemplaza el alimento del item recalculando el snapshot desde el catalogo. */
 export async function swapMealItem(
   input: unknown,
-): Promise<{ error: string } | { success: true }> {
+): Promise<
+  { error: string } | { success: true; rebalance: RebalanceReport | null }
+> {
   const parsed = swapItemSchema.safeParse(input);
   const supabase = await createClient();
   const {
@@ -146,7 +152,7 @@ export async function swapMealItem(
     parsed.data.quantityG,
   );
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("meal_items")
     .update({
       food_id: parsed.data.foodId,
@@ -157,9 +163,102 @@ export async function swapMealItem(
       fat_snapshot: snapshot.fatG,
       fiber_snapshot: snapshot.fiberG,
     })
-    .eq("id", parsed.data.itemId);
-  if (error) return { error: t.failed };
+    .eq("id", parsed.data.itemId)
+    .select("meal_id")
+    .single();
+  if (error || !updated) return { error: t.failed };
+
+  // Una comida ya completada que se sustituye pasa a "completada con
+  // cambios": sigue sumando al dia, pero deja registro de que se desvio
+  // del plan. Una comida aun planificada no se completa sola.
+  await supabase
+    .from("meals")
+    .update({ status: "completada_con_cambios", modified_reason: t.modifiedReason })
+    .eq("id", updated.meal_id)
+    .eq("user_id", user.id)
+    .eq("status", "completada");
 
   revalidatePath("/nutricion");
-  return { success: true };
+  revalidatePath("/");
+
+  // El dia dejo de cuadrar: se devuelve como queda para que el usuario
+  // decida. No se toca ninguna otra comida (requisito 6).
+  const rebalance = await buildRebalanceReport(user.id, updated.meal_id);
+  return { success: true, rebalance };
+}
+
+/**
+ * Estado del dia tras un cambio: objetivo vigente contra lo consumido,
+ * mas las comidas que siguen pendientes. Si no hay objetivo definido no
+ * hay nada contra que comparar y se omite el reporte.
+ */
+async function buildRebalanceReport(
+  userId: string,
+  mealId: string,
+): Promise<RebalanceReport | null> {
+  const supabase = await createClient();
+
+  const { data: meal } = await supabase
+    .from("meals")
+    .select("date")
+    .eq("id", mealId)
+    .single();
+  if (!meal) return null;
+
+  const [targetResult, mealsResult] = await Promise.all([
+    supabase
+      .from("nutrition_targets")
+      .select("calories, protein_g, carbohydrate_g, fat_g, fiber_g")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase
+      .from("meals")
+      .select(
+        "status, meal_items(calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot)",
+      )
+      .eq("user_id", userId)
+      .eq("date", meal.date)
+      .is("deleted_at", null),
+  ]);
+
+  const target = targetResult.data;
+  if (!target) return null;
+
+  const consumed: MacroSet = {
+    calories: 0,
+    proteinG: 0,
+    carbohydrateG: 0,
+    fatG: 0,
+    fiberG: 0,
+  };
+  let pendingMeals = 0;
+
+  for (const row of mealsResult.data ?? []) {
+    if (row.status === "omitida") continue;
+    if (row.status === "planificada") {
+      pendingMeals += 1;
+      continue;
+    }
+    // Solo lo ya consumido suma; lo planificado queda como pendiente.
+    for (const item of row.meal_items ?? []) {
+      consumed.calories += item.calories_snapshot ?? 0;
+      consumed.proteinG += item.protein_snapshot ?? 0;
+      consumed.carbohydrateG += item.carbohydrate_snapshot ?? 0;
+      consumed.fatG += item.fat_snapshot ?? 0;
+      consumed.fiberG += item.fiber_snapshot ?? 0;
+    }
+  }
+
+  return rebalanceDay({
+    target: {
+      calories: Number(target.calories),
+      proteinG: Number(target.protein_g),
+      carbohydrateG: Number(target.carbohydrate_g),
+      fatG: Number(target.fat_g),
+      fiberG: Number(target.fiber_g ?? 0),
+    },
+    consumed,
+    pendingMeals,
+  });
 }

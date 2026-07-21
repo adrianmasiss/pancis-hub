@@ -416,6 +416,23 @@ describe("relevanceScore", () => {
     expect(exact).toBeLessThan(partial);
   });
 
+  // Regresion: con nombres tipo USDA la frase buscada no aparece literal,
+  // asi que todos empataban y el orden salia arbitrario.
+  it("prefiere el alimento que cubre mas palabras de la busqueda", () => {
+    const merged = mergeProviderResults(
+      [
+        baseFood({ externalId: "1", name: "Chicken, ground, raw" }),
+        baseFood({ externalId: "2", name: "Pheasant, breast, meat only, raw" }),
+        baseFood({
+          externalId: "3",
+          name: "Chicken, broilers or fryers, breast, meat only, raw",
+        }),
+      ],
+      "chicken breast raw",
+    );
+    expect(merged[0]!.externalId).toBe("3");
+  });
+
   it("ordena los resultados mas relevantes primero", () => {
     const merged = mergeProviderResults(
       [

@@ -182,3 +182,37 @@ Reglas de la integracion:
 - **Degradacion silenciosa.** Timeout de 8 s, 429 y respuestas no JSON
   devuelven vacio y quedan registradas: la busqueda local nunca se cae
   por un proveedor externo.
+
+## 2026-07-21 - Compatibilidad 0-10, reajuste del dia y comidas modificadas
+
+**Puntuacion de compatibilidad.** Cada sustitucion muestra una nota 0-10
+global y por macro. Por macro se mide el error relativo contra el aporte
+original, con un piso por macro (40 kcal, 5 g de proteina, 5 g de
+carbohidratos, 3 g de grasa, 2 g de fibra) para no castigar diferencias
+irrelevantes: sin ese piso, pasar de 1 g a 2 g de fibra contaria como un
+100 % de error. La nota global es el promedio ponderado (proteina 0.35,
+calorias 0.25, carbohidratos 0.15, grasas 0.15, fibra 0.10) menos
+penalizaciones por cambiar de grupo (1.5) o mezclar crudo con cocido
+(0.5), acotada a 0-10.
+
+La nota es independiente del `score` de ordenamiento (distancia
+ponderada): ese sigue decidiendo el orden y esta es solo para leerse. La
+UI siempre la acompana de la advertencia de que es una aproximacion
+orientativa y no una equivalencia exacta.
+
+**Reajuste del dia.** Tras aceptar una sustitucion se calcula lo que
+resta del objetivo y se redactan sugerencias priorizadas sobre las
+comidas AUN pendientes. Umbrales para no generar ruido: media a partir
+de 100 kcal / 10 g de proteina / 15 g de carbohidratos / 8 g de grasa /
+6 g de fibra, y alta al 2.5x de eso. A igual severidad manda la
+proteina. Si no hay desviaciones se dice explicitamente que el dia
+cuadra, porque el silencio no comunica lo mismo. El motor NUNCA modifica
+otra comida: solo describe. La hoja de intercambio deja de cerrarse al
+confirmar para que el usuario vea como quedo el dia.
+
+**Comidas completadas con cambios.** Nuevo estado
+`completada_con_cambios` con su `modified_reason`. Suma al consumo igual
+que `completada` (la agregacion solo excluye `omitida`), pero deja
+registro de que el dia se desvio del plan. Solo se aplica a comidas ya
+completadas: sustituir algo en una comida planificada no la completa
+sola. El plan original nunca se sobrescribe.

@@ -25,6 +25,7 @@ import {
   type DietSwapSuggestions,
 } from "@/features/dashboard/actions";
 import type { DietTemplateItemView } from "@/features/dashboard/queries";
+import { CompatibilityScore } from "@/components/shared/compatibility-score";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.swap;
@@ -171,6 +172,7 @@ export function DietItemSwapSheet({ item }: { item: DietTemplateItemView }) {
                       </span>
                     ))}
                   </p>
+                  <CompatibilityScore score={alternative.compatibility} />
                   <Button
                     size="sm"
                     className="w-full"

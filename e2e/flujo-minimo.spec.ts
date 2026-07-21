@@ -90,11 +90,15 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await expect(
     page.getByText("Alternativas con aporte similar", { exact: false }),
   ).toBeVisible();
+  // Cada alternativa muestra su compatibilidad 0-10.
+  await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
   await page
     .getByRole("button", { name: "Confirmar intercambio" })
     .first()
     .click();
   await expect(page.getByText("Alimento intercambiado.")).toBeVisible();
+  // Tras aceptar, la hoja explica como queda el resto del dia.
+  await expect(page.getByText("Como queda tu dia")).toBeVisible();
 });
 
 test("registrar entrenamiento y peso", async ({ page }) => {

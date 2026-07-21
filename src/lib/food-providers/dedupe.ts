@@ -61,27 +61,51 @@ function mergeInto(
   };
 }
 
+function tokensOf(value: string): string[] {
+  return normalizeText(value)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
 /**
  * Relevancia frente a lo que el usuario escribio. Menor = mas relevante.
- * Se premia la coincidencia exacta y el prefijo, y se penaliza el ruido:
- * los nombres larguisimos de USDA suelen ser variantes muy especificas.
+ *
+ * Se mide por PALABRAS COINCIDENTES, no por la frase completa como
+ * subcadena: USDA nombra los alimentos como "Chicken, broilers or fryers,
+ * breast, meat only, raw", donde la frase "chicken breast raw" no aparece
+ * nunca literal. Comparando por subcadena todos empataban y la lista salia
+ * en orden arbitrario (aparecia "Chicken, ground" antes que la pechuga).
  */
 export function relevanceScore(food: NormalizedFood, query: string): number {
   const name = normalizeText(food.name);
   const needle = normalizeText(query);
   if (needle.length === 0) return 100;
 
-  let score = 100;
-  if (name === needle) score = 0;
-  else if (name.startsWith(needle)) score = 10;
-  else if (name.includes(needle)) score = 25;
-  else if (food.aliases.some((alias) => alias.includes(needle))) score = 40;
+  if (name === needle) return 0;
 
-  // Cada 20 caracteres extra de nombre suma una penalizacion leve.
+  const queryTokens = tokensOf(query);
+  const nameTokens = new Set(tokensOf(food.name));
+  const aliasTokens = new Set(food.aliases.flatMap(tokensOf));
+
+  let matched = 0;
+  for (const token of queryTokens) {
+    if (nameTokens.has(token)) matched += 1;
+    else if (aliasTokens.has(token)) matched += 0.5;
+  }
+
+  // De 5 (todas las palabras presentes) a 85 (ninguna).
+  const coverage = queryTokens.length > 0 ? matched / queryTokens.length : 0;
+  let score = 85 - coverage * 80;
+
+  // Empezar por lo buscado desempata a favor del resultado mas directo.
+  if (name.startsWith(needle)) score -= 3;
+
+  // Cada 20 caracteres extra de nombre suma una penalizacion leve: los
+  // nombres larguisimos de USDA suelen ser variantes muy especificas.
   score += Math.min(10, Math.floor(name.length / 20));
   // Sin imagen es peor resultado en una lista visual.
   if (!food.imageUrl) score += 1;
-  return score;
+  return Math.round(score * 10) / 10;
 }
 
 export function mergeProviderResults(

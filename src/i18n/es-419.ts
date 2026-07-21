@@ -675,6 +675,15 @@ export const messages = {
     confirmSwap: "Confirmar intercambio",
     swapped: "Alimento intercambiado.",
     failed: "No pudimos completar el intercambio. Intenta de nuevo.",
+    modifiedReason: "Sustitucion de alimento aceptada por el usuario.",
+    compatibility: "Compatibilidad",
+    compatibilityOf10: "{score}/10",
+    compatibilityNote:
+      "La compatibilidad es una aproximacion orientativa, no una equivalencia exacta.",
+    rebalanceTitle: "Como queda tu dia",
+    rebalanceRemaining: "Te quedan",
+    rebalanceApplyNote:
+      "Estas sugerencias no modifican ninguna comida: tu decides si las aplicas.",
   },
   nutrition: {
     title: "Nutricion",
@@ -781,8 +790,10 @@ export const messages = {
     statuses: {
       planificada: "Planificada",
       completada: "Completada",
+      completada_con_cambios: "Completada con cambios",
       omitida: "Omitida",
     },
+    modifiedNote: "Esta comida se completo con sustituciones.",
     markCompleted: "Marcar completada",
     markPlanned: "Volver a planificada",
     markSkipped: "Omitir",

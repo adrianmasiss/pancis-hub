@@ -25,6 +25,9 @@ import {
   type SwapSuggestions,
 } from "@/features/nutrition/swap-actions";
 import type { MealItemView } from "@/features/nutrition/queries";
+import type { RebalanceReport } from "@/features/nutrition/lib/rebalance";
+import { CompatibilityScore } from "@/components/shared/compatibility-score";
+import { RebalanceSummary } from "@/components/shared/rebalance-summary";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.swap;
@@ -45,6 +48,7 @@ const DIFF_MACROS: { type: MacroType; key: keyof SwapSuggestions["alternatives"]
 export function FoodSwapSheet({ item }: { item: MealItemView }) {
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SwapSuggestions | null>(null);
+  const [rebalance, setRebalance] = useState<RebalanceReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -63,8 +67,10 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
         toast.error(result.error);
       } else {
         toast.success(t.swapped);
-        setOpen(false);
+        // La hoja no se cierra: el usuario necesita ver como quedo el dia
+        // tras el cambio antes de seguir (requisito 6).
         setSuggestions(null);
+        setRebalance(result.rebalance);
       }
     });
   };
@@ -75,7 +81,10 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
       onOpenChange={(next) => {
         setOpen(next);
         if (next) void load();
-        else setSuggestions(null);
+        else {
+          setSuggestions(null);
+          setRebalance(null);
+        }
       }}
     >
       <SheetTrigger asChild>
@@ -105,6 +114,8 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
               className="text-muted-foreground"
             />
           </p>
+
+          {rebalance ? <RebalanceSummary report={rebalance} /> : null}
 
           {loading ? (
             <p className="text-muted-foreground text-sm">
@@ -166,6 +177,7 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
                       </span>
                     ))}
                   </p>
+                  <CompatibilityScore score={alternative.compatibility} />
                   <Button
                     size="sm"
                     className="w-full"
@@ -182,6 +194,12 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
                 </li>
               ))}
             </ul>
+          ) : null}
+
+          {suggestions && suggestions.alternatives.length > 0 ? (
+            <p className="text-muted-foreground text-xs">
+              {t.compatibilityNote}
+            </p>
           ) : null}
         </div>
       </SheetContent>

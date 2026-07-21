@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   anchorMacroForGroup,
+  compatibilityScore,
   equivalentQuantity,
   matchesRestriction,
   nutritionalDistance,
@@ -246,5 +247,76 @@ describe("formatHouseholdEquivalence", () => {
     expect(formatHouseholdEquivalence(1000, portions)).toBe(
       "2 x Envase familiar",
     );
+  });
+});
+
+describe("compatibilityScore", () => {
+  const source = {
+    calories: 350,
+    proteinG: 31,
+    carbohydrateG: 2,
+    fatG: 24,
+    fiberG: 0,
+  };
+
+  it("da 10 cuando la alternativa aporta exactamente lo mismo", () => {
+    const score = compatibilityScore(source, source, {
+      sameGroup: true,
+      sameCookedState: true,
+    });
+    expect(score.overall).toBe(10);
+    expect(score.proteinG).toBe(10);
+  });
+
+  it("baja la nota del macro que mas se desvia", () => {
+    // Pancakes frente a huevos: mas carbohidratos, menos proteina.
+    const score = compatibilityScore(
+      source,
+      { calories: 455, proteinG: 14, carbohydrateG: 33, fatG: 19, fiberG: 1 },
+      { sameGroup: false, sameCookedState: true },
+    );
+    expect(score.proteinG).toBeLessThan(5);
+    expect(score.carbohydrateG).toBe(0);
+    expect(score.overall).toBeLessThan(6);
+  });
+
+  it("nunca sale del rango 0-10", () => {
+    const score = compatibilityScore(
+      source,
+      { calories: 0, proteinG: 0, carbohydrateG: 0, fatG: 0, fiberG: 0 },
+      { sameGroup: false, sameCookedState: false },
+    );
+    expect(score.overall).toBeGreaterThanOrEqual(0);
+    expect(score.overall).toBeLessThanOrEqual(10);
+  });
+
+  it("no castiga diferencias minimas en cantidades irrelevantes", () => {
+    // 1 g contra 2 g de fibra es el 100 % de diferencia relativa, pero no
+    // cambia nada del plan: el piso por macro lo absorbe.
+    const score = compatibilityScore(
+      { ...source, fiberG: 1 },
+      { ...source, fiberG: 2 },
+    );
+    expect(score.fiberG).toBeGreaterThanOrEqual(5);
+  });
+
+  it("penaliza cambiar de grupo alimentario", () => {
+    const same = compatibilityScore(source, source, {
+      sameGroup: true,
+      sameCookedState: true,
+    });
+    const cross = compatibilityScore(source, source, {
+      sameGroup: false,
+      sameCookedState: true,
+    });
+    expect(cross.overall).toBeLessThan(same.overall);
+  });
+
+  it("penaliza mezclar crudo con cocido", () => {
+    const same = compatibilityScore(source, source, { sameCookedState: true });
+    const mixed = compatibilityScore(source, source, {
+      sameCookedState: false,
+    });
+    expect(mixed.overall).toBeLessThan(same.overall);
   });
 });

@@ -31,6 +31,16 @@ export type EquivalenceFood = {
   per100g: MacroSet;
 };
 
+/** Puntuacion 0-10 por macro y global, para mostrar al usuario. */
+export type CompatibilityScore = {
+  overall: number;
+  calories: number;
+  proteinG: number;
+  carbohydrateG: number;
+  fatG: number;
+  fiberG: number;
+};
+
 export type SwapCandidate = {
   food: EquivalenceFood;
   suggestedQuantityG: number;
@@ -41,6 +51,7 @@ export type SwapCandidate = {
   isFavorite: boolean;
   isRecent: boolean;
   score: number;
+  compatibility: CompatibilityScore;
 };
 
 /** Pesos por unidad de diferencia (1 kcal, 1 g). */
@@ -98,6 +109,114 @@ export function equivalentQuantity(
   const raw = (sourceAmount / target.per100g[anchor]) * 100;
   const rounded = Math.round(raw / 5) * 5;
   return Math.min(MAX_QUANTITY_G, Math.max(MIN_QUANTITY_G, rounded));
+}
+
+/**
+ * Peso de cada macro en la puntuacion global de compatibilidad. La
+ * proteina pesa mas porque es el macro que el usuario menos quiere perder
+ * al sustituir, y la fibra menos porque es el mas facil de recuperar en
+ * otra comida.
+ */
+export const COMPATIBILITY_WEIGHTS = {
+  calories: 0.25,
+  proteinG: 0.35,
+  carbohydrateG: 0.15,
+  fatG: 0.15,
+  fiberG: 0.1,
+} as const;
+
+/**
+ * Piso por macro para no castigar diferencias irrelevantes en cantidades
+ * minimas: pasar de 1 g a 2 g de grasa duplica el valor, pero no cambia
+ * nada del plan. Sin este piso, la division daria un error del 100 %.
+ */
+const COMPATIBILITY_FLOORS = {
+  calories: 40,
+  proteinG: 5,
+  carbohydrateG: 5,
+  fatG: 3,
+  fiberG: 2,
+} as const;
+
+/** Puntos que se descuentan de la nota global. */
+export const COMPATIBILITY_PENALTIES = {
+  differentGroup: 1.5,
+  differentCookedState: 0.5,
+} as const;
+
+const clamp10 = (value: number) => Math.min(10, Math.max(0, value));
+const round1 = (value: number) => Math.round(value * 10) / 10;
+
+/**
+ * Nota 0-10 de un macro: 10 cuando la alternativa aporta lo mismo, 0
+ * cuando se desvia el 100 % o mas respecto al original.
+ */
+function macroScore(
+  source: number,
+  candidate: number,
+  floor: number,
+): number {
+  const base = Math.max(Math.abs(source), floor);
+  const relativeError = Math.abs(candidate - source) / base;
+  return clamp10(10 * (1 - relativeError));
+}
+
+/**
+ * Puntuacion de compatibilidad de una sustitucion, en 0-10 por macro y
+ * global (docs/DECISIONS.md). Es una APROXIMACION orientativa: resume que
+ * tan cerca queda la alternativa del aporte original, nunca afirma que
+ * sean equivalentes.
+ */
+export function compatibilityScore(
+  source: MacroSet,
+  candidate: MacroSet,
+  options?: { sameGroup?: boolean; sameCookedState?: boolean },
+): CompatibilityScore {
+  const perMacro = {
+    calories: macroScore(
+      source.calories,
+      candidate.calories,
+      COMPATIBILITY_FLOORS.calories,
+    ),
+    proteinG: macroScore(
+      source.proteinG,
+      candidate.proteinG,
+      COMPATIBILITY_FLOORS.proteinG,
+    ),
+    carbohydrateG: macroScore(
+      source.carbohydrateG,
+      candidate.carbohydrateG,
+      COMPATIBILITY_FLOORS.carbohydrateG,
+    ),
+    fatG: macroScore(source.fatG, candidate.fatG, COMPATIBILITY_FLOORS.fatG),
+    fiberG: macroScore(
+      source.fiberG,
+      candidate.fiberG,
+      COMPATIBILITY_FLOORS.fiberG,
+    ),
+  };
+
+  const weighted =
+    perMacro.calories * COMPATIBILITY_WEIGHTS.calories +
+    perMacro.proteinG * COMPATIBILITY_WEIGHTS.proteinG +
+    perMacro.carbohydrateG * COMPATIBILITY_WEIGHTS.carbohydrateG +
+    perMacro.fatG * COMPATIBILITY_WEIGHTS.fatG +
+    perMacro.fiberG * COMPATIBILITY_WEIGHTS.fiberG;
+
+  const penalties =
+    (options?.sameGroup === false ? COMPATIBILITY_PENALTIES.differentGroup : 0) +
+    (options?.sameCookedState === false
+      ? COMPATIBILITY_PENALTIES.differentCookedState
+      : 0);
+
+  return {
+    overall: round1(clamp10(weighted - penalties)),
+    calories: round1(perMacro.calories),
+    proteinG: round1(perMacro.proteinG),
+    carbohydrateG: round1(perMacro.carbohydrateG),
+    fatG: round1(perMacro.fatG),
+    fiberG: round1(perMacro.fiberG),
+  };
 }
 
 export function nutritionalDistance(a: MacroSet, b: MacroSet): number {
@@ -191,6 +310,10 @@ export function rankAlternatives({
         isFavorite,
         isRecent,
         score: Math.round(score * 10) / 10,
+        compatibility: compatibilityScore(sourceMacros, macros, {
+          sameGroup,
+          sameCookedState: sameState,
+        }),
       };
     })
     .sort((a, b) => a.score - b.score)

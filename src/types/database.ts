@@ -754,6 +754,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           meal_type: string
+          modified_reason: string | null
           name: string | null
           notes: string | null
           status: string
@@ -766,6 +767,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           meal_type: string
+          modified_reason?: string | null
           name?: string | null
           notes?: string | null
           status?: string
@@ -778,6 +780,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           meal_type?: string
+          modified_reason?: string | null
           name?: string | null
           notes?: string | null
           status?: string
