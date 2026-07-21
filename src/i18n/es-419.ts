@@ -432,6 +432,48 @@ export const messages = {
       "La hidratacion, el horario, la comida reciente y otras condiciones pueden afectar una medicion de composicion corporal. Compara tendencias, no valores aislados.",
     estimateNotice:
       "Las mediciones caseras son aproximadas; lo importante es la tendencia.",
+    composition: {
+      title: "Composicion corporal",
+      description:
+        "Cada medicion se compara con la anterior y con tu punto de partida.",
+      metrics: {
+        weightKg: "Peso",
+        bodyFatPercentage: "Grasa corporal",
+        fatMassKg: "Masa grasa",
+        skeletalMuscleKg: "Masa muscular",
+        leanMassKg: "Masa magra",
+        visceralFatLevel: "Grasa visceral",
+        bodyWaterPercentage: "Agua corporal",
+        waistCm: "Cintura",
+      },
+      units: {
+        weightKg: "kg",
+        bodyFatPercentage: "%",
+        fatMassKg: "kg",
+        skeletalMuscleKg: "kg",
+        leanMassKg: "kg",
+        visceralFatLevel: "",
+        bodyWaterPercentage: "%",
+        waistCm: "cm",
+      },
+      vsPrevious: "vs anterior",
+      vsBaseline: "vs inicio",
+      stable: "Sin cambio relevante",
+      derivedNote:
+        "Masa grasa y masa magra se calculan desde tu peso y tu porcentaje de grasa.",
+      recompositionTitle: "Recomposicion en curso",
+      recompositionBody:
+        "Bajaste grasa y subiste musculo entre tus dos ultimas mediciones. Es el mejor resultado posible: sostener lo que estas haciendo tiene sentido.",
+      singleMeasurement:
+        "Esta es tu primera medicion. Cuando registres la siguiente veras aqui los cambios y porcentajes.",
+      baselineSummary:
+        "Comparado con tu primera medicion, hace {days} dias ({count} mediciones en total).",
+      chartTitle: "Masa grasa y masa magra",
+      fatMassLabel: "Masa grasa",
+      leanMassLabel: "Masa magra",
+      noCompositionData:
+        "Registra peso y porcentaje de grasa para ver la evolucion de tu composicion corporal.",
+    },
     fields: {
       measuredAt: "Fecha",
       source: "Fuente",

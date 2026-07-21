@@ -216,3 +216,29 @@ que `completada` (la agregacion solo excluye `omitida`), pero deja
 registro de que el dia se desvio del plan. Solo se aplica a comidas ya
 completadas: sustituir algo en una comida planificada no la completa
 sola. El plan original nunca se sobrescribe.
+
+## 2026-07-21 - Composicion corporal longitudinal (InBody)
+
+Cada medicion se compara contra la anterior y contra la linea base, con
+deltas y porcentaje de cambio acumulado.
+
+- **Masa grasa y masa magra derivadas.** Se calculan desde el peso y el
+  porcentaje de grasa (grasa_kg = peso x %grasa / 100). Es la lectura que
+  hace util un InBody: el peso solo no distingue perder grasa de perder
+  musculo.
+- **Umbral de ruido por metrica** (0.3 kg de peso, 0.4 % de grasa, 0.5 de
+  grasa visceral, 0.5 cm de cintura...). Por debajo de eso el cambio se
+  declara estable: la bioimpedancia y la cinta metrica tienen error, y
+  presentarlo como progreso seria falsa precision.
+- **Solo se califica lo inequivoco.** Bajar grasa, grasa visceral o
+  cintura es favorable; subir musculo o masa magra es favorable. El PESO
+  depende del objetivo del usuario (perdida_grasa vs ganancia_muscular) y
+  en recomposicion o mantenimiento queda neutro, porque por si solo no
+  dice nada. El agua corporal siempre es neutra: depende de hidratacion,
+  sodio y hora del dia.
+- **Una medicion no es una tendencia.** Con un solo registro no se emite
+  ninguna comparacion ni conclusion; se dice explicitamente que hace
+  falta la siguiente.
+- **Recomposicion.** Bajar masa grasa y subir musculo a la vez se
+  destaca, exigiendo que AMBOS cambios superen su umbral de ruido para no
+  anunciarla por decimas.

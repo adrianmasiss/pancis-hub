@@ -133,6 +133,64 @@ test("registrar entrenamiento y peso", async ({ page }) => {
   await expect(page.getByText("Medicion guardada.")).toBeVisible();
 });
 
+test("composicion corporal con dos InBody", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/progreso");
+
+  // Linea base: un mes atras.
+  const baseline = new Date();
+  baseline.setDate(baseline.getDate() - 30);
+  const baselineDate = baseline.toISOString().slice(0, 10);
+
+  await page.getByRole("button", { name: "Registrar medicion" }).click();
+  await page.getByLabel("Fecha").fill(baselineDate);
+  await page.getByLabel("Fuente").selectOption("inbody");
+  await page.getByLabel("Peso (kg)").fill("80");
+  await page.getByLabel(/Grasa corporal/).fill("24");
+  await page.getByLabel(/Masa muscular/).fill("34");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Medicion guardada.")).toBeVisible();
+
+  // Medicion actual: menos grasa y mas musculo.
+  await page.getByRole("button", { name: "Registrar medicion" }).click();
+  await page.getByLabel("Fuente").selectOption("inbody");
+  await page.getByLabel("Peso (kg)").fill("80");
+  await page.getByLabel(/Grasa corporal/).fill("20");
+  await page.getByLabel(/Masa muscular/).fill("36");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Medicion guardada.")).toBeVisible();
+
+  // La seccion de composicion compara ambas mediciones.
+  await expect(
+    page.getByText("Composicion corporal", { exact: true }),
+  ).toBeVisible();
+
+  // Las aserciones se acotan a la tarjeta de composicion: el grafico de
+  // abajo repite las mismas etiquetas en su leyenda.
+  const compositionCard = page
+    .getByText("Composicion corporal", { exact: true })
+    .locator("xpath=ancestor::*[@data-slot='card']");
+
+  // Masa grasa derivada: 80 x 24 % = 19.2 kg -> 80 x 20 % = 16 kg,
+  // es decir -3.2 kg contra la medicion anterior.
+  await expect(
+    compositionCard.getByText("Masa grasa", { exact: true }),
+  ).toBeVisible();
+  await expect(compositionCard.getByText("-3.2 kg")).toBeVisible();
+  // Masa magra: 60.8 kg -> 64 kg.
+  await expect(compositionCard.getByText("+3.2 kg")).toBeVisible();
+
+  // Bajar grasa y subir musculo a la vez se destaca como recomposicion.
+  await expect(
+    page.getByText("Recomposicion en curso", { exact: true }),
+  ).toBeVisible();
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

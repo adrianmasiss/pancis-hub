@@ -7,6 +7,13 @@ import {
   type TrendDirection,
 } from "@/lib/trends";
 import type { MeasurementSource, PhotoView } from "@/features/progress/schemas";
+import {
+  buildCompositionReport,
+  compositionSeries,
+  type CompositionReport,
+  type CompositionSnapshot,
+  type PrimaryGoal,
+} from "@/features/progress/lib/composition";
 
 export type MeasurementView = {
   id: string;
@@ -43,6 +50,11 @@ export type ProgressData = {
   monthlyChange: number | null;
   trend: TrendDirection | null;
   photos: PhotoViewItem[];
+  /** Analisis de composicion corporal; null sin mediciones. */
+  composition: CompositionReport | null;
+  /** Evolucion de masa grasa y masa magra, para graficar. */
+  fatMassSeries: DatedValue[];
+  leanMassSeries: DatedValue[];
 };
 
 const numberOrNull = (value: unknown): number | null =>
@@ -51,7 +63,7 @@ const numberOrNull = (value: unknown): number | null =>
 export async function getProgressData(userId: string): Promise<ProgressData> {
   const supabase = await createClient();
 
-  const [measurementsResult, photosResult] = await Promise.all([
+  const [measurementsResult, photosResult, profileResult] = await Promise.all([
     supabase
       .from("body_measurements")
       .select("*")
@@ -64,6 +76,12 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
       .eq("user_id", userId)
       .order("captured_at", { ascending: false })
       .limit(60),
+    // El objetivo decide si subir de peso es favorable o no.
+    supabase
+      .from("profiles")
+      .select("primary_goal")
+      .eq("id", userId)
+      .maybeSingle(),
   ]);
 
   const measurements: MeasurementView[] = (measurementsResult.data ?? []).map(
@@ -110,10 +128,27 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
     }),
   );
 
+  const snapshots: CompositionSnapshot[] = measurements.map((row) => ({
+    measuredAt: row.measuredAt,
+    source: row.source,
+    weightKg: row.weightKg,
+    bodyFatPercentage: row.bodyFatPercentage,
+    skeletalMuscleKg: row.skeletalMuscleKg,
+    visceralFatLevel: row.visceralFatLevel,
+    bodyWaterPercentage: row.bodyWaterPercentage,
+    waistCm: row.waistCm,
+  }));
+
   return {
     measurements,
     weightSeries,
     weightAverage7: movingAverage(weightSeries, 7),
+    composition: buildCompositionReport(
+      snapshots,
+      (profileResult.data?.primary_goal as PrimaryGoal | null) ?? null,
+    ),
+    fatMassSeries: compositionSeries(snapshots, "fatMassKg"),
+    leanMassSeries: compositionSeries(snapshots, "leanMassKg"),
     lastWeight:
       weightSeries.length > 0
         ? weightSeries[weightSeries.length - 1]!.value

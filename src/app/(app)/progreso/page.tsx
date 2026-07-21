@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { MetricCard } from "@/components/shared/metric-card";
 import { PageHeader } from "@/components/shared/page-header";
 import { WeightTrendChart } from "@/components/charts/weight-trend-chart";
+import { CompositionChart } from "@/components/charts/composition-chart";
+import { CompositionSection } from "@/features/progress/components/composition-section";
 import { MeasurementFormDialog } from "@/features/progress/components/measurement-form-dialog";
 import { MeasurementsTable } from "@/features/progress/components/measurements-table";
 import { PhotosSection } from "@/features/progress/components/photos-section";
@@ -84,6 +86,26 @@ export default async function ProgressPage() {
               />
             </CardContent>
           </Card>
+
+          {data.composition ? (
+            <CompositionSection report={data.composition} />
+          ) : null}
+
+          {data.fatMassSeries.length >= 2 ? (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  {t.composition.chartTitle}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CompositionChart
+                  fatMass={data.fatMassSeries}
+                  leanMass={data.leanMassSeries}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
 
           <section className="space-y-3">
             <h2 className="text-sm font-semibold">{t.historyTitle}</h2>
