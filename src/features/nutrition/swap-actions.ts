@@ -13,6 +13,7 @@ import {
   rebalanceDay,
   type RebalanceReport,
 } from "@/features/nutrition/lib/rebalance";
+import { recordChange } from "@/lib/audit";
 import { getFavoriteFoodIds, getRecentFoodIds } from "@/features/foods/queries";
 import type { FoodGroup } from "@/features/foods/schemas";
 import { z } from "zod";
@@ -134,9 +135,19 @@ export async function swapMealItem(
   } = await supabase.auth.getUser();
   if (!parsed.success || !user) return { error: t.failed };
 
+  // Se lee el estado anterior ANTES de actualizar: el historial necesita
+  // los valores previos y despues del update ya no existen.
+  const { data: previousItem } = await supabase
+    .from("meal_items")
+    .select(
+      "quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, foods(name)",
+    )
+    .eq("id", parsed.data.itemId)
+    .single();
+
   const { data: food } = await supabase
     .from("foods")
-    .select("calories, protein_g, carbohydrate_g, fat_g, fiber_g")
+    .select("name, calories, protein_g, carbohydrate_g, fat_g, fiber_g")
     .eq("id", parsed.data.foodId)
     .single();
   if (!food) return { error: t.failed };
@@ -177,6 +188,33 @@ export async function swapMealItem(
     .eq("id", updated.meal_id)
     .eq("user_id", user.id)
     .eq("status", "completada");
+
+  await recordChange({
+    actorUserId: user.id,
+    action: "alimento_sustituido",
+    entity: "meal_items",
+    entityId: parsed.data.itemId,
+    previousValues: previousItem
+      ? {
+          alimento: previousItem.foods?.name ?? null,
+          cantidad_g: Number(previousItem.quantity_g),
+          calorias: Number(previousItem.calories_snapshot),
+          proteina_g: Number(previousItem.protein_snapshot),
+          carbohidratos_g: Number(previousItem.carbohydrate_snapshot),
+          grasas_g: Number(previousItem.fat_snapshot),
+        }
+      : null,
+    newValues: {
+      alimento: food.name,
+      cantidad_g: parsed.data.quantityG,
+      calorias: snapshot.calories,
+      proteina_g: snapshot.proteinG,
+      carbohidratos_g: snapshot.carbohydrateG,
+      grasas_g: snapshot.fatG,
+    },
+    reason: t.modifiedReason,
+    origin: "usuario",
+  });
 
   revalidatePath("/nutricion");
   revalidatePath("/");

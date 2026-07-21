@@ -9,8 +9,8 @@ import {
 } from "@/lib/navigation";
 
 describe("navegacion", () => {
-  it("tiene 8 entradas de sidebar (Diario removido)", () => {
-    expect(sidebarItems).toHaveLength(8);
+  it("tiene 9 entradas de sidebar (Diario removido, Historial agregado)", () => {
+    expect(sidebarItems).toHaveLength(9);
   });
 
   it("tiene 4 entradas en la barra inferior mas el sheet de Mas", () => {

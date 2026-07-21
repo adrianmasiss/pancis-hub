@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { recordChange } from "@/lib/audit";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
 import {
   addMealItemSchema,
@@ -69,12 +70,33 @@ export async function updateMealStatus(
   const { supabase, user } = await requireUser();
   if (!parsed.success || !user) return fail;
 
+  const { data: previous } = await supabase
+    .from("meals")
+    .select("status, name, meal_type")
+    .eq("id", parsed.data.mealId)
+    .eq("user_id", user.id)
+    .single();
+
   const { error } = await supabase
     .from("meals")
     .update({ status: parsed.data.status })
     .eq("id", parsed.data.mealId)
     .eq("user_id", user.id);
   if (error) return fail;
+
+  await recordChange({
+    actorUserId: user.id,
+    action: "comida_estado_cambiado",
+    entity: "meals",
+    entityId: parsed.data.mealId,
+    previousValues: previous ? { estado: previous.status } : null,
+    newValues: {
+      estado: parsed.data.status,
+      comida: previous?.name ?? previous?.meal_type ?? null,
+    },
+    origin: "usuario",
+  });
+
   revalidatePath("/nutricion");
   return { success: true };
 }

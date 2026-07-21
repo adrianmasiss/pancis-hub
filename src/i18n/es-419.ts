@@ -24,6 +24,7 @@ export const messages = {
     training: "Entrenamiento",
     trainingShort: "Entrenar",
     progress: "Progreso",
+    history: "Historial",
     academy: "Academia",
     assistant: "Asistente",
     settings: "Configuracion",
@@ -614,6 +615,7 @@ export const messages = {
       limitations: "Que pierdes",
       recommendation: "Recomendacion",
     },
+    substitutionReason: "Sustitucion de ejercicio aceptada por el usuario.",
     substituteTitle: "Sustituir ejercicio",
     substituteDescription:
       "Alternativas por musculo y patron de movimiento. Ningun ejercicio produce exactamente el mismo resultado que otro.",
@@ -1025,6 +1027,51 @@ export const messages = {
       workouts: "Entrenamientos",
       meals: "Dias con comidas",
     },
+  },
+  wellbeing: {
+    title: "Como te sentiste hoy",
+    description:
+      "El sueno, el estres y la energia explican buena parte de tu rendimiento y tu adherencia.",
+    sleepHours: "Horas de sueno",
+    sleepQuality: "Calidad del sueno",
+    energy: "Energia",
+    stress: "Estres",
+    soreness: "Dolor muscular",
+    mood: "Animo",
+    notes: "Notas",
+    save: "Guardar como me senti",
+    saved: "Registro guardado.",
+    failed: "No pudimos guardar tu registro. Intenta de nuevo.",
+    todayRegistered: "Ya registraste como te sentiste hoy. Puedes editarlo.",
+    scaleHint: "1 = muy bajo · 5 = muy alto",
+    trendTitle: "Ultimos registros",
+    noEntries:
+      "Aun no has registrado como te sientes. Es util para leer tu progreso junto a tus mediciones.",
+  },
+  history: {
+    title: "Historial de cambios",
+    description:
+      "Todo cambio queda registrado con lo que habia antes, lo que quedo despues y por que.",
+    empty: "Aun no hay cambios registrados.",
+    before: "Antes",
+    after: "Despues",
+    reason: "Motivo",
+    origin: "Origen",
+    origins: {
+      usuario: "Lo hiciste tu",
+      ia: "Propuesto por la IA",
+      sistema: "Automatico del sistema",
+      importacion: "Importacion",
+    },
+    actions: {
+      alimento_sustituido: "Alimento sustituido",
+      comida_estado_cambiado: "Estado de comida",
+      ejercicio_sustituido: "Ejercicio sustituido",
+      alimento_importado: "Alimento importado",
+      medicion_registrada: "Medicion registrada",
+    },
+    retentionNote:
+      "El historial no se borra automaticamente: es tu registro de lo que realmente paso.",
   },
 } as const;
 

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { todayLocalISO } from "@/lib/dates";
 import {
   movingAverage,
   trendDirection,
@@ -41,6 +42,17 @@ export type PhotoViewItem = {
   signedUrl: string | null;
 };
 
+export type WellbeingEntry = {
+  date: string;
+  sleepHours: number | null;
+  sleepQuality: number | null;
+  energy: number | null;
+  stress: number | null;
+  soreness: number | null;
+  mood: number | null;
+  notes: string | null;
+};
+
 export type ProgressData = {
   measurements: MeasurementView[];
   weightSeries: DatedValue[];
@@ -55,6 +67,10 @@ export type ProgressData = {
   /** Evolucion de masa grasa y masa magra, para graficar. */
   fatMassSeries: DatedValue[];
   leanMassSeries: DatedValue[];
+  /** Registro de bienestar de hoy, si existe. */
+  wellbeingToday: WellbeingEntry | null;
+  /** Ultimos registros de bienestar, del mas reciente al mas antiguo. */
+  wellbeingRecent: WellbeingEntry[];
 };
 
 const numberOrNull = (value: unknown): number | null =>
@@ -63,7 +79,8 @@ const numberOrNull = (value: unknown): number | null =>
 export async function getProgressData(userId: string): Promise<ProgressData> {
   const supabase = await createClient();
 
-  const [measurementsResult, photosResult, profileResult] = await Promise.all([
+  const [measurementsResult, photosResult, profileResult, checkinsResult] =
+    await Promise.all([
     supabase
       .from("body_measurements")
       .select("*")
@@ -82,7 +99,27 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
       .select("primary_goal")
       .eq("id", userId)
       .maybeSingle(),
+    supabase
+      .from("daily_checkins")
+      .select("date, sleep_hours, sleep_quality, energy, stress, soreness, mood, notes")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(14),
   ]);
+
+  const wellbeingRecent: WellbeingEntry[] = (checkinsResult.data ?? []).map(
+    (row) => ({
+      date: row.date,
+      sleepHours: numberOrNull(row.sleep_hours),
+      sleepQuality: numberOrNull(row.sleep_quality),
+      energy: numberOrNull(row.energy),
+      stress: numberOrNull(row.stress),
+      soreness: numberOrNull(row.soreness),
+      mood: numberOrNull(row.mood),
+      notes: row.notes,
+    }),
+  );
+  const today = todayLocalISO();
 
   const measurements: MeasurementView[] = (measurementsResult.data ?? []).map(
     (row) => ({
@@ -149,6 +186,8 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
     ),
     fatMassSeries: compositionSeries(snapshots, "fatMassKg"),
     leanMassSeries: compositionSeries(snapshots, "leanMassKg"),
+    wellbeingToday: wellbeingRecent.find((entry) => entry.date === today) ?? null,
+    wellbeingRecent,
     lastWeight:
       weightSeries.length > 0
         ? weightSeries[weightSeries.length - 1]!.value

@@ -2,6 +2,8 @@ import {
   ChefHat,
   Dumbbell,
   GraduationCap,
+  // "History" choca con la interfaz global History del DOM.
+  History as HistoryIcon,
   Home,
   Settings,
   Sparkles,
@@ -77,6 +79,14 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: true,
     section: "entrenamiento",
+  },
+  {
+    href: "/historial",
+    labelKey: "history",
+    icon: HistoryIcon,
+    showInSidebar: true,
+    showInBottomNav: false,
+    section: "principal",
   },
   {
     href: "/academia",

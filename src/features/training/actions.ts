@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { recordChange } from "@/lib/audit";
 import { type CatalogExercise } from "@/features/training/lib/alternatives";
 import {
   rateExercise,
@@ -308,11 +309,38 @@ export async function substitutePlanExercise(
   const { supabase, user } = await requireUser();
   if (!parsed.success || !user) return fail;
 
+  // Estado anterior antes de sobrescribirlo, para el historial.
+  const { data: previous } = await supabase
+    .from("workout_plan_exercises")
+    .select("exercise_catalog(name)")
+    .eq("id", parsed.data.planExerciseId)
+    .single();
+
   const { error } = await supabase
     .from("workout_plan_exercises")
     .update({ exercise_id: parsed.data.newExerciseId })
     .eq("id", parsed.data.planExerciseId);
   if (error) return fail;
+
+  const { data: replacement } = await supabase
+    .from("exercise_catalog")
+    .select("name")
+    .eq("id", parsed.data.newExerciseId)
+    .single();
+
+  await recordChange({
+    actorUserId: user.id,
+    action: "ejercicio_sustituido",
+    entity: "workout_plan_exercises",
+    entityId: parsed.data.planExerciseId,
+    previousValues: previous?.exercise_catalog
+      ? { ejercicio: previous.exercise_catalog.name }
+      : null,
+    newValues: replacement ? { ejercicio: replacement.name } : null,
+    reason: t.substitutionReason,
+    origin: "usuario",
+  });
+
   revalidateTraining();
   return { success: true };
 }

@@ -303,3 +303,30 @@ sin cambios, y siempre explican por que se emiten. Las referencias de
 volumen (~6 series semanales como piso, ~22 como techo) son orientaciones
 generales, no limites exactos, y el texto lo dice. Si no hay nada que
 corregir se afirma explicitamente: el silencio no comunica lo mismo.
+
+## 2026-07-21 - Historial de cambios y bienestar diario
+
+**Historial (requisito 22).** Se completa audit_logs con
+previous_values, new_values, reason y origin (usuario / ia / sistema /
+importacion) en vez de crear una tabla paralela.
+
+La asimetria de permisos es deliberada: el usuario puede LEER su propio
+historial (policy por actor_user_id), pero la escritura no tiene policy y
+solo ocurre con el cliente service role desde Server Actions. Si el
+navegador pudiera insertar, el historial dejaria de ser un registro
+confiable de lo que realmente paso.
+
+recordChange() nunca lanza: un fallo registrando el historial no puede
+tumbar la accion que lo origino. Se registra en consola y se sigue. Los
+valores previos se leen ANTES de actualizar, porque despues del update ya
+no existen. Nada se borra automaticamente.
+
+Registrado hoy: sustitucion de alimento, cambio de estado de comida y
+sustitucion de ejercicio.
+
+**Bienestar diario (requisito 19).** El sueno, el estres, la energia, el
+dolor muscular y el animo vuelven tras retirarse el modulo "diario", pero
+ahora viven DENTRO de /progreso en vez de en una seccion propia: son parte
+de como se lee el progreso junto a las mediciones, no un diario aparte.
+Un registro por dia (indice unico user_id+date, upsert), con la fecha
+local del usuario y no UTC.

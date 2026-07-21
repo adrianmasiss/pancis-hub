@@ -11,6 +11,7 @@ import { CompositionSection } from "@/features/progress/components/composition-s
 import { MeasurementFormDialog } from "@/features/progress/components/measurement-form-dialog";
 import { MeasurementsTable } from "@/features/progress/components/measurements-table";
 import { PhotosSection } from "@/features/progress/components/photos-section";
+import { WellbeingForm } from "@/features/progress/components/wellbeing-form";
 import { getProgressData } from "@/features/progress/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -122,6 +123,8 @@ export default async function ProgressPage() {
           icon={TrendingUp}
         />
       )}
+
+      <WellbeingForm today={data.wellbeingToday} />
 
       <PhotosSection photos={data.photos} />
     </>

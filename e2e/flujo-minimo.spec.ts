@@ -268,6 +268,30 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
   await expect(page.getByText(/empuje horizontal/).first()).toBeVisible();
 });
 
+test("bienestar diario e historial de cambios", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Sueno, estres y energia vuelven a registrarse, ahora dentro de progreso.
+  await page.goto("/progreso");
+  await page.getByLabel("Horas de sueno").fill("7.5");
+  await page.getByLabel("Estres").selectOption("2");
+  await page.getByLabel("Energia").selectOption("4");
+  await page.getByRole("button", { name: "Guardar como me senti" }).click();
+  await expect(page.getByText("Registro guardado.")).toBeVisible();
+
+  // El historial recoge los cambios reales hechos en las pruebas previas,
+  // con sus valores anteriores y nuevos.
+  await page.goto("/historial");
+  await expect(page.getByText("Alimento sustituido").first()).toBeVisible();
+  await expect(page.getByText("Antes:").first()).toBeVisible();
+  await expect(page.getByText("Despues:").first()).toBeVisible();
+  await expect(page.getByText("Lo hiciste tu").first()).toBeVisible();
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

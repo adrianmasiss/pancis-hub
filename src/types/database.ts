@@ -141,6 +141,10 @@ export type Database = {
           entity: string | null
           entity_id: string | null
           id: string
+          new_values: Json | null
+          origin: string
+          previous_values: Json | null
+          reason: string | null
         }
         Insert: {
           action: string
@@ -150,6 +154,10 @@ export type Database = {
           entity?: string | null
           entity_id?: string | null
           id?: string
+          new_values?: Json | null
+          origin?: string
+          previous_values?: Json | null
+          reason?: string | null
         }
         Update: {
           action?: string
@@ -159,6 +167,10 @@ export type Database = {
           entity?: string | null
           entity_id?: string | null
           id?: string
+          new_values?: Json | null
+          origin?: string
+          previous_values?: Json | null
+          reason?: string | null
         }
         Relationships: []
       }
