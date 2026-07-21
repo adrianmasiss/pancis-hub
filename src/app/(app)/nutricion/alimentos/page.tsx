@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { ExternalFoodSearch } from "@/features/foods/components/external-food-search";
 import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
 import { FoodRow } from "@/features/foods/components/food-row";
 import { getFoodsLibrary } from "@/features/foods/queries";
@@ -156,6 +157,13 @@ export default async function FoodsLibraryPage({
           icon={Apple}
         />
       )}
+
+      {/*
+        Busqueda externa como complemento, nunca como reemplazo: primero se
+        ve el catalogo local y solo si no alcanza se consulta a USDA y Open
+        Food Facts (docs/02_PRODUCT_REQUIREMENTS.md 7.1).
+      */}
+      <ExternalFoodSearch initialQuery={query} />
     </>
   );
 }

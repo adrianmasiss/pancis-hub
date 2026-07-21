@@ -144,3 +144,41 @@ de fecha en formularios cliente usa `todayLocalISO()` (src/lib/dates.ts).
 ## 2026-07-19 - Buckets privados
 
 `progress-photos` e `inbody-files`, ambos privados, con limite de tamano y validacion MIME, rutas con prefijo `user_id/` y politicas de storage por propietario. Acceso de lectura mediante URLs firmadas de corta duracion.
+
+## 2026-07-21 - Proveedores externos de alimentos: solo gratuitos
+
+Se integran USDA FoodData Central (clave gratuita) y Open Food Facts
+(sin clave). Edamam queda descartado pese a aparecer en el prompt
+original: su plan util es de pago y el proyecto solo usa servicios
+gratuitos.
+
+Reglas de la integracion:
+
+- **Todo por 100 g.** Cada proveedor normaliza a `NormalizedFood` antes
+  de tocar la app; ningun modulo conoce la forma cruda de una respuesta.
+  Coincide con la unidad del catalogo local.
+- **Local primero.** La busqueda externa complementa al catalogo, nunca
+  lo reemplaza. Cachea en `external_food_cache` (TTL 7 dias) porque las
+  APIs gratuitas tienen limites de uso; nunca se cachea una respuesta
+  vacia, para no congelar el resultado de un fallo.
+- **Catalogo compartido.** Lo importado entra con `owner_user_id` null y
+  un indice unico `(external_source, external_id)`: la deduplicacion es
+  global y nadie reimporta lo que otro ya trajo. La escritura la hace el
+  cliente service role, igual que las imagenes.
+- **El cliente no manda macros.** `importExternalFood` recibe solo
+  `(source, externalId)` y vuelve a pedir el dato al proveedor. Un
+  usuario puede decir "importa el fdcId 12345", nunca "importa esto con
+  estos valores": el catalogo compartido no se puede envenenar.
+- **Importado != verificado.** Nada externo se marca `verified`; la UI
+  lo muestra como fuente externa sin revisar.
+- **Clasificacion por palabras completas.** El grupo alimentario se
+  infiere de categoria y nombre y, si no alcanza, del macro dominante.
+  La comparacion es por token y no por subcadena: con subcadenas, "res"
+  coincidia dentro de "preserves" y clasificaba Nutella como proteina.
+- **Deduplicacion en dos pasadas.** Primero por codigo de barras o
+  nombre+marca; despues se colapsan las presentaciones distintas del
+  mismo producto (mismo nombre, marca y macros), porque cada envase
+  tiene su propio codigo y el catalogo solo guarda valores por 100 g.
+- **Degradacion silenciosa.** Timeout de 8 s, 429 y respuestas no JSON
+  devuelven vacio y quedan registradas: la busqueda local nunca se cae
+  por un proveedor externo.

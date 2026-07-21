@@ -479,6 +479,30 @@ export type Database = {
         }
         Relationships: []
       }
+      external_food_cache: {
+        Row: {
+          cache_key: string
+          fetched_at: string
+          id: string
+          payload: Json
+          source: string
+        }
+        Insert: {
+          cache_key: string
+          fetched_at?: string
+          id?: string
+          payload: Json
+          source: string
+        }
+        Update: {
+          cache_key?: string
+          fetched_at?: string
+          id?: string
+          payload?: Json
+          source?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -502,6 +526,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      food_aliases: {
+        Row: {
+          alias: string
+          created_at: string
+          food_id: string
+          id: string
+          locale: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string
+          food_id: string
+          id?: string
+          locale?: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          food_id?: string
+          id?: string
+          locale?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_aliases_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       food_portions: {
         Row: {
@@ -543,12 +599,16 @@ export type Database = {
       }
       foods: {
         Row: {
+          barcode: string | null
           brand: string | null
           calories: number
           carbohydrate_g: number
           cooked_state: string | null
           created_at: string
           deleted_at: string | null
+          external_id: string | null
+          external_name: string | null
+          external_source: string | null
           fat_g: number
           fiber_g: number
           food_group: string
@@ -560,17 +620,24 @@ export type Database = {
           protein_g: number
           serving_amount: number
           serving_unit: string
+          sodium_mg: number | null
           source: string | null
+          source_updated_at: string | null
+          sugar_g: number | null
           updated_at: string
           verified: boolean
         }
         Insert: {
+          barcode?: string | null
           brand?: string | null
           calories: number
           carbohydrate_g: number
           cooked_state?: string | null
           created_at?: string
           deleted_at?: string | null
+          external_id?: string | null
+          external_name?: string | null
+          external_source?: string | null
           fat_g: number
           fiber_g?: number
           food_group: string
@@ -582,17 +649,24 @@ export type Database = {
           protein_g: number
           serving_amount?: number
           serving_unit?: string
+          sodium_mg?: number | null
           source?: string | null
+          source_updated_at?: string | null
+          sugar_g?: number | null
           updated_at?: string
           verified?: boolean
         }
         Update: {
+          barcode?: string | null
           brand?: string | null
           calories?: number
           carbohydrate_g?: number
           cooked_state?: string | null
           created_at?: string
           deleted_at?: string | null
+          external_id?: string | null
+          external_name?: string | null
+          external_source?: string | null
           fat_g?: number
           fiber_g?: number
           food_group?: string
@@ -604,7 +678,10 @@ export type Database = {
           protein_g?: number
           serving_amount?: number
           serving_unit?: string
+          sodium_mg?: number | null
           source?: string | null
+          source_updated_at?: string | null
+          sugar_g?: number | null
           updated_at?: string
           verified?: boolean
         }

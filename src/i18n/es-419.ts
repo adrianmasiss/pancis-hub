@@ -627,10 +627,35 @@ export const messages = {
     emptyDescription:
       "Ajusta la busqueda o los filtros, o crea un alimento propio.",
     macroSummary: "P {p} · C {c} · G {g} · F {f}",
+    external: {
+      title: "Buscar en linea",
+      description:
+        "Si no encuentras un alimento en tu biblioteca, buscalo en USDA y Open Food Facts y guardalo con un toque.",
+      searchButton: "Buscar en linea",
+      searching: "Buscando en USDA y Open Food Facts…",
+      noResults:
+        "Ningun proveedor externo tiene ese alimento. Puedes crearlo manualmente.",
+      resultsTitle: "Resultados en linea",
+      importButton: "Agregar a mi biblioteca",
+      importing: "Agregando…",
+      imported: "Alimento agregado a la biblioteca.",
+      alreadyInLibrary: "Ya esta en tu biblioteca",
+      externalBadge: "Fuente externa",
+      unverifiedNotice:
+        "Datos importados de una fuente externa, aun sin revisar. Verifica la etiqueta del producto antes de confiar en ellos.",
+      per100g: "Valores por 100 g",
+      minQuery: "Escribe al menos 3 letras para buscar en linea.",
+      providersOffline:
+        "La busqueda en linea no esta configurada. Falta la clave de USDA.",
+    },
     errors: {
       required: "Este campo es obligatorio.",
       range: "Revisa los valores: deben ser numeros validos.",
       failed: "No pudimos completar la accion. Intenta de nuevo.",
+      providerUnavailable:
+        "El proveedor externo no esta disponible en este momento.",
+      externalNotFound:
+        "El proveedor ya no tiene ese alimento. Intenta con otra busqueda.",
     },
   },
   swap: {

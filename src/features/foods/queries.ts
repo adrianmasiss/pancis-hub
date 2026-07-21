@@ -52,6 +52,27 @@ export async function getFavoriteFoodIds(userId: string): Promise<Set<string>> {
   return new Set((data ?? []).map((row) => row.item_id));
 }
 
+/**
+ * El filtro `or` de PostgREST separa condiciones por coma y delimita con
+ * parentesis, asi que esos caracteres se retiran del termino de busqueda.
+ * Tambien se neutralizan los comodines de LIKE para que el usuario no
+ * pueda escribir un patron que devuelva la tabla entera.
+ */
+function sanitizeSearchTerm(term: string): string {
+  return term.replace(/[,()]/g, " ").replace(/[%_\\]/g, "\\$&").trim();
+}
+
+/** Ids de alimentos cuyo alias coincide con el termino buscado. */
+async function findFoodIdsByAlias(term: string): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_aliases")
+    .select("food_id")
+    .ilike("alias", `%${sanitizeSearchTerm(term)}%`)
+    .limit(50);
+  return [...new Set((data ?? []).map((row) => row.food_id))];
+}
+
 export async function getFoodsLibrary(
   userId: string,
   filters: LibraryFilters,
@@ -74,7 +95,17 @@ export async function getFoodsLibrary(
     .order("name")
     .limit(100);
 
-  if (filters.query) query = query.ilike("name", `%${filters.query}%`);
+  if (filters.query) {
+    // Los alimentos importados de USDA conservan su nombre en ingles
+    // ("Chicken, broilers..."), asi que la busqueda tambien mira los alias
+    // en espanol guardados al importar.
+    const term = sanitizeSearchTerm(filters.query);
+    const aliasIds = await findFoodIdsByAlias(filters.query);
+    query =
+      aliasIds.length > 0
+        ? query.or(`name.ilike.%${term}%,id.in.(${aliasIds.join(",")})`)
+        : query.ilike("name", `%${term}%`);
+  }
   if (filters.group && FOOD_GROUPS.includes(filters.group)) {
     query = query.eq("food_group", filters.group);
   }
