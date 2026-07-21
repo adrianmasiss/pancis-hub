@@ -456,6 +456,7 @@ export type Database = {
           execution_notes: string | null
           hardest_point: string | null
           id: string
+          image_end_url: string | null
           image_url: string | null
           instructions: string | null
           is_unilateral: boolean
@@ -484,6 +485,7 @@ export type Database = {
           execution_notes?: string | null
           hardest_point?: string | null
           id?: string
+          image_end_url?: string | null
           image_url?: string | null
           instructions?: string | null
           is_unilateral?: boolean
@@ -512,6 +514,7 @@ export type Database = {
           execution_notes?: string | null
           hardest_point?: string | null
           id?: string
+          image_end_url?: string | null
           image_url?: string | null
           instructions?: string | null
           is_unilateral?: boolean

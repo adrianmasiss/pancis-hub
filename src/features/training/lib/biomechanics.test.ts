@@ -30,6 +30,8 @@ const exercise = (
   isUnilateral: false,
   commonErrors: [],
   techniqueCues: [],
+  imageUrl: null,
+  imageEndUrl: null,
   ...overrides,
 });
 

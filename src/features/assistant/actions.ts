@@ -426,7 +426,7 @@ async function findPrescription(
 }
 
 const BIOMECHANICS_SELECT =
-  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues";
+  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, image_url, image_end_url";
 
 type CatalogRow = Record<string, unknown>;
 
@@ -450,6 +450,8 @@ function toBiomechanical(row: CatalogRow): BiomechanicalExercise {
     isUnilateral: Boolean(row.is_unilateral),
     commonErrors: (row.common_errors as string[]) ?? [],
     techniqueCues: (row.technique_cues as string[]) ?? [],
+    imageUrl: (row.image_url as string | null) ?? null,
+    imageEndUrl: (row.image_end_url as string | null) ?? null,
   };
 }
 

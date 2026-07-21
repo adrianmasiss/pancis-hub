@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "backfill:images": "node --env-file=.env.local scripts/backfill-food-images.mjs"
+    "backfill:images": "node --env-file=.env.local scripts/backfill-food-images.mjs",
+    "import:exercise-images": "node --env-file=.env.local scripts/import-exercise-images.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.18",

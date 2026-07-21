@@ -358,3 +358,27 @@ soltando palabras del final hasta encontrar coincidencia.
 **Acceso desde cualquier pantalla** (requisito 15) mediante boton
 flotante, oculto en la propia pagina del asistente y por encima de la
 barra inferior en movil.
+
+## 2026-07-21 - Imagenes de ejercicios: free-exercise-db, no fotos de stock
+
+Se descarto el banco de fotos generico que ya se usa para alimentos. Las
+pruebas contra la API real fueron concluyentes: buscar "Plancha" devuelve
+ensalada de papa y "Prensa de pierna" devuelve aceite de CBD, porque el
+indice esta en ingles y varios nombres en espanol son ambiguos. Traducir
+las consultas mejora poco: devuelve gimnasios genericos que no muestran
+el movimiento.
+
+Para un modulo de biomecanica una imagen que no corresponde al ejercicio
+DESINFORMA sobre la tecnica, que es lo contrario de lo que se busca. Una
+foto bonita pero equivocada es peor que ninguna foto.
+
+Fuente elegida: free-exercise-db (github.com/yuhonas/free-exercise-db),
+dominio publico (Unlicense), sin clave ni cuota, con 873 ejercicios y dos
+imagenes por ejercicio. Se guardan AMBAS (posicion inicial y final):
+juntas comunican el movimiento, que una sola foto no logra.
+
+El mapeo nombre-en-espanol -> ejercicio-de-la-fuente es explicito en
+scripts/import-exercise-images.mjs. Una coincidencia difusa acabaria
+asignando la imagen equivocada; si un ejercicio nuevo no esta en el mapa
+se reporta y se omite, nunca se adivina. Las imagenes se copian al bucket
+propio exercise-images para no depender de que GitHub siga sirviendolas.

@@ -48,6 +48,10 @@ export type BiomechanicalExercise = {
   isUnilateral: boolean;
   commonErrors: string[];
   techniqueCues: string[];
+  /** Posicion inicial del movimiento. */
+  imageUrl: string | null;
+  /** Posicion final; juntas comunican el movimiento. */
+  imageEndUrl: string | null;
 };
 
 export type RatingContext = {

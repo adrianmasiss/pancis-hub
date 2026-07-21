@@ -567,6 +567,10 @@ export const messages = {
     substitute: "Sustituir",
     biomechanics: {
       detailTitle: "Ficha del ejercicio",
+      startPosition: "Inicio",
+      endPosition: "Fin",
+      imageCredit:
+        "Imagenes de free-exercise-db (dominio publico). Son una referencia general del movimiento, no una correccion de tu tecnica.",
       detailDescription:
         "Que trabaja, como se comporta la resistencia y como se valora para tu objetivo.",
       secondaryMuscles: "Musculos secundarios",

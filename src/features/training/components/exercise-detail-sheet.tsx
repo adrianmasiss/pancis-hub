@@ -31,6 +31,30 @@ function scoreTone(score: number): string {
   return "text-destructive";
 }
 
+/** Fotograma del movimiento con su etiqueta de fase. */
+function ExerciseImage({
+  src,
+  alt,
+  label,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+}) {
+  return (
+    <div className="space-y-1">
+      {/* eslint-disable-next-line @next/next/no-img-element -- storage propio, sin next/image en el resto del proyecto */}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="bg-muted aspect-square w-full rounded-lg object-cover"
+      />
+      <p className="text-muted-foreground text-center text-xs">{label}</p>
+    </div>
+  );
+}
+
 function Section({
   title,
   children,
@@ -110,6 +134,28 @@ export function ExerciseDetailSheet({
             </p>
           ) : (
             <>
+              {detail.exercise.imageUrl ? (
+                <figure className="space-y-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <ExerciseImage
+                      src={detail.exercise.imageUrl}
+                      alt={`${detail.exercise.name} — ${t.startPosition}`}
+                      label={t.startPosition}
+                    />
+                    {detail.exercise.imageEndUrl ? (
+                      <ExerciseImage
+                        src={detail.exercise.imageEndUrl}
+                        alt={`${detail.exercise.name} — ${t.endPosition}`}
+                        label={t.endPosition}
+                      />
+                    ) : null}
+                  </div>
+                  <figcaption className="text-muted-foreground text-xs">
+                    {t.imageCredit}
+                  </figcaption>
+                </figure>
+              ) : null}
+
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="secondary" className="font-normal">
                   {detail.exercise.primaryMuscle}

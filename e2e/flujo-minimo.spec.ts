@@ -216,6 +216,23 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   await page
     .getByRole("button", { name: /Ficha del ejercicio — Sentadilla con barra/ })
     .click();
+  // Requisito 10/21: imagen del movimiento, inicio y fin.
+  const startImage = page.getByRole("img", {
+    name: /Sentadilla con barra — Inicio/,
+  });
+  await expect(startImage).toBeVisible();
+  // Que este en el DOM no basta: se comprueba que el archivo cargo.
+  await expect
+    .poll(() =>
+      startImage.evaluate(
+        (img) => (img as HTMLImageElement).naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+  await expect(
+    page.getByRole("img", { name: /Sentadilla con barra — Fin/ }),
+  ).toBeVisible();
+
   await expect(page.getByText("Articulaciones involucradas")).toBeVisible();
   await expect(page.getByText("Curva de resistencia")).toBeVisible();
   await expect(page.getByText("Errores comunes")).toBeVisible();

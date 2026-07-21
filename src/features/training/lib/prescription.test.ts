@@ -25,6 +25,8 @@ const sentadilla: BiomechanicalExercise = {
   isUnilateral: false,
   commonErrors: [],
   techniqueCues: [],
+  imageUrl: null,
+  imageEndUrl: null,
 };
 
 const curl: BiomechanicalExercise = {

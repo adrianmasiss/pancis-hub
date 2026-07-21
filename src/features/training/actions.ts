@@ -391,9 +391,11 @@ export async function searchExercises(
 
 /** Columnas biomecanicas del catalogo, usadas por la ficha y la comparacion. */
 const BIOMECHANICS_COLUMNS =
-  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, setup_notes, execution_notes";
+  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, setup_notes, execution_notes, image_url, image_end_url";
 
 type BiomechanicsRow = ExerciseRow & {
+  image_url: string | null;
+  image_end_url: string | null;
   joints: string[] | null;
   resistance_profile: string | null;
   hardest_point: string | null;
@@ -425,6 +427,8 @@ function toBiomechanicalExercise(
     isUnilateral: row.is_unilateral ?? false,
     commonErrors: row.common_errors ?? [],
     techniqueCues: row.technique_cues ?? [],
+    imageUrl: row.image_url ?? null,
+    imageEndUrl: row.image_end_url ?? null,
   };
 }
 
