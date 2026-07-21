@@ -242,3 +242,35 @@ deltas y porcentaje de cambio acumulado.
 - **Recomposicion.** Bajar masa grasa y subir musculo a la vez se
   destaca, exigiendo que AMBOS cambios superen su umbral de ruido para no
   anunciarla por decimas.
+
+## 2026-07-21 - Biomecanica: atributos guardados, valoraciones calculadas
+
+El catalogo guarda los atributos INTRINSECOS del ejercicio (articulaciones,
+perfil de resistencia, punto mas dificil, estabilidad, rango, demanda
+tecnica, fatiga sistemica, facilidad de progresion, errores comunes y
+recomendaciones tecnicas, todo en escalas 1-10 donde aplica).
+
+Las valoraciones que ve el usuario NO se guardan: se calculan segun su
+objetivo, experiencia y la posicion del ejercicio en la sesion. La misma
+caracteristica cambia de signo segun el contexto:
+
+- Un ejercicio inestable penaliza a un principiante (el esfuerzo se va en
+  estabilizar) y apenas afecta a un avanzado.
+- Una maquina muy estable pero dificil de progresar rinde mas para
+  resistencia que para fuerza.
+- Un ejercicio muy fatigante colocado en la posicion 4 o posterior se
+  penaliza: se llega cansado y la calidad de las series baja.
+
+**Ninguna puntuacion se muestra sin motivo.** Cada valoracion incluye la
+razon por la que salio ese numero, y la UI aclara que son orientativas y
+que la anatomia y la movilidad individuales pueden cambiar la respuesta.
+
+**Las sustituciones se explican, no se listan.** compareExercises()
+redacta en que se parecen dos ejercicios, que se gana, que cambia y que
+se pierde, con una compatibilidad 0-10 donde lo que mas pesa es compartir
+musculo principal y patron. Si el musculo principal cambia, se dice
+explicitamente que no es un sustituto.
+
+Se elimino rankExerciseAlternatives (lib/alternatives.ts), que ordenaba
+sin explicar: mantener dos motores de sustitucion competiendo habria sido
+deuda tecnica inmediata.

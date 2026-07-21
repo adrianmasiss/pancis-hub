@@ -4,11 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { type CatalogExercise } from "@/features/training/lib/alternatives";
 import {
-  rankExerciseAlternatives,
-  type CatalogExercise,
-  type ExerciseAlternative,
-} from "@/features/training/lib/alternatives";
+  rateExercise,
+  type BiomechanicalExercise,
+  type ExerciseRating,
+  type ExperienceLevel,
+  type RatingContext,
+  type ResistanceProfile,
+  type TrainingGoal,
+} from "@/features/training/lib/biomechanics";
+import {
+  rankComparisons,
+  type ExerciseComparison,
+} from "@/features/training/lib/exercise-comparison";
 import {
   addDaySchema,
   addPlanExerciseSchema,
@@ -348,11 +357,88 @@ export async function searchExercises(
   return { results: (data ?? []).map(toCatalogExercise) };
 }
 
+/** Columnas biomecanicas del catalogo, usadas por la ficha y la comparacion. */
+const BIOMECHANICS_COLUMNS =
+  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, setup_notes, execution_notes";
+
+type BiomechanicsRow = ExerciseRow & {
+  joints: string[] | null;
+  resistance_profile: string | null;
+  hardest_point: string | null;
+  stability: number | null;
+  range_of_motion: number | null;
+  technical_demand: number | null;
+  systemic_fatigue: number | null;
+  progression_ease: number | null;
+  is_unilateral: boolean | null;
+  common_errors: string[] | null;
+  technique_cues: string[] | null;
+  setup_notes?: string | null;
+  execution_notes?: string | null;
+};
+
+function toBiomechanicalExercise(
+  row: BiomechanicsRow,
+): BiomechanicalExercise {
+  return {
+    ...toCatalogExercise(row),
+    joints: row.joints ?? [],
+    resistanceProfile: (row.resistance_profile as ResistanceProfile) ?? null,
+    hardestPoint: row.hardest_point,
+    stability: row.stability,
+    rangeOfMotion: row.range_of_motion,
+    technicalDemand: row.technical_demand,
+    systemicFatigue: row.systemic_fatigue,
+    progressionEase: row.progression_ease,
+    isUnilateral: row.is_unilateral ?? false,
+    commonErrors: row.common_errors ?? [],
+    techniqueCues: row.technique_cues ?? [],
+  };
+}
+
+/**
+ * Contexto de valoracion del usuario. El objetivo del perfil se traduce
+ * al vocabulario de entrenamiento; sin datos se asume lo mas comun para
+ * la app (hipertrofia, nivel intermedio).
+ */
+async function getRatingContext(userId: string): Promise<RatingContext> {
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("primary_goal, experience_level")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const goal: TrainingGoal =
+    profile?.primary_goal === "ganancia_muscular"
+      ? "hipertrofia"
+      : profile?.primary_goal === "perdida_grasa"
+        ? "recomposicion"
+        : profile?.primary_goal === "recomposicion"
+          ? "recomposicion"
+          : "hipertrofia";
+
+  const experience: ExperienceLevel =
+    profile?.experience_level === "principiante" ||
+    profile?.experience_level === "avanzado"
+      ? profile.experience_level
+      : "intermedio";
+
+  return { goal, experience };
+}
+
+export type ExerciseAlternativeDetail = ExerciseComparison & {
+  exercise: BiomechanicalExercise;
+};
+
 export async function getExerciseAlternatives(
   input: unknown,
 ): Promise<
   | { error: string }
-  | { source: CatalogExercise; alternatives: ExerciseAlternative[] }
+  | {
+      source: BiomechanicalExercise;
+      alternatives: ExerciseAlternativeDetail[];
+    }
 > {
   const parsed = planExerciseIdSchema.safeParse(input);
   const { supabase, user } = await requireUser();
@@ -360,30 +446,71 @@ export async function getExerciseAlternatives(
 
   const { data: planExercise } = await supabase
     .from("workout_plan_exercises")
-    .select(
-      "exercise_catalog(id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty)",
-    )
+    .select(`exercise_catalog(${BIOMECHANICS_COLUMNS})`)
     .eq("id", parsed.data.planExerciseId)
     .single();
   if (!planExercise?.exercise_catalog) return { error: t.actionFailed };
 
   const { data: candidates } = await supabase
     .from("exercise_catalog")
-    .select(
-      "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty",
-    )
+    .select(BIOMECHANICS_COLUMNS)
     .is("deleted_at", null)
     .limit(200);
 
-  const source = toCatalogExercise(
-    planExercise.exercise_catalog as ExerciseRow,
+  const source = toBiomechanicalExercise(
+    planExercise.exercise_catalog as BiomechanicsRow,
   );
+
   return {
     source,
-    alternatives: rankExerciseAlternatives(
+    alternatives: rankComparisons(
       source,
-      (candidates ?? []).map(toCatalogExercise),
+      (candidates ?? []).map((row) =>
+        toBiomechanicalExercise(row as BiomechanicsRow),
+      ),
     ),
+  };
+}
+
+export type ExerciseDetail = {
+  exercise: BiomechanicalExercise;
+  setupNotes: string | null;
+  executionNotes: string | null;
+  ratings: ExerciseRating[];
+};
+
+/**
+ * Ficha completa de un ejercicio del plan: datos biomecanicos mas las
+ * valoraciones calculadas para el contexto del usuario. Cada valoracion
+ * llega con su motivo (requisito 11).
+ */
+export async function getExerciseDetail(
+  input: unknown,
+): Promise<{ error: string } | ExerciseDetail> {
+  const parsed = planExerciseIdSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return { error: t.actionFailed };
+
+  const { data: planExercise } = await supabase
+    .from("workout_plan_exercises")
+    .select(`position, exercise_catalog(${BIOMECHANICS_COLUMNS})`)
+    .eq("id", parsed.data.planExerciseId)
+    .single();
+  if (!planExercise?.exercise_catalog) return { error: t.actionFailed };
+
+  const row = planExercise.exercise_catalog as BiomechanicsRow;
+  const exercise = toBiomechanicalExercise(row);
+  const context = await getRatingContext(user.id);
+
+  return {
+    exercise,
+    setupNotes: row.setup_notes ?? null,
+    executionNotes: row.execution_notes ?? null,
+    ratings: rateExercise(exercise, {
+      ...context,
+      // `position` ya es 1-indexado en workout_plan_exercises.
+      positionInSession: planExercise.position ?? undefined,
+    }),
   };
 }
 

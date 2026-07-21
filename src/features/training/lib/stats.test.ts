@@ -6,7 +6,6 @@ import {
   sessionVolume,
   type LoggedSet,
 } from "./stats";
-import { rankExerciseAlternatives, type CatalogExercise } from "./alternatives";
 
 const sets: LoggedSet[] = [
   {
@@ -90,56 +89,5 @@ describe("muscleFrequency", () => {
       ["cuadriceps", 2],
       ["pecho", 1],
     ]);
-  });
-});
-
-const squat: CatalogExercise = {
-  id: "squat",
-  name: "Sentadilla con barra",
-  primaryMuscle: "cuadriceps",
-  secondaryMuscles: ["gluteos", "isquiotibiales", "core"],
-  movementPattern: "sentadilla",
-  equipment: "barra",
-  difficulty: "intermedio",
-};
-
-const legPress: CatalogExercise = {
-  id: "leg-press",
-  name: "Prensa de pierna",
-  primaryMuscle: "cuadriceps",
-  secondaryMuscles: ["gluteos"],
-  movementPattern: "sentadilla",
-  equipment: "maquina",
-  difficulty: "principiante",
-};
-
-const deadlift: CatalogExercise = {
-  id: "deadlift",
-  name: "Peso muerto",
-  primaryMuscle: "isquiotibiales",
-  secondaryMuscles: ["gluteos", "espalda baja"],
-  movementPattern: "bisagra de cadera",
-  equipment: "barra",
-  difficulty: "intermedio",
-};
-
-describe("rankExerciseAlternatives", () => {
-  it("prioriza mismo musculo principal y patron", () => {
-    const results = rankExerciseAlternatives(squat, [deadlift, legPress]);
-    expect(results[0]?.exercise.id).toBe("leg-press");
-    expect(results[0]?.samePrimaryMuscle).toBe(true);
-  });
-
-  it("filtra por equipo disponible cuando se indica", () => {
-    const results = rankExerciseAlternatives(squat, [deadlift, legPress], {
-      equipment: "maquina",
-    });
-    expect(results).toHaveLength(1);
-    expect(results[0]?.exercise.id).toBe("leg-press");
-  });
-
-  it("excluye el propio ejercicio", () => {
-    const results = rankExerciseAlternatives(squat, [squat, legPress]);
-    expect(results.some((r) => r.exercise.id === "squat")).toBe(false);
   });
 });

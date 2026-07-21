@@ -191,6 +191,49 @@ test("composicion corporal con dos InBody", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Rutina con un ejercicio para poder inspeccionarlo.
+  await page.goto("/entrenamiento");
+  await page.getByRole("button", { name: "Crear rutina" }).click();
+  await page.getByLabel("Nombre").fill("Rutina biomecanica");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Rutina creada.")).toBeVisible();
+
+  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
+  await page.getByRole("button", { name: "Agregar dia" }).click();
+  await page.getByRole("button", { name: "Agregar ejercicio" }).first().click();
+  await page.getByLabel("Buscar ejercicio…").fill("sentadilla");
+  await page.getByRole("button", { name: /Sentadilla con barra/ }).click();
+  await expect(page.getByText("Ejercicio agregado.")).toBeVisible();
+
+  // Ficha del ejercicio: datos biomecanicos y valoraciones con motivo.
+  await page
+    .getByRole("button", { name: /Ficha del ejercicio — Sentadilla con barra/ })
+    .click();
+  await expect(page.getByText("Articulaciones involucradas")).toBeVisible();
+  await expect(page.getByText("Curva de resistencia")).toBeVisible();
+  await expect(page.getByText("Errores comunes")).toBeVisible();
+  await expect(page.getByText("Valoracion para tu contexto")).toBeVisible();
+  // Ninguna puntuacion se muestra sin su motivo.
+  await expect(page.getByText("Ajuste a tu objetivo")).toBeVisible();
+  await expect(page.getByText(/rango amplio/).first()).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // Sustitucion: cada alternativa explica que se gana y que se pierde.
+  await page
+    .getByRole("button", { name: /Sustituir — Sentadilla con barra/ })
+    .click();
+  await expect(page.getByText("En que se parecen").first()).toBeVisible();
+  await expect(page.getByText("Que ganas").first()).toBeVisible();
+  await expect(page.getByText("Que pierdes").first()).toBeVisible();
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

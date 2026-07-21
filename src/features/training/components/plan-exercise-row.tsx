@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { ArrowLeftRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,12 +24,29 @@ import {
   substitutePlanExercise,
   updatePlanExercise,
 } from "@/features/training/actions";
-import type { ExerciseAlternative } from "@/features/training/lib/alternatives";
+import type { ExerciseAlternativeDetail } from "@/features/training/actions";
+import { ExerciseDetailSheet } from "@/features/training/components/exercise-detail-sheet";
 import type { PlanExerciseView } from "@/features/training/queries";
 import { toOptionalNumber } from "@/lib/forms";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.training;
+const b = messages.training.biomechanics;
+
+/** Bloque de comparacion; no se renderiza si no hay nada que decir. */
+function ComparisonList({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <p className="text-xs font-medium">{title}</p>
+      <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function targetSummary(exercise: PlanExerciseView): string {
   const parts: string[] = [];
@@ -52,7 +68,7 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
   const [editOpen, setEditOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [alternatives, setAlternatives] = useState<
-    ExerciseAlternative[] | null
+    ExerciseAlternativeDetail[] | null
   >(null);
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState({
@@ -125,6 +141,10 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
           </p>
         ) : null}
       </div>
+      <ExerciseDetailSheet
+        planExerciseId={exercise.id}
+        exerciseName={exercise.name}
+      />
       <Button
         variant="ghost"
         size="icon"
@@ -240,16 +260,9 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
                       <span className="text-sm font-medium">
                         {alternative.exercise.name}
                       </span>
-                      {alternative.samePattern ? (
-                        <Badge variant="secondary" className="font-normal">
-                          {t.samePattern}
-                        </Badge>
-                      ) : null}
-                      {!alternative.samePrimaryMuscle ? (
-                        <Badge variant="outline" className="font-normal">
-                          {t.otherMuscle}
-                        </Badge>
-                      ) : null}
+                      <span className="text-muted-foreground ml-auto text-sm font-semibold tabular-nums">
+                        {alternative.compatibility}/10
+                      </span>
                     </div>
                     <p className="text-muted-foreground text-xs">
                       {alternative.exercise.primaryMuscle}
@@ -260,6 +273,29 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
                         ? ` · ${alternative.exercise.difficulty}`
                         : ""}
                     </p>
+
+                    {/*
+                      Nunca se ofrece una sustitucion sin explicarla: que
+                      comparten, que se gana y que se pierde (requisito 12).
+                    */}
+                    <p className="text-xs">{alternative.recommendation}</p>
+
+                    <ComparisonList
+                      title={b.similarities}
+                      items={alternative.similarities}
+                    />
+                    <ComparisonList
+                      title={b.advantages}
+                      items={alternative.advantages}
+                    />
+                    <ComparisonList
+                      title={b.differences}
+                      items={alternative.differences}
+                    />
+                    <ComparisonList
+                      title={b.limitations}
+                      items={alternative.limitations}
+                    />
                     <Button
                       size="sm"
                       className="w-full"

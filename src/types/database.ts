@@ -436,44 +436,86 @@ export type Database = {
       }
       exercise_catalog: {
         Row: {
+          common_errors: string[]
           created_at: string
           deleted_at: string | null
           difficulty: string | null
           equipment: string | null
+          execution_notes: string | null
+          hardest_point: string | null
           id: string
+          image_url: string | null
           instructions: string | null
+          is_unilateral: boolean
+          joints: string[]
           movement_pattern: string | null
           name: string
           primary_muscle: string
+          progression_ease: number | null
+          range_of_motion: number | null
+          resistance_profile: string | null
           secondary_muscles: string[]
+          setup_notes: string | null
+          stability: number | null
+          systemic_fatigue: number | null
+          technical_demand: number | null
+          technique_cues: string[]
           updated_at: string
           video_url: string | null
         }
         Insert: {
+          common_errors?: string[]
           created_at?: string
           deleted_at?: string | null
           difficulty?: string | null
           equipment?: string | null
+          execution_notes?: string | null
+          hardest_point?: string | null
           id?: string
+          image_url?: string | null
           instructions?: string | null
+          is_unilateral?: boolean
+          joints?: string[]
           movement_pattern?: string | null
           name: string
           primary_muscle: string
+          progression_ease?: number | null
+          range_of_motion?: number | null
+          resistance_profile?: string | null
           secondary_muscles?: string[]
+          setup_notes?: string | null
+          stability?: number | null
+          systemic_fatigue?: number | null
+          technical_demand?: number | null
+          technique_cues?: string[]
           updated_at?: string
           video_url?: string | null
         }
         Update: {
+          common_errors?: string[]
           created_at?: string
           deleted_at?: string | null
           difficulty?: string | null
           equipment?: string | null
+          execution_notes?: string | null
+          hardest_point?: string | null
           id?: string
+          image_url?: string | null
           instructions?: string | null
+          is_unilateral?: boolean
+          joints?: string[]
           movement_pattern?: string | null
           name?: string
           primary_muscle?: string
+          progression_ease?: number | null
+          range_of_motion?: number | null
+          resistance_profile?: string | null
           secondary_muscles?: string[]
+          setup_notes?: string | null
+          stability?: number | null
+          systemic_fatigue?: number | null
+          technical_demand?: number | null
+          technique_cues?: string[]
           updated_at?: string
           video_url?: string | null
         }
