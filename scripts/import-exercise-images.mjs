@@ -48,6 +48,12 @@ const EXERCISE_MAP = {
   Plancha: "Plank",
 };
 
+// Aviso explicito del destino: ambos scripts se ejecutan con
+// --env-file=.env.local, que apunta a la base LOCAL. Es facil creer que
+// se esta poblando produccion y estar escribiendo en Docker.
+const isLocal = URL.includes("127.0.0.1") || URL.includes("localhost");
+console.log(`Destino: ${URL} ${isLocal ? "(LOCAL)" : "(REMOTO)"}\n`);
+
 const admin = createClient(URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
