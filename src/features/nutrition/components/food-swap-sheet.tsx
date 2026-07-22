@@ -24,6 +24,11 @@ import {
   swapMealItem,
   type SwapSuggestions,
 } from "@/features/nutrition/swap-actions";
+import { Label } from "@/components/ui/label";
+import {
+  SWAP_FILTERS,
+  type SwapFilter,
+} from "@/features/foods/lib/equivalence";
 import type { MealItemView } from "@/features/nutrition/queries";
 import type { RebalanceReport } from "@/features/nutrition/lib/rebalance";
 import { CompatibilityScore } from "@/components/shared/compatibility-score";
@@ -49,12 +54,16 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SwapSuggestions | null>(null);
   const [rebalance, setRebalance] = useState<RebalanceReport | null>(null);
+  const [filter, setFilter] = useState<SwapFilter>("similar");
   const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const load = async () => {
+  const load = async (nextFilter: SwapFilter = filter) => {
     setLoading(true);
-    const result = await getSwapSuggestions({ itemId: item.id });
+    const result = await getSwapSuggestions({
+      itemId: item.id,
+      filter: nextFilter,
+    });
     setLoading(false);
     if ("error" in result) toast.error(result.error);
     else setSuggestions(result);
@@ -115,6 +124,31 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
             />
           </p>
 
+          {/* Requisito 5.2: buscar la alternativa segun lo que hace falta. */}
+          <div className="space-y-1">
+            <Label htmlFor="swap-filter">{t.filterLabel}</Label>
+            <select
+              id="swap-filter"
+              className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+              value={filter}
+              onChange={(event) => {
+                const next = event.target.value as SwapFilter;
+                setFilter(next);
+                setSuggestions(null);
+                void load(next);
+              }}
+            >
+              {SWAP_FILTERS.map((option) => (
+                <option key={option} value={option}>
+                  {t.filters[option]}
+                </option>
+              ))}
+            </select>
+            {filter === "mas_proteina" || filter === "mas_saciedad" ? (
+              <p className="text-muted-foreground text-xs">{t.densityNote}</p>
+            ) : null}
+          </div>
+
           {rebalance ? <RebalanceSummary report={rebalance} /> : null}
 
           {loading ? (
@@ -122,7 +156,9 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
               {messages.common.loading}
             </p>
           ) : suggestions && suggestions.alternatives.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t.noAlternatives}</p>
+            <p className="text-muted-foreground text-sm">
+              {filter === "similar" ? t.noAlternatives : t.filterEmpty}
+            </p>
           ) : suggestions ? (
             <ul className="space-y-2">
               {suggestions.alternatives.map((alternative) => (

@@ -846,6 +846,18 @@ export const messages = {
     crossGroupNote: "De otro grupo alimentario",
     favoriteNote: "Favorito",
     recentNote: "Usado recientemente",
+    filterLabel: "Buscar",
+    filters: {
+      similar: "Lo mas parecido",
+      mas_proteina: "Mas proteina",
+      menos_calorias: "Menos calorias",
+      mas_saciedad: "Mas saciedad",
+      disponibles: "Favoritos y recientes",
+    },
+    filterEmpty:
+      "Ninguna alternativa mejora en ese criterio. Prueba con otro o usa la opcion mas parecida.",
+    densityNote:
+      "Proteina y saciedad se comparan por caloria: mas aporte para la misma energia.",
     confirmSwap: "Confirmar intercambio",
     swapped: "Alimento intercambiado.",
     failed: "No pudimos completar el intercambio. Intenta de nuevo.",

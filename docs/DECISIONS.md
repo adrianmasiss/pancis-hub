@@ -573,3 +573,28 @@ atajo de navegacion: llega con la respuesta util ya calculada.
 gastaria una llamada al modelo por el simple hecho de tocar un boton, y
 quitaria al usuario la posibilidad de ajustarla antes. La prueba e2e
 verifica justamente que no haya respuesta hasta pulsar Enviar.
+
+## 2026-07-22 - Filtros de sustitucion, y el que no se hizo
+
+Al buscar una alternativa se puede elegir criterio: lo mas parecido (por
+defecto), mas proteina, menos calorias, mas saciedad, o solo favoritos y
+recientes.
+
+**Se comparan DENSIDADES, no totales.** La cantidad sugerida ya iguala el
+macro ancla del alimento original, asi que comparar totales daria "mas
+proteina" como cierto por puro redondeo. Lo que el usuario busca es mas
+proteina POR EL MISMO COSTO CALORICO, asi que el criterio usa proteina
+por 100 kcal, y lo mismo para saciedad. Lo encontro un test: con totales,
+las tres candidatas "mejoraban".
+
+El indice de saciedad (proteina x1.5 + fibra x2) es una APROXIMACION para
+ordenar, no una medida validada, y la UI dice que se compara por caloria.
+
+Una alternativa que no mejora en el criterio elegido se excluye: ofrecer
+como "mas proteina" algo que aporta menos seria mentir. Si nada mejora se
+dice explicitamente en vez de mostrar la lista normal.
+
+**No hay criterio economico.** El prompt lo pedia, pero la aplicacion no
+tiene datos de precio y ninguna fuente gratuita los publica de forma
+fiable para Costa Rica. Un orden "mas barato" inventado seria peor que no
+ofrecerlo: el usuario confiaria en un dato que no existe.

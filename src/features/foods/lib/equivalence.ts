@@ -245,6 +245,28 @@ export function matchesRestriction(
   });
 }
 
+/**
+ * Criterios de busqueda de alternativas (docs 5.2).
+ *
+ * "similar" es el comportamiento por defecto: la alternativa mas parecida
+ * al original. Los demas reordenan segun lo que el usuario busca en ese
+ * momento, sin dejar de mostrar la compatibilidad para que vea el costo
+ * de alejarse del plan.
+ *
+ * NO se incluye un criterio economico: la aplicacion no tiene datos de
+ * precio y ninguna fuente gratuita los publica de forma fiable. Ofrecer
+ * un orden "mas barato" inventado seria peor que no ofrecerlo.
+ */
+export const SWAP_FILTERS = [
+  "similar",
+  "mas_proteina",
+  "menos_calorias",
+  "mas_saciedad",
+  "disponibles",
+] as const;
+
+export type SwapFilter = (typeof SWAP_FILTERS)[number];
+
 export type RankInput = {
   source: EquivalenceFood;
   sourceQuantityG: number;
@@ -253,7 +275,96 @@ export type RankInput = {
   recentIds: Set<string>;
   restrictions: string[];
   maxResults?: number;
+  filter?: SwapFilter;
 };
+
+/**
+ * Indice de saciedad aproximado: proteina y fibra son los componentes con
+ * respaldo mas consistente para sostenerla. Es una APROXIMACION util para
+ * ordenar, no una medida validada.
+ */
+export function satietyIndex(macros: MacroSet): number {
+  return macros.proteinG * 1.5 + macros.fiberG * 2;
+}
+
+/**
+ * Densidad por 100 kcal.
+ *
+ * Comparar totales no sirve como criterio: la cantidad sugerida ya iguala
+ * el macro ancla, asi que "mas proteina" saldria trivialmente cierto por
+ * redondeo. Lo que el usuario busca al pedir "mas proteina" es mas
+ * proteina POR EL MISMO COSTO CALORICO.
+ */
+function perCalorie(value: number, calories: number): number {
+  return calories <= 0 ? 0 : (value / calories) * 100;
+}
+
+export function proteinDensity(macros: MacroSet): number {
+  return perCalorie(macros.proteinG, macros.calories);
+}
+
+export function satietyDensity(macros: MacroSet): number {
+  return perCalorie(satietyIndex(macros), macros.calories);
+}
+
+/** Margen minimo para considerar que un criterio mejora de verdad. */
+const MEANINGFUL_GAIN = 1.05;
+
+/**
+ * Clave de ordenamiento segun el criterio elegido. Menor = mejor, para
+ * mantener la misma convencion que el puntaje de distancia.
+ */
+function filterSortKey(
+  candidate: SwapCandidate,
+  sourceMacros: MacroSet,
+  filter: SwapFilter,
+): number {
+  switch (filter) {
+    case "mas_proteina":
+      return -proteinDensity(candidate.macros);
+    case "menos_calorias":
+      return candidate.macros.calories;
+    case "mas_saciedad":
+      return -satietyDensity(candidate.macros);
+    case "disponibles":
+      // Favoritos y recientes primero: es lo que el usuario suele tener.
+      return candidate.isFavorite ? 0 : candidate.isRecent ? 1 : 2;
+    case "similar":
+    default:
+      return candidate.score;
+  }
+}
+
+/**
+ * Un criterio distinto de "similar" solo tiene sentido si la alternativa
+ * mejora en esa direccion; si no, se queda fuera para no ofrecer como
+ * "mas proteina" algo que aporta menos.
+ */
+function passesFilter(
+  candidate: SwapCandidate,
+  sourceMacros: MacroSet,
+  filter: SwapFilter,
+): boolean {
+  switch (filter) {
+    case "mas_proteina":
+      return (
+        proteinDensity(candidate.macros) >
+        proteinDensity(sourceMacros) * MEANINGFUL_GAIN
+      );
+    case "menos_calorias":
+      return candidate.macros.calories < sourceMacros.calories;
+    case "mas_saciedad":
+      return (
+        satietyDensity(candidate.macros) >
+        satietyDensity(sourceMacros) * MEANINGFUL_GAIN
+      );
+    case "disponibles":
+      return candidate.isFavorite || candidate.isRecent;
+    case "similar":
+    default:
+      return true;
+  }
+}
 
 export function rankAlternatives({
   source,
@@ -263,6 +374,7 @@ export function rankAlternatives({
   recentIds,
   restrictions,
   maxResults = 8,
+  filter = "similar",
 }: RankInput): SwapCandidate[] {
   const sourceMacros = scaleMacros(source.per100g, sourceQuantityG);
 
@@ -316,7 +428,14 @@ export function rankAlternatives({
         }),
       };
     })
-    .sort((a, b) => a.score - b.score)
+    .filter((candidate) => passesFilter(candidate, sourceMacros, filter))
+    .sort((a, b) => {
+      const byFilter =
+        filterSortKey(a, sourceMacros, filter) -
+        filterSortKey(b, sourceMacros, filter);
+      // A igualdad en el criterio elegido, gana lo mas parecido al plan.
+      return byFilter !== 0 ? byFilter : a.score - b.score;
+    })
     .slice(0, maxResults);
 }
 

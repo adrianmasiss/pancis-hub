@@ -96,7 +96,12 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
     page.getByText("Alternativas con aporte similar", { exact: false }),
   ).toBeVisible();
   // Cada alternativa muestra su compatibilidad 0-10.
+  // Requisito 5.2: filtrar la busqueda segun lo que hace falta.
+  await page.getByLabel("Buscar").selectOption("mas_proteina");
+  await expect(page.getByText(/se comparan por caloria/)).toBeVisible();
+  await page.getByLabel("Buscar").selectOption("similar");
   await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
+
   await page
     .getByRole("button", { name: "Confirmar intercambio" })
     .first()

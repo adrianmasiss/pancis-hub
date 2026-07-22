@@ -7,6 +7,7 @@ import {
   nutritionalDistance,
   rankAlternatives,
   formatHouseholdEquivalence,
+  satietyIndex,
   type EquivalenceFood,
 } from "./equivalence";
 
@@ -318,5 +319,132 @@ describe("compatibilityScore", () => {
       sameCookedState: false,
     });
     expect(mixed.overall).toBeLessThan(same.overall);
+  });
+});
+
+describe("filtros de sustitucion", () => {
+  const pollo: EquivalenceFood = {
+    id: "pollo",
+    name: "Pechuga de pollo",
+    foodGroup: "proteina",
+    cookedState: "cocido",
+    per100g: {
+      calories: 165,
+      proteinG: 31,
+      carbohydrateG: 0,
+      fatG: 3.6,
+      fiberG: 0,
+    },
+  };
+  const atun: EquivalenceFood = {
+    id: "atun",
+    name: "Atun en agua",
+    foodGroup: "proteina",
+    cookedState: "cocido",
+    per100g: {
+      calories: 116,
+      proteinG: 26,
+      carbohydrateG: 0,
+      fatG: 1,
+      fiberG: 0,
+    },
+  };
+  const lentejas: EquivalenceFood = {
+    id: "lentejas",
+    name: "Lentejas cocidas",
+    foodGroup: "proteina",
+    cookedState: "cocido",
+    per100g: {
+      calories: 116,
+      proteinG: 9,
+      carbohydrateG: 20,
+      fatG: 0.4,
+      fiberG: 8,
+    },
+  };
+
+  const rank = (filter: Parameters<typeof rankAlternatives>[0]["filter"]) =>
+    rankAlternatives({
+      source: pollo,
+      sourceQuantityG: 100,
+      candidates: [atun, lentejas],
+      favoriteIds: new Set(["atun"]),
+      recentIds: new Set<string>(),
+      restrictions: [],
+      filter,
+    });
+
+  it("por defecto ordena por parecido al original", () => {
+    const results = rank("similar");
+    expect(results[0]!.food.id).toBe("atun");
+  });
+
+  it("menos_calorias descarta lo que aporta mas y ordena por las mas bajas", () => {
+    const results = rank("menos_calorias");
+    expect(results.length).toBeGreaterThan(0);
+    for (const result of results) {
+      expect(result.macros.calories).toBeLessThan(165);
+    }
+  });
+
+  it("mas_saciedad compara por caloria, no en total", () => {
+    // Las lentejas aportan mas saciedad absoluta, pero necesitan 400 kcal
+    // frente a las 165 del pollo: por caloria rinden menos y quedan fuera.
+    // El atun aporta saciedad parecida con menos energia.
+    const results = rank("mas_saciedad");
+    expect(results.map((r) => r.food.id)).toEqual(["atun"]);
+  });
+
+  it("satietyIndex pondera proteina y fibra", () => {
+    const soloProteina = satietyIndex({
+      calories: 100,
+      proteinG: 10,
+      carbohydrateG: 0,
+      fatG: 0,
+      fiberG: 0,
+    });
+    const conFibra = satietyIndex({
+      calories: 100,
+      proteinG: 10,
+      carbohydrateG: 0,
+      fatG: 0,
+      fiberG: 5,
+    });
+    expect(conFibra).toBeGreaterThan(soloProteina);
+  });
+
+  it("disponibles solo ofrece favoritos o recientes", () => {
+    const results = rank("disponibles");
+    expect(results).toHaveLength(1);
+    expect(results[0]!.food.id).toBe("atun");
+  });
+
+  it("mas_proteina compara densidad, no totales", () => {
+    // La cantidad sugerida ya iguala la proteina, asi que comparar totales
+    // daria "mejora" por puro redondeo. Lo que cuenta es la proteina por
+    // caloria: el atun (26 g / 116 kcal) supera al pollo (31 g / 165 kcal).
+    const results = rank("mas_proteina");
+    expect(results.map((r) => r.food.id)).toEqual(["atun"]);
+  });
+
+  it("no ofrece alternativas que empeoren el criterio elegido", () => {
+    // Nada supera la densidad proteica del atun.
+    const results = rankAlternatives({
+      source: atun,
+      sourceQuantityG: 100,
+      candidates: [lentejas],
+      favoriteIds: new Set<string>(),
+      recentIds: new Set<string>(),
+      restrictions: [],
+      filter: "mas_proteina",
+    });
+    expect(results).toHaveLength(0);
+  });
+
+  it("mantiene la compatibilidad visible aunque cambie el orden", () => {
+    for (const result of rank("mas_saciedad")) {
+      expect(result.compatibility.overall).toBeGreaterThanOrEqual(0);
+      expect(result.compatibility.overall).toBeLessThanOrEqual(10);
+    }
   });
 });

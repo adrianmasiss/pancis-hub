@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import {
   rankAlternatives,
+  SWAP_FILTERS,
   type EquivalenceFood,
   type SwapCandidate,
 } from "@/features/foods/lib/equivalence";
@@ -22,7 +23,10 @@ import { z } from "zod";
 
 const t = messages.swap;
 
-const swapSuggestionsSchema = z.object({ itemId: z.uuid() });
+const swapSuggestionsSchema = z.object({
+  itemId: z.uuid(),
+  filter: z.enum(SWAP_FILTERS).optional(),
+});
 
 const swapItemSchema = z.object({
   itemId: z.uuid(),
@@ -115,6 +119,7 @@ export async function getSwapSuggestions(
     favoriteIds,
     recentIds: new Set(recentIds),
     restrictions: (preferencesResult.data ?? []).map((row) => row.value),
+    filter: parsed.data.filter,
   });
 
   return {
