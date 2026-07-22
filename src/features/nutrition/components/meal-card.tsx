@@ -40,6 +40,10 @@ import {
 } from "@/features/nutrition/actions";
 import { FoodPicker } from "@/features/nutrition/components/food-picker";
 import { MealItemRow } from "@/features/nutrition/components/meal-item-row";
+import {
+  AskAboutButton,
+  contextualQuestions,
+} from "@/features/assistant/components/ask-about-button";
 import { RecipeSwapSheet } from "@/features/nutrition/components/recipe-swap-sheet";
 import type { MealView } from "@/features/nutrition/queries";
 import { formatTime } from "@/features/nutrition/lib/meal-schedule";
@@ -97,6 +101,10 @@ export function MealCard({ meal }: { meal: MealView }) {
           <span className="text-muted-foreground ml-auto text-sm font-normal tabular-nums">
             {meal.totals.calories} {t.kcal}
           </span>
+          <AskAboutButton
+            question={contextualQuestions.meal(title)}
+            label={title}
+          />
           <RecipeSwapSheet
             mealId={meal.id}
             mealName={title}

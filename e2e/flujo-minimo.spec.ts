@@ -567,7 +567,26 @@ test("asistente accesible y conectado a los motores", async ({ page }) => {
     page.getByRole("link", { name: "Abrir asistente" }),
   ).toHaveCount(0);
 
+  // Requisito 15: acceso desde un ejercicio concreto, con la pregunta ya
+  // redactada para que active la comparacion biomecanica.
+  await page.goto("/entrenamiento");
+  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
+  await page
+    .getByRole("link", { name: /Preguntar al asistente — Sentadilla con barra/ })
+    .click();
+  await expect(page).toHaveURL(/\/asistente\?q=/, { timeout: 20_000 });
+  const prefilled = page.getByRole("textbox").first();
+  await expect(prefilled).toHaveValue(/Sentadilla con barra/);
+  // No se envia sola: gastaria una llamada al modelo sin que el usuario
+  // lo pida.
+  await expect(page.getByText(/Observacion/)).toHaveCount(0);
+  await page.getByRole("button", { name: /Enviar/ }).first().click();
+  await expect(page.getByText(/Observacion/).first()).toBeVisible({
+    timeout: 30_000,
+  });
+
   // Pregunta de entrenamiento resuelta con el motor de prescripcion.
+  await page.goto("/asistente");
   const input = page.getByRole("textbox").first();
   await input.fill("cuantas series de sentadilla hago");
   await page.getByRole("button", { name: /Enviar|Preguntar/ }).first().click();

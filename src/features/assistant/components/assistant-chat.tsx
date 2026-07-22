@@ -57,9 +57,19 @@ function ReplyCard({ reply }: { reply: AssistantReply }) {
   );
 }
 
-export function AssistantChat() {
+/**
+ * `initialMessage` llega desde los accesos contextuales (una comida, un
+ * alimento, un ejercicio). Se PRECARGA en el campo pero NO se envia sola:
+ * mandar una consulta sin que el usuario la confirme gastaria una llamada
+ * al modelo por el simple hecho de tocar un boton.
+ */
+export function AssistantChat({
+  initialMessage,
+}: {
+  initialMessage?: string;
+}) {
   const [entries, setEntries] = useState<ChatEntry[]>([]);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage ?? "");
   const [pending, startTransition] = useTransition();
   const endRef = useRef<HTMLDivElement | null>(null);
 

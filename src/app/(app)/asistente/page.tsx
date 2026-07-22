@@ -13,17 +13,24 @@ export const metadata: Metadata = { title: t.title };
 // defecto de una Server Action en Vercel.
 export const maxDuration = 30;
 
-export default async function AssistantPage() {
+export default async function AssistantPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Los accesos contextuales llegan con la pregunta ya redactada.
+  const { q } = await searchParams;
+
   return (
     <>
       <PageHeader title={t.title} description={t.subtitle} />
-      <AssistantChat />
+      <AssistantChat initialMessage={q?.slice(0, 500)} />
     </>
   );
 }

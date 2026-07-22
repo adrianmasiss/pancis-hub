@@ -557,3 +557,19 @@ porque el comportamiento es identico en los dos modulos; solo cambian los
 textos y de donde salen los datos. Cada dominio resume sus versiones y
 redacta sus cambios pendientes, y el componente comun se encarga del
 guardado, la confirmacion y la restauracion.
+
+## 2026-07-22 - Asistente contextual desde cada elemento
+
+El asistente ya era accesible desde cualquier pantalla (boton flotante),
+pero al abrirlo habia que explicarle de que se estaba hablando. Ahora hay
+un acceso directo en cada comida, cada alimento y cada ejercicio.
+
+**Las preguntas se redactan para activar los motores que ya existen:**
+"No tengo X" dispara las equivalencias de alimentos y "No puedo hacer X"
+dispara la comparacion biomecanica. El acceso contextual no es solo un
+atajo de navegacion: llega con la respuesta util ya calculada.
+
+**La pregunta se precarga pero NO se envia sola.** Mandarla al abrir
+gastaria una llamada al modelo por el simple hecho de tocar un boton, y
+quitaria al usuario la posibilidad de ajustarla antes. La prueba e2e
+verifica justamente que no haya respuesta hasta pulsar Enviar.

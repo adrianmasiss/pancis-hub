@@ -318,6 +318,13 @@ export const messages = {
   },
   assistant: {
     openAssistant: "Abrir asistente",
+    contextual: {
+      ask: "Preguntar al asistente",
+      // Redactadas para activar los motores deterministas ya existentes.
+      mealQuestion: "Como puedo ajustar mi {name} de hoy?",
+      foodQuestion: "No tengo {name}, por que lo puedo cambiar?",
+      exerciseQuestion: "No puedo hacer {name}, que alternativa tengo?",
+    },
     title: "Asistente",
     subtitle:
       "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",

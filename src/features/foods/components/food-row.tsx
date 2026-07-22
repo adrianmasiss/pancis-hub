@@ -14,6 +14,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { deleteCustomFood, toggleFavoriteFood } from "@/features/foods/actions";
+import {
+  AskAboutButton,
+  contextualQuestions,
+} from "@/features/assistant/components/ask-about-button";
 import { FoodCorrectionDialog } from "@/features/foods/components/food-correction-dialog";
 import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
 import type { LibraryFood } from "@/features/foods/queries";
@@ -103,6 +107,10 @@ export function FoodRow({ food }: { food: LibraryFood }) {
       <span className="text-muted-foreground hidden text-xs sm:block">
         {t.groups[food.foodGroup]}
       </span>
+      <AskAboutButton
+        question={contextualQuestions.food(food.name)}
+        label={food.name}
+      />
       {!food.isOwn ? (
         // El catalogo es compartido y no se edita: se corrige por usuario.
         <FoodCorrectionDialog food={food} />

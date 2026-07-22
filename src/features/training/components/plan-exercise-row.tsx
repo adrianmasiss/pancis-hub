@@ -25,6 +25,10 @@ import {
   updatePlanExercise,
 } from "@/features/training/actions";
 import type { ExerciseAlternativeDetail } from "@/features/training/actions";
+import {
+  AskAboutButton,
+  contextualQuestions,
+} from "@/features/assistant/components/ask-about-button";
 import { ExerciseDetailSheet } from "@/features/training/components/exercise-detail-sheet";
 import type { PlanExerciseView } from "@/features/training/queries";
 import { toOptionalNumber } from "@/lib/forms";
@@ -141,6 +145,10 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
           </p>
         ) : null}
       </div>
+      <AskAboutButton
+        question={contextualQuestions.exercise(exercise.name)}
+        label={exercise.name}
+      />
       <ExerciseDetailSheet
         planExerciseId={exercise.id}
         exerciseName={exercise.name}
