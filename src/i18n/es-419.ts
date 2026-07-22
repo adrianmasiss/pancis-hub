@@ -934,6 +934,37 @@ export const messages = {
       omitida: "Omitida",
     },
     modifiedNote: "Esta comida se completo con sustituciones.",
+    versions: {
+      title: "Versiones de tu dieta",
+      description:
+        "Cada version es una foto completa del plan. Puedes volver a cualquiera sin perder la actual.",
+      save: "Guardar version",
+      saved: "Version {version} guardada.",
+      restore: "Restaurar",
+      restored: "Se restauro la version {version}.",
+      versionLabel: "Version {version}",
+      summary: "{meals} comidas · {items} alimentos · {calories} kcal",
+      noVersions:
+        "Aun no has guardado ninguna version. Guarda una antes de hacer cambios grandes para poder volver.",
+      noChanges: "No hay cambios respecto a la ultima version guardada.",
+      pendingTitle: "Cambios sin guardar desde la ultima version",
+      pendingItemChanged: "{food} en {meal}: {from} g -> {to} g",
+      pendingItemAdded: "Se agrego {food} a {meal}",
+      pendingItemRemoved: "Se quito {food} de {meal}",
+      pendingMealAdded: "Se agrego la comida {meal}",
+      pendingMealRemoved: "Se quito la comida {meal}",
+      caloriesDelta: "Diferencia total: {delta} kcal",
+      reason: "Motivo (opcional)",
+      reasonPlaceholder: "Ej. antes de subir carbohidratos",
+      defaultReason: "Version guardada manualmente.",
+      autoBeforeRestore: "Guardada automaticamente antes de restaurar.",
+      restoreReason: "Se restauro la version {version}.",
+      restoreIncomplete:
+        "Algun alimento de esa version ya no existe en el catalogo. No se pudo restaurar completa.",
+      failed: "No pudimos completar la accion. Intenta de nuevo.",
+      restoreConfirm:
+        "Se reemplazara tu dieta actual por esta version. Antes se guarda una version de lo que tienes ahora, asi que no se pierde nada.",
+    },
     recipeSwap: {
       trigger: "Cambiar por receta",
       title: "Sustituir la comida por una receta",
@@ -1133,6 +1164,8 @@ export const messages = {
       alimento_importado: "Alimento importado",
       alimento_corregido: "Alimento corregido",
       comida_sustituida_por_receta: "Comida sustituida por receta",
+      dieta_versionada: "Version de dieta guardada",
+      dieta_restaurada: "Dieta restaurada",
       medicion_registrada: "Medicion registrada",
     },
     retentionNote:

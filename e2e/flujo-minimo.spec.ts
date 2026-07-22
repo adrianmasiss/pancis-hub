@@ -1,4 +1,9 @@
 import { expect, test } from "@playwright/test";
+import {
+  changeSeededQuantity,
+  findUserId,
+  seedActiveDiet,
+} from "./helpers/seed";
 
 /**
  * Flujo minimo end-to-end del MVP (docs/TESTING.md):
@@ -260,6 +265,49 @@ test("sustituir una comida por una receta", async ({ page }) => {
     .click();
   await expect(page.getByText("Comida sustituida por la receta.")).toBeVisible();
   await expect(page.getByText(/Bowl de prueba/).first()).toBeVisible();
+});
+
+test("versionar y restaurar la dieta", async ({ page }) => {
+  // La dieta se siembra directamente: crearla pasa por el flujo de IA
+  // (subir un PDF), que no es viable en una prueba automatizada.
+  const userId = await findUserId(email);
+  const templateId = await seedActiveDiet(userId);
+
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/nutricion/dieta");
+  await expect(page.getByText("Versiones de tu dieta")).toBeVisible();
+
+  // Version 1: el plan tal como quedo sembrado.
+  await page.getByLabel(/Motivo/).fill("Antes de subir avena");
+  await page.getByRole("button", { name: "Guardar version" }).click();
+  await expect(page.getByText("Version 1 guardada.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(/Version 1/).first()).toBeVisible();
+
+  // Se cambia la dieta por fuera y la pagina debe detectar la diferencia.
+  await changeSeededQuantity(templateId, 150);
+  await page.reload();
+  await expect(
+    page.getByText("Cambios sin guardar desde la ultima version"),
+  ).toBeVisible();
+  await expect(page.getByText(/80 g -> 150 g/)).toBeVisible();
+
+  // Restaurar deja el plan como estaba y no quedan cambios pendientes.
+  await page.getByRole("button", { name: "Restaurar" }).first().click();
+  await page.getByRole("button", { name: "Restaurar" }).last().click();
+  await expect(page.getByText("Se restauro la version 1.")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Cambios sin guardar desde la ultima version"),
+  ).toHaveCount(0);
+  // Restaurar guarda el estado previo (v2) y el restaurado (v3), asi que
+  // la version mas reciente coincide con lo que hay en pantalla.
+  await expect(page.getByText(/Version 3/).first()).toBeVisible();
 });
 
 test("registrar entrenamiento y peso", async ({ page }) => {

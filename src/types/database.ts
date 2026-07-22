@@ -377,6 +377,47 @@ export type Database = {
           },
         ]
       }
+      diet_template_versions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          reason: string | null
+          snapshot: Json
+          template_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          reason?: string | null
+          snapshot: Json
+          template_id: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          reason?: string | null
+          snapshot?: Json
+          template_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "diet_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diet_templates: {
         Row: {
           created_at: string
@@ -1293,6 +1334,47 @@ export type Database = {
             columns: ["workout_plan_day_id"]
             isOneToOne: false
             referencedRelation: "workout_plan_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_plan_versions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          plan_id: string
+          reason: string | null
+          snapshot: Json
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          plan_id: string
+          reason?: string | null
+          snapshot: Json
+          user_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          plan_id?: string
+          reason?: string | null
+          snapshot?: Json
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_plan_versions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
             referencedColumns: ["id"]
           },
         ]

@@ -509,3 +509,33 @@ al sustituir un alimento suelto.
 hoja con `setOpen(true)` desde un boton externo NO pasa por
 `onOpenChange`, asi que la carga de datos nunca se dispara y la hoja sale
 vacia. Lo encontro la prueba e2e.
+
+## 2026-07-22 - Versionado de dietas: snapshot inmutable
+
+El historial ya registraba QUE cambio, pero no permitia volver atras.
+
+**Modelo: foto completa en jsonb, no filas versionadas.** La plantilla
+viva sigue siendo la que se edita a diario, sin columnas de version que
+compliquen cada consulta del modulo. Versionar fila por fila con validez
+temporal obligaria a filtrar por version en todas partes, a cambio de una
+flexibilidad que aqui no se necesita.
+
+**La foto guarda nombres y macros del momento**, no solo identificadores.
+Si un alimento se elimina del catalogo o cambia sus valores, la version
+sigue describiendo fielmente lo que el plan decia entonces.
+
+**Sin UPDATE ni DELETE en la tabla de versiones.** Una version editable o
+borrable deja de servir como respaldo de lo que hubo.
+
+**Restaurar nunca destruye.** Antes de sobrescribir se guarda una version
+del estado actual, y el estado restaurado tambien se versiona. Sin esta
+segunda parte, la version mas reciente seria el respaldo previo y la
+pagina reportaria "cambios sin guardar" justo despues de restaurar: lo
+encontro la prueba e2e.
+
+Las versiones identicas a la anterior se rechazan: solo ensuciarian el
+historial.
+
+Nota de pruebas: crear una dieta pasa por el flujo de IA (subir un PDF),
+inviable en e2e, asi que la prueba la siembra con el rol de servicio
+contra la base local (e2e/helpers/seed.ts). Nunca se usa con produccion.
