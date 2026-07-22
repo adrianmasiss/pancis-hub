@@ -210,6 +210,58 @@ test("escanear codigo de barras", async ({ page }) => {
   await expect(page.getByText("Open Food Facts").first()).toBeVisible();
 });
 
+test("sustituir una comida por una receta", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Receta con un ingrediente, para tener con que comparar.
+  await page.goto("/recetas");
+  await page.getByRole("button", { name: "Crear receta" }).click();
+  await page.getByLabel("Nombre").fill("Bowl de prueba");
+  await page.getByLabel("Porciones").fill("2");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  // Al crearla se navega a su ficha, asi que el toast no llega a verse.
+  await expect(
+    page.getByRole("heading", { name: "Bowl de prueba" }),
+  ).toBeVisible({ timeout: 20_000 });
+
+  await page.getByRole("button", { name: "Agregar ingrediente" }).click();
+  await page.getByLabel("Buscar alimento…").fill("pechuga");
+  await page.getByRole("button", { name: /Pechuga de pollo/ }).first().click();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  await expect(page.getByText(/Pechuga de pollo/).first()).toBeVisible();
+
+  // Comida del dia con la que comparar la receta.
+  await page.goto("/nutricion");
+  await page.getByRole("button", { name: "Agregar comida" }).click();
+  await page.getByLabel("Tipo de comida").selectOption("otro");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Comida agregada.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Agregar alimento" }).last().click();
+  await page.getByLabel("Buscar alimento…").fill("arroz");
+  await page.getByRole("button", { name: /Arroz blanco/ }).first().click();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  await expect(page.getByText("Alimento agregado.")).toBeVisible();
+
+  // Sustituir esa comida por la receta, con la comparacion a la vista.
+  await page
+    .getByRole("button", { name: /Cambiar por receta — Otro/ })
+    .last()
+    .click();
+  await expect(page.getByText("Porciones sugeridas").first()).toBeVisible();
+  await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
+  await page
+    .getByRole("button", { name: "Sustituir la comida" })
+    .first()
+    .click();
+  await expect(page.getByText("Comida sustituida por la receta.")).toBeVisible();
+  await expect(page.getByText(/Bowl de prueba/).first()).toBeVisible();
+});
+
 test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

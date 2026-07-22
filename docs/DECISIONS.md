@@ -480,3 +480,32 @@ la forma que indexa Open Food Facts.
 
 La camara se apaga al cerrar el dialogo y tambien si el componente
 desaparece sin cerrarse: dejarla encendida seria un fallo grave.
+
+## 2026-07-22 - Sustituir una comida completa por una receta
+
+Cambiar toda la comida no es lo mismo que cambiar un alimento: hay que
+decidir CUANTAS porciones de la receta se acercan a lo planificado.
+
+`suggestServings` ancla en CALORIAS, no en un macro concreto. Una comida
+completa mezcla fuentes, asi que ningun macro representa su papel del
+modo en que la proteina representa a un filete. Se redondea a medias
+porciones (un cuarto de receta rara vez es practico) dentro de un rango
+de 0.5 a 4.
+
+La compatibilidad usa el MISMO motor que los intercambios de alimento,
+para que un 8/10 signifique lo mismo en las dos pantallas. No se aplican
+las penalizaciones por grupo alimentario ni por crudo/cocido: una receta
+no pertenece a un grupo ni tiene un estado unico.
+
+Las correcciones del usuario tambien valen dentro de una receta: los
+macros por porcion se calculan con los valores corregidos, no con los del
+catalogo.
+
+Solo se toca la comida registrada del dia; el plan original no cambia. Si
+la comida ya estaba completada pasa a "completada con cambios", igual que
+al sustituir un alimento suelto.
+
+**Gotcha de UI:** el disparador debe ir dentro de `SheetTrigger`. Abrir la
+hoja con `setOpen(true)` desde un boton externo NO pasa por
+`onOpenChange`, asi que la carga de datos nunca se dispara y la hoja sale
+vacia. Lo encontro la prueba e2e.

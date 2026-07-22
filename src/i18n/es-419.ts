@@ -934,6 +934,24 @@ export const messages = {
       omitida: "Omitida",
     },
     modifiedNote: "Esta comida se completo con sustituciones.",
+    recipeSwap: {
+      trigger: "Cambiar por receta",
+      title: "Sustituir la comida por una receta",
+      description:
+        "Comparamos cada receta con lo que tenias planificado y sugerimos las porciones que mas se acercan.",
+      currentMeal: "Comida actual",
+      suggestedServings: "Porciones sugeridas",
+      servingsLabel: "porciones",
+      confirm: "Sustituir la comida",
+      replaced: "Comida sustituida por la receta.",
+      noRecipes:
+        "Aun no tienes recetas con ingredientes. Crea una en la seccion Recetas.",
+      emptyMeal:
+        "Agrega alimentos a la comida para poder compararla con tus recetas.",
+      emptyRecipe: "Esa receta no tiene ingredientes.",
+      failed: "No pudimos sustituir la comida. Intenta de nuevo.",
+      auditReason: "Comida sustituida por una receta.",
+    },
     markCompleted: "Marcar completada",
     markPlanned: "Volver a planificada",
     markSkipped: "Omitir",
@@ -1114,6 +1132,7 @@ export const messages = {
       ejercicio_sustituido: "Ejercicio sustituido",
       alimento_importado: "Alimento importado",
       alimento_corregido: "Alimento corregido",
+      comida_sustituida_por_receta: "Comida sustituida por receta",
       medicion_registrada: "Medicion registrada",
     },
     retentionNote:

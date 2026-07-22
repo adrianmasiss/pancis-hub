@@ -40,6 +40,7 @@ import {
 } from "@/features/nutrition/actions";
 import { FoodPicker } from "@/features/nutrition/components/food-picker";
 import { MealItemRow } from "@/features/nutrition/components/meal-item-row";
+import { RecipeSwapSheet } from "@/features/nutrition/components/recipe-swap-sheet";
 import type { MealView } from "@/features/nutrition/queries";
 import { formatTime } from "@/features/nutrition/lib/meal-schedule";
 import { messages } from "@/i18n/es-419";
@@ -96,6 +97,11 @@ export function MealCard({ meal }: { meal: MealView }) {
           <span className="text-muted-foreground ml-auto text-sm font-normal tabular-nums">
             {meal.totals.calories} {t.kcal}
           </span>
+          <RecipeSwapSheet
+            mealId={meal.id}
+            mealName={title}
+            hasItems={meal.items.length > 0}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
