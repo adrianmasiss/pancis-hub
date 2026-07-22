@@ -886,6 +886,10 @@ export const messages = {
       otro: "Otro",
     },
     mealName: "Nombre (opcional)",
+    mealTime: "Hora (opcional)",
+    mealTimeHelp: "Las comidas sin hora se muestran al final del dia.",
+    mealTimeUpdated: "Horario actualizado.",
+    noTime: "Sin hora",
     mealType: "Tipo de comida",
     statuses: {
       planificada: "Planificada",

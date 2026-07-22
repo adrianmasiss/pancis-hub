@@ -101,6 +101,43 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await expect(page.getByText("Como queda tu dia")).toBeVisible();
 });
 
+test("horarios ordenan el dia", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/nutricion");
+
+  // Se crea la cena ANTES que el desayuno: si el orden fuera por creacion,
+  // la cena quedaria primero.
+  await page.getByRole("button", { name: "Agregar comida" }).click();
+  await page.getByLabel("Tipo de comida").selectOption("cena");
+  await page.getByLabel("Hora (opcional)").fill("20:30");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Comida agregada.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Agregar comida" }).click();
+  await page.getByLabel("Tipo de comida").selectOption("desayuno");
+  await page.getByLabel("Hora (opcional)").fill("07:15");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Comida agregada.")).toBeVisible();
+
+  // La hora se muestra en la tarjeta.
+  await expect(page.getByText(/7:15/).first()).toBeVisible();
+  await expect(page.getByText(/8:30/).first()).toBeVisible();
+
+  // Y manda sobre el orden de creacion: el desayuno va antes que la cena.
+  const titulos = await page
+    .locator("[data-slot=card-title]")
+    .allTextContents();
+  const desayuno = titulos.findIndex((t) => t.includes("Desayuno"));
+  const cena = titulos.findIndex((t) => t.includes("Cena"));
+  expect(desayuno).toBeGreaterThanOrEqual(0);
+  expect(desayuno).toBeLessThan(cena);
+});
+
 test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

@@ -15,6 +15,7 @@ import {
   updateMealItemSchema,
   updateMealNotesSchema,
   updateMealStatusSchema,
+  updateMealTimeSchema,
 } from "@/features/nutrition/schemas";
 
 const t = messages.nutrition;
@@ -57,6 +58,7 @@ export async function createMeal(
     date: parsed.data.date,
     meal_type: parsed.data.mealType,
     name: parsed.data.name || null,
+    scheduled_time: parsed.data.scheduledTime ?? null,
   });
   if (error) return fail;
   revalidatePath("/nutricion");
@@ -98,6 +100,25 @@ export async function updateMealStatus(
   });
 
   revalidatePath("/nutricion");
+  return { success: true };
+}
+
+/** Cambia (o borra) el horario de una comida ya registrada. */
+export async function updateMealTime(
+  input: unknown,
+): Promise<NutritionActionResult> {
+  const parsed = updateMealTimeSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return fail;
+
+  const { error } = await supabase
+    .from("meals")
+    .update({ scheduled_time: parsed.data.scheduledTime ?? null })
+    .eq("id", parsed.data.mealId)
+    .eq("user_id", user.id);
+  if (error) return fail;
+  revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 

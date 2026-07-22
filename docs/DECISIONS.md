@@ -414,3 +414,19 @@ viven en `.env.scripts`, NO en `.env.production.local`. Ese nombre lo
 carga Next.js automaticamente al construir en modo produccion, y hacia
 que la app local apuntara a la base de la nube con la clave anon local
 ("Invalid API key"), rompiendo la suite e2e.
+
+## 2026-07-22 - Horarios de comida
+
+`meals` y `diet_template_meals` guardan `scheduled_time`. Se usa `time` y
+no `timestamptz` porque es una hora del dia recurrente ("07:30 cada dia"),
+no un instante: con zona horaria se desplazaria al viajar o con el horario
+de verano.
+
+**El horario manda sobre el tipo de comida** al ordenar el dia. La
+etiqueta no alcanza: con dos o tres snacks, "snack" no dice cual va antes.
+Las comidas sin hora conservan el orden por tipo.
+
+**Sin hora se ordena al FINAL, no al principio.** Sin horario no se puede
+afirmar que una comida ocurra primero, y colocarla arriba desordenaria un
+dia bien planificado. El campo es opcional a proposito: registrar una
+comida rapida sin pensar en la hora sigue siendo valido.

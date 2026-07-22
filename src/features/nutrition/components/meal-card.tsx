@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   Check,
   CircleSlash,
+  Clock,
   Copy,
   MoreVertical,
   NotebookPen,
@@ -40,6 +41,7 @@ import {
 import { FoodPicker } from "@/features/nutrition/components/food-picker";
 import { MealItemRow } from "@/features/nutrition/components/meal-item-row";
 import type { MealView } from "@/features/nutrition/queries";
+import { formatTime } from "@/features/nutrition/lib/meal-schedule";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +74,12 @@ export function MealCard({ meal }: { meal: MealView }) {
           {meal.name ? (
             <span className="text-muted-foreground text-xs font-normal">
               {t.mealTypes[meal.mealType]}
+            </span>
+          ) : null}
+          {formatTime(meal.scheduledTime) ? (
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-normal">
+              <Clock className="size-3" aria-hidden="true" />
+              {formatTime(meal.scheduledTime)}
             </span>
           ) : null}
           <Badge

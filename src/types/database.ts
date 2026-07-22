@@ -343,6 +343,7 @@ export type Database = {
           meal_type: string
           name: string | null
           order_index: number
+          scheduled_time: string | null
           template_id: string
           updated_at: string
         }
@@ -352,6 +353,7 @@ export type Database = {
           meal_type: string
           name?: string | null
           order_index?: number
+          scheduled_time?: string | null
           template_id: string
           updated_at?: string
         }
@@ -361,6 +363,7 @@ export type Database = {
           meal_type?: string
           name?: string | null
           order_index?: number
+          scheduled_time?: string | null
           template_id?: string
           updated_at?: string
         }
@@ -814,6 +817,7 @@ export type Database = {
           modified_reason: string | null
           name: string | null
           notes: string | null
+          scheduled_time: string | null
           status: string
           updated_at: string
           user_id: string
@@ -827,6 +831,7 @@ export type Database = {
           modified_reason?: string | null
           name?: string | null
           notes?: string | null
+          scheduled_time?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -840,6 +845,7 @@ export type Database = {
           modified_reason?: string | null
           name?: string | null
           notes?: string | null
+          scheduled_time?: string | null
           status?: string
           updated_at?: string
           user_id?: string

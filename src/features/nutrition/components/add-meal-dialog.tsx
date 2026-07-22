@@ -24,18 +24,20 @@ export function AddMealDialog({ date }: { date: string }) {
   const [open, setOpen] = useState(false);
   const [mealType, setMealType] = useState<string>("desayuno");
   const [name, setName] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [pending, startTransition] = useTransition();
 
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     startTransition(async () => {
-      const result = await createMeal({ date, mealType, name });
+      const result = await createMeal({ date, mealType, name, scheduledTime });
       if ("error" in result) {
         toast.error(result.error);
       } else {
         toast.success(t.mealCreated);
         setOpen(false);
         setName("");
+        setScheduledTime("");
       }
     });
   };
@@ -62,6 +64,16 @@ export function AddMealDialog({ date }: { date: string }) {
             value={mealType}
             onChange={(event) => setMealType(event.target.value)}
           />
+          <div className="space-y-2">
+            <Label htmlFor="meal-time">{t.mealTime}</Label>
+            <Input
+              id="meal-time"
+              type="time"
+              value={scheduledTime}
+              onChange={(event) => setScheduledTime(event.target.value)}
+            />
+            <p className="text-muted-foreground text-xs">{t.mealTimeHelp}</p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="meal-name">{t.mealName}</Label>
             <Input

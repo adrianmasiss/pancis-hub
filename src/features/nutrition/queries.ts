@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { sortBySchedule } from "@/features/nutrition/lib/meal-schedule";
 import {
   remainingMacros,
   sumMacros,
@@ -26,6 +27,9 @@ export type MealView = {
   name: string | null;
   status: MealStatus;
   notes: string | null;
+  /** Hora planificada (HH:MM:SS) o null si no se definio. */
+  scheduledTime: string | null;
+  createdAt: string;
   items: MealItemView[];
   totals: MacroSet;
 };
@@ -57,7 +61,7 @@ export async function getDayPlan(
     supabase
       .from("meals")
       .select(
-        "id, meal_type, name, status, notes, created_at, meal_items(id, food_id, quantity_g, serving_equivalence, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, created_at, foods(name, brand, cooked_state, serving_amount, serving_unit, food_portions(label, grams)))",
+        "id, meal_type, name, status, notes, created_at, scheduled_time, meal_items(id, food_id, quantity_g, serving_equivalence, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, created_at, foods(name, brand, cooked_state, serving_amount, serving_unit, food_portions(label, grams)))",
       )
       .eq("user_id", userId)
       .eq("date", date)
@@ -105,13 +109,22 @@ export async function getDayPlan(
         name: meal.name,
         status: meal.status as MealStatus,
         notes: meal.notes,
+        scheduledTime: meal.scheduled_time,
+        createdAt: meal.created_at,
         items,
         totals: sumMacros(items.map((item) => item.macros)),
       };
     })
-    .sort(
-      (a, b) => (MEAL_ORDER[a.mealType] ?? 9) - (MEAL_ORDER[b.mealType] ?? 9),
-    );
+    // El horario manda sobre el tipo de comida: con dos o tres snacks al
+    // dia, la etiqueta ya no distingue cual va antes. Las comidas sin hora
+    // conservan el orden por tipo.
+    .sort((a, b) => {
+      const byTime = sortBySchedule([a, b]);
+      if (a.scheduledTime || b.scheduledTime) {
+        return byTime[0] === a ? -1 : 1;
+      }
+      return (MEAL_ORDER[a.mealType] ?? 9) - (MEAL_ORDER[b.mealType] ?? 9);
+    });
 
   const consumed = sumMacros(
     meals
