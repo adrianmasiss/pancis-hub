@@ -6,6 +6,7 @@ import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import { messages } from "@/i18n/es-419";
+import { pickBestMatch } from "@/features/nutrition/lib/food-matching";
 import { FOOD_GROUPS } from "@/features/foods/schemas";
 
 const t = messages.nutrition.aiDiet;
@@ -193,9 +194,17 @@ export async function searchCatalogFoodsFull(
 }
 
 /**
- * Sugerencia automatica (una por item) para prellenar el editor: busca el
- * primer alimento del catalogo cuyo nombre coincide de forma aproximada.
- * Es solo un punto de partida; el usuario puede cambiarlo o dejarlo vacio.
+ * Sugerencia automatica (una por item) para prellenar el editor.
+ *
+ * Se traen los candidatos UNA vez y se puntuan en memoria con
+ * pickBestMatch, que normaliza acentos y plurales. Antes se hacia una
+ * consulta ilike por item usando solo la primera palabra, y cada fallo
+ * ("Claras" no encontraba "Clara de huevo") terminaba creando un alimento
+ * personalizado duplicado en la biblioteca del usuario.
+ *
+ * Si nada supera el umbral se devuelve null: es preferible que el usuario
+ * elija a sugerirle el alimento equivocado, que se registraria sin que lo
+ * note.
  */
 export async function suggestCatalogMatches(
   itemNames: string[],
@@ -206,35 +215,29 @@ export async function suggestCatalogMatches(
   } = await supabase.auth.getUser();
   if (!user) return {};
 
+  const { data: candidates } = await supabase
+    .from("foods")
+    .select(
+      "id, name, brand, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
+    )
+    .is("deleted_at", null)
+    .limit(500);
+
+  const catalog: CatalogFoodMatch[] = (candidates ?? []).map((food) => ({
+    id: food.id,
+    name: food.name,
+    brand: food.brand,
+    cookedState: food.cooked_state,
+    calories: Number(food.calories),
+    proteinG: Number(food.protein_g),
+    carbohydrateG: Number(food.carbohydrate_g),
+    fatG: Number(food.fat_g),
+    fiberG: Number(food.fiber_g),
+  }));
+
   const results: Record<string, CatalogFoodMatch | null> = {};
   for (const name of itemNames) {
-    const firstWord = name.trim().split(/\s+/)[0];
-    if (!firstWord || firstWord.length < 3) {
-      results[name] = null;
-      continue;
-    }
-    const { data } = await supabase
-      .from("foods")
-      .select(
-        "id, name, brand, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
-      )
-      .ilike("name", `%${firstWord}%`)
-      .is("deleted_at", null)
-      .limit(1)
-      .maybeSingle();
-    results[name] = data
-      ? {
-          id: data.id,
-          name: data.name,
-          brand: data.brand,
-          cookedState: data.cooked_state,
-          calories: Number(data.calories),
-          proteinG: Number(data.protein_g),
-          carbohydrateG: Number(data.carbohydrate_g),
-          fatG: Number(data.fat_g),
-          fiberG: Number(data.fiber_g),
-        }
-      : null;
+    results[name] = pickBestMatch(name, catalog)?.candidate ?? null;
   }
   return results;
 }

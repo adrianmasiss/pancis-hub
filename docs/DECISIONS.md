@@ -382,3 +382,35 @@ scripts/import-exercise-images.mjs. Una coincidencia difusa acabaria
 asignando la imagen equivocada; si un ejercicio nuevo no esta en el mapa
 se reporta y se omite, nunca se adivina. Las imagenes se copian al bucket
 propio exercise-images para no depender de que GitHub siga sirviendolas.
+
+## 2026-07-21 - Emparejamiento de alimentos al importar dietas
+
+El importador de dietas con IA tomaba la primera palabra del alimento y
+hacia `ilike`, quedandose con el primer resultado. Fallaba con plurales
+("Claras" no encontraba "Clara de huevo") y con acentos ("atún" no
+encontraba "Atun en agua"), y cada fallo creaba un alimento personalizado
+duplicado. En produccion habia 3 duplicados asi, uno de ellos con macros
+identicos al del catalogo.
+
+Ahora se traen los candidatos una vez y se puntuan en memoria
+(`pickBestMatch`): nombres normalizados sin acentos, singularizados y
+comparados por PALABRAS compartidas (Jaccard), no por prefijo. Comparar
+por palabras evita que "Huevo" empareje con "Huevos revueltos con jamon".
+
+El umbral (0.5) es deliberadamente alto y ante la duda no se sugiere
+nada: una sugerencia equivocada se registra sin que el usuario lo note,
+que es peor que pedirle que elija.
+
+**Fusion de duplicados existentes** con scripts/merge-duplicate-foods.mjs:
+repunta comidas, plantillas y recetas al alimento del catalogo, marca el
+duplicado con soft delete y lo registra en audit_logs con origen
+"sistema". No toca los snapshots ya registrados (requisito 22) ni fusiona
+entradas del catalogo entre si: "Arroz blanco" crudo y cocido son
+distintas a proposito, y ante esa ambiguedad no fusiona nada. Simula por
+defecto; solo escribe con --apply.
+
+**Nota sobre archivos .env:** las credenciales de produccion para scripts
+viven en `.env.scripts`, NO en `.env.production.local`. Ese nombre lo
+carga Next.js automaticamente al construir en modo produccion, y hacia
+que la app local apuntara a la base de la nube con la clave anon local
+("Invalid API key"), rompiendo la suite e2e.
