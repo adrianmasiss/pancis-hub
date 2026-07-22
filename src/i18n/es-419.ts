@@ -659,6 +659,30 @@ export const messages = {
       limitations: "Que pierdes",
       recommendation: "Recomendacion",
     },
+    import: {
+      trigger: "Importar rutina",
+      title: "Importar una rutina escrita",
+      description:
+        "Pega la rutina como te la enviaron. Reconocemos series, repeticiones, RIR y descanso, y te mostramos el resultado antes de guardar.",
+      textLabel: "Texto de la rutina",
+      placeholder:
+        "Dia 1 - Pierna\nSentadilla 4x8-10 RIR 2 desc 120\nPrensa de pierna 3x12",
+      nameLabel: "Nombre de la rutina",
+      analyze: "Analizar",
+      previewTitle: "Esto entendimos",
+      summary: "{days} dias · {exercises} ejercicios",
+      unmatched:
+        "{count} ejercicio(s) no existen en el catalogo y se omitiran. Puedes agregarlos despues a mano.",
+      ignored: "Lineas que no pudimos interpretar",
+      notInCatalog: "sin equivalente",
+      save: "Crear rutina",
+      imported: "Rutina importada.",
+      nothingRecognized:
+        "No reconocimos ninguna rutina en ese texto. Revisa el formato del ejemplo.",
+      failed: "No pudimos importar la rutina. Intenta de nuevo.",
+      noAiNotice:
+        "El analisis es local: no se envia tu rutina a ningun servicio externo.",
+    },
     versions: {
       title: "Versiones de la rutina",
       description:

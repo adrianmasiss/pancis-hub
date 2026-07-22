@@ -622,3 +622,29 @@ sin inventar una taxonomia que el usuario tendria que aprender.
 
 **Las variantes son recetas completas** con `parent_recipe_id` apuntando
 al original, no diffs: una variante se edita y evoluciona por su cuenta.
+
+## 2026-07-22 - Importar rutinas: analisis local, no IA
+
+Las rutinas llegan como texto (mensaje del entrenador, nota del
+telefono). Se analizan con un parser determinista en vez de mandarlas a
+un modelo: es gratis, funciona sin conexion, no envia la rutina a ningun
+servicio externo, y sobre todo es COMPROBABLE con tests. La importacion
+de dietas usa IA porque parte de una foto o un PDF; aqui el texto ya
+viene estructurado y no hace falta.
+
+El parser es deliberadamente tolerante: reconoce "4x8-10", "RIR 2",
+"@RPE 8", "desc 120" y "rest 3min", limpia vinetas y numeracion, y las
+lineas que no entiende NO se descartan en silencio, se muestran al
+usuario.
+
+**Nada se guarda sin revisar.** Primero se muestra que se entendio, con
+cuantos dias y ejercicios, y cuales quedaron sin equivalente en el
+catalogo. Importar a ciegas una rutina mal interpretada seria peor que no
+importarla.
+
+**Los ejercicios sin equivalente se omiten, no se inventan.** Crear
+entradas nuevas en el catalogo compartido a partir de un texto libre lo
+llenaria de duplicados y de nombres mal escritos.
+
+El emparejador de nombres se extrajo a `src/lib/name-matching.ts`: nacio
+para los alimentos y ahora lo usan tambien los ejercicios.

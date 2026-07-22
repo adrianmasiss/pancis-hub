@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { CreatePlanDialog } from "@/features/training/components/create-plan-dialog";
+import { ImportRoutineDialog } from "@/features/training/components/import-routine-dialog";
 import { PlanCard } from "@/features/training/components/plan-card";
 import { StartSessionButton } from "@/features/training/components/start-session-button";
 import { getTrainingOverview } from "@/features/training/queries";
@@ -68,6 +69,7 @@ export default async function TrainingPage() {
             ) : (
               <StartSessionButton label={t.freeSession} variant="outline" />
             )}
+            <ImportRoutineDialog />
             <CreatePlanDialog />
           </>
         }

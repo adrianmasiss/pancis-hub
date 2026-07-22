@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   nameSimilarity,
-  normalizeFoodName,
+  normalizeName,
   pickBestMatch,
   significantTokens,
   singularize,
-} from "@/features/nutrition/lib/food-matching";
+} from "@/lib/name-matching";
 
 /** Catalogo real que provoco los duplicados en produccion. */
 const catalog = [
@@ -17,9 +17,9 @@ const catalog = [
   { id: "6", name: "Frijoles negros" },
 ];
 
-describe("normalizeFoodName", () => {
+describe("normalizeName", () => {
   it("quita acentos, mayusculas y puntuacion", () => {
-    expect(normalizeFoodName("Atún, en agua")).toBe("atun en agua");
+    expect(normalizeName("Atún, en agua")).toBe("atun en agua");
   });
 });
 

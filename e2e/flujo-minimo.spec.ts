@@ -273,12 +273,19 @@ test("sustituir una comida por una receta", async ({ page }) => {
 
   // Comida del dia con la que comparar la receta.
   await page.goto("/nutricion");
+  // Se le da nombre propio: el dia ya acumula varias comidas de pruebas
+  // anteriores y ".last()" dejaria de apuntar a la correcta.
   await page.getByRole("button", { name: "Agregar comida" }).click();
   await page.getByLabel("Tipo de comida").selectOption("otro");
+  await page.getByLabel(/Nombre/).fill("Comida receta");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Comida agregada.")).toBeVisible();
 
-  await page.getByRole("button", { name: "Agregar alimento" }).last().click();
+  const mealCard = page
+    .getByText("Comida receta", { exact: true })
+    .locator("xpath=ancestor::*[@data-slot='card']");
+
+  await mealCard.getByRole("button", { name: "Agregar alimento" }).click();
   await page.getByLabel("Buscar alimento…").fill("arroz");
   await page.getByRole("button", { name: /Arroz blanco/ }).first().click();
   await page.getByRole("button", { name: "Confirmar" }).click();
@@ -286,8 +293,7 @@ test("sustituir una comida por una receta", async ({ page }) => {
 
   // Sustituir esa comida por la receta, con la comparacion a la vista.
   await page
-    .getByRole("button", { name: /Cambiar por receta — Otro/ })
-    .last()
+    .getByRole("button", { name: /Cambiar por receta — Comida receta/ })
     .click();
   await expect(page.getByText("Porciones sugeridas").first()).toBeVisible();
   await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
@@ -623,6 +629,47 @@ test("asistente accesible y conectado a los motores", async ({ page }) => {
   await input.fill("cuantas series de sentadilla hago");
   await page.getByRole("button", { name: /Enviar|Preguntar/ }).first().click();
   await expect(page.getByText(/RIR/).first()).toBeVisible({ timeout: 30_000 });
+});
+
+test("importar una rutina escrita", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/entrenamiento");
+  await page.getByRole("button", { name: "Importar rutina" }).click();
+
+  // Formato tipico de mensaje, con una linea inventada que no existe en
+  // el catalogo y otra que no es un ejercicio.
+  await page.getByLabel("Texto de la rutina").fill(
+    [
+      "Dia 1 - Pierna",
+      "Sentadilla con barra 4x8-10 RIR 2 desc 120",
+      "Prensa de pierna 3x12",
+      "Maquina inventada xyz 3x10",
+      "Dia 2 - Torso",
+      "Press de banca 4x6-8 RIR 1 rest 3min",
+    ].join("\n"),
+  );
+  await page.getByRole("button", { name: "Analizar" }).click();
+
+  // Se revisa antes de guardar: dias, ejercicios y lo que queda fuera.
+  await expect(page.getByText("Esto entendimos")).toBeVisible();
+  await expect(page.getByText("2 dias · 4 ejercicios")).toBeVisible();
+  await expect(page.getByText(/no existen en el catalogo/)).toBeVisible();
+  await expect(page.getByText(/RIR 2/).first()).toBeVisible();
+  // 3min se interpreta como 180 segundos.
+  await expect(page.getByText(/180s/).first()).toBeVisible();
+
+  await page.getByLabel("Nombre de la rutina").fill("Rutina importada");
+  await page.getByRole("button", { name: "Crear rutina" }).click();
+  await expect(page.getByText("Rutina importada.")).toBeVisible();
+  await expect(page).toHaveURL(/\/entrenamiento\/rutinas\//, {
+    timeout: 20_000,
+  });
+  await expect(page.getByText(/Sentadilla con barra/).first()).toBeVisible();
 });
 
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
