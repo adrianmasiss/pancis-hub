@@ -539,3 +539,21 @@ historial.
 Nota de pruebas: crear una dieta pasa por el flujo de IA (subir un PDF),
 inviable en e2e, asi que la prueba la siembra con el rol de servicio
 contra la base local (e2e/helpers/seed.ts). Nunca se usa con produccion.
+
+## 2026-07-22 - Versionado de rutinas y componente comun
+
+Las rutinas usan el mismo modelo que las dietas: foto inmutable en jsonb,
+restaurar guarda el estado previo Y versiona el resultado, y no se
+aceptan versiones identicas a la anterior.
+
+Lo que cambia es el diff: en una rutina no interesa tanto la cantidad en
+gramos como la PRESCRIPCION. Se comparan series, rango de repeticiones,
+RIR y descanso campo por campo, y el texto dice "Sentadilla en Pierna:
+series 3 -> 5". Un valor que pasa a estar vacio se muestra como guion, no
+como cero: no son lo mismo.
+
+La lista de versiones se extrajo a `components/shared/versions-card.tsx`
+porque el comportamiento es identico en los dos modulos; solo cambian los
+textos y de donde salen los datos. Cada dominio resume sus versiones y
+redacta sus cambios pendientes, y el componente comun se encarga del
+guardado, la confirmacion y la restauracion.

@@ -300,7 +300,9 @@ test("versionar y restaurar la dieta", async ({ page }) => {
   // Restaurar deja el plan como estaba y no quedan cambios pendientes.
   await page.getByRole("button", { name: "Restaurar" }).first().click();
   await page.getByRole("button", { name: "Restaurar" }).last().click();
-  await expect(page.getByText("Se restauro la version 1.")).toBeVisible();
+  await expect(
+    page.getByText("Se restauro la version 1.").first(),
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByText("Cambios sin guardar desde la ultima version"),
@@ -480,6 +482,35 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
   await expect(page.getByText("Como progresar")).toBeVisible();
   await expect(page.getByText(/no modifica tu rutina/)).toBeVisible();
   await page.keyboard.press("Escape");
+
+  // Versionado de la rutina: guardar, cambiar y restaurar.
+  await expect(page.getByText("Versiones de la rutina")).toBeVisible();
+  await page.getByLabel(/Motivo/).fill("Antes de subir series");
+  await page.getByRole("button", { name: "Guardar version" }).click();
+  await expect(page.getByText("Version 1 guardada.")).toBeVisible();
+
+  // Se cambian las series del ejercicio y debe detectarse la diferencia.
+  await page
+    .getByRole("button", { name: /Editar — Sentadilla con barra/ })
+    .click();
+  await page.getByLabel("Series").fill("5");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Ejercicio actualizado.")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Cambios sin guardar desde la ultima version"),
+  ).toBeVisible();
+  await expect(page.getByText(/series 3 -> 5/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Restaurar" }).first().click();
+  await page.getByRole("button", { name: "Restaurar" }).last().click();
+  await expect(
+    page.getByText("Se restauro la version 1.").first(),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Cambios sin guardar desde la ultima version"),
+  ).toHaveCount(0);
 
   // Requisito 14: analisis con hallazgos priorizados.
   await expect(page.getByText("Analisis de la rutina")).toBeVisible();

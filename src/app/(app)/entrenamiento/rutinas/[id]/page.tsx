@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { AddDayButton } from "@/features/training/components/add-day-button";
 import { PlanDayCard } from "@/features/training/components/plan-day-card";
+import { PlanVersionsSection } from "@/features/training/components/plan-versions-section";
 import { RoutineAnalysisSection } from "@/features/training/components/routine-analysis-section";
+import { listPlanVersions } from "@/features/training/version-actions";
 import {
   getPlanDetail,
   getRoutineAnalysis,
@@ -31,9 +33,10 @@ export default async function PlanEditorPage({
   if (!user) redirect("/login");
 
   const { id } = await params;
-  const [plan, analysis] = await Promise.all([
+  const [plan, analysis, versions] = await Promise.all([
     getPlanDetail(user.id, id),
     getRoutineAnalysis(user.id, id),
+    listPlanVersions(id),
   ]);
   if (!plan) notFound();
 
@@ -60,6 +63,7 @@ export default async function PlanEditorPage({
         ))}
         <AddDayButton planId={plan.id} />
         {analysis ? <RoutineAnalysisSection analysis={analysis} /> : null}
+        <PlanVersionsSection planId={id} initial={versions} />
       </div>
     </>
   );

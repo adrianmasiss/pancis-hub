@@ -21,6 +21,8 @@ export const AUDIT_ACTIONS = [
   "comida_sustituida_por_receta",
   "dieta_versionada",
   "dieta_restaurada",
+  "rutina_versionada",
+  "rutina_restaurada",
   "medicion_registrada",
 ] as const;
 

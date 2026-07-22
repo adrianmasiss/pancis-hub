@@ -620,6 +620,37 @@ export const messages = {
       limitations: "Que pierdes",
       recommendation: "Recomendacion",
     },
+    versions: {
+      title: "Versiones de la rutina",
+      description:
+        "Cada version es una foto completa. Puedes volver a cualquiera sin perder la actual.",
+      save: "Guardar version",
+      saved: "Version {version} guardada.",
+      restore: "Restaurar",
+      restored: "Se restauro la version {version}.",
+      versionLabel: "Version {version}",
+      summary: "{days} dias · {exercises} ejercicios · {sets} series",
+      noVersions:
+        "Aun no has guardado ninguna version. Guarda una antes de reestructurar la rutina para poder volver.",
+      noChanges: "No hay cambios respecto a la ultima version guardada.",
+      pendingTitle: "Cambios sin guardar desde la ultima version",
+      pendingChanged: "{exercise} en {day}: {field} {from} -> {to}",
+      pendingAdded: "Se agrego {exercise} a {day}",
+      pendingRemoved: "Se quito {exercise} de {day}",
+      pendingDayAdded: "Se agrego el dia {day}",
+      pendingDayRemoved: "Se quito el dia {day}",
+      setsDelta: "Diferencia total: {delta} series",
+      reason: "Motivo (opcional)",
+      reasonPlaceholder: "Ej. antes de cambiar el volumen de pierna",
+      defaultReason: "Version guardada manualmente.",
+      autoBeforeRestore: "Guardada automaticamente antes de restaurar.",
+      restoreReason: "Se restauro la version {version}.",
+      restoreIncomplete:
+        "Algun ejercicio de esa version ya no existe en el catalogo. No se pudo restaurar completa.",
+      failed: "No pudimos completar la accion. Intenta de nuevo.",
+      restoreConfirm:
+        "Se reemplazara tu rutina actual por esta version. Antes se guarda una version de lo que tienes ahora, asi que no se pierde nada.",
+    },
     substitutionReason: "Sustitucion de ejercicio aceptada por el usuario.",
     substituteTitle: "Sustituir ejercicio",
     substituteDescription:
@@ -1166,6 +1197,8 @@ export const messages = {
       comida_sustituida_por_receta: "Comida sustituida por receta",
       dieta_versionada: "Version de dieta guardada",
       dieta_restaurada: "Dieta restaurada",
+      rutina_versionada: "Version de rutina guardada",
+      rutina_restaurada: "Rutina restaurada",
       medicion_registrada: "Medicion registrada",
     },
     retentionNote:
