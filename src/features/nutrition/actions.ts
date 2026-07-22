@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { recordChange } from "@/lib/audit";
+import { applyCorrection } from "@/features/foods/lib/corrections";
+import { getUserFoodCorrections } from "@/features/foods/correction-actions";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
 import {
   addMealItemSchema,
@@ -164,21 +166,40 @@ export async function addMealItem(
   const { supabase, user } = await requireUser();
   if (!parsed.success || !user) return fail;
 
-  // El snapshot se calcula en servidor desde el catalogo actual.
-  const { data: food } = await supabase
-    .from("foods")
-    .select("calories, protein_g, carbohydrate_g, fat_g, fiber_g")
-    .eq("id", parsed.data.foodId)
-    .single();
+  // El snapshot se calcula en servidor desde el catalogo actual, con la
+  // correccion del usuario aplicada si la tiene: registrar el dato que el
+  // usuario ve es lo unico coherente (requisito 7.5).
+  const [{ data: food }, corrections] = await Promise.all([
+    supabase
+      .from("foods")
+      .select("id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state")
+      .eq("id", parsed.data.foodId)
+      .single(),
+    getUserFoodCorrections(user.id),
+  ]);
   if (!food) return fail;
 
-  const snapshot = scaleMacros(
+  const corrected = applyCorrection(
     {
+      id: food.id,
+      name: food.name,
       calories: Number(food.calories),
       proteinG: Number(food.protein_g),
       carbohydrateG: Number(food.carbohydrate_g),
       fatG: Number(food.fat_g),
       fiberG: Number(food.fiber_g),
+      cookedState: food.cooked_state as "crudo" | "cocido" | null,
+    },
+    corrections.get(food.id),
+  );
+
+  const snapshot = scaleMacros(
+    {
+      calories: corrected.calories,
+      proteinG: corrected.proteinG,
+      carbohydrateG: corrected.carbohydrateG,
+      fatG: corrected.fatG,
+      fiberG: corrected.fiberG,
     },
     parsed.data.quantityG,
   );

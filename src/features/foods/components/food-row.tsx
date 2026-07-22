@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { deleteCustomFood, toggleFavoriteFood } from "@/features/foods/actions";
+import { FoodCorrectionDialog } from "@/features/foods/components/food-correction-dialog";
 import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
 import type { LibraryFood } from "@/features/foods/queries";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
@@ -84,6 +85,11 @@ export function FoodRow({ food }: { food: LibraryFood }) {
               {t.customBadge}
             </Badge>
           ) : null}
+          {food.isCorrected ? (
+            <Badge variant="secondary" className="font-normal">
+              {t.correctedBadge}
+            </Badge>
+          ) : null}
         </p>
         <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
           <MacroChip type="calories" value={food.calories} />
@@ -97,6 +103,10 @@ export function FoodRow({ food }: { food: LibraryFood }) {
       <span className="text-muted-foreground hidden text-xs sm:block">
         {t.groups[food.foodGroup]}
       </span>
+      {!food.isOwn ? (
+        // El catalogo es compartido y no se edita: se corrige por usuario.
+        <FoodCorrectionDialog food={food} />
+      ) : null}
       {food.isOwn ? (
         <div className="flex shrink-0 items-center">
           <FoodFormDialog food={food} />

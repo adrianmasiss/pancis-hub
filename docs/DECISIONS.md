@@ -430,3 +430,28 @@ Las comidas sin hora conservan el orden por tipo.
 afirmar que una comida ocurra primero, y colocarla arriba desordenaria un
 dia bien planificado. El campo es opcional a proposito: registrar una
 comida rapida sin pensar en la hora sigue siendo valido.
+
+## 2026-07-22 - Correcciones de alimentos por usuario
+
+Los alimentos importados entran al catalogo COMPARTIDO, asi que un
+usuario no puede editarlos: cambiarlos afectaria a todos. Pero los datos
+comunitarios de Open Food Facts a veces vienen mal, y quedarse con un dato
+equivocado sin poder tocarlo se siente como un defecto de la aplicacion.
+
+`food_user_corrections` es una capa POR USUARIO que se superpone al leer,
+sin alterar el dato original (el requisito 7.5 lo pide explicitamente).
+
+- **Solo se guardan los campos corregidos.** Los que quedan en null
+  heredan el catalogo, asi que si la fuente arregla su dato mas adelante
+  el usuario se beneficia en todo lo que no haya tocado. Por eso los
+  campos del formulario arrancan vacios, mostrando debajo el valor del
+  catalogo como referencia.
+- **null significa "no lo toque", no "borralo".** Distinguirlo importa
+  para el estado crudo/cocido y para poder corregir un macro a 0, que es
+  un valor legitimo.
+- **Se registra el valor corregido, no el del catalogo.** Al agregar un
+  alimento a una comida o al aceptar una sustitucion, el snapshot toma la
+  correccion: registrar algo distinto de lo que el usuario ve seria
+  incoherente. Los snapshots ya guardados no cambian nunca.
+- Una sola correccion por alimento y usuario: se edita, no se acumula. Se
+  puede quitar para volver al dato del catalogo.

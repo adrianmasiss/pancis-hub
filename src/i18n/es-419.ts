@@ -699,6 +699,7 @@ export const messages = {
       otro: "Otro",
     },
     customBadge: "Personalizado",
+    correctedBadge: "Corregido por ti",
     verifiedBadge: "Verificado",
     createFood: "Crear alimento",
     editFood: "Editar alimento",
@@ -727,6 +728,22 @@ export const messages = {
     emptyDescription:
       "Ajusta la busqueda o los filtros, o crea un alimento propio.",
     macroSummary: "P {p} · C {c} · G {g} · F {f}",
+    corrections: {
+      trigger: "Corregir datos",
+      title: "Corregir datos del alimento",
+      description:
+        "Tu correccion solo te afecta a ti. El alimento del catalogo no cambia, y lo que ya registraste conserva sus valores.",
+      catalogValue: "Catalogo: {value}",
+      reason: "Motivo (opcional)",
+      reasonPlaceholder: "Ej. la etiqueta del producto dice otra cosa",
+      save: "Guardar correccion",
+      saved: "Correccion guardada.",
+      remove: "Quitar correccion",
+      removed: "Correccion eliminada.",
+      defaultReason: "Correccion manual del usuario.",
+      emptyNotice:
+        "Deja en blanco los campos que no quieras corregir: seguiran tomando el valor del catalogo.",
+    },
     external: {
       title: "Buscar en linea",
       description:
@@ -1077,6 +1094,7 @@ export const messages = {
       comida_estado_cambiado: "Estado de comida",
       ejercicio_sustituido: "Ejercicio sustituido",
       alimento_importado: "Alimento importado",
+      alimento_corregido: "Alimento corregido",
       medicion_registrada: "Medicion registrada",
     },
     retentionNote:

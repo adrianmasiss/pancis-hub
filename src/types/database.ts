@@ -657,6 +657,62 @@ export type Database = {
           },
         ]
       }
+      food_user_corrections: {
+        Row: {
+          calories: number | null
+          carbohydrate_g: number | null
+          cooked_state: string | null
+          created_at: string
+          fat_g: number | null
+          fiber_g: number | null
+          food_id: string
+          id: string
+          name: string | null
+          protein_g: number | null
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          cooked_state?: string | null
+          created_at?: string
+          fat_g?: number | null
+          fiber_g?: number | null
+          food_id: string
+          id?: string
+          name?: string | null
+          protein_g?: number | null
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          cooked_state?: string | null
+          created_at?: string
+          fat_g?: number | null
+          fiber_g?: number | null
+          food_id?: string
+          id?: string
+          name?: string | null
+          protein_g?: number | null
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_user_corrections_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       foods: {
         Row: {
           barcode: string | null

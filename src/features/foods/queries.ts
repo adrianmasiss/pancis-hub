@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { applyCorrection } from "@/features/foods/lib/corrections";
+import { getUserFoodCorrections } from "@/features/foods/correction-actions";
 import {
   FOOD_GROUPS,
   type FoodGroup,
@@ -20,6 +22,8 @@ export type LibraryFood = {
   isOwn: boolean;
   isFavorite: boolean;
   imageUrl: string | null;
+  /** true si el usuario corrigio algun valor de este alimento. */
+  isCorrected: boolean;
 };
 
 export type LibraryFilters = {
@@ -79,11 +83,12 @@ export async function getFoodsLibrary(
 ): Promise<LibraryFood[]> {
   const supabase = await createClient();
 
-  const [favoriteIds, recentIds] = await Promise.all([
+  const [favoriteIds, recentIds, corrections] = await Promise.all([
     getFavoriteFoodIds(userId),
     filters.view === "recientes"
       ? getRecentFoodIds(userId)
       : Promise.resolve([]),
+    getUserFoodCorrections(userId),
   ]);
 
   let query = supabase
@@ -121,7 +126,8 @@ export async function getFoodsLibrary(
   }
 
   const { data } = await query;
-  const foods = (data ?? []).map((food) => ({
+  // Las correcciones del usuario se superponen al catalogo compartido.
+  const foods = (data ?? []).map((food) => applyCorrection({
     id: food.id,
     name: food.name,
     brand: food.brand,
@@ -136,7 +142,7 @@ export async function getFoodsLibrary(
     isOwn: food.owner_user_id === userId,
     isFavorite: favoriteIds.has(food.id),
     imageUrl: food.image_url,
-  }));
+  }, corrections.get(food.id)));
 
   if (filters.view === "recientes") {
     const order = new Map(recentIds.map((id, index) => [id, index]));

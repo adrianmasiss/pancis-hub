@@ -14,6 +14,8 @@ import {
   type RebalanceReport,
 } from "@/features/nutrition/lib/rebalance";
 import { recordChange } from "@/lib/audit";
+import { applyCorrection } from "@/features/foods/lib/corrections";
+import { getUserFoodCorrections } from "@/features/foods/correction-actions";
 import { getFavoriteFoodIds, getRecentFoodIds } from "@/features/foods/queries";
 import type { FoodGroup } from "@/features/foods/schemas";
 import { z } from "zod";
@@ -145,20 +147,39 @@ export async function swapMealItem(
     .eq("id", parsed.data.itemId)
     .single();
 
-  const { data: food } = await supabase
-    .from("foods")
-    .select("name, calories, protein_g, carbohydrate_g, fat_g, fiber_g")
-    .eq("id", parsed.data.foodId)
-    .single();
+  const [{ data: food }, corrections] = await Promise.all([
+    supabase
+      .from("foods")
+      .select("id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state")
+      .eq("id", parsed.data.foodId)
+      .single(),
+    getUserFoodCorrections(user.id),
+  ]);
   if (!food) return { error: t.failed };
 
-  const snapshot = scaleMacros(
+  // Se registra el valor corregido por el usuario, que es el que vio al
+  // aceptar la sustitucion.
+  const corrected = applyCorrection(
     {
+      id: food.id,
+      name: food.name,
       calories: Number(food.calories),
       proteinG: Number(food.protein_g),
       carbohydrateG: Number(food.carbohydrate_g),
       fatG: Number(food.fat_g),
       fiberG: Number(food.fiber_g),
+      cookedState: food.cooked_state as "crudo" | "cocido" | null,
+    },
+    corrections.get(food.id),
+  );
+
+  const snapshot = scaleMacros(
+    {
+      calories: corrected.calories,
+      proteinG: corrected.proteinG,
+      carbohydrateG: corrected.carbohydrateG,
+      fatG: corrected.fatG,
+      fiberG: corrected.fiberG,
     },
     parsed.data.quantityG,
   );
@@ -205,7 +226,7 @@ export async function swapMealItem(
         }
       : null,
     newValues: {
-      alimento: food.name,
+      alimento: corrected.name,
       cantidad_g: parsed.data.quantityG,
       calorias: snapshot.calories,
       proteina_g: snapshot.proteinG,

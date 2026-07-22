@@ -138,6 +138,50 @@ test("horarios ordenan el dia", async ({ page }) => {
   expect(desayuno).toBeLessThan(cena);
 });
 
+test("corregir un alimento del catalogo", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/nutricion/alimentos?q=avena");
+  await page
+    .getByRole("button", { name: /Corregir datos — Avena/ })
+    .first()
+    .click();
+
+  // Solo se corrigen las calorias; el resto debe seguir heredando el catalogo.
+  await page.getByLabel(/Calorias por 100 g/).fill("377");
+  await page.getByLabel(/Motivo/).fill("La etiqueta dice 377");
+  await page.getByRole("button", { name: "Guardar correccion" }).click();
+  await expect(page.getByText("Correccion guardada.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText("Corregido por ti").first()).toBeVisible();
+  await expect(page.getByText(/377/).first()).toBeVisible();
+
+  // El valor corregido es el que se registra al agregarlo a una comida.
+  await page.goto("/nutricion");
+  await page.getByRole("button", { name: "Agregar comida" }).click();
+  await page.getByLabel("Tipo de comida").selectOption("snack");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Comida agregada.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Agregar alimento" }).last().click();
+  await page.getByLabel("Buscar alimento…").fill("avena");
+  await page.getByRole("button", { name: /Avena/ }).first().click();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  await expect(page.getByText("Alimento agregado.")).toBeVisible();
+  // 100 g de avena corregida a 377 kcal.
+  await expect(page.getByText(/377/).first()).toBeVisible();
+
+  // El historial guarda la correccion con su motivo.
+  await page.goto("/historial");
+  await expect(page.getByText("Alimento corregido").first()).toBeVisible();
+  await expect(page.getByText(/La etiqueta dice 377/).first()).toBeVisible();
+});
+
 test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);
