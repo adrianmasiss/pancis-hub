@@ -14,6 +14,7 @@ import {
   searchExternalFoodsAction,
 } from "@/features/foods/external-actions";
 import type { ExternalSearchResult } from "@/features/foods/external-queries";
+import { BarcodeScanner } from "@/features/foods/components/barcode-scanner";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.foods;
@@ -103,6 +104,7 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
             aria-label={e.title}
           />
         </div>
+        <BarcodeScanner />
         <Button type="button" variant="outline" onClick={search} disabled={searching}>
           {searching ? (
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />

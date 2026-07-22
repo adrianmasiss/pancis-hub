@@ -728,6 +728,25 @@ export const messages = {
     emptyDescription:
       "Ajusta la busqueda o los filtros, o crea un alimento propio.",
     macroSummary: "P {p} · C {c} · G {g} · F {f}",
+    barcode: {
+      trigger: "Escanear codigo",
+      title: "Escanear codigo de barras",
+      description:
+        "Apunta al codigo del envase o escribelo. Buscamos el producto en Open Food Facts.",
+      cameraLabel: "Vista de la camara para escanear",
+      aiming: "Encuadra el codigo de barras dentro del recuadro.",
+      cameraDenied:
+        "No pudimos usar la camara. Revisa los permisos del navegador o escribe el codigo abajo.",
+      noCameraSupport:
+        "Tu navegador no permite escanear con la camara. Escribe el codigo del envase y funciona igual.",
+      manualLabel: "Codigo de barras",
+      search: "Buscar",
+      invalidCode:
+        "Ese codigo no parece valido. Revisa los digitos e intenta de nuevo.",
+      notFound:
+        "Open Food Facts no tiene ese producto. Puedes crearlo como alimento personalizado.",
+      scanAnother: "Escanear otro",
+    },
     corrections: {
       trigger: "Corregir datos",
       title: "Corregir datos del alimento",

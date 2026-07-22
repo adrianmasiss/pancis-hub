@@ -455,3 +455,28 @@ sin alterar el dato original (el requisito 7.5 lo pide explicitamente).
   incoherente. Los snapshots ya guardados no cambian nunca.
 - Una sola correccion por alimento y usuario: se edita, no se acumula. Se
   puede quitar para volver al dato del catalogo.
+
+## 2026-07-22 - Escaneo de codigo de barras sin dependencias
+
+Se usa `BarcodeDetector`, la API nativa del navegador, en vez de una
+libreria de terceros: no agrega peso al bundle y no hay que mantenerla.
+
+**La entrada manual del codigo esta SIEMPRE disponible**, no como plan B
+escondido. BarcodeDetector no existe en todos los navegadores (Safari es
+el caso notable), y sin la alternativa manual la funcion seria inutil
+justo en iPhone. Se detecta el soporte y se explica en pantalla en vez de
+mostrar una camara que nunca va a funcionar.
+
+**El digito verificador se valida antes de consultar.** EAN-13, EAN-8 y
+UPC-A lo llevan calculado desde los demas digitos. Comprobarlo evita
+gastar peticiones de Open Food Facts en lecturas erroneas y, sobre todo,
+distingue "el escaner leyo mal" de "el producto no esta en la base", que
+para el usuario son problemas muy distintos. Los formatos sin verificador
+estandar se aceptan por longitud: rechazar lo que no sabemos validar
+seria peor que consultarlo.
+
+Un UPC-A de 12 digitos se normaliza a EAN-13 con un cero delante, que es
+la forma que indexa Open Food Facts.
+
+La camara se apaga al cerrar el dialogo y tambien si el componente
+desaparece sin cerrarse: dejarla encendida seria un fallo grave.

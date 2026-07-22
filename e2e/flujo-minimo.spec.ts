@@ -182,6 +182,34 @@ test("corregir un alimento del catalogo", async ({ page }) => {
   await expect(page.getByText(/La etiqueta dice 377/).first()).toBeVisible();
 });
 
+test("escanear codigo de barras", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/nutricion/alimentos");
+  await page.getByRole("button", { name: "Escanear codigo" }).click();
+
+  // Un codigo con un digito mal leido se rechaza ANTES de consultar.
+  await page
+    .getByRole("textbox", { name: "Codigo de barras" })
+    .fill("3017620422013");
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  await expect(page.getByText(/no parece valido/)).toBeVisible();
+
+  // El codigo real de Nutella si resuelve contra Open Food Facts.
+  await page
+    .getByRole("textbox", { name: "Codigo de barras" })
+    .fill("3017620422003");
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  await expect(page.getByText(/Nutella/i).first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText("Open Food Facts").first()).toBeVisible();
+});
+
 test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);
