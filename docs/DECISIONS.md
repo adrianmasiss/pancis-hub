@@ -598,3 +598,27 @@ dice explicitamente en vez de mostrar la lista normal.
 tiene datos de precio y ninguna fuente gratuita los publica de forma
 fiable para Costa Rica. Un orden "mas barato" inventado seria peor que no
 ofrecerlo: el usuario confiaria en un dato que no existe.
+
+## 2026-07-22 - Pasos de receta, conservacion y variantes
+
+`instructions` era un unico bloque de texto. Cocinando con el telefono en
+la mano eso obliga a releerlo entero para saber por donde se iba, asi que
+los pasos pasan a `recipe_steps`, numerados y reordenables.
+
+**El texto original NO se borra.** La migracion divide `instructions` por
+lineas no vacias y crea un paso por cada una, pero conserva el campo: si
+la division automatica quedo mal, el contenido sigue accesible desde la
+propia receta. La conversion se probo con datos reales en una transaccion
+con rollback antes de aplicarla, porque en local no habia recetas con
+instrucciones y la logica habria llegado a produccion sin ejercitarse.
+
+**El marcado de "hecho" no se guarda.** Es un apoyo mientras cocinas, no
+un dato del historial: persistirlo obligaria a limpiarlo antes de volver
+a cocinar la misma receta.
+
+**Conservacion y meal prep son texto libre.** "3 dias en refrigeracion" y
+"congelar en porciones individuales" no encajan en campos estructurados
+sin inventar una taxonomia que el usuario tendria que aprender.
+
+**Las variantes son recetas completas** con `parent_recipe_id` apuntando
+al original, no diffs: una variante se edita y evoluciona por su cuenta.

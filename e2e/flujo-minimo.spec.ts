@@ -244,6 +244,33 @@ test("sustituir una comida por una receta", async ({ page }) => {
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText(/Pechuga de pollo/).first()).toBeVisible();
 
+  // Requisito 8: pasos numerados, reordenables y marcables al cocinar.
+  await page.getByLabel("Agregar paso").fill("Picar la cebolla");
+  await page.getByRole("button", { name: "Agregar paso" }).click();
+  await expect(page.getByText("Paso agregado.")).toBeVisible();
+  await page.getByLabel("Agregar paso").fill("Sofreir 5 minutos");
+  await page.getByRole("button", { name: "Agregar paso" }).click();
+  await expect(page.getByText(/1 de 2 pasos|0 de 2 pasos/)).toBeVisible();
+
+  // El orden se puede corregir: el paso 2 pasa a ser el 1.
+  await page.getByRole("button", { name: "Subir paso 2" }).click();
+  await expect(page.getByText("Paso actualizado.")).toBeVisible();
+  await page.reload();
+  // Se comprueba con una asercion que espera al render, no leyendo el DOM
+  // de inmediato tras recargar.
+  await expect(page.getByRole("checkbox").first()).toHaveAccessibleName(
+    /Sofreir/,
+  );
+
+  // Marcar un paso avanza el progreso, sin guardarlo en el historial.
+  await page.getByRole("checkbox").first().check();
+  await expect(page.getByText("1 de 2 pasos")).toBeVisible();
+
+  // Conservacion y meal prep.
+  await page.getByLabel("Conservacion").fill("3 dias en refrigeracion");
+  await page.getByRole("button", { name: "Guardar notas" }).click();
+  await expect(page.getByText("Notas guardadas.")).toBeVisible();
+
   // Comida del dia con la que comparar la receta.
   await page.goto("/nutricion");
   await page.getByRole("button", { name: "Agregar comida" }).click();

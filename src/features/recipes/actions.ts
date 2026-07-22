@@ -127,7 +127,7 @@ export async function duplicateRecipe(
   const { data: recipe } = await supabase
     .from("recipes")
     .select(
-      "name, description, servings, instructions, preparation_minutes, difficulty, tags, allergens, recipe_ingredients(food_id, quantity_g)",
+      "name, description, servings, instructions, storage_notes, meal_prep_notes, preparation_minutes, difficulty, tags, allergens, recipe_ingredients(food_id, quantity_g), recipe_steps(position, instruction)",
     )
     .eq("id", parsed.data.recipeId)
     .is("deleted_at", null)
@@ -138,18 +138,34 @@ export async function duplicateRecipe(
     .from("recipes")
     .insert({
       owner_user_id: user.id,
-      name: `${recipe.name} (copia)`,
+      name: parsed.data.asVariant
+        ? `${recipe.name} (variante)`
+        : `${recipe.name} (copia)`,
       description: recipe.description,
       servings: recipe.servings,
       instructions: recipe.instructions,
+      storage_notes: recipe.storage_notes,
+      meal_prep_notes: recipe.meal_prep_notes,
       preparation_minutes: recipe.preparation_minutes,
       difficulty: recipe.difficulty,
       tags: recipe.tags,
       allergens: recipe.allergens,
+      // Una variante recuerda de donde salio para poder verlas juntas.
+      parent_recipe_id: parsed.data.asVariant ? parsed.data.recipeId : null,
     })
     .select("id")
     .single();
   if (error || !created) return fail;
+
+  if ((recipe.recipe_steps ?? []).length > 0) {
+    await supabase.from("recipe_steps").insert(
+      (recipe.recipe_steps ?? []).map((step) => ({
+        recipe_id: created.id,
+        position: step.position,
+        instruction: step.instruction,
+      })),
+    );
+  }
 
   if ((recipe.recipe_ingredients ?? []).length > 0) {
     const { error: ingredientsError } = await supabase

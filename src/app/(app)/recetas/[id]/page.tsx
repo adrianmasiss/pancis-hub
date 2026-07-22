@@ -11,6 +11,8 @@ import { MacroChip } from "@/components/shared/macro-chip";
 import { IngredientList } from "@/features/recipes/components/ingredient-list";
 import { RecipeActions } from "@/features/recipes/components/recipe-actions";
 import { RecipeFormDialog } from "@/features/recipes/components/recipe-form-dialog";
+import { RecipeNotes } from "@/features/recipes/components/recipe-notes";
+import { RecipeSteps } from "@/features/recipes/components/recipe-steps";
 import { getRecipeDetail } from "@/features/recipes/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -132,16 +134,22 @@ export default async function RecipeDetailPage({
         </Card>
       </div>
 
-      {recipe.instructions ? (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">{t.stepsTitle}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-line">{recipe.instructions}</p>
-          </CardContent>
-        </Card>
-      ) : null}
+      <Card>
+        <CardContent className="space-y-6 py-6">
+          <RecipeSteps
+            recipeId={recipe.id}
+            steps={recipe.steps}
+            canEdit={recipe.isOwn}
+            legacyInstructions={recipe.instructions}
+          />
+          <RecipeNotes
+            recipeId={recipe.id}
+            storageNotes={recipe.storageNotes}
+            mealPrepNotes={recipe.mealPrepNotes}
+            canEdit={recipe.isOwn}
+          />
+        </CardContent>
+      </Card>
     </>
   );
 }

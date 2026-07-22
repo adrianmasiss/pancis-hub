@@ -1144,6 +1144,41 @@ export type Database = {
           },
         ]
       }
+      recipe_steps: {
+        Row: {
+          created_at: string
+          id: string
+          instruction: string
+          position: number
+          recipe_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instruction: string
+          position: number
+          recipe_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instruction?: string
+          position?: number
+          recipe_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_steps_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           allergens: string[]
@@ -1154,10 +1189,13 @@ export type Database = {
           id: string
           image_url: string | null
           instructions: string | null
+          meal_prep_notes: string | null
           name: string
           owner_user_id: string
+          parent_recipe_id: string | null
           preparation_minutes: number | null
           servings: number
+          storage_notes: string | null
           tags: string[]
           updated_at: string
           visibility: string
@@ -1171,10 +1209,13 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
+          meal_prep_notes?: string | null
           name: string
           owner_user_id: string
+          parent_recipe_id?: string | null
           preparation_minutes?: number | null
           servings?: number
+          storage_notes?: string | null
           tags?: string[]
           updated_at?: string
           visibility?: string
@@ -1188,15 +1229,26 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
+          meal_prep_notes?: string | null
           name?: string
           owner_user_id?: string
+          parent_recipe_id?: string | null
           preparation_minutes?: number | null
           servings?: number
+          storage_notes?: string | null
           tags?: string[]
           updated_at?: string
           visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recipes_parent_recipe_id_fkey"
+            columns: ["parent_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recommendations: {
         Row: {

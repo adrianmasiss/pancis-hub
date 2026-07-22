@@ -15,7 +15,11 @@ export const updateRecipeSchema = recipeFormSchema.extend({
   recipeId: z.uuid(),
 });
 
-export const recipeIdSchema = z.object({ recipeId: z.uuid() });
+export const recipeIdSchema = z.object({
+  recipeId: z.uuid(),
+  /** true crea una variante ligada a la receta original (requisito 8). */
+  asVariant: z.boolean().optional(),
+});
 
 export const addIngredientSchema = z.object({
   recipeId: z.uuid(),

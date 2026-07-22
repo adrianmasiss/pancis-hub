@@ -27,8 +27,20 @@ export type RecipeSummary = {
   imageUrl: string | null;
 };
 
+export type RecipeStepView = {
+  id: string;
+  position: number;
+  instruction: string;
+};
+
 export type RecipeDetail = RecipeSummary & {
+  /** Texto original; los pasos numerados viven en `steps`. */
   instructions: string | null;
+  storageNotes: string | null;
+  mealPrepNotes: string | null;
+  /** Receta de la que salio esta variante, si aplica. */
+  parentRecipeId: string | null;
+  steps: RecipeStepView[];
   totals: MacroSet;
   ingredients: RecipeIngredientView[];
 };
@@ -40,6 +52,10 @@ type RecipeRow = {
   description: string | null;
   servings: number;
   instructions: string | null;
+  storage_notes: string | null;
+  meal_prep_notes: string | null;
+  parent_recipe_id: string | null;
+  recipe_steps: { id: string; position: number; instruction: string }[] | null;
   preparation_minutes: number | null;
   difficulty: string | null;
   tags: string[];
@@ -63,7 +79,7 @@ type RecipeRow = {
 };
 
 const RECIPE_SELECT =
-  "id, owner_user_id, name, description, servings, instructions, preparation_minutes, difficulty, tags, allergens, visibility, image_url, recipe_ingredients(id, food_id, quantity_g, foods(name, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g))";
+  "id, owner_user_id, name, description, servings, instructions, storage_notes, meal_prep_notes, parent_recipe_id, preparation_minutes, difficulty, tags, allergens, visibility, image_url, recipe_steps(id, position, instruction), recipe_ingredients(id, food_id, quantity_g, foods(name, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g))";
 
 function mapIngredients(row: RecipeRow): RecipeIngredientView[] {
   return row.recipe_ingredients.map((ingredient) => ({
@@ -97,6 +113,16 @@ function mapDetail(row: RecipeRow, userId: string): RecipeDetail {
     isOwn: row.owner_user_id === userId,
     isPublic: row.visibility === "public",
     instructions: row.instructions,
+    storageNotes: row.storage_notes,
+    mealPrepNotes: row.meal_prep_notes,
+    parentRecipeId: row.parent_recipe_id,
+    steps: [...(row.recipe_steps ?? [])]
+      .sort((a, b) => a.position - b.position)
+      .map((step) => ({
+        id: step.id,
+        position: step.position,
+        instruction: step.instruction,
+      })),
     totals,
     perServing: perServing(totals, Number(row.servings)),
     ingredients,
