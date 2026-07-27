@@ -46,7 +46,12 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
         // [handoff, regla 2] La cabecera de tarjeta es un eyebrow en
         // versalitas, no un titulo en negrita: el peso visual se lo lleva el
         // dato de la tarjeta, no su rotulo.
-        "card-eyebrow leading-snug",
+        //
+        // Las versalitas se limitan al rotulo. Varias tarjetas del repo anidan
+        // dentro del titulo una cifra o un enlace ("0 de 2091 kcal", "Ver plan
+        // del dia"), y text-transform se hereda: sin esto salian tambien en
+        // mayusculas, que ni corresponde a un dato ni a una accion.
+        "card-eyebrow leading-snug [&_*]:normal-case [&_*]:tracking-normal",
         className,
       )}
       {...props}
