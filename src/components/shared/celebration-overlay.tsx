@@ -21,10 +21,10 @@ export function fireCelebration() {
     });
   }
 
-  // Confeti dentro de la paleta del sistema: bronce, laton, arena y piedra.
-  // canvas-confetti no resuelve variables CSS, asi que los valores van fijos y
-  // replican los tokens --primary / --caution / --muted de tema claro.
-  const PALETTE = ["#8A5A34", "#A8763F", "#C4A582", "#D9D2C7"];
+  // Confeti dentro de la paleta "Grafito": acero, acero palido, acero hondo y
+  // gris frio. canvas-confetti no resuelve variables CSS, asi que los valores
+  // van fijos; se eligen tonos medios que se sostienen en claro y en oscuro.
+  const PALETTE = ["#7fa8c9", "#b7c9d9", "#5d8fa8", "#99a1ad"];
 
   fire(0.25, {
     spread: 26,

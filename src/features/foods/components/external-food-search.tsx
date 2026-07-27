@@ -83,8 +83,11 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
         <p className="text-muted-foreground text-xs">{e.description}</p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
+      {/* Envuelve en movil: el campo mas los dos botones no caben en 390px y la
+          fila se salia del viewport. El campo reclama ancho minimo y los
+          botones bajan a la siguiente linea cuando hace falta. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[11rem] flex-1">
           <Search
             className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
             aria-hidden="true"
