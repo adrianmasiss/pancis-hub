@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Menu } from "lucide-react";
 import {
   Sheet,
@@ -33,19 +33,13 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
-/** Clases compartidas por las cinco celdas de la barra, para que el objetivo
- *  tactil sea identico en todas (48px de alto util). */
+/** Celda de la isla: 40px, radio 13px, transicion de 180ms (handoff). */
 const TAB_BASE =
-  "relative flex h-12 flex-col items-center justify-center gap-1 rounded-md text-[0.625rem] leading-none font-medium transition-colors duration-200 [letter-spacing:0]";
+  "relative grid size-10 place-items-center rounded-[13px] border-[1.5px] transition-all duration-[180ms] ease-out";
 
-/** Filete de bronce sobre la celda activa: la unica marca de color de la barra. */
-function ActiveMark() {
-  return (
-    <span
-      aria-hidden="true"
-      className="bg-primary absolute top-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-b-full"
-    />
-  );
+/** Separador de 1px x 24px entre grupos de la isla. */
+function Rule() {
+  return <span aria-hidden="true" className="bg-border-strong h-6 w-px" />;
 }
 
 type BottomNavigationProps = {
@@ -54,9 +48,18 @@ type BottomNavigationProps = {
 };
 
 /**
- * Navegacion inferior movil. Barra anclada al ancho completo en lugar de
- * capsula flotante: cada destino muestra su etiqueta, de modo que la
- * navegacion se lee en vez de adivinarse.
+ * Navegacion inferior movil: la "isla" flotante del handoff v2.
+ *
+ * Capsula centrada a 20px del borde, de solo icono, con separadores entre
+ * grupos y realce glow-ring en el activo. El handoff coloca ademas un FAB de
+ * registro rapido en el centro; no se incluye porque esa accion no existe
+ * todavia en el producto y el propio handoff la deja para "definir en la
+ * implementacion real".
+ *
+ * Compromiso respecto al diseno anterior: se pierden las etiquetas visibles
+ * bajo cada icono. La isla no da ancho para cinco etiquetas en 390px. Se
+ * conservan como aria-label y title, de modo que lectores de pantalla y
+ * puntero siguen teniendo el nombre del destino.
  */
 export function BottomNavigation({
   displayName,
@@ -74,50 +77,55 @@ export function BottomNavigation({
   return (
     <nav
       aria-label={messages.common.mainNavigation}
-      className="border-hairline surface-bar fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="island fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 px-3 py-2 lg:hidden"
+      style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 px-2 py-1.5">
-        {bottomNavItems.map((item) => {
-          const active = isActiveRoute(pathname, item.href);
-          const Icon = item.icon;
-          const label = messages.nav[item.bottomNavLabelKey ?? item.labelKey];
-          return (
+      {bottomNavItems.map((item, index) => {
+        const active = isActiveRoute(pathname, item.href);
+        const Icon = item.icon;
+        const label = messages.nav[item.bottomNavLabelKey ?? item.labelKey];
+        return (
+          <Fragment key={item.href}>
+            {index === 2 ? <Rule /> : null}
             <Link
-              key={item.href}
               href={item.href}
               onClick={() => triggerHaptic("selection")}
               aria-current={active ? "page" : undefined}
+              // La isla es de solo icono: la etiqueta sigue existiendo para
+              // lectores de pantalla y como titulo accesible.
+              aria-label={label}
+              title={label}
               className={cn(
                 TAB_BASE,
                 active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground active:bg-muted",
+                  ? "glow-ring text-primary"
+                  : "text-muted-foreground hover:text-foreground border-transparent",
               )}
             >
-              {active ? <ActiveMark /> : null}
-              <Icon className="size-[18px]" aria-hidden="true" />
-              <span className="max-w-full truncate">{label}</span>
+              <Icon className="size-5" aria-hidden="true" />
             </Link>
-          );
-        })}
+          </Fragment>
+        );
+      })}
+      <Rule />
 
-        <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              onClick={() => triggerHaptic("selection")}
-              className={cn(
-                TAB_BASE,
-                moreActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground active:bg-muted",
-              )}
-            >
-              {moreActive ? <ActiveMark /> : null}
-              <Menu className="size-[18px]" aria-hidden="true" />
-              <span className="max-w-full truncate">{messages.nav.more}</span>
-            </button>
-          </SheetTrigger>
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            onClick={() => triggerHaptic("selection")}
+            aria-label={messages.nav.more}
+            title={messages.nav.more}
+            className={cn(
+              TAB_BASE,
+              moreActive
+                ? "glow-ring text-primary"
+                : "text-muted-foreground hover:text-foreground border-transparent",
+            )}
+          >
+            <Menu className="size-5" aria-hidden="true" />
+          </button>
+        </SheetTrigger>
 
           <SheetContent
             side="bottom"
@@ -199,9 +207,8 @@ export function BottomNavigation({
                 </div>
               ))}
             </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+        </SheetContent>
+      </Sheet>
     </nav>
   );
 }
