@@ -291,6 +291,72 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_item_day_swaps: {
+        Row: {
+          created_at: string
+          date: string
+          external_calories: number | null
+          external_carbohydrate_g: number | null
+          external_fat_g: number | null
+          external_name: string | null
+          external_protein_g: number | null
+          food_id: string | null
+          id: string
+          quantity_g: number
+          source: string
+          template_item_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          external_calories?: number | null
+          external_carbohydrate_g?: number | null
+          external_fat_g?: number | null
+          external_name?: string | null
+          external_protein_g?: number | null
+          food_id?: string | null
+          id?: string
+          quantity_g: number
+          source?: string
+          template_item_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          external_calories?: number | null
+          external_carbohydrate_g?: number | null
+          external_fat_g?: number | null
+          external_name?: string | null
+          external_protein_g?: number | null
+          food_id?: string | null
+          id?: string
+          quantity_g?: number
+          source?: string
+          template_item_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_item_day_swaps_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diet_item_day_swaps_template_item_id_fkey"
+            columns: ["template_item_id"]
+            isOneToOne: false
+            referencedRelation: "diet_template_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diet_template_items: {
         Row: {
           created_at: string
