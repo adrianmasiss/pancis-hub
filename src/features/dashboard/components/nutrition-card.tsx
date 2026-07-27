@@ -34,7 +34,9 @@ export function NutritionCard({ data }: { data: DashboardData }) {
       </CardHeader>
       <CardContent>
         {targets ? (
-          <div className="grid gap-7 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] lg:items-center lg:gap-9">
+          // En el riel de 320px no caben dos columnas: la tarjeta se apila
+          // siempre y los anillos quedan centrados sobre el resto.
+          <div className="flex flex-col gap-6">
             <div className="flex justify-center">
               <AppleMacroRings
                 calories={{

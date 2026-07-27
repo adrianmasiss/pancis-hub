@@ -91,9 +91,27 @@ export function HeroBanner({ data }: { data: DashboardData }) {
 
   return (
     <section className="flex flex-col gap-5 sm:gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <p className="label-micro">
+      {/*
+        Hero del handoff v2: min-height 190px, radio de tarjeta, degradado
+        diagonal calido y un halo radial de acento desplazado a la derecha.
+        La palabra final del titular va en --primary-strong.
+      */}
+      <div
+        className="relative flex min-h-[190px] flex-col justify-center gap-4 overflow-hidden rounded-[var(--radius-card)] p-6 sm:p-8"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 78% 50%, color-mix(in oklch, var(--primary) 35%, transparent), transparent 60%), linear-gradient(120deg, oklch(0.19 0.02 35), oklch(0.24 0.05 30))",
+        }}
+      >
+        {/* Marca de agua: el glifo de la seccion, grande y al filo derecho. */}
+        <Flame
+          aria-hidden="true"
+          strokeWidth={1}
+          className="text-primary pointer-events-none absolute -right-4 top-1/2 size-[150px] -translate-y-1/2 opacity-50"
+        />
+
+        <div className="relative flex min-w-0 flex-col gap-1.5">
+          <p className="text-[11px] font-semibold tracking-[0.9px] text-white/70 uppercase">
             <span className="first-letter:uppercase">{longDate}</span>
             {goalLabel ? (
               <>
@@ -102,20 +120,31 @@ export function HeroBanner({ data }: { data: DashboardData }) {
               </>
             ) : null}
           </p>
-          {/* Linea de apertura del producto: va en escala de display, que es
-              lo que separa un panel de datos de una portada editorial. */}
-          <h2 className="truncate text-[1.75rem] font-medium tracking-[-0.03em] sm:display-title">
+          <h2 className="text-[24px] leading-[1.25] font-extrabold tracking-[-0.3px] text-white">
             {greetingForHour(hour)}
-            {data.displayName ? `, ${data.displayName}` : null}
+            {data.displayName ? (
+              <>
+                ,{" "}
+                <span className="text-[var(--primary-strong)]">
+                  {data.displayName}
+                </span>
+              </>
+            ) : null}
           </h2>
+          <p className="text-[14px] text-white/80">{h.tagline}</p>
         </div>
 
-        <Button asChild variant="outline" className="shrink-0 self-start sm:self-auto">
-          <Link href="/nutricion">
-            {h.cta}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </Button>
+        <div className="relative">
+          <Button
+            asChild
+            className="border border-white/15 bg-white/10 text-[13.5px] font-semibold text-white hover:bg-white/20"
+          >
+            <Link href="/nutricion">
+              {h.cta}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/*

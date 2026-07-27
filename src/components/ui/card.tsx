@@ -12,9 +12,10 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        // Superficie en flujo: filete de 1px, sin sombra. El respiro interior
+        // [handoff, regla 1] Toda tarjeta usa surface-card: degradado vertical
+        // sutil, filete de 1px, radio 16px y sombra baja. El respiro interior
         // sube en pantallas grandes para que la densidad se mantenga constante.
-        "group/card bg-card border-hairline text-card-foreground flex flex-col gap-(--card-gap) overflow-hidden rounded-lg border py-(--card-spacing) text-sm [--card-gap:--spacing(4)] [--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 sm:data-[size=sm]:[--card-spacing:--spacing(5)] *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
+        "surface-card group/card text-card-foreground flex flex-col gap-(--card-gap) overflow-hidden py-(--card-spacing) text-sm [--card-gap:--spacing(4)] [--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 sm:data-[size=sm]:[--card-spacing:--spacing(5)] *:[img:first-child]:rounded-t-[var(--radius-card)] *:[img:last-child]:rounded-b-[var(--radius-card)]",
         className,
       )}
       {...props}
@@ -86,7 +87,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "border-hairline mt-(--card-gap) flex items-center rounded-b-lg border-t px-(--card-spacing) py-4",
+        "border-divider mt-(--card-gap) flex items-center rounded-b-[var(--radius-card)] border-t px-(--card-spacing) py-4",
         className,
       )}
       {...props}

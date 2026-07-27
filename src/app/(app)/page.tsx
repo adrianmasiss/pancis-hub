@@ -20,19 +20,27 @@ export default async function DashboardPage() {
   const data = await getDashboardData(user.id);
 
   return (
-    <div className="space-y-6">
-      <HeroBanner data={data} />
+    /*
+      Estructura del handoff v2: columna principal fluida mas riel derecho de
+      320px, gap 20px, alineados arriba. Por debajo de xl el riel se apila
+      bajo el contenido; el handoff es un diseno de escritorio, pero la app se
+      usa tambien en telefono y ahi una segunda columna no cabe.
+    */
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="flex min-w-0 flex-col gap-5">
+        <HeroBanner data={data} />
 
-      {data.dietTemplate ? (
-        <DietChecklist template={data.dietTemplate} today={data.today} />
-      ) : null}
+        {data.dietTemplate ? (
+          <DietChecklist template={data.dietTemplate} today={data.today} />
+        ) : null}
 
-      <NutritionCard data={data} />
-
-      <div className="grid gap-6 lg:grid-cols-2">
         <TrainingCard data={data} />
-        <AdherenceCard data={data} />
       </div>
+
+      <aside className="flex min-w-0 flex-col gap-4">
+        <NutritionCard data={data} />
+        <AdherenceCard data={data} />
+      </aside>
     </div>
   );
 }
