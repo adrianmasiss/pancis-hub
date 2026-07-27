@@ -24,10 +24,11 @@ type MacroRingsProps = {
 /**
  * Anillos concentricos de macronutrientes.
  *
- * Los colores salen de la paleta categorica del sistema (--chart-*), que es un
- * recorrido calido -> frio dentro de la misma familia: distinguible tambien en
- * escala de grises y sin introducir un segundo esquema cromatico. La leyenda
- * nombra cada anillo, de modo que el color nunca es el unico portador del dato.
+ * Cada anillo usa el color fijo de su macro (--macro-protein / carbs / fat),
+ * segun la regla 6 del handoff: el relleno lleva el acento salvo cuando
+ * representa un macro, y entonces lleva el color del macro. Asi el mismo
+ * nutriente conserva su color en toda la app. La leyenda nombra cada anillo,
+ * de modo que el color nunca es el unico portador del dato.
  */
 export function AppleMacroRings({
   calories,
@@ -69,7 +70,7 @@ export function AppleMacroRings({
       radius: rProtein,
       pct: getPercentage(protein.consumed, protein.target),
       data: protein,
-      color: "var(--chart-2)",
+      color: "var(--macro-protein)",
     },
     {
       id: "carbs" as const,
@@ -77,7 +78,7 @@ export function AppleMacroRings({
       radius: rCarbs,
       pct: getPercentage(carbs.consumed, carbs.target),
       data: carbs,
-      color: "var(--chart-3)",
+      color: "var(--macro-carbs)",
     },
     {
       id: "fat" as const,
@@ -85,7 +86,7 @@ export function AppleMacroRings({
       radius: rFat,
       pct: getPercentage(fat.consumed, fat.target),
       data: fat,
-      color: "var(--chart-4)",
+      color: "var(--macro-fat)",
     },
   ];
 

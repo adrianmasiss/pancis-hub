@@ -10,10 +10,9 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    // Paleta "Grafito": la pantalla de arranque abre en el modo que define la
-    // identidad, no en el claro.
-    background_color: "#16181c",
-    theme_color: "#16181c",
+    // Handoff v2: el diseno es oscuro, la pantalla de arranque tambien.
+    background_color: "#211f1e",
+    theme_color: "#211f1e",
     icons: [
       {
         src: "/icons/icon-192.png",

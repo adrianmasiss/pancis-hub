@@ -8,9 +8,9 @@ import "./globals.css";
 
 export const viewport: Viewport = {
   themeColor: [
-    // Equivalentes sRGB de --background en cada tema (paleta "Grafito").
-    { media: "(prefers-color-scheme: light)", color: "#fafbfc" },
-    { media: "(prefers-color-scheme: dark)", color: "#16181c" },
+    // Equivalentes sRGB de --background en cada tema (handoff v2).
+    { media: "(prefers-color-scheme: light)", color: "#faf7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#211f1e" },
   ],
 };
 

@@ -68,6 +68,18 @@
   /* Filete: el separador por defecto del sistema. */
   --color-hairline: var(--hairline);
 
+  /* --- Tokens del handoff v2 --- */
+  --color-card-raised: var(--card-raised);
+  --color-primary-strong: var(--primary-strong);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-border-strong: var(--border-strong);
+  --color-divider: var(--divider);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-macro-protein: var(--macro-protein);
+  --color-macro-carbs: var(--macro-carbs);
+  --color-macro-fat: var(--macro-fat);
+
   /* Escala de radios comprimida: el salto entre lg y 3xl es deliberadamente
      corto para que nada se sienta descoordinado. */
   --radius-sm: calc(var(--radius) * 0.64);
@@ -80,135 +92,193 @@
 }
 
 /* ----------------------------------------------------------------------------
-   MODO CLARO. Contraparte del oscuro, no al reves.
-   El oscuro define la identidad; este mantiene la misma familia fria y el mismo
-   acento para que cambiar de tema no se sienta como cambiar de producto.
+   MODO CLARO. El handoff no lo define: es un diseno solo oscuro.
+   Se deriva aqui para que el conmutador de tema que ya existe siga sirviendo.
+   Misma familia calida y mismo naranja; lo unico que cambia es que el acento
+   se oscurece, porque el naranja del handoff sobre papel da 2.5:1 y no se
+   puede leer. Si algun dia se decide que la app es solo oscura, este bloque
+   se borra y se quita el conmutador.
    -------------------------------------------------------------------------- */
 :root {
-  /* --- Papel frio: neutros con sesgo azul, nunca gris puro --- */
-  --background: oklch(0.988 0.0017 248); /* #fafbfc */
-  --foreground: oklch(0.209 0.0085 264); /* #16181c */
-  --card: oklch(1 0 264);
-  --card-foreground: oklch(0.209 0.0085 264);
-  --popover: oklch(1 0 264);
-  --popover-foreground: oklch(0.209 0.0085 264);
+  /* --- Papel calido, en la misma familia que el carbon del oscuro --- */
+  --background: oklch(0.985 0.004 60);
+  --foreground: oklch(0.2 0.012 40);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.012 40);
+  --card-raised: oklch(0.972 0.005 55);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.012 40);
 
-  /* --- Azul acero, oscurecido para contrastar sobre papel (6.4:1) --- */
-  --primary: oklch(0.474 0.069 240); /* #35617f */
-  --primary-foreground: oklch(1 0 264);
+  /* --- Naranja de marca, oscurecido para leerse sobre papel (4.8:1) --- */
+  --primary: oklch(0.56 0.155 42);
+  --primary-strong: oklch(0.49 0.145 40);
+  --primary-foreground: oklch(0.99 0.004 60);
 
-  /* Compatibilidad: el "gradiente de marca" es acero plano.
-     Se conservan los nombres para no romper componentes existentes. */
-  --brand-from: oklch(0.474 0.069 240);
-  --brand-to: oklch(0.474 0.069 240);
-  --brand-btn-from: oklch(0.44 0.066 240);
-  --brand-btn-to: oklch(0.44 0.066 240);
+  --brand-from: oklch(0.56 0.155 42);
+  --brand-to: oklch(0.56 0.155 42);
+  --brand-btn-from: oklch(0.52 0.15 41);
+  --brand-btn-to: oklch(0.52 0.15 41);
 
-  /* Cromo de medicion: ejes, lineas base, referencias. Nunca una accion.
-     Va en gris neutro justamente para no confundirse con el acento. */
-  --signal: oklch(0.497 0.0216 258);
-  --signal-foreground: oklch(1 0 264);
+  --signal: oklch(0.52 0.012 45);
+  --signal-foreground: oklch(0.99 0.004 60);
 
-  --secondary: oklch(0.954 0.0046 258); /* #eef0f3 */
-  --secondary-foreground: oklch(0.267 0.0126 258);
-  --muted: oklch(0.96 0.0034 248); /* #f0f2f4 */
-  --muted-foreground: oklch(0.497 0.0216 258); /* #5b636f */
-  --accent: oklch(0.944 0.0069 248); /* #e9edf1 */
-  --accent-foreground: oklch(0.353 0.0371 249);
+  --secondary: oklch(0.955 0.006 55);
+  --secondary-foreground: oklch(0.27 0.012 42);
+  --muted: oklch(0.962 0.005 55);
+  --muted-foreground: oklch(0.5 0.012 45);
+  --subtle-foreground: oklch(0.62 0.012 45);
+  --accent: oklch(0.948 0.008 50);
+  --accent-foreground: oklch(0.34 0.05 42);
 
-  /* --- Estado, en el mismo registro contenido que el resto --- */
-  --positive: oklch(0.524 0.0887 164);
-  --positive-foreground: oklch(1 0 264);
-  --caution: oklch(0.528 0.0957 77);
-  --caution-foreground: oklch(1 0 264);
-  --critical: oklch(0.54 0.1463 28);
-  --critical-foreground: oklch(1 0 264);
-  --destructive: oklch(0.54 0.1463 28);
+  --success: oklch(0.55 0.115 165);
+  --danger: oklch(0.53 0.16 25);
+  --positive: oklch(0.55 0.115 165);
+  --positive-foreground: oklch(0.99 0.004 60);
+  --caution: oklch(0.53 0.1 75);
+  --caution-foreground: oklch(0.99 0.004 60);
+  --critical: oklch(0.53 0.16 25);
+  --critical-foreground: oklch(0.99 0.004 60);
+  --destructive: oklch(0.53 0.16 25);
 
-  --hairline: oklch(0.906 0.006 250);
-  --border: oklch(0.906 0.006 250);
-  --input: oklch(0.869 0.008 250);
-  --ring: oklch(0.474 0.069 240);
+  /* Los macros mantienen su matiz, oscurecidos para el fondo claro. */
+  --macro-protein: oklch(0.5 0.16 260);
+  --macro-carbs: oklch(0.55 0.12 75);
+  --macro-fat: oklch(0.52 0.16 355);
 
-  /* Paleta categorica: un recorrido dentro de la familia fria, no un arcoiris.
-     La luminancia varia lo suficiente para distinguirse en escala de grises. */
-  --chart-1: oklch(0.474 0.069 240);
-  --chart-2: oklch(0.635 0.0586 240);
-  --chart-3: oklch(0.524 0.0887 164);
-  --chart-4: oklch(0.523 0.0556 237);
-  --chart-5: oklch(0.51 0.0739 301);
+  --border: oklch(0.9 0.006 55);
+  --border-strong: oklch(0.86 0.008 55);
+  --divider: oklch(0.925 0.005 55);
+  --hairline: oklch(0.925 0.005 55);
+  --input: oklch(0.875 0.007 55);
+  --ring: oklch(0.56 0.155 42);
+
+  --chart-1: oklch(0.56 0.155 42);
+  --chart-2: oklch(0.5 0.16 260);
+  --chart-3: oklch(0.55 0.115 165);
+  --chart-4: oklch(0.55 0.12 75);
+  --chart-5: oklch(0.52 0.16 355);
 
   --radius: 0.625rem;
+  --radius-card: 16px;
+  --radius-pill: 100px;
 
-  --sidebar: oklch(0.972 0.0034 248);
-  --sidebar-foreground: oklch(0.209 0.0085 264);
-  --sidebar-primary: oklch(0.474 0.069 240);
-  --sidebar-primary-foreground: oklch(1 0 264);
-  --sidebar-accent: oklch(0.96 0.0034 248);
-  --sidebar-accent-foreground: oklch(0.267 0.0126 258);
-  --sidebar-border: oklch(0.906 0.006 250);
-  --sidebar-ring: oklch(0.474 0.069 240);
+  /* Sobre papel las mismas sombras del oscuro se ven sucias: se bajan. */
+  --shadow-card: 0 8px 20px -16px oklch(0.2 0.012 40 / 0.35);
+  --shadow-island:
+    0 18px 45px -16px oklch(0.2 0.012 40 / 0.28),
+    inset 0 1px 0 oklch(1 0 0 / 60%);
+  --glow-primary: 0 0 16px -4px oklch(0.56 0.155 42 / 0.45);
+  --surface-card-bg: linear-gradient(180deg, oklch(1 0 0), oklch(0.99 0.003 60));
+  --island-bg: linear-gradient(
+    180deg,
+    oklch(1 0 0 / 0.96),
+    oklch(0.975 0.005 55 / 0.96)
+  );
+  --segmented-bg: oklch(0.962 0.005 55 / 0.9);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.2 0.012 40);
+  --sidebar-primary: oklch(0.56 0.155 42);
+  --sidebar-primary-foreground: oklch(0.99 0.004 60);
+  --sidebar-accent: oklch(0.962 0.005 55);
+  --sidebar-accent-foreground: oklch(0.27 0.012 42);
+  --sidebar-border: oklch(0.9 0.006 55);
+  --sidebar-ring: oklch(0.56 0.155 42);
 }
 
 /* ----------------------------------------------------------------------------
-   MODO OSCURO. Aqui vive la identidad del producto.
-   Grafito frio de fondo, hueso para el texto y un unico acento de acero. El
-   riel lateral es mas oscuro que el lienzo para que el contenido flote.
+   MODO OSCURO. Es el tema que especifica el handoff, valor por valor.
+   Los tokens marcados [handoff] son literales del paquete de diseno y no se
+   ajustan; el resto son puentes hacia nombres que ya consumian los
+   componentes shadcn del repo y se derivan de los anteriores.
    -------------------------------------------------------------------------- */
 .dark {
-  --background: oklch(0.209 0.0085 264); /* #16181c grafito */
-  --foreground: oklch(0.964 0.0029 264); /* #f2f3f5 hueso */
-  --card: oklch(0.234 0.0106 261); /* #1b1e23 */
-  --card-foreground: oklch(0.964 0.0029 264);
-  --popover: oklch(0.252 0.014 267); /* #1f2229 */
-  --popover-foreground: oklch(0.964 0.0029 264);
+  --background: oklch(0.17 0.008 40); /* [handoff] ~#211f1e */
+  --foreground: oklch(0.985 0 0); /* [handoff] */
+  --card: oklch(0.213 0.011 45); /* [handoff] ~#2b2725 */
+  --card-foreground: oklch(0.985 0 0);
+  --card-raised: oklch(0.255 0.012 45); /* [handoff] sub-superficie */
+  --popover: oklch(0.255 0.012 45);
+  --popover-foreground: oklch(0.985 0 0);
 
-  /* --- Azul acero: el unico acento. Sobre grafito da 7.1:1 --- */
-  --primary: oklch(0.714 0.0657 243); /* #7fa8c9 */
-  --primary-foreground: oklch(0.195 0.0112 261);
+  /* --- Naranja de marca: el acento del handoff, el mismo del logotipo --- */
+  --primary: oklch(0.72 0.17 45); /* [handoff] ~#f0803f */
+  --primary-strong: oklch(0.78 0.17 50); /* [handoff] ~#ff9754 */
+  --primary-foreground: oklch(0.18 0.05 40); /* [handoff] ~#2b1a10 */
 
-  --brand-from: oklch(0.714 0.0657 243);
-  --brand-to: oklch(0.714 0.0657 243);
-  --brand-btn-from: oklch(0.714 0.0657 243);
-  --brand-btn-to: oklch(0.714 0.0657 243);
+  --brand-from: oklch(0.72 0.17 45);
+  --brand-to: oklch(0.72 0.17 45);
+  --brand-btn-from: oklch(0.72 0.17 45);
+  --brand-btn-to: oklch(0.72 0.17 45);
 
-  --signal: oklch(0.706 0.0197 258);
-  --signal-foreground: oklch(0.209 0.0085 264);
+  --signal: oklch(0.708 0 0);
+  --signal-foreground: oklch(0.17 0.008 40);
 
-  --secondary: oklch(0.267 0.0126 258); /* #22262c */
-  --secondary-foreground: oklch(0.964 0.0029 264);
-  --muted: oklch(0.276 0.0142 262); /* #24282f */
-  --muted-foreground: oklch(0.706 0.0197 258); /* #99a1ad */
-  --accent: oklch(0.292 0.0163 260); /* #272c34 */
-  --accent-foreground: oklch(0.937 0.0058 264);
+  --secondary: oklch(0.255 0.012 45);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.24 0.01 45); /* [handoff] */
+  --muted-foreground: oklch(0.708 0 0); /* [handoff] */
+  --subtle-foreground: oklch(0.55 0.01 40); /* [handoff] placeholders */
+  --accent: oklch(0.255 0.012 45);
+  --accent-foreground: oklch(0.985 0 0);
 
-  --positive: oklch(0.743 0.0964 163);
-  --positive-foreground: oklch(0.209 0.0085 264);
-  --caution: oklch(0.779 0.1004 80);
-  --caution-foreground: oklch(0.209 0.0085 264);
-  --critical: oklch(0.693 0.1378 26);
-  --critical-foreground: oklch(0.209 0.0085 264);
-  --destructive: oklch(0.693 0.1378 26);
+  /* Estado. success y danger son literales del handoff (hex, no oklch). */
+  --success: #3fd39a; /* [handoff] */
+  --danger: #e58a8a; /* [handoff] */
+  --positive: #3fd39a;
+  --positive-foreground: oklch(0.17 0.008 40);
+  --caution: oklch(0.78 0.13 70);
+  --caution-foreground: oklch(0.17 0.008 40);
+  --critical: #e58a8a;
+  --critical-foreground: oklch(0.17 0.008 40);
+  --destructive: #e58a8a;
 
-  --hairline: oklch(1 0 0 / 10%);
-  --border: oklch(1 0 0 / 10%);
+  /* Color por macro: fijo por dato, no decorativo. */
+  --macro-protein: #3987e5; /* [handoff] */
+  --macro-carbs: #c98500; /* [handoff] */
+  --macro-fat: #d55181; /* [handoff] */
+
+  --border: oklch(1 0 0 / 9%); /* [handoff] */
+  --border-strong: oklch(1 0 0 / 14%); /* [handoff] bordes de island */
+  --divider: oklch(1 0 0 / 7%); /* [handoff] reglas divisorias */
+  --hairline: oklch(1 0 0 / 7%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.714 0.0657 243);
+  --ring: oklch(0.72 0.17 45);
 
-  --chart-1: oklch(0.714 0.0657 243);
-  --chart-2: oklch(0.827 0.0299 245);
-  --chart-3: oklch(0.743 0.0964 163);
-  --chart-4: oklch(0.624 0.0656 231);
-  --chart-5: oklch(0.685 0.0717 305);
+  /* Serie categorica: acento, macros y neutro. */
+  --chart-1: oklch(0.72 0.17 45);
+  --chart-2: #3987e5;
+  --chart-3: #3fd39a;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
 
-  --sidebar: oklch(0.191 0.0087 264); /* #121418, mas hondo que el lienzo */
-  --sidebar-foreground: oklch(0.964 0.0029 264);
-  --sidebar-primary: oklch(0.714 0.0657 243);
-  --sidebar-primary-foreground: oklch(0.195 0.0112 261);
-  --sidebar-accent: oklch(0.276 0.0142 262);
-  --sidebar-accent-foreground: oklch(0.964 0.0029 264);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.714 0.0657 243);
+  --sidebar: oklch(0.213 0.011 45); /* [handoff] el riel usa --card */
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.72 0.17 45);
+  --sidebar-primary-foreground: oklch(0.18 0.05 40);
+  --sidebar-accent: oklch(0.255 0.012 45);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.72 0.17 45);
+
+  /* [handoff] Sombras, literales del paquete. */
+  --shadow-card: 0 10px 26px -16px oklch(0 0 0 / 0.6);
+  --shadow-island:
+    0 20px 55px -14px oklch(0 0 0 / 0.8),
+    0 0 46px -8px oklch(0.72 0.17 45 / 0.38),
+    inset 0 1px 0 oklch(1 0 0 / 9%);
+  --glow-primary: 0 0 18px -2px oklch(0.72 0.17 45 / 0.55);
+  --surface-card-bg: linear-gradient(
+    180deg,
+    oklch(0.229 0.011 45),
+    oklch(0.206 0.01 45)
+  );
+  --island-bg: linear-gradient(
+    180deg,
+    oklch(0.245 0.012 45 / 0.96),
+    oklch(0.185 0.01 42 / 0.96)
+  );
+  --segmented-bg: oklch(0.225 0.011 45 / 0.9);
 }
 
 @layer base {
@@ -218,6 +288,29 @@
   body {
     /* Fondo liso. Sin degradados, sin cuadriculas: el contenido es el motivo. */
     @apply bg-background text-foreground;
+    /* [handoff, regla 3] Cifras tabulares en todo el sistema: kcal, gramos y
+       porcentajes dejan de "bailar" al actualizarse. */
+    font-variant-numeric: tabular-nums;
+  }
+  /* [handoff, regla 7] Sin azules del navegador. */
+  a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--primary-strong);
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--foreground) 12%, transparent);
+    border-radius: 4px;
   }
   html {
     @apply font-sans;
@@ -274,6 +367,81 @@
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-weight: 500;
+}
+
+/* ============================================================================
+   PRIMITIVOS DEL HANDOFF v2
+   Los valores son los del paquete de diseno. Lo unico que cambia respecto al
+   original es que aqui pasan por tokens en vez de ir fijos, para que la
+   contraparte clara no quede con superficies oscuras.
+   ========================================================================== */
+
+/* Superficie de tarjeta. Toda tarjeta del rediseno usa esta. */
+@utility surface-card {
+  background: var(--surface-card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Sub-superficie dentro de una tarjeta: filas de alimento, mini-stats. */
+@utility surface-raised {
+  background: var(--card-raised);
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+}
+
+/* Cabecera de tarjeta: eyebrow en versalitas + regla divisoria. */
+@utility card-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+@utility card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--divider);
+}
+
+/* Isla flotante: barra inferior, barra de comandos. */
+@utility island {
+  background: var(--island-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-island);
+}
+
+/* Control segmentado de vidrio. Sustituye a los chips sueltos. */
+@utility segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--segmented-bg);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 6%),
+    0 10px 26px -18px oklch(0 0 0 / 0.8);
+}
+
+/* Realce del item activo en la barra inferior. */
+@utility glow-ring {
+  border: 1.5px solid var(--primary);
+  background: var(--card);
+  box-shadow:
+    var(--glow-primary),
+    inset 0 0 12px -2px color-mix(in oklch, var(--primary) 35%, transparent);
 }
 
 /* Etiqueta de seccion en versalitas. Un solo nivel, no cuatro. */
