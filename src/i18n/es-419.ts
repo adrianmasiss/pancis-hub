@@ -1017,6 +1017,35 @@ export const messages = {
       // el usuario lea dos objetivos distintos sin explicacion.
       planTotal: "kcal del plan",
     },
+    swapQuestion: {
+      title: "¿Y si lo cambio?",
+      description:
+        "Escribe por que alimento lo cambiarias y cuanto, y te digo como queda tu dia.",
+      foodLabel: "Cambiarlo por",
+      foodPlaceholder: "Ej. avena, pan integral, yogur griego…",
+      quantityLabel: "Cantidad",
+      submit: "Ver que cambia",
+      calculating: "Calculando…",
+      fromLibrary: "Dato de tu biblioteca",
+      fromAssistant: "Estimado por el asistente",
+      equivalentHint: "Para igualar las calorias necesitarias",
+      applyForToday: "Usar solo por hoy",
+      applied: "Listo, cambiado solo por hoy.",
+      undo: "Deshacer el cambio de hoy",
+      undone: "Se restauro tu plan original.",
+      noEstimateAvailable:
+        "Ese alimento no esta en tu biblioteca y el asistente no esta configurado. Agregalo a la biblioteca para calcular el cambio.",
+      estimateFailed:
+        "No pudimos estimar ese alimento. Intenta con otro nombre o agregalo a tu biblioteca.",
+      // El aviso cambia con la confianza que reporta el modelo: no es lo mismo
+      // una estimacion de categoria generica que una de un dato bien conocido.
+      estimateNotice: {
+        alta: "Estimacion del asistente a partir de tablas de composicion. Revisa el empaque si necesitas exactitud.",
+        media:
+          "Estimacion aproximada. El valor real puede variar segun la marca.",
+        baja: "Estimacion poco precisa: el asistente no reconocio el producto y calculo por su categoria. Verifica el empaque.",
+      },
+    },
     compare: {
       title: "Comparar comidas",
       subtitle:
