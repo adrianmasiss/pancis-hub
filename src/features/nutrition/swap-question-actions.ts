@@ -10,7 +10,11 @@ import {
   equivalentQuantityByCalories,
   type SwapImpact,
 } from "@/features/nutrition/lib/swap-impact";
-import type { FoodMacrosPer100g } from "@/features/nutrition/lib/macros";
+import {
+  scaleMacros,
+  type FoodMacrosPer100g,
+  type MacroSet,
+} from "@/features/nutrition/lib/macros";
 
 /**
  * "¿Que pasa si cambio este alimento por N g de X?"
@@ -37,7 +41,10 @@ export type SwapAnswer = {
   /** Id cuando viene de la biblioteca; null cuando lo estimo el modelo. */
   toFoodId: string | null;
   toPer100g: FoodMacrosPer100g;
-  impact: SwapImpact;
+  /** Solo cuando hay alimento de partida: sin origen no hay comparacion. */
+  impact: SwapImpact | null;
+  /** Macros del sustituto en la cantidad consultada. Siempre presente. */
+  toMacros: MacroSet;
   /** Gramos del sustituto que igualarian las calorias del original. */
   equivalentQuantityG: number | null;
   /** Solo en estimaciones: aviso de que la cifra no es de catalogo. */
@@ -45,15 +52,24 @@ export type SwapAnswer = {
 };
 
 const questionSchema = z.object({
-  fromName: z.string().trim().min(1).max(120),
-  fromPer100g: z.object({
-    calories: z.number().min(0),
-    proteinG: z.number().min(0),
-    carbohydrateG: z.number().min(0),
-    fatG: z.number().min(0),
-    fiberG: z.number().min(0),
-  }),
-  fromQuantityG: z.number().positive().max(5000),
+  /**
+   * Alimento de partida. Es opcional a proposito: desde el plan del dia hay
+   * uno concreto al que comparar, pero la barra suelta de Nutricion se usa
+   * para consultar un alimento sin cambiar nada, y ahi no hay origen.
+   */
+  from: z
+    .object({
+      name: z.string().trim().min(1).max(120),
+      per100g: z.object({
+        calories: z.number().min(0),
+        proteinG: z.number().min(0),
+        carbohydrateG: z.number().min(0),
+        fatG: z.number().min(0),
+        fiberG: z.number().min(0),
+      }),
+      quantityG: z.number().positive().max(5000),
+    })
+    .optional(),
   /** Texto libre: "avena", "2 huevos", "pan bimbo integral". */
   toQuery: z.string().trim().min(1).max(120),
   toQuantityG: z.number().positive().max(5000),
@@ -74,13 +90,48 @@ const estimateSchema = z.object({
   confidence: z.enum(["baja", "media", "alta"]),
 });
 
+function buildAnswer(params: {
+  source: SwapAnswerSource;
+  toName: string;
+  toFoodId: string | null;
+  toPer100g: FoodMacrosPer100g;
+  toQuantityG: number;
+  from?: { per100g: FoodMacrosPer100g; quantityG: number };
+  estimateNotice?: string;
+}): SwapAnswer {
+  const { from, toPer100g, toQuantityG } = params;
+  return {
+    source: params.source,
+    toName: params.toName,
+    toFoodId: params.toFoodId,
+    toPer100g,
+    toMacros: scaleMacros(toPer100g, toQuantityG),
+    impact: from
+      ? computeSwapImpact({
+          fromPer100g: from.per100g,
+          fromQuantityG: from.quantityG,
+          toPer100g,
+          toQuantityG,
+        })
+      : null,
+    equivalentQuantityG: from
+      ? equivalentQuantityByCalories({
+          fromPer100g: from.per100g,
+          fromQuantityG: from.quantityG,
+          toPer100g,
+        })
+      : null,
+    estimateNotice: params.estimateNotice,
+  };
+}
+
 export async function answerSwapQuestion(
   input: unknown,
 ): Promise<{ error: string } | { answer: SwapAnswer }> {
   const parsed = questionSchema.safeParse(input);
   if (!parsed.success) return { error: messages.common.genericError };
 
-  const { fromPer100g, fromQuantityG, toQuery, toQuantityG } = parsed.data;
+  const { from, toQuery, toQuantityG } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -106,23 +157,14 @@ export async function answerSwapQuestion(
       fiberG: Number(match.fiber_g ?? 0),
     };
     return {
-      answer: {
+      answer: buildAnswer({
         source: "biblioteca",
         toName: match.name,
         toFoodId: match.id,
         toPer100g,
-        impact: computeSwapImpact({
-          fromPer100g,
-          fromQuantityG,
-          toPer100g,
-          toQuantityG,
-        }),
-        equivalentQuantityG: equivalentQuantityByCalories({
-          fromPer100g,
-          fromQuantityG,
-          toPer100g,
-        }),
-      },
+        toQuantityG,
+        from: from ? { per100g: from.per100g, quantityG: from.quantityG } : undefined,
+      }),
     };
   }
 
@@ -151,25 +193,16 @@ export async function answerSwapQuestion(
 
     const toPer100g: FoodMacrosPer100g = object.per100g;
     return {
-      answer: {
+      answer: buildAnswer({
         source: "asistente",
         toName: object.resolvedName,
         toFoodId: null,
         toPer100g,
-        impact: computeSwapImpact({
-          fromPer100g,
-          fromQuantityG,
-          toPer100g,
-          toQuantityG,
-        }),
-        equivalentQuantityG: equivalentQuantityByCalories({
-          fromPer100g,
-          fromQuantityG,
-          toPer100g,
-        }),
+        toQuantityG,
+        from: from ? { per100g: from.per100g, quantityG: from.quantityG } : undefined,
         estimateNotice:
           messages.nutrition.swapQuestion.estimateNotice[object.confidence],
-      },
+      }),
     };
   } catch (error) {
     console.error("Swap estimate error:", error);

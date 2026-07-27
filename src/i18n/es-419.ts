@@ -1033,6 +1033,8 @@ export const messages = {
       applied: "Listo, cambiado solo por hoy.",
       undo: "Deshacer el cambio de hoy",
       undone: "Se restauro tu plan original.",
+      replacesToday: "Hoy en lugar de",
+      estimated: "estimado",
       noEstimateAvailable:
         "Ese alimento no esta en tu biblioteca y el asistente no esta configurado. Agregalo a la biblioteca para calcular el cambio.",
       estimateFailed:

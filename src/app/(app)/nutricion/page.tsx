@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { AddMealDialog } from "@/features/nutrition/components/add-meal-dialog";
 import { DaySummary } from "@/features/nutrition/components/day-summary";
+import { SwapQuestionPanel } from "@/features/nutrition/components/swap-question-panel";
 import { NutritionActionsMenu } from "@/features/nutrition/components/nutrition-actions-menu";
 import { MealCard } from "@/features/nutrition/components/meal-card";
 import { getDayPlan } from "@/features/nutrition/queries";
@@ -66,6 +67,11 @@ export default async function NutritionPage({
       />
       <DateSelector date={date} today={today} basePath="/nutricion" />
       <DaySummary plan={plan} />
+
+      {/* Consulta libre, sin alimento de partida: informa el impacto pero no
+          ofrece aplicar, porque aqui no hay un item del plan al que aplicarlo.
+          Para eso esta el mismo panel colgado de cada alimento en Inicio. */}
+      <SwapQuestionPanel />
       {plan.meals.length > 0 ? (
         <div className="space-y-3">
           <div>

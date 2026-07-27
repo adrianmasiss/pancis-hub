@@ -5,6 +5,7 @@ import { Loader2, Sparkles, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MacroChip } from "@/components/shared/macro-chip";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 import type { FoodMacrosPer100g } from "@/features/nutrition/lib/macros";
@@ -17,9 +18,15 @@ import { swapDietItemForDay } from "@/features/nutrition/day-swap-actions";
 const t = messages.nutrition.swapQuestion;
 
 type SwapQuestionPanelProps = {
-  fromName: string;
-  fromPer100g: FoodMacrosPer100g;
-  fromQuantityG: number;
+  /**
+   * Alimento de partida. Sin el, el panel funciona como consulta suelta:
+   * busca el alimento y muestra sus macros, sin comparar ni ofrecer aplicar.
+   */
+  from?: {
+    name: string;
+    per100g: FoodMacrosPer100g;
+    quantityG: number;
+  };
   /**
    * Item del plan al que aplicaria la sustitucion. Sin el, el panel solo
    * informa: es el modo de la barra suelta de Nutricion, donde todavia no hay
@@ -84,19 +91,18 @@ function DeltaRow({
  * usuario tiene que poder distinguirlas antes de decidir.
  */
 export function SwapQuestionPanel({
-  fromName,
-  fromPer100g,
-  fromQuantityG,
+  from,
   templateItemId,
   date,
   className,
 }: SwapQuestionPanelProps) {
   const [query, setQuery] = useState("");
-  const [quantity, setQuantity] = useState(String(fromQuantityG));
+  const [quantity, setQuantity] = useState(String(from?.quantityG ?? 100));
   const [answer, setAnswer] = useState<SwapAnswer | null>(null);
   const [pending, startTransition] = useTransition();
   const [applying, startApplying] = useTransition();
 
+  // Aplicar exige los tres: un item del plan, la fecha y una respuesta.
   const canApply = Boolean(templateItemId && date && answer);
 
   const ask = () => {
@@ -107,9 +113,7 @@ export function SwapQuestionPanel({
 
     startTransition(async () => {
       const result = await answerSwapQuestion({
-        fromName,
-        fromPer100g,
-        fromQuantityG,
+        from,
         toQuery: query,
         toQuantityG,
       });
@@ -209,29 +213,39 @@ export function SwapQuestionPanel({
             </span>
           </div>
 
-          <div className="grid gap-1.5 sm:grid-cols-2">
-            <DeltaRow
-              label={messages.macros.calories.label}
-              value={answer.impact.delta.calories}
-              unit=" kcal"
-            />
-            <DeltaRow
-              label={messages.macros.protein.label}
-              value={answer.impact.delta.proteinG}
-              unit=" g"
-              higherIsBetter
-            />
-            <DeltaRow
-              label={messages.macros.carbs.label}
-              value={answer.impact.delta.carbohydrateG}
-              unit=" g"
-            />
-            <DeltaRow
-              label={messages.macros.fat.label}
-              value={answer.impact.delta.fatG}
-              unit=" g"
-            />
-          </div>
+          {/* Con origen se muestra el cambio; sin el, los macros a secas. */}
+          {answer.impact ? (
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              <DeltaRow
+                label={messages.macros.calories.label}
+                value={answer.impact.delta.calories}
+                unit=" kcal"
+              />
+              <DeltaRow
+                label={messages.macros.protein.label}
+                value={answer.impact.delta.proteinG}
+                unit=" g"
+                higherIsBetter
+              />
+              <DeltaRow
+                label={messages.macros.carbs.label}
+                value={answer.impact.delta.carbohydrateG}
+                unit=" g"
+              />
+              <DeltaRow
+                label={messages.macros.fat.label}
+                value={answer.impact.delta.fatG}
+                unit=" g"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <MacroChip type="calories" value={answer.toMacros.calories} />
+              <MacroChip type="protein" value={answer.toMacros.proteinG} />
+              <MacroChip type="carbs" value={answer.toMacros.carbohydrateG} />
+              <MacroChip type="fat" value={answer.toMacros.fatG} />
+            </div>
+          )}
 
           {answer.equivalentQuantityG ? (
             <p className="text-muted-foreground text-xs">

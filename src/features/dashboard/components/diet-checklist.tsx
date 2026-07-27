@@ -9,6 +9,7 @@ import { MacroChip } from "@/components/shared/macro-chip";
 import { formatHouseholdEquivalence } from "@/features/foods/lib/equivalence";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
 import { DietItemSwapSheet } from "@/features/dashboard/components/diet-item-swap-sheet";
+import { UndoDaySwapButton } from "@/features/nutrition/components/undo-day-swap-button";
 import { triggerHaptic } from "@/lib/haptics";
 import { fireCelebration } from "@/components/shared/celebration-overlay";
 import type {
@@ -19,6 +20,7 @@ import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
 const t = messages.nutrition.dietPlan;
+const ds = messages.nutrition.swapQuestion;
 const n = messages.nutrition;
 
 function mealTitle(meal: DietTemplateMealView): string {
@@ -224,8 +226,8 @@ function MealStop({
                       key={item.id}
                       className="flex items-center justify-between gap-3 py-2.5"
                     >
-                      <span className="text-foreground min-w-0 truncate text-[0.8125rem]">
-                        {item.foodName}
+                      <span className="text-foreground min-w-0 text-[0.8125rem]">
+                        <span className="truncate">{item.foodName}</span>
                         {equivalence ? (
                           <span className="text-muted-foreground">
                             {" "}
@@ -240,12 +242,34 @@ function MealStop({
                             {t.customFoodBadge}
                           </Badge>
                         ) : null}
+                        {/* Con sustitucion vigente el plan sigue diciendo lo
+                            que decia; lo que cambio es solo hoy, y se dice. */}
+                        {item.daySwap ? (
+                          <span className="text-muted-foreground mt-0.5 block text-[11px]">
+                            {ds.replacesToday}{" "}
+                            <span className="text-foreground">
+                              {item.daySwap.originalFoodName}
+                            </span>
+                            {item.daySwap.source === "asistente" ? (
+                              <span className="text-primary">
+                                {" "}
+                                · {ds.estimated}
+                              </span>
+                            ) : null}
+                          </span>
+                        ) : null}
                       </span>
                       <span className="flex shrink-0 items-center gap-1">
                         <span className="num text-muted-foreground text-xs">
                           {item.quantityG} g
                         </span>
-                        <DietItemSwapSheet item={item} />
+                        <DietItemSwapSheet item={item} date={today} />
+                        {item.daySwap ? (
+                          <UndoDaySwapButton
+                            templateItemId={item.id}
+                            date={today}
+                          />
+                        ) : null}
                       </span>
                     </li>
                   );

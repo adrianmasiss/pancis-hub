@@ -24,6 +24,15 @@ export type DietTemplateItemView = {
   servingEquivalence: string | null;
   foodPortions: { label: string; grams: number }[];
   macros: MacroTotals;
+  /**
+   * Sustitucion vigente solo para el dia consultado. Cuando existe, los campos
+   * de arriba ya describen al sustituto: la vista no tiene que recalcular
+   * nada. Se conserva el nombre original para poder ofrecer deshacer.
+   */
+  daySwap: {
+    originalFoodName: string;
+    source: "biblioteca" | "asistente";
+  } | null;
 };
 
 export type DietTemplateMealView = {
@@ -139,6 +148,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     recommendationResult,
     dietTemplateResult,
     todayMealNamesResult,
+    daySwapsResult,
   ] = await Promise.all([
     supabase
       .from("nutrition_targets")
@@ -215,6 +225,15 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .eq("user_id", userId)
       .eq("date", today)
       .is("deleted_at", null),
+    // Sustituciones vigentes solo para hoy. El plan no se toca: se superponen
+    // al mapearlo, de modo que manana reaparece el alimento original.
+    supabase
+      .from("diet_item_day_swaps")
+      .select(
+        "template_item_id, quantity_g, source, external_name, external_calories, external_protein_g, external_carbohydrate_g, external_fat_g, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))",
+      )
+      .eq("user_id", userId)
+      .eq("date", today),
   ]);
 
   // Nutricion: suma de snapshots de las comidas del dia (omitidas excluidas).
@@ -291,6 +310,13 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
         )
       : null;
 
+  // Indice de sustituciones del dia por item del plan. Al superponerse en el
+  // mapeo, el resto del dashboard (totales, barras, checklist) trabaja ya con
+  // el sustituto sin enterarse de que hubo un cambio.
+  const daySwapByItemId = new Map(
+    (daySwapsResult.data ?? []).map((swap) => [swap.template_item_id, swap]),
+  );
+
   // Adherencia sobre los ultimos 7 dias.
   const mealDaySet = new Set(
     (mealDays7Result.data ?? []).map((row) => row.date),
@@ -344,32 +370,60 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
           .map((meal) => {
             const items: DietTemplateItemView[] = meal.diet_template_items.map(
               (item) => {
-                const factor = Number(item.quantity_g) / 100;
-                const food = item.foods;
+                const swap = daySwapByItemId.get(item.id);
+                const planFood = item.foods;
+
+                // Con sustitucion vigente manda el sustituto: puede ser un
+                // alimento de la biblioteca o la instantanea que guardo el
+                // asistente para un producto fuera del catalogo.
+                const food = swap ? (swap.foods ?? null) : planFood;
+                const quantityG = Number(
+                  swap ? swap.quantity_g : item.quantity_g,
+                );
+                const factor = quantityG / 100;
+
+                const per100g = swap && !swap.foods
+                  ? {
+                      calories: Number(swap.external_calories ?? 0),
+                      protein_g: Number(swap.external_protein_g ?? 0),
+                      carbohydrate_g: Number(swap.external_carbohydrate_g ?? 0),
+                      fat_g: Number(swap.external_fat_g ?? 0),
+                      fiber_g: 0,
+                    }
+                  : {
+                      calories: Number(food?.calories ?? 0),
+                      protein_g: Number(food?.protein_g ?? 0),
+                      carbohydrate_g: Number(food?.carbohydrate_g ?? 0),
+                      fat_g: Number(food?.fat_g ?? 0),
+                      fiber_g: Number(food?.fiber_g ?? 0),
+                    };
+
                 return {
                   id: item.id,
                   foodId: food?.id ?? "",
-                  foodName: food?.name ?? "",
+                  foodName:
+                    (swap && !swap.foods
+                      ? swap.external_name
+                      : food?.name) ?? "",
                   isCustom: food?.owner_user_id !== null,
-                  quantityG: Number(item.quantity_g),
+                  quantityG,
+                  daySwap: swap
+                    ? {
+                        originalFoodName: planFood?.name ?? "",
+                        source: swap.source as "biblioteca" | "asistente",
+                      }
+                    : null,
                   servingEquivalence: item.serving_equivalence,
                   foodPortions: (food?.food_portions ?? []).map((portion) => ({
                     label: portion.label,
                     grams: Number(portion.grams),
                   })),
                   macros: {
-                    calories: Math.round(Number(food?.calories ?? 0) * factor),
-                    proteinG:
-                      Math.round(Number(food?.protein_g ?? 0) * factor * 10) /
-                      10,
-                    carbohydrateG:
-                      Math.round(
-                        Number(food?.carbohydrate_g ?? 0) * factor * 10,
-                      ) / 10,
-                    fatG:
-                      Math.round(Number(food?.fat_g ?? 0) * factor * 10) / 10,
-                    fiberG:
-                      Math.round(Number(food?.fiber_g ?? 0) * factor * 10) / 10,
+                    calories: Math.round(per100g.calories * factor),
+                    proteinG: round1(per100g.protein_g * factor),
+                    carbohydrateG: round1(per100g.carbohydrate_g * factor),
+                    fatG: round1(per100g.fat_g * factor),
+                    fiberG: round1(per100g.fiber_g * factor),
                   },
                 };
               },

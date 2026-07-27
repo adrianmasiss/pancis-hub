@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SwapAlternativeList } from "@/components/shared/swap-alternative-list";
+import { SwapQuestionPanel } from "@/features/nutrition/components/swap-question-panel";
 import {
   getDietItemSwapSuggestions,
   swapDietTemplateItem,
@@ -24,7 +25,14 @@ import { messages } from "@/i18n/es-419";
 
 const t = messages.swap;
 
-export function DietItemSwapSheet({ item }: { item: DietTemplateItemView }) {
+export function DietItemSwapSheet({
+  item,
+  date,
+}: {
+  item: DietTemplateItemView;
+  /** Dia al que aplicaria una sustitucion "solo por hoy". */
+  date: string;
+}) {
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<DietSwapSuggestions | null>(
     null,
@@ -91,7 +99,36 @@ export function DietItemSwapSheet({ item }: { item: DietTemplateItemView }) {
           <SheetTitle>{t.title}</SheetTitle>
           <SheetDescription>{t.description}</SheetDescription>
         </SheetHeader>
-        <div className="overflow-y-auto px-4 pb-6">
+        <div className="flex flex-col gap-5 overflow-y-auto px-4 pb-6">
+          {/* Consulta libre con IA, antes de la lista de alternativas del
+              catalogo: es la via para el producto que no esta en la
+              biblioteca, que es justo cuando la lista no ayuda. */}
+          <SwapQuestionPanel
+            from={{
+              name: item.foodName,
+              per100g: {
+                calories: item.quantityG
+                  ? (item.macros.calories / item.quantityG) * 100
+                  : 0,
+                proteinG: item.quantityG
+                  ? (item.macros.proteinG / item.quantityG) * 100
+                  : 0,
+                carbohydrateG: item.quantityG
+                  ? (item.macros.carbohydrateG / item.quantityG) * 100
+                  : 0,
+                fatG: item.quantityG
+                  ? (item.macros.fatG / item.quantityG) * 100
+                  : 0,
+                fiberG: item.quantityG
+                  ? (item.macros.fiberG / item.quantityG) * 100
+                  : 0,
+              },
+              quantityG: item.quantityG,
+            }}
+            templateItemId={item.id}
+            date={date}
+          />
+
           <SwapAlternativeList
             sourceName={item.foodName}
             sourceQuantityG={item.quantityG}
