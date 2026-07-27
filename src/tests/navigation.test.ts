@@ -6,16 +6,45 @@ import {
   moreSheetItems,
   navItems,
   sidebarItems,
+  suspendedItems,
 } from "@/lib/navigation";
 
 describe("navegacion", () => {
-  it("tiene 10 entradas de sidebar (Diario removido, Historial y Despensa agregados)", () => {
-    expect(sidebarItems).toHaveLength(10);
+  it("el riel se repliega a las cuatro pantallas mas Configuracion", () => {
+    expect(sidebarItems.map((item) => item.href)).toEqual([
+      "/",
+      "/nutricion",
+      "/entrenamiento",
+      "/progreso",
+      "/configuracion",
+    ]);
   });
 
-  it("tiene 4 entradas en la barra inferior mas el sheet de Mas", () => {
-    expect(bottomNavItems).toHaveLength(4);
-    expect(moreSheetItems.length + bottomNavItems.length).toBe(navItems.length);
+  it("las rutas suspendidas siguen declaradas pero fuera de la navegacion", () => {
+    const suspended = suspendedItems.map((item) => item.href);
+    expect(suspended).toEqual([
+      "/recetas",
+      "/despensa",
+      "/historial",
+      "/academia",
+      "/asistente",
+    ]);
+    // Siguen en navItems: la ruta responde y el codigo se conserva.
+    for (const href of suspended) {
+      expect(navItems.some((item) => item.href === href)).toBe(true);
+      expect(sidebarItems.some((item) => item.href === href)).toBe(false);
+      expect(bottomNavItems.some((item) => item.href === href)).toBe(false);
+      expect(moreSheetItems.some((item) => item.href === href)).toBe(false);
+    }
+  });
+
+  it("la barra inferior conserva sus cuatro destinos", () => {
+    expect(bottomNavItems.map((item) => item.href)).toEqual([
+      "/",
+      "/nutricion",
+      "/entrenamiento",
+      "/progreso",
+    ]);
   });
 
   it("cada entrada tiene etiqueta traducida en es-419", () => {

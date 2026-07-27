@@ -32,12 +32,25 @@ export type NavItem = {
   showInBottomNav: boolean;
   /** Grupo visual en el sidebar/hoja "Mas". Configuracion se ancla aparte. */
   section: NavSection;
+  /**
+   * Suspendida: la ruta y su codigo siguen vivos y accesibles por URL, pero no
+   * aparece en ninguna navegacion. Sirve para replegar la app a las cuatro
+   * pantallas principales sin borrar funciones que puedan recuperarse.
+   */
+  suspended?: boolean;
 };
 
 /**
  * Unica fuente de verdad de la navegacion (docs/05_INFORMATION_ARCHITECTURE.md).
- * Sidebar de escritorio: 9 entradas agrupadas por seccion + Configuracion
- * anclada abajo. Barra inferior movil: 4 entradas + "Mas".
+ *
+ * El producto se repliega a cuatro pantallas: Inicio, Nutricion, Entrenamiento
+ * y Progreso, con Configuracion anclada en el pie. Cada una agrupa su dominio
+ * completo mediante un segmentado interno con la seccion en la URL.
+ *
+ * Recetas, Despensa, Academia, Historial y Asistente quedan suspendidas: su
+ * ruta responde y su codigo se mantiene, pero no se enlazan desde ninguna
+ * navegacion. El Asistente ademas sigue disponible en toda la app a traves de
+ * su boton flotante, asi que no pierde acceso.
  */
 export const navItems: readonly NavItem[] = [
   {
@@ -63,6 +76,7 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: false,
     section: "nutricion",
+    suspended: true,
   },
   {
     href: "/despensa",
@@ -71,6 +85,7 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: false,
     section: "nutricion",
+    suspended: true,
   },
   {
     href: "/entrenamiento",
@@ -96,6 +111,7 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: false,
     section: "principal",
+    suspended: true,
   },
   {
     href: "/academia",
@@ -104,6 +120,7 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: false,
     section: "aprender",
+    suspended: true,
   },
   {
     href: "/asistente",
@@ -112,6 +129,7 @@ export const navItems: readonly NavItem[] = [
     showInSidebar: true,
     showInBottomNav: false,
     section: "aprender",
+    suspended: true,
   },
   {
     href: "/configuracion",
@@ -125,9 +143,21 @@ export const navItems: readonly NavItem[] = [
 
 export const SETTINGS_HREF = "/configuracion";
 
-export const sidebarItems = navItems.filter((item) => item.showInSidebar);
-export const bottomNavItems = navItems.filter((item) => item.showInBottomNav);
-export const moreSheetItems = navItems.filter((item) => !item.showInBottomNav);
+/**
+ * La navegacion visible se reduce a las cuatro pantallas del producto: Inicio,
+ * Nutricion, Entrenamiento y Progreso, mas Configuracion anclada en el pie.
+ * Todo lo suspendido conserva su ruta y su codigo, pero no se enlaza.
+ */
+const activeItems = navItems.filter((item) => !item.suspended);
+
+export const sidebarItems = activeItems.filter((item) => item.showInSidebar);
+export const bottomNavItems = activeItems.filter((item) => item.showInBottomNav);
+export const moreSheetItems = activeItems.filter(
+  (item) => !item.showInBottomNav,
+);
+
+/** Rutas vivas pero fuera de la navegacion, por si hay que recuperarlas. */
+export const suspendedItems = navItems.filter((item) => item.suspended);
 
 const SECTION_LABELS = {
   principal: "Principal",
