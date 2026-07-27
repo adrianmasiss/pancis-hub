@@ -8,9 +8,14 @@ import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   // Sin rebote ni cambio de escala: la respuesta al toque es un cambio de tono.
+  //
+  // Deshabilitado no se resuelve bajando la opacidad de todo el boton: sobre
+  // el acento naranja eso dejaba el texto casi ilegible, y es el estado con el
+  // que abre cualquier formulario vacio. Se cambia a superficie apagada con
+  // texto apagado, que se lee y ademas comunica mejor "aqui todavia no".
   // El paso a :active baja a 75ms para que la pulsacion se sienta inmediata;
   // los 200ms se reservan al hover, donde el cambio debe leerse suave.
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap [letter-spacing:0] transition-colors duration-200 active:duration-75 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap [letter-spacing:0] transition-colors duration-200 active:duration-75 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:border-transparent disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       // --btn-glow define el tono del halo que sigue al cursor en cada variante:
@@ -26,7 +31,7 @@ const buttonVariants = cva(
           "btn-spotlight hover:text-foreground active:bg-muted [--btn-glow:color-mix(in_oklch,var(--foreground)_7%,transparent)] aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 active:bg-destructive/30 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:active:bg-destructive/40 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline active:text-primary/75",
+        link: "text-primary underline-offset-4 hover:underline active:text-primary/75 disabled:bg-transparent",
       },
       // Alturas algo mas generosas que las heredadas: el objetivo tactil
       // minimo en movil es 40px y el texto deja de sentirse comprimido.
