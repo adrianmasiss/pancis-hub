@@ -6,11 +6,15 @@ import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
 import {
+  attachHouseholdEquivalence,
+  buildPortionsMap,
   rankAlternatives,
+  SWAP_FILTERS,
   type EquivalenceFood,
   type SwapCandidate,
 } from "@/features/foods/lib/equivalence";
 import { getFavoriteFoodIds, getRecentFoodIds } from "@/features/foods/queries";
+import { getPantryFoodIds } from "@/features/pantry/queries";
 import type { FoodGroup } from "@/features/foods/schemas";
 
 const t = messages.nutrition.dietPlan;
@@ -97,7 +101,10 @@ export async function logDietTemplateMeal(
 
 // ------------------------------------------------- intercambio por comida
 
-const swapSuggestionsSchema = z.object({ templateItemId: z.uuid() });
+const swapSuggestionsSchema = z.object({
+  templateItemId: z.uuid(),
+  filter: z.enum(SWAP_FILTERS).optional(),
+});
 const swapItemSchema = z.object({
   templateItemId: z.uuid(),
   foodId: z.uuid(),
@@ -155,12 +162,12 @@ export async function getDietItemSwapSuggestions(
     .single();
   if (!item?.foods) return { error: swapT.failed };
 
-  const [candidatesResult, preferencesResult, favoriteIds, recentIds] =
+  const [candidatesResult, preferencesResult, favoriteIds, recentIds, pantryIds] =
     await Promise.all([
       supabase
         .from("foods")
         .select(
-          "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
+          "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams)",
         )
         .is("deleted_at", null)
         .limit(300),
@@ -175,19 +182,26 @@ export async function getDietItemSwapSuggestions(
         ]),
       getFavoriteFoodIds(user.id),
       getRecentFoodIds(user.id),
+      getPantryFoodIds(user.id),
     ]);
 
+  const candidateRows = candidatesResult.data ?? [];
+  const portionsByFoodId = buildPortionsMap(candidateRows);
+
   const source = toEquivalenceFood(item.foods as DbFood);
-  const alternatives = rankAlternatives({
-    source,
-    sourceQuantityG: Number(item.quantity_g),
-    candidates: (candidatesResult.data ?? []).map((food) =>
-      toEquivalenceFood(food as DbFood),
-    ),
-    favoriteIds,
-    recentIds: new Set(recentIds),
-    restrictions: (preferencesResult.data ?? []).map((row) => row.value),
-  });
+  const alternatives = attachHouseholdEquivalence(
+    rankAlternatives({
+      source,
+      sourceQuantityG: Number(item.quantity_g),
+      candidates: candidateRows.map((food) => toEquivalenceFood(food as DbFood)),
+      favoriteIds,
+      recentIds: new Set(recentIds),
+      pantryIds,
+      restrictions: (preferencesResult.data ?? []).map((row) => row.value),
+      filter: parsed.data.filter,
+    }),
+    portionsByFoodId,
+  );
 
   return {
     sourceName: source.name,

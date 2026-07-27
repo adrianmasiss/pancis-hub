@@ -4,6 +4,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================================
+   PANCIS HUB — Sistema visual "Grafito"
+   ----------------------------------------------------------------------------
+   Referencia: instrumento editorial. Grafito frio, acero, filete de 1px.
+   El modo oscuro es la identidad; el claro es su contraparte, no al reves.
+
+   Cuatro reglas que no se rompen:
+     1. UNA sola familia cromatica (neutros frios + acero). El color semantico
+        se usa solo para estado y siempre acompanado de icono o texto.
+     2. El acento aparece como maximo 3 veces por pantalla.
+     3. La elevacion se reserva a capas flotantes (dialogo, hoja, menu).
+        Las superficies en flujo se separan con filete, nunca con sombra.
+     4. La cifra manda. Todo dato comparable va en mono tabular, y la cifra
+        principal de cada bloque se pone en escala de display.
+
+   Excepcion consciente: el logotipo es calido (naranja) y es un activo de
+   marca que no se toca. Queda como la unica nota calida de la interfaz.
+   ========================================================================== */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -39,97 +58,157 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
+  /* Estado. Nunca decorativo: siempre junto a un glifo o una etiqueta. */
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
+  --color-critical: var(--critical);
+  --color-critical-foreground: var(--critical-foreground);
+  /* Filete: el separador por defecto del sistema. */
+  --color-hairline: var(--hairline);
+
+  /* Escala de radios comprimida: el salto entre lg y 3xl es deliberadamente
+     corto para que nada se sienta descoordinado. */
+  --radius-sm: calc(var(--radius) * 0.64);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.2);
+  --radius-2xl: calc(var(--radius) * 1.45);
+  --radius-3xl: calc(var(--radius) * 1.7);
+  --radius-4xl: calc(var(--radius) * 2);
 }
 
+/* ----------------------------------------------------------------------------
+   MODO CLARO. Contraparte del oscuro, no al reves.
+   El oscuro define la identidad; este mantiene la misma familia fria y el mismo
+   acento para que cambiar de tema no se sienta como cambiar de producto.
+   -------------------------------------------------------------------------- */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* Marca Pancis Hub: rojo-naranja del logo (contraste AA con texto blanco) */
-  --primary: oklch(0.55 0.19 33);
-  --primary-foreground: oklch(0.985 0 0);
-  /* Gradiente de marca (rojo -> naranja). Version vivida para elementos
-     grandes y version -btn con contraste AA para texto de botones. */
-  --brand-from: oklch(0.55 0.22 27);
-  --brand-to: oklch(0.7 0.18 50);
-  --brand-btn-from: oklch(0.52 0.2 28);
-  --brand-btn-to: oklch(0.6 0.18 42);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.65 0.17 40);
-  /* Paleta categorica validada (dataviz) para superficie clara */
-  --chart-1: #2a78d6;
-  --chart-2: #008300;
-  --chart-3: #e87ba4;
-  --chart-4: #eda100;
-  --chart-5: #1baf7a;
+  /* --- Papel frio: neutros con sesgo azul, nunca gris puro --- */
+  --background: oklch(0.988 0.0017 248); /* #fafbfc */
+  --foreground: oklch(0.209 0.0085 264); /* #16181c */
+  --card: oklch(1 0 264);
+  --card-foreground: oklch(0.209 0.0085 264);
+  --popover: oklch(1 0 264);
+  --popover-foreground: oklch(0.209 0.0085 264);
+
+  /* --- Azul acero, oscurecido para contrastar sobre papel (6.4:1) --- */
+  --primary: oklch(0.474 0.069 240); /* #35617f */
+  --primary-foreground: oklch(1 0 264);
+
+  /* Compatibilidad: el "gradiente de marca" es acero plano.
+     Se conservan los nombres para no romper componentes existentes. */
+  --brand-from: oklch(0.474 0.069 240);
+  --brand-to: oklch(0.474 0.069 240);
+  --brand-btn-from: oklch(0.44 0.066 240);
+  --brand-btn-to: oklch(0.44 0.066 240);
+
+  /* Cromo de medicion: ejes, lineas base, referencias. Nunca una accion.
+     Va en gris neutro justamente para no confundirse con el acento. */
+  --signal: oklch(0.497 0.0216 258);
+  --signal-foreground: oklch(1 0 264);
+
+  --secondary: oklch(0.954 0.0046 258); /* #eef0f3 */
+  --secondary-foreground: oklch(0.267 0.0126 258);
+  --muted: oklch(0.96 0.0034 248); /* #f0f2f4 */
+  --muted-foreground: oklch(0.497 0.0216 258); /* #5b636f */
+  --accent: oklch(0.944 0.0069 248); /* #e9edf1 */
+  --accent-foreground: oklch(0.353 0.0371 249);
+
+  /* --- Estado, en el mismo registro contenido que el resto --- */
+  --positive: oklch(0.524 0.0887 164);
+  --positive-foreground: oklch(1 0 264);
+  --caution: oklch(0.528 0.0957 77);
+  --caution-foreground: oklch(1 0 264);
+  --critical: oklch(0.54 0.1463 28);
+  --critical-foreground: oklch(1 0 264);
+  --destructive: oklch(0.54 0.1463 28);
+
+  --hairline: oklch(0.906 0.006 250);
+  --border: oklch(0.906 0.006 250);
+  --input: oklch(0.869 0.008 250);
+  --ring: oklch(0.474 0.069 240);
+
+  /* Paleta categorica: un recorrido dentro de la familia fria, no un arcoiris.
+     La luminancia varia lo suficiente para distinguirse en escala de grises. */
+  --chart-1: oklch(0.474 0.069 240);
+  --chart-2: oklch(0.635 0.0586 240);
+  --chart-3: oklch(0.524 0.0887 164);
+  --chart-4: oklch(0.523 0.0556 237);
+  --chart-5: oklch(0.51 0.0739 301);
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.55 0.19 33);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --sidebar: oklch(0.972 0.0034 248);
+  --sidebar-foreground: oklch(0.209 0.0085 264);
+  --sidebar-primary: oklch(0.474 0.069 240);
+  --sidebar-primary-foreground: oklch(1 0 264);
+  --sidebar-accent: oklch(0.96 0.0034 248);
+  --sidebar-accent-foreground: oklch(0.267 0.0126 258);
+  --sidebar-border: oklch(0.906 0.006 250);
+  --sidebar-ring: oklch(0.474 0.069 240);
 }
 
+/* ----------------------------------------------------------------------------
+   MODO OSCURO. Aqui vive la identidad del producto.
+   Grafito frio de fondo, hueso para el texto y un unico acento de acero. El
+   riel lateral es mas oscuro que el lienzo para que el contenido flote.
+   -------------------------------------------------------------------------- */
 .dark {
-  /* Fondo profundo calido, nunca negro puro (docs/07_DESIGN_SYSTEM.md) */
-  --background: oklch(0.17 0.008 40);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.01 45);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.01 45);
-  --popover-foreground: oklch(0.985 0 0);
-  /* Marca en oscuro: naranja brillante con texto oscuro */
-  --primary: oklch(0.72 0.17 45);
-  --primary-foreground: oklch(0.18 0.05 40);
-  --brand-from: oklch(0.62 0.21 30);
-  --brand-to: oklch(0.76 0.17 55);
-  --brand-btn-from: oklch(0.66 0.2 33);
-  --brand-btn-to: oklch(0.75 0.17 52);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: oklch(0.209 0.0085 264); /* #16181c grafito */
+  --foreground: oklch(0.964 0.0029 264); /* #f2f3f5 hueso */
+  --card: oklch(0.234 0.0106 261); /* #1b1e23 */
+  --card-foreground: oklch(0.964 0.0029 264);
+  --popover: oklch(0.252 0.014 267); /* #1f2229 */
+  --popover-foreground: oklch(0.964 0.0029 264);
+
+  /* --- Azul acero: el unico acento. Sobre grafito da 7.1:1 --- */
+  --primary: oklch(0.714 0.0657 243); /* #7fa8c9 */
+  --primary-foreground: oklch(0.195 0.0112 261);
+
+  --brand-from: oklch(0.714 0.0657 243);
+  --brand-to: oklch(0.714 0.0657 243);
+  --brand-btn-from: oklch(0.714 0.0657 243);
+  --brand-btn-to: oklch(0.714 0.0657 243);
+
+  --signal: oklch(0.706 0.0197 258);
+  --signal-foreground: oklch(0.209 0.0085 264);
+
+  --secondary: oklch(0.267 0.0126 258); /* #22262c */
+  --secondary-foreground: oklch(0.964 0.0029 264);
+  --muted: oklch(0.276 0.0142 262); /* #24282f */
+  --muted-foreground: oklch(0.706 0.0197 258); /* #99a1ad */
+  --accent: oklch(0.292 0.0163 260); /* #272c34 */
+  --accent-foreground: oklch(0.937 0.0058 264);
+
+  --positive: oklch(0.743 0.0964 163);
+  --positive-foreground: oklch(0.209 0.0085 264);
+  --caution: oklch(0.779 0.1004 80);
+  --caution-foreground: oklch(0.209 0.0085 264);
+  --critical: oklch(0.693 0.1378 26);
+  --critical-foreground: oklch(0.209 0.0085 264);
+  --destructive: oklch(0.693 0.1378 26);
+
+  --hairline: oklch(1 0 0 / 10%);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.15 45);
-  /* Paleta categorica validada (dataviz) para superficie oscura */
-  --chart-1: #3987e5;
-  --chart-2: #008300;
-  --chart-3: #d55181;
-  --chart-4: #c98500;
-  --chart-5: #199e70;
-  --sidebar: oklch(0.21 0.01 45);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.72 0.17 45);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.714 0.0657 243);
+
+  --chart-1: oklch(0.714 0.0657 243);
+  --chart-2: oklch(0.827 0.0299 245);
+  --chart-3: oklch(0.743 0.0964 163);
+  --chart-4: oklch(0.624 0.0656 231);
+  --chart-5: oklch(0.685 0.0717 305);
+
+  --sidebar: oklch(0.191 0.0087 264); /* #121418, mas hondo que el lienzo */
+  --sidebar-foreground: oklch(0.964 0.0029 264);
+  --sidebar-primary: oklch(0.714 0.0657 243);
+  --sidebar-primary-foreground: oklch(0.195 0.0112 261);
+  --sidebar-accent: oklch(0.276 0.0142 262);
+  --sidebar-accent-foreground: oklch(0.964 0.0029 264);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.714 0.0657 243);
 }
 
 @layer base {
@@ -137,41 +216,249 @@
     @apply border-border outline-ring/50;
   }
   body {
+    /* Fondo liso. Sin degradados, sin cuadriculas: el contenido es el motivo. */
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* Editorial: los titulos van francamente apretados; el cuerpo respira.
+     -0.03em es lo que separa un titulo "de sistema" de uno compuesto. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  h1 {
+    line-height: 1.05;
+  }
+  p {
+    text-wrap: pretty;
   }
   ::selection {
-    background: color-mix(in oklch, var(--primary) 25%, transparent);
+    background: color-mix(in oklch, var(--primary) 18%, transparent);
   }
 }
 
-/* Utilidades de marca */
-.bg-brand-gradient {
-  background-image: linear-gradient(100deg, var(--brand-from), var(--brand-to));
+/* ============================================================================
+   TIPOGRAFIA DE DATOS
+   Toda cifra comparable (kcal, gramos, kilos, %, series x repes, horas) va en
+   monoespaciada tabular. Las columnas de numeros se alinean solas y la interfaz
+   se lee como una lectura de instrumento.
+   ========================================================================== */
+@utility num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.bg-brand-button {
-  background-image: linear-gradient(
-    115deg,
-    var(--brand-btn-from),
-    var(--brand-btn-to)
-  );
+/* Cifra protagonista de un bloque: la que se lee desde lejos. Se usa una sola
+   vez por tarjeta, si no deja de destacar y vuelve a ser texto. */
+@utility num-display {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 2.125rem; /* 34px */
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+
+/* Titulo de pagina en escala editorial. */
+@utility display-title {
+  font-size: 2.125rem; /* 34px */
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+
+/* Etiqueta de seccion en versalitas. Un solo nivel, no cuatro. */
+@utility label-micro {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* ============================================================================
+   SUPERFICIES
+   Se conservan los nombres de clase heredados para que las vistas que aun no
+   se han migrado adopten el sistema nuevo sin tocarlas. Lo que cambia es su
+   significado: de vidrio y resplandor a filete y superficie plana.
+
+   Van en @layer components a proposito: asi cualquier utilidad de Tailwind
+   aplicada en el mismo elemento (bg-primary, rounded-full, border-0...) gana,
+   que es el comportamiento que se espera al combinarlas.
+   ========================================================================== */
+@layer components {
+/* Superficie en flujo: filete de 1px, sin sombra. */
+.surface-panel,
+.hairline-card,
+.glass-card,
+.glass-pill,
+.hero-banner {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Las pseudo-capas decorativas del sistema anterior se retiran. */
+.hero-banner::before,
+.hero-banner::after,
+.bg-ambient-aura::before,
+.bg-ambient-aura::after {
+  content: none;
+}
+
+.bg-ambient-aura {
+  background: none;
+}
+
+/* Capa flotante: lo unico que proyecta sombra en todo el sistema. */
+.surface-overlay {
+  background: var(--popover);
+  border: 1px solid var(--hairline);
+  box-shadow:
+    0 1px 2px color-mix(in oklch, var(--foreground) 5%, transparent),
+    0 16px 48px -24px color-mix(in oklch, var(--foreground) 32%, transparent);
+}
+
+/* Barra fija translucida (barra superior, navegacion inferior). */
+.surface-bar {
+  background: color-mix(in oklch, var(--background) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .surface-bar {
+    background: var(--background);
+  }
+}
+
+/* Marca y acento: bronce plano. Sin degradado, sin resplandor. */
+.bg-brand-gradient {
+  background-image: none;
+  background-color: var(--primary);
+}
+
+.bg-brand-button,
+.glowing-primary-btn {
+  background-image: none;
+  background-color: var(--primary);
+  box-shadow: none;
+  transition:
+    background-color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.glowing-primary-btn:hover {
+  transform: none;
+  box-shadow: none;
+  background-color: color-mix(in oklch, var(--primary) 88%, var(--foreground));
 }
 
 .text-brand-gradient {
-  background-image: linear-gradient(100deg, var(--brand-from), var(--brand-to));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background-image: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--primary);
 }
 
-/* Entrada suave del contenido (se anula con prefers-reduced-motion) */
+.bg-signal {
+  background: var(--signal);
+  color: var(--signal-foreground);
+}
+
+/* ----------------------------------------------------------------------------
+   FOCO QUE SIGUE AL CURSOR
+   Un halo suave centrado en el puntero. Las coordenadas llegan por variables
+   CSS desde un handler de pointermove, asi que no hay estado de React ni
+   re-render: solo dos custom properties y una transicion de opacidad.
+
+   z-index:-1 + isolation:isolate deja el halo por encima del fondo del boton
+   pero por debajo de su texto, sin tocar el z-index de los hijos.
+   -------------------------------------------------------------------------- */
+.btn-spotlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.btn-spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    7rem circle at var(--btn-x, 50%) var(--btn-y, 50%),
+    var(--btn-glow, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.btn-spotlight:hover::before {
+  opacity: 1;
+}
+
+/* Sin puntero fino (tactil) el halo no aporta y se queda pegado tras el tap. */
+@media (hover: none) {
+  .btn-spotlight::before {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   DESPLIEGUE FLUIDO
+   Transicion de grid-template-rows 0fr -> 1fr: anima a la altura real del
+   contenido sin medirla en JS y sin max-height inventados que cortan el texto.
+   -------------------------------------------------------------------------- */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.reveal[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.reveal > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* La capsula flotante de navegacion pasa a barra plana anclada. */
+.dynamic-island-capsule {
+  background: color-mix(in oklch, var(--background) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  box-shadow: none;
+}
+} /* fin @layer components */
+
+/* ============================================================================
+   MOVIMIENTO
+   Discreto por definicion: nada rebota, nada palpita.
+   ========================================================================== */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -180,7 +467,19 @@
 }
 
 .animate-fade-up {
-  animation: fade-up 0.35s ease-out both;
+  animation: fade-up 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.interactive-bounce {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.interactive-bounce:active {
+  opacity: 0.7;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

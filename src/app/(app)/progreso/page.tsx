@@ -39,6 +39,7 @@ export default async function ProgressPage() {
   return (
     <>
       <PageHeader
+        icon={TrendingUp}
         title={t.title}
         description="Lleva un registro de tus mediciones y compara tu progreso en el tiempo."
         actions={<MeasurementFormDialog />}

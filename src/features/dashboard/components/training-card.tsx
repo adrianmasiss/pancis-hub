@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Play, Timer, Flame, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
@@ -21,47 +22,86 @@ export function TrainingCard({ data }: { data: DashboardData }) {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.title}</CardTitle>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between gap-3">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <Dumbbell
+              className="text-muted-foreground size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t.title}</span>
+          </span>
+          <Link
+            href="/entrenamiento"
+            className="text-muted-foreground hover:text-foreground group flex shrink-0 items-center gap-0.5 text-xs font-normal transition-colors duration-200"
+          >
+            Ver rutinas
+            <ChevronRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-5">
         {training.activePlanName ? (
           <>
-            <div className="space-y-1">
-              <p className="text-muted-foreground text-xs font-medium">
-                {t.scheduled}
-              </p>
-              <p className="font-medium">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <Badge variant="outline" className="label-micro border-hairline">
+                  {t.scheduled}
+                </Badge>
+                {training.estimatedMinutes ? (
+                  <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                    <Timer className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="num">~{training.estimatedMinutes}</span>{" "}
+                    {t.minutes}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-[0.9375rem] leading-snug font-medium">
                 {training.activePlanName}
-                {training.nextDayName ? ` — ${training.nextDayName}` : ""}
               </p>
-              {training.estimatedMinutes ? (
-                <p className="text-muted-foreground text-xs">
-                  {t.estimatedDuration}: ~{training.estimatedMinutes}{" "}
-                  {t.minutes}
+              {training.nextDayName ? (
+                <p className="text-muted-foreground text-[0.8125rem]">
+                  {training.nextDayName}
                 </p>
               ) : null}
             </div>
+
             {training.mainExercises.length > 0 ? (
-              <div className="space-y-1">
-                <p className="text-muted-foreground text-xs font-medium">
-                  {t.mainExercises}
-                </p>
-                <ul className="space-y-0.5 text-sm">
+              <div className="flex flex-col gap-2.5">
+                <p className="label-micro">{t.mainExercises}</p>
+                {/* Filete compartido: las filas se separan con una linea, no
+                    con fondos de color. */}
+                <ul className="divide-hairline border-hairline divide-y border-y">
                   {training.mainExercises.map((name) => (
-                    <li key={name}>{name}</li>
+                    <li
+                      key={name}
+                      className="truncate py-2.5 text-[0.8125rem]"
+                    >
+                      {name}
+                    </li>
                   ))}
                 </ul>
               </div>
             ) : null}
-            <div className="flex items-center justify-between gap-2">
-              <Button asChild size="sm">
-                <Link href="/entrenamiento">{t.start}</Link>
+
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Button asChild className="shrink-0">
+                <Link href="/entrenamiento">
+                  <Play className="size-4" aria-hidden="true" />
+                  {t.start}
+                </Link>
               </Button>
               {training.lastSession ? (
-                <p className="text-muted-foreground text-xs">
-                  {t.lastSession}: {formatDate(training.lastSession.date)} ·{" "}
-                  {training.lastSession.setsCount} {t.setsLogged}
+                <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                  <Flame className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    {t.lastSession}: {formatDate(training.lastSession.date)}
+                    <span aria-hidden="true"> &middot; </span>
+                    <span className="num text-foreground">
+                      {training.lastSession.setsCount}
+                    </span>{" "}
+                    {t.setsLogged}
+                  </span>
                 </p>
               ) : null}
             </div>
@@ -71,7 +111,6 @@ export function TrainingCard({ data }: { data: DashboardData }) {
             title={t.noPlan}
             description={messages.emptyStates.training.description}
             icon={Dumbbell}
-            className="py-8"
           />
         )}
       </CardContent>

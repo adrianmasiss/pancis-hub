@@ -6,7 +6,7 @@
  * - Navegaciones: red primero; si no hay conexion, pagina /offline.
  * - Estaticos inmutables (_next/static, iconos, logos): cache primero.
  */
-const CACHE_NAME = "pancis-hub-v1";
+const CACHE_NAME = "pancis-hub-v2";
 const PRECACHE = [
   "/offline",
   "/logo.png",
@@ -14,8 +14,15 @@ const PRECACHE = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
 ];
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+const IS_LOCAL_DEV = LOCAL_HOSTNAMES.has(self.location.hostname);
 
 self.addEventListener("install", (event) => {
+  if (IS_LOCAL_DEV) {
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
+
   event.waitUntil(
     caches
       .open(CACHE_NAME)
@@ -25,6 +32,26 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  if (IS_LOCAL_DEV) {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((key) => key.startsWith("pancis-hub-"))
+              .map((key) => caches.delete(key)),
+          ),
+        )
+        .then(() => self.registration.unregister())
+        .then(() => self.clients.matchAll({ type: "window" }))
+        .then((clients) => {
+          clients.forEach((client) => client.navigate(client.url));
+        }),
+    );
+    return;
+  }
+
   event.waitUntil(
     caches
       .keys()
@@ -51,7 +78,6 @@ function isSupabaseRequest(url) {
 
 function isImmutableAsset(url) {
   return (
-    url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icons/") ||
     url.pathname === "/logo.png" ||
     url.pathname === "/logo-dark.png"
@@ -64,6 +90,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || isSupabaseRequest(url)) return;
+  if (url.pathname.startsWith("/_next/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(

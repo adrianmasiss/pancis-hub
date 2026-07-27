@@ -40,10 +40,14 @@ export function LoginForm() {
   };
 
   return (
-    <Card>
+    <Card className="shadow-[0_28px_80px_-54px_color-mix(in_oklch,var(--foreground)_70%,transparent)]">
       <CardHeader>
-        <CardTitle>{messages.auth.login.title}</CardTitle>
-        <CardDescription>{messages.auth.login.description}</CardDescription>
+        <CardTitle className="text-xl font-semibold [letter-spacing:0]">
+          {messages.auth.login.title}
+        </CardTitle>
+        <CardDescription className="text-sm leading-6">
+          {messages.auth.login.description}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -70,7 +74,7 @@ export function LoginForm() {
               {serverError}
             </p>
           ) : null}
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" size="lg" className="w-full font-semibold" disabled={pending}>
             {pending ? messages.common.loading : messages.auth.login.submit}
           </Button>
         </form>

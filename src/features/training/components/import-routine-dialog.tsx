@@ -127,7 +127,7 @@ export function ImportRoutineDialog() {
               </div>
 
               {preview.unmatchedCount > 0 ? (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
+                <p className="text-xs text-caution">
                   {t.unmatched.replace(
                     "{count}",
                     String(preview.unmatchedCount),

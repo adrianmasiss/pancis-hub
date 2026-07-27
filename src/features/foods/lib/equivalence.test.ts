@@ -413,10 +413,44 @@ describe("filtros de sustitucion", () => {
     expect(conFibra).toBeGreaterThan(soloProteina);
   });
 
-  it("disponibles solo ofrece favoritos o recientes", () => {
+  it("disponibles cae a favoritos o recientes cuando no hay despensa", () => {
     const results = rank("disponibles");
     expect(results).toHaveLength(1);
     expect(results[0]!.food.id).toBe("atun");
+  });
+
+  it("disponibles usa la despensa cuando el usuario tiene alimentos en ella", () => {
+    // Con despensa manda lo que hay en casa: aunque el atun es favorito, si
+    // solo las lentejas estan en la despensa, es lo unico disponible.
+    const results = rankAlternatives({
+      source: pollo,
+      sourceQuantityG: 100,
+      candidates: [atun, lentejas],
+      favoriteIds: new Set(["atun"]),
+      recentIds: new Set<string>(),
+      pantryIds: new Set(["lentejas"]),
+      restrictions: [],
+      filter: "disponibles",
+    });
+    expect(results.map((r) => r.food.id)).toEqual(["lentejas"]);
+    expect(results[0]!.isAvailable).toBe(true);
+  });
+
+  it("marca isAvailable en cualquier filtro segun la despensa", () => {
+    const results = rankAlternatives({
+      source: pollo,
+      sourceQuantityG: 100,
+      candidates: [atun, lentejas],
+      favoriteIds: new Set<string>(),
+      recentIds: new Set<string>(),
+      pantryIds: new Set(["atun"]),
+      restrictions: [],
+      filter: "similar",
+    });
+    const atunResult = results.find((r) => r.food.id === "atun");
+    const lentejasResult = results.find((r) => r.food.id === "lentejas");
+    expect(atunResult?.isAvailable).toBe(true);
+    expect(lentejasResult?.isAvailable).toBe(false);
   });
 
   it("mas_proteina compara densidad, no totales", () => {

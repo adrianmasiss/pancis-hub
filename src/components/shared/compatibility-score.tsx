@@ -18,8 +18,8 @@ const BREAKDOWN: { type: MacroType; key: keyof Omit<Score, "overall"> }[] = [
  * el numero siempre esta visible junto al indicador (a11y).
  */
 function toneFor(score: number): string {
-  if (score >= 8) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 6) return "text-amber-600 dark:text-amber-400";
+  if (score >= 8) return "text-positive";
+  if (score >= 6) return "text-caution";
   return "text-destructive";
 }
 

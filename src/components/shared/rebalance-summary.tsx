@@ -7,7 +7,7 @@ const t = messages.swap;
 
 const SEVERITY_STYLES = {
   alta: "border-destructive/40 bg-destructive/5",
-  media: "border-amber-500/40 bg-amber-500/5",
+  media: "border-caution/40 bg-caution/8",
   informativa: "border-border bg-muted/40",
 } as const;
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { AssistantChat } from "@/features/assistant/components/assistant-chat";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ export default async function AssistantPage({
 
   return (
     <>
-      <PageHeader title={t.title} description={t.subtitle} />
+      <PageHeader icon={Sparkles} title={t.title} description={t.subtitle} />
       <AssistantChat initialMessage={q?.slice(0, 500)} />
     </>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
@@ -5,34 +7,40 @@ import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // Sin rebote ni cambio de escala: la respuesta al toque es un cambio de tono.
+  // El paso a :active baja a 75ms para que la pulsacion se sienta inmediata;
+  // los 200ms se reservan al hover, donde el cambio debe leerse suave.
+  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap [letter-spacing:0] transition-colors duration-200 active:duration-75 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
+      // --btn-glow define el tono del halo que sigue al cursor en cada variante:
+      // luz sobre superficies llenas, bronce sobre superficies claras.
       variant: {
         default:
-          "bg-brand-button text-primary-foreground hover:brightness-110 active:scale-[0.98]",
+          "btn-spotlight bg-primary text-primary-foreground [--btn-glow:color-mix(in_oklch,white_26%,transparent)] hover:bg-primary/92 active:bg-primary/84",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "btn-spotlight border-hairline bg-card hover:border-primary/35 hover:text-foreground active:bg-muted [--btn-glow:color-mix(in_oklch,var(--primary)_14%,transparent)] aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "btn-spotlight bg-secondary text-secondary-foreground active:bg-secondary/75 [--btn-glow:color-mix(in_oklch,var(--foreground)_8%,transparent)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "btn-spotlight hover:text-foreground active:bg-muted [--btn-glow:color-mix(in_oklch,var(--foreground)_7%,transparent)] aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 active:bg-destructive/30 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:active:bg-destructive/40 dark:focus-visible:ring-destructive/40",
+        link: "text-primary underline-offset-4 hover:underline active:text-primary/75",
       },
+      // Alturas algo mas generosas que las heredadas: el objetivo tactil
+      // minimo en movil es 40px y el texto deja de sentirse comprimido.
       size: {
         default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8",
+          "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        xs: "h-7 gap-1 rounded-sm px-2.5 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-8 gap-1.5 rounded-sm px-3 text-[0.8125rem] in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+        icon: "size-10",
         "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
+          "size-7 rounded-sm in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-8 rounded-sm in-data-[slot=button-group]:rounded-md",
+        "icon-lg": "size-11",
       },
     },
     defaultVariants: {
@@ -47,6 +55,7 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  onPointerMove,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -54,12 +63,29 @@ function Button({
   }) {
   const Comp = asChild ? Slot.Root : "button";
 
+  /**
+   * Escribe la posicion del puntero directamente en el estilo del nodo. Se evita
+   * useState a proposito: mover el raton sobre un boton no debe provocar
+   * renders de React.
+   */
+  const handlePointerMove = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      onPointerMove?.(event);
+      const el = event.currentTarget;
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty("--btn-x", `${event.clientX - rect.left}px`);
+      el.style.setProperty("--btn-y", `${event.clientY - rect.top}px`);
+    },
+    [onPointerMove],
+  );
+
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
+      onPointerMove={handlePointerMove}
       {...props}
     />
   );

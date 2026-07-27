@@ -264,7 +264,7 @@ function DeltaRow({ type, value }: { type: MacroType; value: number }) {
             ? "tabular-nums"
             : value > 0
               ? "text-primary font-medium tabular-nums"
-              : "font-medium text-blue-600 tabular-nums dark:text-blue-400"
+              : "text-signal num font-medium"
         }
       >
         {sign}

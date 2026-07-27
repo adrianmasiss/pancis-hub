@@ -44,7 +44,7 @@ export function BrandLogo({ height = 36, className }: BrandLogoProps) {
   return (
     <span
       className={cn(
-        "text-brand-gradient text-lg font-bold tracking-tight",
+        "text-brand-gradient text-lg font-bold [letter-spacing:0]",
         className,
       )}
     >

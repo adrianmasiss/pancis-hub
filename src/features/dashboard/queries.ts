@@ -83,6 +83,8 @@ export type DashboardData = {
   adherence: {
     workouts7: number;
     mealDays7: number;
+    /** Los 7 dias, del mas antiguo al de hoy, con lo que ocurrio en cada uno. */
+    days: { date: string; trained: boolean; ate: boolean }[];
   };
   recommendation: {
     title: string;
@@ -179,7 +181,9 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .maybeSingle(),
     supabase
       .from("workout_sessions")
-      .select("id", { count: "exact", head: true })
+      // Se traen las fechas en vez de solo el conteo: la tarjeta de adherencia
+      // dibuja los 7 dias uno a uno. Son 7 filas como maximo.
+      .select("started_at")
       .eq("user_id", userId)
       .not("completed_at", "is", null)
       .gte("started_at", `${since7}T00:00:00Z`),
@@ -288,8 +292,25 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       : null;
 
   // Adherencia sobre los ultimos 7 dias.
-  const mealDays7 = new Set((mealDays7Result.data ?? []).map((row) => row.date))
-    .size;
+  const mealDaySet = new Set(
+    (mealDays7Result.data ?? []).map((row) => row.date),
+  );
+  const mealDays7 = mealDaySet.size;
+
+  // Las sesiones vienen con marca UTC; se compara por dia calendario.
+  const workoutDaySet = new Set(
+    (sessions7Result.data ?? []).map((row) =>
+      String(row.started_at).slice(0, 10),
+    ),
+  );
+  const adherenceDays = Array.from({ length: 7 }, (_, index) => {
+    const date = daysAgo(today, 6 - index);
+    return {
+      date,
+      trained: workoutDaySet.has(date),
+      ate: mealDaySet.has(date),
+    };
+  });
 
   // El objetivo diario siempre viene de nutrition_targets (versionado,
   // editable desde el onboarding/configuracion). La dieta importada con IA
@@ -419,8 +440,11 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       lastMeasurementDate,
     },
     adherence: {
-      workouts7: sessions7Result.count ?? 0,
+      // Sesiones, no dias: dos entrenos en un mismo dia cuentan dos veces,
+      // igual que antes de traer las fechas.
+      workouts7: sessions7Result.data?.length ?? 0,
       mealDays7,
+      days: adherenceDays,
     },
     recommendation: recommendationResult.data ?? null,
   };

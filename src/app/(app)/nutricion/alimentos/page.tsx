@@ -63,6 +63,7 @@ export default async function FoodsLibraryPage({
   return (
     <>
       <PageHeader
+        icon={Apple}
         title={t.title}
         description={t.subtitle}
         actions={<FoodFormDialog />}

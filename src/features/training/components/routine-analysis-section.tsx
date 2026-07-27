@@ -12,7 +12,7 @@ const t = messages.training.biomechanics;
 /** El color acompana siempre a la etiqueta de prioridad, nunca va solo. */
 const PRIORITY_STYLES: Record<FindingPriority, string> = {
   alta: "border-destructive/40 bg-destructive/5",
-  mejora: "border-amber-500/40 bg-amber-500/5",
+  mejora: "border-caution/40 bg-caution/8",
   opcional: "border-border bg-muted/40",
   observacion: "border-border bg-muted/40",
   sin_cambios: "border-primary/40 bg-primary/5",

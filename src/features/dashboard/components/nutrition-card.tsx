@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Utensils } from "lucide-react";
+import { Utensils, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MacroProgress } from "@/components/shared/macro-progress";
-import { MacroChip } from "@/components/shared/macro-chip";
+import { AppleMacroRings } from "@/components/shared/apple-macro-rings";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
 
@@ -14,57 +14,65 @@ export function NutritionCard({ data }: { data: DashboardData }) {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between gap-2 text-base">
-          {t.title}
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between gap-3">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <Utensils
+              className="text-muted-foreground size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t.title}</span>
+          </span>
           <Link
             href="/nutricion"
-            className="text-muted-foreground hover:text-foreground text-xs font-normal underline underline-offset-4"
+            className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-0.5 text-xs font-normal transition-colors duration-200"
           >
             {t.viewPlan}
+            <ChevronRight className="size-3.5" aria-hidden="true" />
           </Link>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         {targets ? (
-          <>
-            <div>
-              <p className="flex items-baseline gap-2 text-3xl font-semibold tracking-tight tabular-nums">
-                <MacroChip type="calories" value={consumed.calories} variant="full" />
-                <span className="text-muted-foreground text-base font-normal">
-                  / {targets.calories} kcal
-                </span>
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {targets.calories - consumed.calories >= 0
-                  ? `${targets.calories - consumed.calories} kcal ${t.remaining}`
-                  : `${consumed.calories - targets.calories} kcal ${t.exceeded}`}
-              </p>
+          <div className="grid gap-7 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] lg:items-center lg:gap-9">
+            <div className="flex justify-center">
+              <AppleMacroRings
+                calories={{
+                  consumed: consumed.calories,
+                  target: targets.calories,
+                  unit: "kcal",
+                }}
+                protein={{
+                  consumed: consumed.proteinG,
+                  target: targets.proteinG,
+                  unit: "g",
+                }}
+                carbs={{
+                  consumed: consumed.carbohydrateG,
+                  target: targets.carbohydrateG,
+                  unit: "g",
+                }}
+                fat={{
+                  consumed: consumed.fatG,
+                  target: targets.fatG,
+                  unit: "g",
+                }}
+                size={196}
+              />
             </div>
-            <div className="space-y-3">
-              <MacroProgress
-                label={t.protein}
-                consumed={consumed.proteinG}
-                target={targets.proteinG}
-              />
-              <MacroProgress
-                label={t.carbs}
-                consumed={consumed.carbohydrateG}
-                target={targets.carbohydrateG}
-              />
-              <MacroProgress
-                label={t.fat}
-                consumed={consumed.fatG}
-                target={targets.fatG}
-              />
+
+            {/* Proteina, carbohidratos y grasas ya viven en la leyenda de los
+                anillos, con su cifra. Aqui solo queda fibra, que no tiene
+                anillo propio: cada dato aparece una sola vez en la tarjeta. */}
+            <div className="flex flex-col gap-5">
               <MacroProgress
                 label={t.fiber}
                 consumed={consumed.fiberG}
                 target={targets.fiberG}
               />
+              <p className="text-muted-foreground text-xs">{t.targetNote}</p>
             </div>
-            <p className="text-muted-foreground text-xs">{t.targetNote}</p>
-          </>
+          </div>
         ) : (
           <EmptyState
             title={t.noTargets}

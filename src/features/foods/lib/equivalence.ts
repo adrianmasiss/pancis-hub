@@ -44,12 +44,20 @@ export type CompatibilityScore = {
 export type SwapCandidate = {
   food: EquivalenceFood;
   suggestedQuantityG: number;
+  /**
+   * Equivalencia domestica de la cantidad sugerida ("≈ ½ taza"), si el
+   * alimento tiene porciones definidas. La rellenan las server actions, que
+   * son las que conocen las porciones; el motor puro la deja sin definir.
+   */
+  householdEquivalence?: string | null;
   macros: MacroSet;
   /** Diferencia alternativa - original (positivo = la alternativa aporta mas). */
   diff: MacroSet;
   sameGroup: boolean;
   isFavorite: boolean;
   isRecent: boolean;
+  /** true si el usuario declaro tener este alimento en su despensa. */
+  isAvailable: boolean;
   score: number;
   compatibility: CompatibilityScore;
 };
@@ -273,6 +281,8 @@ export type RankInput = {
   candidates: EquivalenceFood[];
   favoriteIds: Set<string>;
   recentIds: Set<string>;
+  /** Alimentos que el usuario declaro tener en casa (despensa). */
+  pantryIds?: Set<string>;
   restrictions: string[];
   maxResults?: number;
   filter?: SwapFilter;
@@ -316,8 +326,8 @@ const MEANINGFUL_GAIN = 1.05;
  */
 function filterSortKey(
   candidate: SwapCandidate,
-  sourceMacros: MacroSet,
   filter: SwapFilter,
+  hasPantry: boolean,
 ): number {
   switch (filter) {
     case "mas_proteina":
@@ -327,7 +337,9 @@ function filterSortKey(
     case "mas_saciedad":
       return -satietyDensity(candidate.macros);
     case "disponibles":
-      // Favoritos y recientes primero: es lo que el usuario suele tener.
+      // Con despensa, lo que el usuario ya tiene en casa va primero. Sin
+      // despensa, se cae a favoritos y recientes como aproximacion.
+      if (hasPantry) return candidate.isAvailable ? 0 : 1;
       return candidate.isFavorite ? 0 : candidate.isRecent ? 1 : 2;
     case "similar":
     default:
@@ -344,6 +356,7 @@ function passesFilter(
   candidate: SwapCandidate,
   sourceMacros: MacroSet,
   filter: SwapFilter,
+  hasPantry: boolean,
 ): boolean {
   switch (filter) {
     case "mas_proteina":
@@ -359,7 +372,11 @@ function passesFilter(
         satietyDensity(sourceMacros) * MEANINGFUL_GAIN
       );
     case "disponibles":
-      return candidate.isFavorite || candidate.isRecent;
+      // Con despensa, solo lo que el usuario tiene en casa; sin despensa,
+      // se cae a favoritos y recientes para no dejar la lista vacia.
+      return hasPantry
+        ? candidate.isAvailable
+        : candidate.isFavorite || candidate.isRecent;
     case "similar":
     default:
       return true;
@@ -372,11 +389,13 @@ export function rankAlternatives({
   candidates,
   favoriteIds,
   recentIds,
+  pantryIds,
   restrictions,
   maxResults = 8,
   filter = "similar",
 }: RankInput): SwapCandidate[] {
   const sourceMacros = scaleMacros(source.per100g, sourceQuantityG);
+  const hasPantry = (pantryIds?.size ?? 0) > 0;
 
   const round1 = (value: number) => Math.round(value * 10) / 10;
 
@@ -397,6 +416,7 @@ export function rankAlternatives({
         candidate.cookedState === source.cookedState;
       const isFavorite = favoriteIds.has(candidate.id);
       const isRecent = recentIds.has(candidate.id);
+      const isAvailable = pantryIds?.has(candidate.id) ?? false;
 
       const score =
         nutritionalDistance(sourceMacros, macros) +
@@ -421,6 +441,7 @@ export function rankAlternatives({
         sameGroup,
         isFavorite,
         isRecent,
+        isAvailable,
         score: Math.round(score * 10) / 10,
         compatibility: compatibilityScore(sourceMacros, macros, {
           sameGroup,
@@ -428,11 +449,13 @@ export function rankAlternatives({
         }),
       };
     })
-    .filter((candidate) => passesFilter(candidate, sourceMacros, filter))
+    .filter((candidate) =>
+      passesFilter(candidate, sourceMacros, filter, hasPantry),
+    )
     .sort((a, b) => {
       const byFilter =
-        filterSortKey(a, sourceMacros, filter) -
-        filterSortKey(b, sourceMacros, filter);
+        filterSortKey(a, filter, hasPantry) -
+        filterSortKey(b, filter, hasPantry);
       // A igualdad en el criterio elegido, gana lo mas parecido al plan.
       return byFilter !== 0 ? byFilter : a.score - b.score;
     })
@@ -507,4 +530,47 @@ export function formatHouseholdEquivalence(
     valueStr = value.toFixed(1);
   }
   return `${valueStr} x ${label}`;
+}
+
+/**
+ * Indexa las porciones domesticas por id de alimento a partir de las filas
+ * de `foods` con `food_portions` embebidas.
+ */
+export function buildPortionsMap(
+  rows: {
+    id: string;
+    food_portions?: { label: string; grams: number }[] | null;
+  }[],
+): Map<string, { label: string; grams: number }[]> {
+  const map = new Map<string, { label: string; grams: number }[]>();
+  for (const row of rows) {
+    if (row.food_portions && row.food_portions.length > 0) {
+      map.set(
+        row.id,
+        row.food_portions.map((portion) => ({
+          label: portion.label,
+          grams: Number(portion.grams),
+        })),
+      );
+    }
+  }
+  return map;
+}
+
+/**
+ * Adjunta a cada alternativa su equivalencia domestica ("≈ 3 unidades")
+ * segun la cantidad sugerida y las porciones del alimento. Se hace fuera del
+ * motor porque solo las server actions conocen las porciones del catalogo.
+ */
+export function attachHouseholdEquivalence(
+  candidates: SwapCandidate[],
+  portionsByFoodId: Map<string, { label: string; grams: number }[]>,
+): SwapCandidate[] {
+  return candidates.map((candidate) => ({
+    ...candidate,
+    householdEquivalence: formatHouseholdEquivalence(
+      candidate.suggestedQuantityG,
+      portionsByFoodId.get(candidate.food.id) ?? [],
+    ),
+  }));
 }

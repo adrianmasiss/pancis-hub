@@ -127,7 +127,7 @@ export const deterministicProvider: AssistantProvider = {
           confidence: alternativesText ? "media" : "baja",
           action: alternativesText
             ? `Como aproximacion, podrias usar ${alternativesText}.`
-            : "Abre la comida en Nutricion y usa el boton de intercambio (⇄) sobre el alimento: te mostrare alternativas con cantidades equivalentes.",
+            : "Abre la comida en Nutricion y usa el boton Intercambiar sobre el alimento: te mostrare alternativas con cantidades equivalentes.",
           alternative:
             "Tambien puedes registrar lo que si tengas a mano y revisar los totales del dia.",
           reason:
@@ -186,7 +186,7 @@ export const deterministicProvider: AssistantProvider = {
           confidence: options ? "media" : "baja",
           action: options
             ? `Las opciones mas cercanas son: ${options}. ${exerciseAlternatives![0]!.recommendation}`
-            : "Abre tu rutina y usa el boton de sustituir (⇄) sobre el ejercicio: ahi comparo musculo, patron, articulaciones y estabilidad.",
+            : "Abre tu rutina y usa el boton Sustituir sobre el ejercicio: ahi comparo musculo, patron, articulaciones y estabilidad.",
           alternative:
             "En la ficha del ejercicio (boton de informacion) puedes ver que se gana y que se pierde en cada cambio.",
           reason:
@@ -282,7 +282,7 @@ export const deterministicProvider: AssistantProvider = {
             "Casi todo ejercicio tiene sustitutos que trabajan el mismo musculo con otro equipo.",
           confidence: "media",
           action:
-            "En tu rutina, toca el boton de sustitucion (⇄) del ejercicio: veras alternativas por musculo, patron de movimiento y equipo.",
+            "En tu rutina, toca el boton Sustituir del ejercicio: veras alternativas por musculo, patron de movimiento y equipo.",
           alternative:
             "Durante una sesion tambien puedes agregar cualquier otro ejercicio del catalogo.",
           reason:

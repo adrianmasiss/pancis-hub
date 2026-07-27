@@ -31,7 +31,7 @@ export default async function AcademyPage({
 
   return (
     <>
-      <PageHeader title={t.title} description={t.subtitle} />
+      <PageHeader icon={GraduationCap} title={t.title} description={t.subtitle} />
 
       <nav aria-label={t.title} className="flex flex-wrap gap-1.5">
         <Link

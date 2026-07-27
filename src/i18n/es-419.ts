@@ -21,6 +21,7 @@ export const messages = {
     home: "Inicio",
     nutrition: "Nutricion",
     recipes: "Recetas",
+    pantry: "Despensa",
     training: "Entrenamiento",
     trainingShort: "Entrenar",
     progress: "Progreso",
@@ -902,13 +903,15 @@ export const messages = {
     crossGroupNote: "De otro grupo alimentario",
     favoriteNote: "Favorito",
     recentNote: "Usado recientemente",
+    availableNote: "En tu despensa",
+    householdEquivalence: "≈ {equivalence}",
     filterLabel: "Buscar",
     filters: {
       similar: "Lo mas parecido",
       mas_proteina: "Mas proteina",
       menos_calorias: "Menos calorias",
       mas_saciedad: "Mas saciedad",
-      disponibles: "Favoritos y recientes",
+      disponibles: "Lo que tengo en casa",
     },
     filterEmpty:
       "Ninguna alternativa mejora en ese criterio. Prueba con otro o usa la opcion mas parecida.",
@@ -926,6 +929,25 @@ export const messages = {
     rebalanceRemaining: "Te quedan",
     rebalanceApplyNote:
       "Estas sugerencias no modifican ninguna comida: tu decides si las aplicas.",
+  },
+  pantry: {
+    title: "Despensa",
+    subtitle: "Lo que tienes en casa",
+    description:
+      "Marca los alimentos que tienes disponibles. Al buscar sustitutos podras priorizar lo que ya tienes en casa.",
+    addTitle: "Agregar a la despensa",
+    addDescription:
+      "Busca en la biblioteca o escanea un codigo de barras para agregar lo que tienes.",
+    addButton: "Agregar",
+    added: "Agregado a tu despensa.",
+    removed: "Quitado de tu despensa.",
+    remove: "Quitar",
+    empty:
+      "Tu despensa esta vacia. Agrega los alimentos que tengas en casa para encontrar sustitutos con lo que ya tienes.",
+    count: "{count} alimentos en tu despensa",
+    countOne: "1 alimento en tu despensa",
+    alreadyInPantry: "Ese alimento ya esta en tu despensa.",
+    failed: "No pudimos actualizar tu despensa. Intenta de nuevo.",
   },
   nutrition: {
     title: "Nutricion",
@@ -988,6 +1010,12 @@ export const messages = {
       noTemplate: "Aun no tienes una dieta activa.",
       uploadCta: "Importar con IA",
       customFoodBadge: "Personalizado",
+      remaining: "kcal restantes",
+      allDone: "Plan del dia completo",
+      // El plan suma sus propias calorias y casi nunca coincide al kcal con
+      // la meta versionada de nutrition_targets. Nombrar cada cifra evita que
+      // el usuario lea dos objetivos distintos sin explicacion.
+      planTotal: "kcal del plan",
     },
     compare: {
       title: "Comparar comidas",
@@ -1155,6 +1183,22 @@ export const messages = {
       ganancia_muscular: "Aumento de masa muscular",
       mantenimiento: "Mantenimiento",
     },
+    hero: {
+      eyebrow: "Respaldada por ciencia",
+      tagline: "Entrena · Nutre · Progresa · Repite",
+      cta: "Ver mi plan",
+      // "Meta" y no "Calorias de hoy": mas abajo el plan muestra su propio
+      // total, y ambos rotulos deben poder distinguirse de un vistazo.
+      caloriesLabel: "Meta de hoy",
+      caloriesRemaining: "restantes",
+      caloriesExceeded: "por encima",
+      caloriesNoTarget: "Define tu objetivo",
+      nextTrainingLabel: "Proximo entreno",
+      restDay: "Dia de descanso",
+      noPlan: "Sin rutina activa",
+      activeDaysLabel: "Dias activos",
+      activeDaysUnit: "de 7",
+    },
     pending: {
       title: "Pendientes de hoy",
       logMeal: "Registrar tu primera comida del dia",
@@ -1226,6 +1270,12 @@ export const messages = {
       title: "Adherencia (7 dias)",
       workouts: "Entrenamientos",
       meals: "Dias con comidas",
+      weekLabel: "Tu semana",
+      legend: "Casilla tenida: comiste. Punto: entrenaste.",
+      dayTrained: "entrenaste",
+      dayNoTraining: "sin entreno",
+      dayAte: "registraste comidas",
+      dayNoMeals: "sin comidas registradas",
     },
   },
   wellbeing: {

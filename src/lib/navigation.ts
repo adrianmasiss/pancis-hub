@@ -5,6 +5,7 @@ import {
   // "History" choca con la interfaz global History del DOM.
   History as HistoryIcon,
   Home,
+  Refrigerator,
   Settings,
   Sparkles,
   TrendingUp,
@@ -59,6 +60,14 @@ export const navItems: readonly NavItem[] = [
     href: "/recetas",
     labelKey: "recipes",
     icon: ChefHat,
+    showInSidebar: true,
+    showInBottomNav: false,
+    section: "nutricion",
+  },
+  {
+    href: "/despensa",
+    labelKey: "pantry",
+    icon: Refrigerator,
     showInSidebar: true,
     showInBottomNav: false,
     section: "nutricion",
@@ -120,10 +129,18 @@ export const sidebarItems = navItems.filter((item) => item.showInSidebar);
 export const bottomNavItems = navItems.filter((item) => item.showInBottomNav);
 export const moreSheetItems = navItems.filter((item) => !item.showInBottomNav);
 
-const SECTION_ORDER: { key: NavSection; labelKey: keyof typeof messages.nav.sections }[] = [
-  { key: "nutricion", labelKey: "nutricion" },
-  { key: "entrenamiento", labelKey: "entrenamiento" },
-  { key: "aprender", labelKey: "aprender" },
+const SECTION_LABELS = {
+  principal: "Principal",
+  nutricion: "Nutricion",
+  entrenamiento: "Entrenamiento",
+  aprender: "Aprender",
+} satisfies Record<NavSection, string>;
+
+const SECTION_ORDER: NavSection[] = [
+  "principal",
+  "nutricion",
+  "entrenamiento",
+  "aprender",
 ];
 
 export type NavSectionGroup = {
@@ -132,13 +149,21 @@ export type NavSectionGroup = {
   items: NavItem[];
 };
 
-/** Agrupa items (excluyendo Inicio y Configuracion, que se anclan aparte) por seccion. */
+/**
+ * Agrupa items por seccion, excluyendo Inicio y Configuracion porque ambos se
+ * anclan por separado (Inicio arriba del riel, Configuracion en el pie).
+ *
+ * Sin excluir Inicio explicitamente, incluir "principal" en SECTION_ORDER lo
+ * duplicaria; sin incluir "principal", Historial no aparece en ninguna parte.
+ */
+const ANCHORED_HREFS = new Set<string>(["/", SETTINGS_HREF]);
+
 function groupBySection(items: readonly NavItem[]): NavSectionGroup[] {
-  return SECTION_ORDER.map(({ key, labelKey }) => ({
+  return SECTION_ORDER.map((key) => ({
     key,
-    label: messages.nav.sections[labelKey],
+    label: SECTION_LABELS[key],
     items: items.filter(
-      (item) => item.section === key && item.href !== SETTINGS_HREF,
+      (item) => item.section === key && !ANCHORED_HREFS.has(item.href),
     ),
   })).filter((group) => group.items.length > 0);
 }

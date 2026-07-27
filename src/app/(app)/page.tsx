@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { AdherenceCard } from "@/features/dashboard/components/adherence-card";
 import { DietChecklist } from "@/features/dashboard/components/diet-checklist";
+import { HeroBanner } from "@/features/dashboard/components/hero-banner";
 import { NutritionCard } from "@/features/dashboard/components/nutrition-card";
-import { SummarySection } from "@/features/dashboard/components/summary-section";
 import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <SummarySection data={data} />
+      <HeroBanner data={data} />
 
       {data.dietTemplate ? (
         <DietChecklist template={data.dietTemplate} today={data.today} />

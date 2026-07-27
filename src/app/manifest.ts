@@ -10,8 +10,10 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#1a1410",
-    theme_color: "#cc4517",
+    // Paleta "Grafito": la pantalla de arranque abre en el modo que define la
+    // identidad, no en el claro.
+    background_color: "#16181c",
+    theme_color: "#16181c",
     icons: [
       {
         src: "/icons/icon-192.png",

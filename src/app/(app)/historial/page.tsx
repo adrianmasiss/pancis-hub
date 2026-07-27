@@ -71,7 +71,7 @@ export default async function HistoryPage() {
 
   return (
     <>
-      <PageHeader title={t.title} description={t.description} />
+      <PageHeader icon={HistoryIcon} title={t.title} description={t.description} />
 
       {entries.length > 0 ? (
         <>

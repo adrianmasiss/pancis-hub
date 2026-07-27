@@ -64,8 +64,22 @@ function getDetectorConstructor(): BarcodeDetectorConstructor | null {
  * dependencia de terceros. No todos los navegadores la traen (Safari es
  * el caso notable), asi que la entrada manual del codigo esta SIEMPRE
  * disponible: sin ella la funcion seria inutil en iPhone.
+ *
+ * Por defecto importa el producto al catalogo. `onConfirm` permite reusar
+ * el mismo escaner para otro destino (por ejemplo, la despensa) sin
+ * duplicar la logica de camara ni de busqueda por codigo.
  */
-export function BarcodeScanner() {
+export function BarcodeScanner({
+  onConfirm,
+  confirmLabel,
+  successMessage,
+}: {
+  onConfirm?: (
+    food: ExternalSearchResult,
+  ) => Promise<{ error: string } | { success: true }>;
+  confirmLabel?: string;
+  successMessage?: string;
+} = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [manualCode, setManualCode] = useState("");
@@ -155,6 +169,19 @@ export function BarcodeScanner() {
     if (!result) return;
     setImporting(true);
     void (async () => {
+      if (onConfirm) {
+        const res = await onConfirm(result);
+        setImporting(false);
+        if ("error" in res) {
+          toast.error(res.error);
+          return;
+        }
+        toast.success(successMessage ?? messages.foods.external.imported);
+        setOpen(false);
+        router.refresh();
+        return;
+      }
+
       const imported = await importExternalFood({
         source: result.source,
         externalId: result.externalId,
@@ -295,7 +322,7 @@ export function BarcodeScanner() {
               </p>
 
               <div className="flex gap-2">
-                {result.alreadyImported ? (
+                {result.alreadyImported && !onConfirm ? (
                   <p className="text-muted-foreground flex-1 text-sm">
                     {messages.foods.external.alreadyInLibrary}
                   </p>
@@ -311,7 +338,7 @@ export function BarcodeScanner() {
                     ) : (
                       <Plus className="size-4" aria-hidden="true" />
                     )}
-                    {messages.foods.external.importButton}
+                    {confirmLabel ?? messages.foods.external.importButton}
                   </Button>
                 )}
                 <Button

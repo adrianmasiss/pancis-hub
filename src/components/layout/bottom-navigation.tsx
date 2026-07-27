@@ -20,6 +20,7 @@ import {
   getMoreSheetSections,
   settingsNavItem,
 } from "@/lib/navigation";
+import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 function initialsOf(name: string): string {
@@ -32,11 +33,31 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
+/** Clases compartidas por las cinco celdas de la barra, para que el objetivo
+ *  tactil sea identico en todas (48px de alto util). */
+const TAB_BASE =
+  "relative flex h-12 flex-col items-center justify-center gap-1 rounded-md text-[0.625rem] leading-none font-medium transition-colors duration-200 [letter-spacing:0]";
+
+/** Filete de bronce sobre la celda activa: la unica marca de color de la barra. */
+function ActiveMark() {
+  return (
+    <span
+      aria-hidden="true"
+      className="bg-primary absolute top-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-b-full"
+    />
+  );
+}
+
 type BottomNavigationProps = {
   displayName?: string;
   avatarUrl?: string | null;
 };
 
+/**
+ * Navegacion inferior movil. Barra anclada al ancho completo en lugar de
+ * capsula flotante: cada destino muestra su etiqueta, de modo que la
+ * navegacion se lee en vez de adivinarse.
+ */
 export function BottomNavigation({
   displayName,
   avatarUrl,
@@ -53,61 +74,78 @@ export function BottomNavigation({
   return (
     <nav
       aria-label={messages.common.mainNavigation}
-      className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur lg:hidden"
+      className="border-hairline surface-bar fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <div className="grid h-16 grid-cols-5 pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 px-2 py-1.5">
         {bottomNavItems.map((item) => {
           const active = isActiveRoute(pathname, item.href);
           const Icon = item.icon;
+          const label = messages.nav[item.bottomNavLabelKey ?? item.labelKey];
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => triggerHaptic("selection")}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-medium",
-                active ? "text-primary" : "text-muted-foreground",
+                TAB_BASE,
+                active
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground active:bg-muted",
               )}
             >
-              <Icon className="size-5" aria-hidden="true" />
-              {messages.nav[item.bottomNavLabelKey ?? item.labelKey]}
+              {active ? <ActiveMark /> : null}
+              <Icon className="size-[18px]" aria-hidden="true" />
+              <span className="max-w-full truncate">{label}</span>
             </Link>
           );
         })}
+
         <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
           <SheetTrigger asChild>
             <button
               type="button"
+              onClick={() => triggerHaptic("selection")}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-medium",
-                moreActive ? "text-foreground" : "text-muted-foreground",
+                TAB_BASE,
+                moreActive
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground active:bg-muted",
               )}
             >
-              <Menu className="size-5" aria-hidden="true" />
-              {messages.nav.more}
+              {moreActive ? <ActiveMark /> : null}
+              <Menu className="size-[18px]" aria-hidden="true" />
+              <span className="max-w-full truncate">{messages.nav.more}</span>
             </button>
           </SheetTrigger>
+
           <SheetContent
             side="bottom"
-            className="max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+            className="max-h-[85vh] overflow-y-auto rounded-t-2xl pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
           >
-            <SheetHeader>
-              <SheetTitle>{messages.nav.more}</SheetTitle>
-              <SheetDescription>
+            <SheetHeader className="px-5 pt-5 pb-1 text-left">
+              <SheetTitle className="text-base font-medium [letter-spacing:0]">
+                {messages.nav.more}
+              </SheetTitle>
+              <SheetDescription className="text-[0.8125rem]">
                 {messages.nav.moreDescription}
               </SheetDescription>
             </SheetHeader>
-            <div className="space-y-5 px-4 pb-6">
+
+            <div className="space-y-6 px-5 pt-4">
               <Link
                 href={settingsNavItem.href}
-                onClick={() => setMoreOpen(false)}
-                className="bg-accent/40 hover:bg-accent flex items-center gap-3 rounded-lg border px-4 py-3"
+                onClick={() => {
+                  triggerHaptic("selection");
+                  setMoreOpen(false);
+                }}
+                className="border-hairline hover:bg-muted flex items-center gap-3.5 rounded-lg border p-3.5 transition-colors duration-200"
               >
-                <Avatar className="size-9">
+                <Avatar className="border-hairline size-9 border">
                   {avatarUrl && displayName ? (
                     <AvatarImage src={avatarUrl} alt={displayName} />
                   ) : null}
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="bg-muted text-muted-foreground text-[0.6875rem] font-medium">
                     {initialsOf(displayName ?? "") || "?"}
                   </AvatarFallback>
                 </Avatar>
@@ -120,11 +158,10 @@ export function BottomNavigation({
                   </p>
                 </div>
               </Link>
+
               {moreSheetSections.map((group) => (
                 <div key={group.key} className="space-y-2">
-                  <p className="text-muted-foreground px-1 text-xs font-medium tracking-wide uppercase">
-                    {group.label}
-                  </p>
+                  <p className="label-micro px-0.5">{group.label}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {group.items.map((item) => {
                       const active = isActiveRoute(pathname, item.href);
@@ -133,17 +170,28 @@ export function BottomNavigation({
                         <Link
                           key={item.href}
                           href={item.href}
-                          onClick={() => setMoreOpen(false)}
+                          onClick={() => {
+                            triggerHaptic("selection");
+                            setMoreOpen(false);
+                          }}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
+                            "border-hairline flex items-center gap-3 rounded-lg border px-3.5 py-3 text-[0.8125rem] transition-colors duration-200",
                             active
-                              ? "bg-accent text-accent-foreground"
-                              : "text-muted-foreground hover:bg-accent/60",
+                              ? "bg-muted text-foreground font-medium"
+                              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                           )}
                         >
-                          <Icon className="size-4.5" aria-hidden="true" />
-                          {messages.nav[item.labelKey]}
+                          <Icon
+                            className={cn(
+                              "size-4 shrink-0",
+                              active && "text-primary",
+                            )}
+                            aria-hidden="true"
+                          />
+                          <span className="truncate">
+                            {messages.nav[item.labelKey]}
+                          </span>
                         </Link>
                       );
                     })}

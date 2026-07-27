@@ -54,6 +54,7 @@ export default async function NutritionPage({
   return (
     <>
       <PageHeader
+        icon={Utensils}
         title={messages.nav.nutrition}
         description="Gestiona tus comidas del día y controla tus macros."
         actions={

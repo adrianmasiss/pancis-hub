@@ -60,6 +60,7 @@ export default async function RecipesPage({
   return (
     <>
       <PageHeader
+        icon={ChefHat}
         title={t.title}
         description={t.subtitle}
         actions={<RecipeFormDialog />}
