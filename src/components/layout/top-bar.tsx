@@ -27,11 +27,16 @@ export function TopBar({ actions }: { actions?: React.ReactNode }) {
           <span className="lg:hidden" aria-hidden="true">
             <BrandLogo height={26} />
           </span>
-          {/* Titulo de barra: 17px en movil, 26px/800 con tracking -0.3px a
-              partir de lg, que es la escala del handoff. */}
-          <h1 className="truncate text-[1.0625rem] font-semibold tracking-[-0.02em] lg:text-[26px] lg:font-extrabold lg:tracking-[-0.3px]">
+          {/* El handoff pone aqui el titulo de 26px/800, porque en su prototipo
+              la pantalla no tiene otro. En el repo cada pagina ya abre con un
+              PageHeader (titulo, descripcion, icono y acciones) justo debajo,
+              asi que subir esta linea a esa escala dejaba el mismo texto dos
+              veces y en dos tamanos grandes. La escala de display se queda en
+              el PageHeader, que es quien lleva el contexto completo; aqui la
+              linea vuelve a ser una referencia de ubicacion. */}
+          <p className="truncate text-[0.9375rem] font-medium tracking-[-0.015em] sm:text-base">
             {current ? messages.nav[current.labelKey] : messages.app.name}
-          </h1>
+          </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">

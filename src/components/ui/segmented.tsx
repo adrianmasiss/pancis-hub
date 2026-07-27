@@ -47,7 +47,7 @@ export function Segmented<T extends string>({
       aria-label={label}
       className={cn("segmented", className)}
     >
-      {options.map((option, index) => {
+      {options.map((option) => {
         const active = option.value === value;
         return (
           <button

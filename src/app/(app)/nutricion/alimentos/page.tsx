@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Apple, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ import {
 } from "@/features/foods/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
-import { cn } from "@/lib/utils";
+import { SegmentedNav } from "@/components/ui/segmented-nav";
 
 const t = messages.foods;
 
@@ -97,53 +96,30 @@ export default async function FoodsLibraryPage({
         </Button>
       </form>
 
-      <nav aria-label={t.title} className="flex flex-wrap gap-1.5">
-        {FOOD_VIEWS.map((candidate) => (
-          <Link
-            key={candidate}
-            href={buildHref({ q: query, grupo: group, vista: candidate })}
-            aria-current={view === candidate ? "page" : undefined}
-            className={cn(
-              "rounded-full border px-3 py-1 text-sm",
-              view === candidate
-                ? "bg-primary text-primary-foreground border-primary"
-                : "text-muted-foreground hover:bg-accent",
-            )}
-          >
-            {t.views[candidate]}
-          </Link>
-        ))}
-      </nav>
+      <SegmentedNav
+        label={t.title}
+        items={FOOD_VIEWS.map((candidate) => ({
+          href: buildHref({ q: query, grupo: group, vista: candidate }),
+          label: t.views[candidate],
+          active: view === candidate,
+        }))}
+      />
 
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        <Link
-          href={buildHref({ q: query, vista: view })}
-          aria-current={!group ? "page" : undefined}
-          className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-xs",
-            !group
-              ? "bg-secondary text-secondary-foreground"
-              : "text-muted-foreground hover:bg-accent",
-          )}
-        >
-          {t.groups.all}
-        </Link>
-        {FOOD_GROUPS.map((candidate) => (
-          <Link
-            key={candidate}
-            href={buildHref({ q: query, grupo: candidate, vista: view })}
-            aria-current={group === candidate ? "page" : undefined}
-            className={cn(
-              "shrink-0 rounded-full border px-3 py-1 text-xs",
-              group === candidate
-                ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-accent",
-            )}
-          >
-            {t.groups[candidate]}
-          </Link>
-        ))}
-      </div>
+      <SegmentedNav
+        label={t.groups.all}
+        items={[
+          {
+            href: buildHref({ q: query, vista: view }),
+            label: t.groups.all,
+            active: !group,
+          },
+          ...FOOD_GROUPS.map((candidate) => ({
+            href: buildHref({ q: query, grupo: candidate, vista: view }),
+            label: t.groups[candidate],
+            active: group === candidate,
+          })),
+        ]}
+      />
 
       {foods.length > 0 ? (
         <ul className="divide-y rounded-xl border px-3">

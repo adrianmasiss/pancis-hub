@@ -28,7 +28,9 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1.5 px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
+        // [handoff, regla 2] La cabecera cierra con regla divisoria: separa el
+        // rotulo del dato sin necesidad de peso tipografico.
+        "border-divider group/card-header @container/card-header mb-3.5 grid auto-rows-min items-start gap-1.5 border-b px-(--card-spacing) pb-2.5 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
         className,
       )}
       {...props}
@@ -41,7 +43,10 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-[0.9375rem] leading-snug font-medium tracking-[-0.012em] group-data-[size=sm]/card:text-sm",
+        // [handoff, regla 2] La cabecera de tarjeta es un eyebrow en
+        // versalitas, no un titulo en negrita: el peso visual se lo lleva el
+        // dato de la tarjeta, no su rotulo.
+        "card-eyebrow leading-snug",
         className,
       )}
       {...props}

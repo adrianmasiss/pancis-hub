@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Material que no es codigo de la app: el runtime del prototipo de diseno
+    // y las skills de agentes instaladas. Ninguno se compila ni se despliega.
+    "design_handoff_pancis_hub/**",
+    ".claude/**",
+    ".agents/**",
   ]),
 ]);
 
