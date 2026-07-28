@@ -47,10 +47,34 @@ ingesta total de 1.62 g/kg/día no se observaron más ganancias** de masa libre
 de grasa atribuibles a la suplementación. El efecto disminuye con la edad y es
 mayor en personas ya entrenadas.
 
-**Matiz importante y frecuentemente mal citado:** 1.62 g/kg es el punto de
-quiebre a partir del cual *suplementar más* deja de aportar, en un análisis de
-dos fases. No es un techo fisiológico ni un valor óptimo universal, y el
-intervalo de confianza alrededor de ese punto es amplio.
+### El dato que solo aparece en el texto completo
+
+Leído el artículo completo en Europe PMC (PMC5867436, CC BY-NC), el famoso
+1.62 g/kg resulta ser bastante más frágil de lo que su fama sugiere:
+
+| Parámetro del análisis de punto de quiebre | Valor |
+|---|---|
+| Punto de quiebre | 1.62 g/kg/día |
+| **Intervalo de confianza 95 %** | **1.03 a 2.20 g/kg/día** |
+| **p** | **0.079** |
+| R² | 0.19 |
+| Base | 42 brazos de estudio, 723 participantes |
+
+Los propios autores lo dicen en la tabla suplementaria: la regresión bifásica
+**se presenta pese a no ser estadísticamente significativa**.
+
+O sea que la cifra que circula por todas partes como un hecho establecido es
+**un punto de quiebre no significativo, con un intervalo que va de 1.03 a
+2.20 y un modelo que explica el 19 % de la variación.**
+
+Esto no invalida el metaanálisis, cuyos resultados principales sí son
+significativos. Invalida la costumbre de citar "1.6 g/kg" como si fuera un
+umbral demostrado.
+
+**Consecuencia directa para el producto:** no se puede construir la
+recomendación alrededor del 1.62 ni presentarlo como el punto donde deja de
+servir comer más proteína. Refuerza que la respuesta correcta es un rango
+ancho, no una cifra.
 
 **Helms 2014**, en atletas magros y en déficit, sostiene ingestas
 **superiores**, del orden de 2.3 a 3.1 g/kg de masa libre de grasa, para

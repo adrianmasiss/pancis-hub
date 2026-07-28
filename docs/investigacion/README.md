@@ -100,14 +100,25 @@ orden de la Fase 3 no es el numérico:
 4. **NUT-005**, **NUT-006**, **NUT-007** — presentación y etiquetado.
 5. **NUT-001** — solo trazabilidad, sin cambio de valor.
 
-### Erratas pendientes de leer
+### Acceso a texto completo
 
-Bloquean el cierre de sus claims:
+Sin acceso institucional (confirmado el 2026-07-28). La vía disponible es
+**Europe PMC**, que da texto completo legal de lo que esté en acceso abierto.
+Comprobado por claim:
 
-| Claim | Errata | DOI |
+| Fuente | Acceso abierto | Estado |
 |---|---|---|
-| NUT-003 | Morton 2018 | 10.1136/bjsports-2017-097608corr1 (verificada, sin leer) |
-| NUT-005 | Whittaker & Wu 2021 | 10.1016/j.jsbmb.2025.106880 |
+| Morton 2018 (NUT-003) | **sí**, PMC5867436, CC BY-NC | **leído**, ver hallazgo abajo |
+| Whittaker & Wu 2021 (NUT-005) | no | bloqueado |
+| Consenso COI sobre deficiencia energética (NUT-008) | no | **bloqueado, y es el hallazgo de seguridad** |
+
+**Hallazgo de leer el texto completo de Morton.** El famoso 1.62 g/kg de
+proteína resulta ser un punto de quiebre **no significativo** (p = 0.079), con
+intervalo de confianza de **1.03 a 2.20 g/kg** y R² de 0.19. Los propios
+autores señalan en la tabla suplementaria que la regresión bifásica se
+presenta pese a no ser estadísticamente significativa. La cifra que circula
+por todas partes como umbral demostrado no lo es. **Solo se ve leyendo el
+artículo completo**, y justifica por sí sola la insistencia de esta fase.
 
 ### Motor de equivalencias (`src/features/foods/lib/equivalence.ts`)
 
@@ -122,8 +133,8 @@ Bloquean el cierre de sus claims:
 
 | Id | Afirmación | Estado |
 |---|---|---|
-| BIO-001 | Clasificación por región muscular | pendiente |
-| BIO-002 | Valores de estabilidad, rango y fatiga del catálogo | pendiente |
+| [BIO-001](claims/BIO-001-regiones-musculares.md) | Clasificación por región muscular | **no implementado, con requisito de diseño** (grado B/C) |
+| [BIO-002](claims/BIO-002-valores-del-catalogo.md) | Valores de estabilidad, rango y fatiga del catálogo | **no es evidencia** (sin grado) |
 | [BIO-003](claims/BIO-003-proximidad-al-fallo.md) | Proximidad al fallo | **corregida** (grado B) |
 | [BIO-004](claims/BIO-004-volumen-semanal.md) | Volumen semanal y rendimientos decrecientes | **sostenida parcialmente** (grado A / D) |
 | [BIO-005](claims/BIO-005-frecuencia-muscular.md) | Frecuencia por músculo | **corregida** (grado A) |
@@ -132,6 +143,19 @@ Bloquean el cierre de sus claims:
 | [BIO-008](claims/BIO-008-divisiones.md) | Equivalencia entre divisiones con volumen igualado | **sostenida** (grado A) |
 | BIO-009 | Rango de movimiento | pendiente |
 
+### Generación de planes (Fase 7, todavía sin código)
+
+Ampliación de alcance acordada el 2026-07-28. La Fase 7 va a tomar decisiones
+que hoy no se toman en ningún sitio, y si llega sin respaldo nacerá con los
+mismos números mágicos que esta fase acaba de retirar.
+
+| Id | Afirmación | Estado |
+|---|---|---|
+| GEN-001 | Reparto de macros entre comidas del día | pendiente |
+| GEN-002 | Cuántos días recomendar según disponibilidad y experiencia | pendiente |
+| GEN-003 | Selección de ejercicios para cubrir el cuerpo de forma equilibrada | pendiente |
+| GEN-004 | Progresión inicial para alguien sin historial | pendiente |
+
 ### Biometría (`spec/docs/09`)
 
 | Id | Afirmación | Estado |
@@ -139,7 +163,7 @@ Bloquean el cierre de sus claims:
 | BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
 | BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
 
-**Avance: 14 de 28.** Bloque de objetivos nutricionales completo; bloque de
+**Avance: 16 de 32.** Bloque de objetivos nutricionales completo; bloque de
 biomecánica avanzado: volumen, frecuencia, fallo, tempo, descansos y
 divisiones.
 
