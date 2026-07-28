@@ -302,6 +302,17 @@ export async function removePlanExercise(
   return { success: true };
 }
 
+/**
+ * Sustitucion PERMANENTE en el plan: reescribe `workout_plan_exercises`.
+ *
+ * Ya NO es la accion por defecto. Antes, cambiar un ejercicio porque la
+ * maquina estaba ocupada destruia la rutina original para siempre, y eso
+ * contradice el principio de que el plan base no se pierde (ADR-002, RF-002).
+ * Para eso esta ahora `swapPlanExerciseForDay`, que no toca el plan.
+ *
+ * Esta funcion sobrevive para el caso legitimo de "este ejercicio ya no va en
+ * mi rutina", y exige `confirmPlanRewrite: true` para no invocarse por error.
+ */
 export async function substitutePlanExercise(
   input: unknown,
 ): Promise<TrainingActionResult> {

@@ -716,6 +716,25 @@ export const messages = {
         "Se reemplazara tu rutina actual por esta version. Antes se guarda una version de lo que tienes ahora, asi que no se pierde nada.",
     },
     substitutionReason: "Sustitucion de ejercicio aceptada por el usuario.",
+    /**
+     * Sustitucion valida por un dia. Es la accion por defecto: cambiar el
+     * plan entero es la excepcion, no al reves.
+     */
+    daySwap: {
+      action: "Solo por hoy",
+      actionHint: "Tu rutina no cambia. Manana vuelve este ejercicio.",
+      planAction: "Cambiar en la rutina",
+      planHint: "Reemplaza el ejercicio de forma permanente en el plan.",
+      planConfirm:
+        "Esto cambia tu rutina para siempre, no solo hoy. Se guarda una version previa por si quieres volver.",
+      reasonLabel: "Motivo (opcional)",
+      reasonPlaceholder: "La maquina estaba ocupada, molestia en el hombro...",
+      defaultReason: "Sustitucion valida solo por este dia.",
+      swapped: "Hoy en lugar de",
+      undo: "Volver al original",
+      undone: "Se restauro el ejercicio de tu rutina.",
+      saved: "Cambiado solo por hoy.",
+    },
     substituteTitle: "Sustituir ejercicio",
     substituteDescription:
       "Alternativas por musculo y patron de movimiento. Ningun ejercicio produce exactamente el mismo resultado que otro.",
@@ -1348,6 +1367,7 @@ export const messages = {
       alimento_sustituido: "Alimento sustituido",
       comida_estado_cambiado: "Estado de comida",
       ejercicio_sustituido: "Ejercicio sustituido",
+      ejercicio_sustituido_por_dia: "Ejercicio sustituido solo por un dia",
       alimento_importado: "Alimento importado",
       alimento_corregido: "Alimento corregido",
       comida_sustituida_por_receta: "Comida sustituida por receta",
