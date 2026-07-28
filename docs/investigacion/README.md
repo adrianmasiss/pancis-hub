@@ -124,9 +124,9 @@ Bloquean el cierre de sus claims:
 |---|---|---|
 | BIO-001 | Clasificación por región muscular | pendiente |
 | BIO-002 | Valores de estabilidad, rango y fatiga del catálogo | pendiente |
-| BIO-003 | Proximidad al fallo | pendiente |
-| BIO-004 | Volumen semanal y rendimientos decrecientes | pendiente |
-| BIO-005 | Frecuencia por músculo | pendiente |
+| [BIO-003](claims/BIO-003-proximidad-al-fallo.md) | Proximidad al fallo | **corregida** (grado B) |
+| [BIO-004](claims/BIO-004-volumen-semanal.md) | Volumen semanal y rendimientos decrecientes | **sostenida parcialmente** (grado A / D) |
+| [BIO-005](claims/BIO-005-frecuencia-muscular.md) | Frecuencia por músculo | **corregida** (grado A) |
 | BIO-006 | Tempo y duración de la repetición | pendiente |
 | BIO-007 | Descansos entre series | pendiente |
 | BIO-008 | Equivalencia entre divisiones con volumen igualado | pendiente |
@@ -139,7 +139,32 @@ Bloquean el cierre de sus claims:
 | BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
 | BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
 
-**Avance: 8 de 28.** Bloque de objetivos nutricionales completo.
+**Avance: 11 de 28.** Bloque de objetivos nutricionales completo; bloque de
+biomecánica iniciado por volumen, frecuencia y fallo.
+
+### Hallazgo transversal: fuerza e hipertrofia no responden igual
+
+Aparece de forma independiente en BIO-003, BIO-004 y BIO-005, con fuentes
+distintas y siempre en la misma dirección:
+
+| Variable | Fuerza | Hipertrofia |
+|---|---|---|
+| Proximidad al fallo | relación insignificante | mejora al acercarse |
+| Volumen | rendimientos decrecientes **muy** pronunciados | rendimientos decrecientes más suaves |
+| Frecuencia | efecto identificable | compatible con efecto insignificante |
+
+El motor de prescripción actual apenas diferencia por objetivo: prescribe
+RIR 2 casi para todo y usa umbrales de volumen únicos. **Es la corrección de
+fondo del bloque de entrenamiento**, y no se arregla ajustando constantes sino
+separando las recomendaciones por objetivo.
+
+### Segunda observación transversal: la muestra
+
+La literatura de entrenamiento en la que se apoya todo esto está construida
+sobre adultos jóvenes y en torno a un 80 % hombres (Pelland 2026: 2058
+participantes, 79.1 % hombres, edad media 25). Ya apareció lo mismo en el
+bloque de nutrición con la proteína. **El producto tiene que declararlo cuando
+prescriba a alguien que no se parece a esa muestra.**
 
 ## Cómo verificar una referencia
 
