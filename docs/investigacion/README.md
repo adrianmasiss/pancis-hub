@@ -75,11 +75,39 @@ Estado: `pendiente` · `en curso` · `sostenida` · `corregida` · `parámetro d
 | [NUT-001](claims/NUT-001-formula-metabolismo-basal.md) | Fórmula de metabolismo basal | Mifflin-St Jeor | **sostenida** (grado A) |
 | [NUT-002](claims/NUT-002-factores-actividad.md) | Factores de actividad | 1.2 / 1.375 / 1.55 / 1.725 | **corregida** (grado C) |
 | [NUT-003](claims/NUT-003-proteina-por-kg.md) | Proteína | 1.8 g/kg | **sostenida con matiz** (grado A) |
-| NUT-004 | Ajuste por objetivo | 0.85 / 0.95 / 1.0 / 1.1 | pendiente |
-| NUT-005 | Piso de grasa | 0.8 g/kg | pendiente |
-| NUT-006 | Fibra | 14 g/1000 kcal | pendiente |
-| NUT-007 | Agua | 35 ml/kg | pendiente |
-| NUT-008 | Piso de seguridad calórico | BMR x 1.1 | pendiente |
+| [NUT-004](claims/NUT-004-ajuste-por-objetivo.md) | Ajuste por objetivo | 0.85 / 0.95 / 1.0 / 1.1 | **corregida** (grado B) |
+| [NUT-005](claims/NUT-005-piso-de-grasa.md) | Piso de grasa | 0.8 g/kg | **corregida** (grado C) |
+| [NUT-006](claims/NUT-006-fibra.md) | Fibra | 14 g/1000 kcal | **sostenida** (grado B) |
+| [NUT-007](claims/NUT-007-agua.md) | Agua | 35 ml/kg | **parámetro de producto** (grado D) |
+| [NUT-008](claims/NUT-008-piso-de-seguridad.md) | Piso de seguridad calórico | BMR x 1.1 | **no se sostiene** (grado B) |
+
+**Bloque de objetivos nutricionales cerrado.** Ninguna de las ocho constantes
+resultó estar mal por casualidad: los valores caen casi todos dentro de rangos
+defendibles. Lo que falla sistemáticamente es el **criterio**: unidades que no
+son las de la literatura (NUT-005, NUT-007), multiplicadores fijos donde la
+evidencia habla de tasas (NUT-004), granularidad falsa (NUT-002) y un
+mecanismo de seguridad que mide lo que no debe (NUT-008).
+
+### Prioridad de aplicación
+
+`PROMPT_IMPLEMENTACION.md` pone seguridad por delante de todo, así que el
+orden de la Fase 3 no es el numérico:
+
+1. **NUT-008** — el piso de seguridad no protege de lo que dice proteger, y
+   falla más cuanto más entrena la persona.
+2. **NUT-003** y **NUT-004** — afectan al plan diario de todo el mundo.
+3. **NUT-002** — falsa precisión visible en pantalla.
+4. **NUT-005**, **NUT-006**, **NUT-007** — presentación y etiquetado.
+5. **NUT-001** — solo trazabilidad, sin cambio de valor.
+
+### Erratas pendientes de leer
+
+Bloquean el cierre de sus claims:
+
+| Claim | Errata | DOI |
+|---|---|---|
+| NUT-003 | Morton 2018 | 10.1136/bjsports-2017-097608corr1 (verificada, sin leer) |
+| NUT-005 | Whittaker & Wu 2021 | 10.1016/j.jsbmb.2025.106880 |
 
 ### Motor de equivalencias (`src/features/foods/lib/equivalence.ts`)
 
@@ -111,7 +139,7 @@ Estado: `pendiente` · `en curso` · `sostenida` · `corregida` · `parámetro d
 | BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
 | BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
 
-**Avance: 3 de 28.**
+**Avance: 8 de 28.** Bloque de objetivos nutricionales completo.
 
 ## Cómo verificar una referencia
 
