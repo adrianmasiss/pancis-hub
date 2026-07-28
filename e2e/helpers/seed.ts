@@ -96,3 +96,114 @@ export async function changeSeededQuantity(
     .update({ quantity_g: quantityG })
     .eq("template_meal_id", meals![0]!.id);
 }
+
+/**
+ * Siembra una rutina activa con un dia y un ejercicio, y devuelve los ids
+ * necesarios para verificar que el plan base no se toca al sustituir.
+ */
+export async function seedActiveWorkoutPlan(userId: string): Promise<{
+  planId: string;
+  planExerciseId: string;
+  exerciseId: string;
+  exerciseName: string;
+}> {
+  const admin = adminClient();
+
+  // Dos ejercicios del mismo musculo, para que haya alternativa que ofrecer.
+  const { data: exercises } = await admin
+    .from("exercise_catalog")
+    .select("id, name, primary_muscle")
+    .eq("primary_muscle", "cuadriceps")
+    .is("deleted_at", null)
+    .limit(2);
+  if (!exercises || exercises.length < 2) {
+    throw new Error("El catalogo necesita 2 ejercicios de cuadriceps");
+  }
+
+  const { data: plan } = await admin
+    .from("workout_plans")
+    .insert({
+      user_id: userId,
+      name: "Rutina de prueba",
+      objective: "hipertrofia",
+      active: true,
+    })
+    .select("id")
+    .single();
+
+  const { data: day, error: dayError } = await admin
+    .from("workout_plan_days")
+    .insert({ workout_plan_id: plan!.id, day_index: 1, name: "Pierna" })
+    .select("id")
+    .single();
+  if (dayError) throw new Error(`workout_plan_days: ${dayError.message}`);
+
+  const { data: planExercise, error: planExerciseError } = await admin
+    .from("workout_plan_exercises")
+    .insert({
+      workout_plan_day_id: day!.id,
+      exercise_id: exercises[0]!.id,
+      position: 1,
+      sets: 4,
+      target_reps_min: 8,
+      target_reps_max: 10,
+    })
+    .select("id")
+    .single();
+  if (planExerciseError)
+    throw new Error(`workout_plan_exercises: ${planExerciseError.message}`);
+
+  return {
+    planId: plan!.id,
+    planExerciseId: planExercise!.id,
+    exerciseId: exercises[0]!.id,
+    exerciseName: exercises[0]!.name,
+  };
+}
+
+/** Ejercicio que el plan tiene guardado ahora mismo, sin pasar por RLS. */
+export async function readPlanExerciseId(
+  planExerciseId: string,
+): Promise<string> {
+  const admin = adminClient();
+  const { data } = await admin
+    .from("workout_plan_exercises")
+    .select("exercise_id")
+    .eq("id", planExerciseId)
+    .single();
+  return data!.exercise_id;
+}
+
+/** Sustituciones por dia guardadas para ese ejercicio del plan. */
+export async function readDaySwaps(planExerciseId: string) {
+  const admin = adminClient();
+  const { data } = await admin
+    .from("exercise_day_swaps")
+    .select("date, substitute_exercise_id, reason, source")
+    .eq("plan_exercise_id", planExerciseId);
+  return data ?? [];
+}
+
+/**
+ * Marca el onboarding como completo sin pasar por el asistente de 6 pasos.
+ * Las pruebas de sustitucion no estan verificando el onboarding, y repetirlo
+ * en cada spec las hace lentas y fragiles.
+ */
+export async function completeOnboarding(userId: string): Promise<void> {
+  const admin = adminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      birth_date: "1995-05-10",
+      biological_sex: "femenino",
+      height_cm: 165,
+      experience_level: "intermedio",
+      primary_goal: "recomposicion",
+      training_days_per_week: 4,
+      activity_level: "moderado",
+      meals_per_day: 4,
+      onboarding_completed_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+  if (error) throw new Error(`profiles: ${error.message}`);
+}

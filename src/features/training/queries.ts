@@ -235,19 +235,35 @@ function withDaySwaps(
   };
 }
 
+/**
+ * Detalle de la rutina, con las sustituciones de `date` superpuestas.
+ *
+ * Se aplican aqui porque esta es la pantalla desde la que se sustituye: si
+ * mostrara la plantilla pura, el usuario pulsaria "solo por hoy" y no veria
+ * cambiar nada. Lo que evita la confusion no es esconder la sustitucion, es
+ * marcarla: cada ejercicio sustituido viaja con su original en `daySwap` y la
+ * fila lo dice ("Hoy en lugar de X") junto al boton de volver.
+ *
+ * El plan guardado sigue intacto: esto se resuelve al leer.
+ */
 export async function getPlanDetail(
   userId: string,
   planId: string,
+  date: string = todayLocalISO(),
 ): Promise<PlanDetail | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("workout_plans")
-    .select(PLAN_SELECT)
-    .eq("id", planId)
-    .eq("user_id", userId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  return data ? mapPlanDetail(data as unknown as PlanRow) : null;
+  const [{ data }, daySwaps] = await Promise.all([
+    supabase
+      .from("workout_plans")
+      .select(PLAN_SELECT)
+      .eq("id", planId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    getExerciseDaySwaps(userId, date),
+  ]);
+  if (!data) return null;
+  return withDaySwaps(mapPlanDetail(data as unknown as PlanRow), daySwaps, date);
 }
 
 export async function getSessionDetail(
@@ -308,9 +324,6 @@ export async function getSessionDetail(
 /**
  * `date` decide que sustituciones del dia se aplican al plan activo. El plan
  * guardado nunca cambia: se lee tal cual y la excepcion se superpone.
- *
- * Ojo: `getPlanDetail` NO aplica sustituciones a proposito. Esa vista es el
- * editor de la rutina y debe mostrar la plantilla real, no como se ve hoy.
  */
 export async function getTrainingOverview(
   userId: string,
