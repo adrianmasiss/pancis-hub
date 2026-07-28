@@ -129,10 +129,10 @@ artículo completo**, y justifica por sí sola la insistencia de esta fase.
 
 | Id | Constante | Valor actual | Estado |
 |---|---|---|---|
-| EQ-001 | Índice de saciedad | `proteína x 1.5 + fibra x 2` | pendiente |
-| EQ-002 | Pesos de compatibilidad | 0.25 / 0.35 / 0.15 / 0.15 / 0.10 | pendiente |
-| EQ-003 | Tolerancias por macro | ±5 % / ±10 % / ±15 % | pendiente |
-| EQ-004 | Grupos de alérgenos | ver `lib/allergens.ts` | pendiente |
+| [EQ-001](claims/EQ-001-indice-de-saciedad.md) | Índice de saciedad | `proteína x 1.5 + fibra x 2` | **corregida** (B/D) |
+| [EQ-002](claims/EQ-002-EQ-003-parametros-de-producto.md) | Pesos de compatibilidad | 0.25 / 0.35 / 0.15 / 0.15 / 0.10 | **parámetro de producto** |
+| [EQ-003](claims/EQ-002-EQ-003-parametros-de-producto.md) | Tolerancias por macro | ±5 % / ±10 % / ±15 % | **parámetro de producto, sin implementar** |
+| [EQ-004](claims/EQ-004-grupos-de-alergenos.md) | Grupos de alérgenos | ver `lib/allergens.ts` | **corregida, falta sésamo** (grado A) |
 
 ### Biomecánica y programación (`src/features/training/lib/`, `spec/docs/07A`)
 
@@ -146,7 +146,7 @@ artículo completo**, y justifica por sí sola la insistencia de esta fase.
 | [BIO-006](claims/BIO-006-tempo.md) | Tempo y duración de la repetición | **corregida** (grado B) |
 | [BIO-007](claims/BIO-007-descansos.md) | Descansos entre series | **corregida** (grado B) |
 | [BIO-008](claims/BIO-008-divisiones.md) | Equivalencia entre divisiones con volumen igualado | **sostenida** (grado A) |
-| BIO-009 | Rango de movimiento | pendiente |
+| [BIO-009](claims/BIO-009-rango-de-movimiento.md) | Rango de movimiento | **corregida** (grado B tren inferior, sin grado el resto) |
 
 ### Generación de planes (Fase 7, todavía sin código)
 
@@ -168,7 +168,7 @@ mismos números mágicos que esta fase acaba de retirar.
 | BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
 | BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
 
-**Avance: 16 de 32.** Bloque de objetivos nutricionales completo; bloque de
+**Avance: 21 de 32.** Bloque de objetivos nutricionales completo; bloque de
 biomecánica avanzado: volumen, frecuencia, fallo, tempo, descansos y
 divisiones.
 
