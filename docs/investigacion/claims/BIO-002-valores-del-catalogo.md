@@ -62,20 +62,74 @@ hoy.
 3. **Arreglar D-001**, porque no tiene sentido reconstruir datos que el
    siguiente reset va a borrar.
 
-### Reconstrucción
+### ¿Se puede reconstruir con información certificada de la web?
 
-El usuario pidió rehacerlos o confirmarlos. Hay tres vías, y no se excluyen:
+Sí, en buena parte. Comprobado el 2026-07-28, y el resultado cambia el plan.
 
-| Vía | Qué cubre | Coste |
+**Fuente 1: ACSM Position Stand 2026 (PMID 41843416).** La autoridad
+certificadora del área, y **está en acceso abierto** (PMC12965823, 116 000
+caracteres legibles). Clasifica y gradúa por tipo de comparación con un
+sistema formal de calidad de evidencia, número de revisiones y tamaño
+muestral. Cubre explícitamente monoarticular frente a multiarticular, máquina
+frente a peso libre, superficie estable frente a inestable, rango parcial y
+tiempo bajo tensión.
+
+**Fuente 2: free-exercise-db.** Ya es dependencia del proyecto para las
+imágenes. Licencia **The Unlicense** (dominio público, verificada vía API de
+GitHub). 873 ejercicios con campos estructurados: `force` (push/pull/static),
+`mechanic` (compound/isolation), `level`, `equipment`, `primaryMuscles`,
+`secondaryMuscles`, `category`.
+
+### Pero hay un límite que ninguna fuente resuelve
+
+**Ninguna autoridad publica "sentadilla: estabilidad 4 sobre 10".**
+
+El ACSM clasifica y gradúa por categorías. free-exercise-db clasifica por
+categorías. La literatura biomecánica describe momentos articulares y perfiles
+de resistencia. **Nadie asigna puntuaciones de 1 a 10 por ejercicio**, porque
+esa granularidad no tiene referente medible.
+
+Es decir: el problema no es solo de dónde vienen los datos. **Es que la escala
+misma no tiene referente.** Buscar una fuente para un número del 1 al 10 es
+buscar algo que no existe.
+
+### La comprobación que lo confirma
+
+Comparando `difficulty` de nuestro catálogo con `level` de free-exercise-db en
+los 15 ejercicios: **6 discrepancias de 15**. Nuestro catálogo llama
+"intermedio" a la sentadilla, al press de banca, al press militar y al remo;
+free-exercise-db los llama "beginner". Y al revés en dominadas.
+
+Ojo, esto **no** significa que free-exercise-db tenga razón: su `level` es
+colaborativo y llamar "beginner" al press militar es discutible. Lo que
+demuestra es que **dos fuentes no certificadas discrepan casi la mitad de las
+veces**, que es justo lo que cabe esperar cuando se está midiendo algo sin
+definición operativa.
+
+### Plan revisado
+
+| Campo actual | Qué se hace | Procedencia resultante |
 |---|---|---|
-| **Derivación estructural** | `joints`, `is_unilateral`, `equipment`, patrón de movimiento | Bajo. Son hechos anatómicos y mecánicos verificables, no opiniones. |
-| **Literatura** | `resistance_profile`, `hardest_point`, rango de movimiento | Medio. Hay literatura biomecánica por ejercicio, pero no para los 15 por igual. |
-| **Revisión humana** | `stability`, `technical_demand`, `systemic_fatigue`, `progression_ease` | Alto. Son juicios. Con un revisor con formación pasan a grado D legítimo. |
+| `joints`, `is_unilateral`, `equipment`, patrón | Derivar de estructura y de free-exercise-db | Hecho verificable + fuente con licencia |
+| `mechanic` (nuevo: multiarticular/monoarticular) | **Sustituye a `systemic_fatigue`** | free-exercise-db + ACSM |
+| `force` (empuje/tracción/isométrico) | Campo nuevo | free-exercise-db |
+| `resistance_profile`, `hardest_point` | Literatura biomecánica por ejercicio, donde exista; vacío donde no | Grado C, o ausente |
+| `stability` | **Sustituir por categoría** estable/inestable, que es como lo trata el ACSM | ACSM |
+| `technical_demand`, `progression_ease` | **Retirar.** Sin definición operativa ni fuente posible | ninguna |
+| `systemic_fatigue` | **Retirar el 1-10**, queda cubierto por multiarticular/monoarticular | ninguna |
 
-**Recomendación:** empezar por la primera, que es objetiva y elimina de un
-golpe la parte inventada más fácil de arreglar. Los cuatro campos de la
-tercera fila son irreductiblemente juicios: o los firma una persona, o se
-retiran.
+**El cambio de fondo no es rellenar los números con mejores datos. Es dejar de
+guardar números y guardar las categorías que las fuentes reales sí publican.**
+
+Eso además arregla el problema de golpe: una categoría con fuente se puede
+mostrar y explicar; un 7 sobre 10 no, aunque venga de donde venga.
+
+### Qué sigue necesitando una persona
+
+Solo si se quiere conservar una noción de dificultad técnica más fina que
+"multiarticular con barra frente a monoarticular en máquina". Con el plan de
+arriba, **el motor puede funcionar sin ningún juicio humano**, apoyado solo en
+categorías con procedencia. Es la opción recomendada.
 
 ## Lo que NO hay que hacer
 

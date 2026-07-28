@@ -111,6 +111,11 @@ Comprobado por claim:
 | Morton 2018 (NUT-003) | **sí**, PMC5867436, CC BY-NC | **leído**, ver hallazgo abajo |
 | Whittaker & Wu 2021 (NUT-005) | no | bloqueado |
 | Consenso COI sobre deficiencia energética (NUT-008) | no | **bloqueado, y es el hallazgo de seguridad** |
+| **ACSM Position Stand 2026** (BIO-002, BIO-003, BIO-004) | **sí**, PMC12965823 | **disponible**, 116 000 caracteres |
+| Revisión sobre rango de movimiento (BIO-009) | **sí**, PMC6977096 | disponible |
+
+La autoridad certificadora del área resultó estar en acceso abierto. Es la
+fuente de mayor rango de toda la jerarquía y no hacía falta pagar por ella.
 
 **Hallazgo de leer el texto completo de Morton.** El famoso 1.62 g/kg de
 proteína resulta ser un punto de quiebre **no significativo** (p = 0.079), con
