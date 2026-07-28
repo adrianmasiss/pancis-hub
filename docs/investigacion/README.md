@@ -127,9 +127,9 @@ Bloquean el cierre de sus claims:
 | [BIO-003](claims/BIO-003-proximidad-al-fallo.md) | Proximidad al fallo | **corregida** (grado B) |
 | [BIO-004](claims/BIO-004-volumen-semanal.md) | Volumen semanal y rendimientos decrecientes | **sostenida parcialmente** (grado A / D) |
 | [BIO-005](claims/BIO-005-frecuencia-muscular.md) | Frecuencia por músculo | **corregida** (grado A) |
-| BIO-006 | Tempo y duración de la repetición | pendiente |
-| BIO-007 | Descansos entre series | pendiente |
-| BIO-008 | Equivalencia entre divisiones con volumen igualado | pendiente |
+| [BIO-006](claims/BIO-006-tempo.md) | Tempo y duración de la repetición | **corregida** (grado B) |
+| [BIO-007](claims/BIO-007-descansos.md) | Descansos entre series | **corregida** (grado B) |
+| [BIO-008](claims/BIO-008-divisiones.md) | Equivalencia entre divisiones con volumen igualado | **sostenida** (grado A) |
 | BIO-009 | Rango de movimiento | pendiente |
 
 ### Biometría (`spec/docs/09`)
@@ -139,8 +139,25 @@ Bloquean el cierre de sus claims:
 | BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
 | BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
 
-**Avance: 11 de 28.** Bloque de objetivos nutricionales completo; bloque de
-biomecánica iniciado por volumen, frecuencia y fallo.
+**Avance: 14 de 28.** Bloque de objetivos nutricionales completo; bloque de
+biomecánica avanzado: volumen, frecuencia, fallo, tempo, descansos y
+divisiones.
+
+### Tercera observación transversal: el sistema prescribe con más precisión de la que la evidencia permite
+
+Cinco de los seis claims de entrenamiento terminan pidiendo lo mismo:
+**expresar la recomendación como rango y no como cifra exacta.**
+
+| Constante | Lo que la evidencia dice | Lo que el sistema muestra |
+|---|---|---|
+| Tempo | igual entre 0.5 y 8 s por repetición | un tempo concreto |
+| Descanso | sin diferencia por encima de 90 s | "210 segundos" |
+| RIR | exposición estimada, ajuste modesto | "RIR 2" |
+| Volumen | curva que se aplana | umbral en 22 series |
+| División | ninguna es mejor | (comparador aún sin construir) |
+
+Ninguna de esas cifras está mal. Todas comunican una exactitud que no
+existe.
 
 ### Hallazgo transversal: fuerza e hipertrofia no responden igual
 
