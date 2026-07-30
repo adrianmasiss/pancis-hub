@@ -110,7 +110,9 @@ Comprobado por claim:
 |---|---|---|
 | Morton 2018 (NUT-003) | **sí**, PMC5867436, CC BY-NC | **leído**, ver hallazgo abajo |
 | Whittaker & Wu 2021 (NUT-005) | no | bloqueado |
-| Consenso COI sobre deficiencia energética (NUT-008) | no | **bloqueado, y es el hallazgo de seguridad** |
+| Consenso COI sobre deficiencia energética (NUT-008) | no | **desbloqueado por otra vía**, ver abajo |
+| ISSN, atleta femenina (NUT-008, y el hueco de las mujeres) | **sí**, PMC10210857, CC BY-NC | **leído** |
+| ISSN, proteína y ejercicio (GEN-001) | **sí**, PMC5477153, CC BY | **leído** |
 | **ACSM Position Stand 2026** (BIO-002, BIO-003, BIO-004) | **sí**, PMC12965823 | **disponible**, 116 000 caracteres |
 | Revisión sobre rango de movimiento (BIO-009) | **sí**, PMC6977096 | disponible |
 
@@ -156,10 +158,10 @@ mismos números mágicos que esta fase acaba de retirar.
 
 | Id | Afirmación | Estado |
 |---|---|---|
-| GEN-001 | Reparto de macros entre comidas del día | pendiente |
-| GEN-002 | Cuántos días recomendar según disponibilidad y experiencia | pendiente |
-| GEN-003 | Selección de ejercicios para cubrir el cuerpo de forma equilibrada | pendiente |
-| GEN-004 | Progresión inicial para alguien sin historial | pendiente |
+| [GEN-001](claims/GEN-001-reparto-de-macros.md) | Reparto de macros entre comidas del día | **sostenida** (grado A/B) |
+| [GEN-002](claims/GEN-002-GEN-003-GEN-004-rutina-inicial.md) | Cuántos días recomendar según disponibilidad y experiencia | **sostenida** (grado A) |
+| [GEN-003](claims/GEN-002-GEN-003-GEN-004-rutina-inicial.md) | Selección de ejercicios para cubrir el cuerpo de forma equilibrada | **sostenida, depende de BIO-002** (grado B) |
+| [GEN-004](claims/GEN-002-GEN-003-GEN-004-rutina-inicial.md) | Progresión inicial para alguien sin historial | **sostenida** (grado B) |
 
 ### Biometría (`spec/docs/09`)
 
@@ -168,8 +170,18 @@ mismos números mágicos que esta fase acaba de retirar.
 | [BIA-001](claims/BIA-001-incertidumbre-de-la-bioimpedancia.md) | Incertidumbre de la bioimpedancia segmental | **sostenida** (grado B) |
 | [BIA-002](claims/BIA-002-masa-magra-segmental.md) | Qué se puede afirmar de la masa magra segmental | **sostenida, limita el 3D** (grado B) |
 
-**Avance: 23 de 32.** Todo lo que el sistema ya afirma está revisado. Solo
-quedan los cuatro claims de generación (Fase 7) y los sub-claims abiertos. Bloque de objetivos nutricionales completo; bloque de
+**Avance: 27 de 32 (los 5 restantes son sub-claims abiertos).** Todo lo que el
+sistema afirma hoy y todo lo que la Fase 7 va a necesitar está revisado.
+
+### Sub-claims abiertos, surgidos durante la fase
+
+| Id | Qué falta | Depende de |
+|---|---|---|
+| NUT-001b | Metabolismo basal desde masa libre de grasa cuando haya InBody | BIA-001 acota su utilidad |
+| NUT-002b | Calibrar el gasto con la tendencia real de peso | módulo de seguimiento |
+| NUT-004b | Evidencia específica de recomposición corporal | - |
+| NUT-005b | Argumento hormonal de la grasa en mujeres | acceso a texto completo |
+| BIO-006b | Tempo en series lejos del fallo | - | Bloque de objetivos nutricionales completo; bloque de
 biomecánica avanzado: volumen, frecuencia, fallo, tempo, descansos y
 divisiones.
 

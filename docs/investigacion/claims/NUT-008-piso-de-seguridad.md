@@ -2,7 +2,7 @@
 
 **Constante:** `SAFETY_FLOOR_FACTOR` en `src/features/onboarding/lib/nutrition-targets.ts`
 **Valor actual:** las calorías nunca bajan de metabolismo basal x 1.1
-**Estado: corregida** · **Grado B** · Revisado 2026-07-28
+**Estado: corregida, con umbrales** · **Grado B** · Revisado 2026-07-28, ampliado 2026-07-29
 
 > **Es el hallazgo más consecuente de este bloque.** El piso actual no protege
 > de lo que dice proteger.
@@ -20,6 +20,7 @@ entrena de comer demasiado poco?
 |---|---|---|---|
 | Mountjoy M et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). *Br J Sports Med*. 2023. | PMID 37752011 | Declaración de consenso | sí |
 | Mountjoy M et al. IOC consensus statement on relative energy deficiency in sport (RED-S): 2018 update. *Br J Sports Med*. 2018. | PMID 29773536 | Declaración de consenso | sí |
+| Sims ST et al. International society of sports nutrition position stand: nutritional concerns of the female athlete. *J Int Soc Sports Nutr*. 2023. | PMID 37221858 · PMC10210857, CC BY-NC | Posición oficial, **acceso abierto, leída** | sí |
 
 Consenso de una autoridad internacional. Es el nivel más alto de la jerarquía
 de `04_SCIENTIFIC_GOVERNANCE`.
@@ -71,10 +72,30 @@ de cero y entrena varios días por semana.
 3. **Añadir una alerta explícita**, no solo un tope silencioso. Hoy el sistema
    corrige el número sin decir nada; el usuario nunca se entera de que su
    configuración era problemática.
-4. **No fijar aquí el umbral numérico.** Los valores de referencia de
-   disponibilidad energética baja deben salir de la lectura del texto completo
-   del consenso de 2023, que no se ha hecho. Ponerlo de memoria sería
-   exactamente lo que esta fase existe para evitar.
+4. **Umbrales, ya disponibles.** El consenso del COI no está en acceso
+   abierto, pero el **position stand del ISSN sobre la atleta femenina**
+   (PMID 37221858, PMC10210857, CC BY-NC) sí, y publica los umbrales:
+
+| Disponibilidad energética | Qué significa, según el documento |
+|---|---|
+| **> 45 kcal/kg de masa libre de grasa al día** | Energía suficiente para ganancia de peso e hipertrofia |
+| **≥ 45** | Umbral para asegurar función fisiológica y mantenimiento del peso en atletas femeninas |
+| **30 o menos** | Umbral en el cual y por debajo del cual se observan hormonas metabólicas suprimidas y reducción de la pulsatilidad de la hormona luteinizante, **en tan poco como 5 días** en mujeres sanas |
+
+Dos matices que el propio documento declara y hay que arrastrar:
+
+- Los umbrales provienen de **modelos conceptuales** derivados de estudios de
+  laboratorio bien controlados, y el documento dice explícitamente que **no se
+  han establecido guías específicas** de disponibilidad óptima para atletas
+  femeninas de competición.
+- Están descritos **en mujeres**. Es la primera vez en toda esta fase que la
+  literatura disponible favorece a las mujeres en lugar de excluirlas, y
+  conviene aprovecharlo: es justo el perfil en que el piso actual falla más.
+
+**El ejemplo del apartado anterior queda contrastado.** Los ~24 kcal/kg de masa
+libre de grasa que resultaban de aplicar el piso actual están **por debajo del
+umbral de 30**, es decir en la zona donde se describen consecuencias
+hormonales en menos de una semana.
 
 ## Claim propuesto
 
@@ -87,7 +108,10 @@ de cero y entrena varios días por semana.
 
 **B** para la afirmación de que el constructo correcto es la disponibilidad
 energética: hay consenso internacional explícito.
-**Sin grado** para los umbrales concretos, hasta leer el texto completo.
+**B** para los umbrales de 30 y 45 kcal/kg de masa libre de grasa: proceden de
+una posición oficial que los recoge de estudios de laboratorio controlados,
+pero el propio documento aclara que son modelos conceptuales y no guías
+establecidas.
 
 ## Decisión
 
@@ -101,10 +125,14 @@ el código como guarda mínima hasta que la Fase 3 lo sustituya, pero deja de
 presentarse o documentarse como protección frente a la ingesta insuficiente.
 
 **Tareas abiertas:**
-1. Leer el texto completo del consenso de 2023 y extraer umbrales.
+1. ~~Extraer umbrales~~ **resuelto** vía el position stand del ISSN sobre la
+   atleta femenina, en acceso abierto. El consenso del COI sigue tras muro de
+   pago, pero ya no bloquea.
 2. Decidir de dónde sale el gasto del ejercicio: estimación desde las series
    registradas o entrada del usuario.
 3. Diseñar la alerta, que es cambio de interfaz y no solo de fórmula.
+4. Comprobar si los umbrales descritos en mujeres son trasladables a hombres,
+   o si hay que declarar la diferencia.
 
 ## Revisor y fecha
 
