@@ -79,6 +79,40 @@ describe("matchesRestriction: grupos", () => {
     expect(matchesRestriction("Tilapia a la plancha", ["mariscos"])).toBe(false);
   });
 
+  // EQ-004: el sesamo es alergeno mayor declarable y faltaba en la lista.
+  it("el sésamo se detecta por sus tres nombres", () => {
+    expect(matchesRestriction("Pan con sésamo", ["sésamo"])).toBe(true);
+    expect(matchesRestriction("Aceite de ajonjolí", ["sésamo"])).toBe(true);
+    expect(matchesRestriction("Tahini", ["sésamo"])).toBe(true);
+  });
+
+  it("el sésamo no arrastra falsos positivos", () => {
+    expect(matchesRestriction("Pan integral", ["sésamo"])).toBe(false);
+  });
+
+  it("crustáceos y moluscos son grupos distintos", () => {
+    expect(matchesRestriction("Camarones cocidos", ["crustáceos"])).toBe(true);
+    expect(matchesRestriction("Calamar a la romana", ["crustáceos"])).toBe(
+      false,
+    );
+    expect(matchesRestriction("Calamar a la romana", ["moluscos"])).toBe(true);
+    expect(matchesRestriction("Camarones cocidos", ["moluscos"])).toBe(false);
+  });
+
+  it('"mariscos" funciona como paraguas de los dos', () => {
+    expect(matchesRestriction("Camarones cocidos", ["mariscos"])).toBe(true);
+    expect(matchesRestriction("Calamar a la romana", ["mariscos"])).toBe(true);
+    expect(matchesRestriction("Mejillones al vapor", ["mariscos"])).toBe(true);
+  });
+
+  it("los alérgenos de menor prevalencia también se cubren", () => {
+    expect(matchesRestriction("Mostaza Dijon", ["mostaza"])).toBe(true);
+    expect(matchesRestriction("Apio en rama", ["apio"])).toBe(true);
+    expect(matchesRestriction("Vino con metabisulfito", ["sulfitos"])).toBe(
+      true,
+    );
+  });
+
   it("el maní se trata aparte de los frutos secos", () => {
     expect(matchesRestriction("Mantequilla de maní", ["frutos secos"])).toBe(
       false,

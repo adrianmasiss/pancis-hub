@@ -98,7 +98,26 @@ contra los textos**. Hasta entonces, el estado real de este claim es
 **Prioridad alta pese a ser un claim del bloque EQ:** toca seguridad, y hay
 una omisión concreta y corregible.
 
+## Estado de aplicación
+
+**Aplicado el 2026-07-29**, fuera de la Fase 3, por tratarse de seguridad:
+
+| Cambio | Estado |
+|---|---|
+| Grupo `sesamo` (sésamo, ajonjolí, tahini, tahina) | hecho |
+| `crustaceos` y `moluscos` separados | hecho |
+| `mariscos` como grupo paraguas de ambos | hecho |
+| `sulfitos`, `apio`, `mostaza`, `altramuz` | hecho |
+| Aviso en la interfaz de leer la etiqueta | hecho |
+| Contraste término a término contra anexo II y RTCA | **pendiente** |
+| Registrar la fuente normativa en `formula_versions` | pendiente (Fase 3) |
+
+De 8 grupos a 14. 336 pruebas en verde.
+
+**El claim sigue abierto** hasta el contraste documental: se corrigió la
+omisión detectada, no se ha verificado que no queden otras.
+
 ## Revisor y fecha
 
 Redactado por el agente el 2026-07-28, auditando trabajo propio de la Fase 1.
-**Pendiente de aprobación humana y de contraste documental.**
+Corrección aplicada el 2026-07-29. **Pendiente de contraste documental.**

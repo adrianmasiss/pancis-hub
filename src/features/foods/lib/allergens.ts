@@ -19,6 +19,16 @@
  * la UI debe decirlo.
  */
 
+/**
+ * Los grupos siguen las listas de alergenos de declaracion obligatoria
+ * (Codex Alimentarius, anexo II del Reglamento UE 1169/2011, FALCPA y su
+ * ampliacion de 2023 que incorpora el sesamo). Ver
+ * `docs/investigacion/claims/EQ-004-grupos-de-alergenos.md`.
+ *
+ * Crustaceos y moluscos van SEPARADOS porque las normativas los listan
+ * aparte y son alergias distintas. "Mariscos", que en el habla cotidiana
+ * cubre ambos, se resuelve como grupo paraguas.
+ */
 export type AllergenGroup =
   | "lacteos"
   | "huevo"
@@ -26,8 +36,14 @@ export type AllergenGroup =
   | "frutos_secos"
   | "mani"
   | "soja"
-  | "mariscos"
-  | "pescado";
+  | "sesamo"
+  | "crustaceos"
+  | "moluscos"
+  | "pescado"
+  | "sulfitos"
+  | "apio"
+  | "mostaza"
+  | "altramuz";
 
 /**
  * Terminos por grupo, en singular y sin tildes. La normalizacion se encarga
@@ -51,14 +67,32 @@ const GROUP_TERMS: Record<AllergenGroup, string[]> = {
   ],
   mani: ["mani", "cacahuate", "cacahuete"],
   soja: ["soja", "soya", "tofu", "edamame", "tempeh", "miso"],
-  mariscos: [
-    "marisco", "camaron", "langostino", "langosta", "cangrejo", "almeja",
-    "mejillon", "ostra", "calamar", "pulpo",
+  sesamo: ["sesamo", "ajonjoli", "tahini", "tahina"],
+  crustaceos: [
+    "crustaceo", "camaron", "langostino", "langosta", "cangrejo", "jaiba",
+    "cigala", "krill",
+  ],
+  moluscos: [
+    "molusco", "almeja", "mejillon", "ostra", "calamar", "chipiron", "sepia",
+    "pulpo", "vieira", "berberecho", "caracol",
   ],
   pescado: [
     "pescado", "atun", "salmon", "tilapia", "sardina", "bacalao", "trucha",
     "anchoa",
   ],
+  sulfitos: ["sulfito", "metabisulfito", "bisulfito"],
+  apio: ["apio"],
+  mostaza: ["mostaza"],
+  altramuz: ["altramuz", "lupino"],
+};
+
+/**
+ * Grupos que en el habla cotidiana engloban a otros. Declarar "mariscos"
+ * excluye crustaceos y moluscos, porque nadie que sea alergico a los
+ * camarones espera que la app le ofrezca calamares.
+ */
+const UMBRELLA_GROUPS: Partial<Record<string, AllergenGroup[]>> = {
+  mariscos: ["crustaceos", "moluscos"],
 };
 
 /** Como puede escribir el usuario el nombre de un grupo. */
@@ -69,8 +103,14 @@ const GROUP_ALIASES: Record<AllergenGroup, string[]> = {
   frutos_secos: ["fruto seco", "frutos secos", "nuez"],
   mani: ["mani", "cacahuate", "cacahuete"],
   soja: ["soja", "soya"],
-  mariscos: ["marisco", "crustaceo", "molusco"],
+  sesamo: ["sesamo", "ajonjoli"],
+  crustaceos: ["crustaceo"],
+  moluscos: ["molusco"],
   pescado: ["pescado"],
+  sulfitos: ["sulfito", "dioxido de azufre"],
+  apio: ["apio"],
+  mostaza: ["mostaza"],
+  altramuz: ["altramuz", "lupino"],
 };
 
 /** Quita tildes y pasa a minusculas. */
@@ -140,15 +180,26 @@ export function resolveRestrictionTerms(restriction: string): string[][] {
   const declared = tokenize(restriction);
   if (declared.length === 0) return [];
 
+  const matchesAlias = (alias: string) => {
+    const aliasTokens = tokenize(alias);
+    return (
+      aliasTokens.length === declared.length &&
+      aliasTokens.every((token, index) => token === declared[index])
+    );
+  };
+
+  // Los paraguas se comprueban primero: "mariscos" no debe caer en el grupo
+  // de crustaceos y dejar fuera a los moluscos.
+  for (const [umbrella, groups] of Object.entries(UMBRELLA_GROUPS)) {
+    if (matchesAlias(umbrella) && groups) {
+      return groups.flatMap((group) => GROUP_TERMS[group].map(tokenize));
+    }
+  }
+
   for (const group of GROUPS) {
-    const isGroup = GROUP_ALIASES[group].some((alias) => {
-      const aliasTokens = tokenize(alias);
-      return (
-        aliasTokens.length === declared.length &&
-        aliasTokens.every((token, index) => token === declared[index])
-      );
-    });
-    if (isGroup) return GROUP_TERMS[group].map(tokenize);
+    if (GROUP_ALIASES[group].some(matchesAlias)) {
+      return GROUP_TERMS[group].map(tokenize);
+    }
   }
 
   // No es un grupo conocido: se vigila tal cual lo escribio el usuario.

@@ -944,6 +944,13 @@ export const messages = {
     compatibilityOf10: "{score}/10",
     compatibilityNote:
       "La compatibilidad es una aproximacion orientativa, no una equivalencia exacta.",
+    /**
+     * Los alergenos se filtran por el nombre del alimento. Un producto
+     * empacado puede contener un alergeno sin llevarlo en el nombre, asi que
+     * esto no sustituye leer la etiqueta.
+     */
+    allergenNote:
+      "Si tienes alergias, revisa siempre la etiqueta: filtramos por el nombre del alimento y un producto empacado puede contener algo que no aparece ahi.",
     rebalanceTitle: "Como queda tu dia",
     rebalanceRemaining: "Te quedan",
     rebalanceApplyNote:
