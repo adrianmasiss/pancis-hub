@@ -1,6 +1,9 @@
 # Fase 2 · Investigación fundacional
 
 > **Para aprobar los claims, empieza por [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md).**
+> Ver también [RECONCILIACION_INFO.md](RECONCILIACION_INFO.md), que integra la
+> investigación aportada en `/Info`: 16 de 16 PMIDs y 87 de 87 DOIs verificados,
+> converge en seis puntos y **completa el hueco de BIO-004**.
 > Trae las cuatro observaciones transversales, la hoja de aprobación de los 27
 > claims agrupada por prioridad, y las tres decisiones de producto pendientes.
 
