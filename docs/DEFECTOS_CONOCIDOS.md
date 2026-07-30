@@ -9,7 +9,8 @@ posponerlo sea explícita y no un olvido.
 ## D-001 · La biomecánica del catálogo se pierde en cada `supabase db reset`
 
 **Detectado:** 2026-07-28, escribiendo el e2e de la Fase 1.
-**Gravedad:** alta. Degrada en silencio, que es lo peor que puede hacer.
+**Gravedad:** alta. Degradaba en silencio, que es lo peor que puede hacer.
+**RESUELTO el 2026-07-30.** Ver "Solución aplicada" al final.
 
 ### Qué pasa
 
@@ -64,11 +65,34 @@ excepción diaria de entrenamiento y las alergias duras. Entra como primera
 tarea de la fase que toque el catálogo de ejercicios (Fase 6, regiones
 musculares), o antes si se confirma que producción también está afectada.
 
-### Mitigación aplicada en local
+### Solución aplicada (2026-07-30)
 
-Se reejecutaron a mano las sentencias `update` de la migración contra la base
-local para dejar la suite e2e en verde. **Es una mitigación, no el arreglo:**
-el próximo `supabase db reset` vuelve a borrarlas.
+Las sentencias `update` se replicaron en `supabase/seed.sql`, justo después
+del `insert` que crea los ejercicios. Así el seed deja la base correcta por sí
+mismo.
+
+**La migración se conserva intacta**, porque es la que arregló las bases que
+ya existían, incluida producción. A partir de ahora `seed.sql` es el sitio
+donde se editan estos valores.
+
+**Verificado con un `supabase db reset` real:**
+
+```
+antes:   0 de 15 ejercicios con biomecánica
+después: 15 de 15
+```
+
+Y la suite completa de 18 pruebas e2e pasa sobre una base reseteada desde
+cero, cosa que antes era imposible.
+
+**Nota relacionada:** las imágenes de ejercicios también desaparecen en un
+reset, pero eso no es un defecto: es un paso de puesta a punto documentado
+(`npm run import:exercise-images`), que descarga de una fuente externa y no
+puede vivir en el seed.
+
+**Lo que este arreglo NO resuelve:** los valores siguen sin procedencia. Ver
+`docs/investigacion/claims/BIO-002-valores-del-catalogo.md`. Ahora son
+reproducibles, que no es lo mismo que ser correctos.
 
 ---
 
