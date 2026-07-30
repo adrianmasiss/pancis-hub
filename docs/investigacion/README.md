@@ -165,12 +165,31 @@ mismos números mágicos que esta fase acaba de retirar.
 
 | Id | Afirmación | Estado |
 |---|---|---|
-| BIA-001 | Incertidumbre de la bioimpedancia segmental | pendiente |
-| BIA-002 | Qué se puede afirmar de la masa magra segmental | pendiente |
+| [BIA-001](claims/BIA-001-incertidumbre-de-la-bioimpedancia.md) | Incertidumbre de la bioimpedancia segmental | **sostenida** (grado B) |
+| [BIA-002](claims/BIA-002-masa-magra-segmental.md) | Qué se puede afirmar de la masa magra segmental | **sostenida, limita el 3D** (grado B) |
 
-**Avance: 21 de 32.** Bloque de objetivos nutricionales completo; bloque de
+**Avance: 23 de 32.** Todo lo que el sistema ya afirma está revisado. Solo
+quedan los cuatro claims de generación (Fase 7) y los sub-claims abiertos. Bloque de objetivos nutricionales completo; bloque de
 biomecánica avanzado: volumen, frecuencia, fallo, tempo, descansos y
 divisiones.
+
+### Cuarta observación transversal: válido en el grupo, poco fiable en la persona
+
+El patrón más repetido de toda la fase, y el que más consecuencias tiene. Con
+fuentes y dominios completamente independientes:
+
+| Claim | Válido para | Poco fiable para |
+|---|---|---|
+| NUT-002 factores de actividad | poblaciones | un individuo |
+| NUT-001 Mifflin-St Jeor | grupos | un individuo |
+| BIO-004 volumen | promedios de 67 estudios | tu caso |
+| BIA-001 bioimpedancia | medias de grupo (no difieren del criterio) | la persona (error de 3 a 4 puntos de grasa) |
+
+**Pancis Hub es una app de uso personal: solo trabaja con individuos.** Esto no
+invalida ninguna fórmula, pero sí obliga a una decisión de producto que atañe a
+toda la interfaz: presentar rangos con incertidumbre visible en vez de cifras,
+y apoyarse en la tendencia propia del usuario antes que en el valor puntual que
+predice cualquier ecuación.
 
 ### Tercera observación transversal: el sistema prescribe con más precisión de la que la evidencia permite
 
