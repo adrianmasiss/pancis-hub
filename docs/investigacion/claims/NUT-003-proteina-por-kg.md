@@ -22,10 +22,17 @@ defendible?
 | Jäger R et al. International Society of Sports Nutrition Position Stand: protein and exercise. *J Int Soc Sports Nutr*. 2017. | PMID 28642676 | Posición oficial | sí |
 | Nunes EA et al. Systematic review and meta-analysis of protein intake to support muscle mass and function in healthy adults. *J Cachexia Sarcopenia Muscle*. 2022. | PMID 35187864 | Metaanálisis | sí |
 
-**Errata registrada:** Morton 2018 tiene una fe de erratas publicada en *Br J
-Sports Med*. 2020;54(19):e7 (DOI 10.1136/bjsports-2017-097608corr1). No
-invalida el trabajo, pero **debe consultarse el texto de la errata antes de
-fijar el valor definitivo**. Queda como tarea abierta de este claim.
+**Errata leída** (2026-07-29, PMC7513243, CC BY-NC). **No corrige ningún
+número.** Es una declaración tardía de conflicto de interés: uno de los
+coautores declara que formaba parte del consejo asesor de un fabricante de
+suplementos deportivos en el momento de escribirse el trabajo, y que sigue en
+él.
+
+No invalida el metaanálisis ni cambia sus resultados, pero **sí pesa en la
+valoración de la evidencia**: un metaanálisis sobre suplementación de proteína
+con un autor vinculado a un fabricante de suplementos merece leerse con eso
+presente. Es exactamente el tipo de dato que `04_SCIENTIFIC_GOVERNANCE` obliga
+a registrar y que desaparece si uno se queda en el resumen.
 
 ## Población
 
@@ -140,10 +147,14 @@ sistemática en una población más estrecha.
 - [ ] Requiere revisión
 
 **Tareas abiertas antes de cerrar este claim:**
-1. Leer la errata de Morton 2018 (DOI 10.1136/bjsports-2017-097608corr1).
-2. Leer texto completo de Helms 2014 y Tagawa 2020 para fijar los extremos.
+1. ~~Leer la errata de Morton 2018~~ **hecho.** Es una declaración de
+   conflicto de interés, no una corrección numérica.
+2. Leer texto completo de Tagawa 2020 (**abierto**, PMC7727026) y de Helms
+   2014 sobre culturismo (**abierto**, PMC4033492) para fijar los extremos de
+   la tabla. Helms 2014 sobre déficit (PMID 24092765) sigue cerrado.
 3. Decidir si se calcula sobre peso total o sobre masa libre de grasa cuando
-   el usuario tenga InBody.
+   el usuario tenga InBody. Ojo: BIA-001 acota esa idea, porque la masa libre
+   de grasa del InBody arrastra un error de hasta 3.3 kg.
 
 ## Revisor y fecha
 

@@ -1,5 +1,9 @@
 # Fase 2 · Investigación fundacional
 
+> **Para aprobar los claims, empieza por [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md).**
+> Trae las cuatro observaciones transversales, la hoja de aprobación de los 27
+> claims agrupada por prioridad, y las tres decisiones de producto pendientes.
+
 Fase sin código. Su entregable es un cuerpo de revisiones argumentadas que la
 Fase 3 convierte en `research_sources` y `formula_versions`.
 
@@ -109,6 +113,9 @@ Comprobado por claim:
 | Fuente | Acceso abierto | Estado |
 |---|---|---|
 | Morton 2018 (NUT-003) | **sí**, PMC5867436, CC BY-NC | **leído**, ver hallazgo abajo |
+| **Errata de Morton 2018** | **sí**, PMC7513243 | **leída**: es una declaración de conflicto de interés, no una corrección numérica |
+| Tagawa 2020, Helms 2014 culturismo, Refalo 2023, Grgic 2022, Singer 2024 | **sí** | abiertos, pendientes de lectura completa |
+| Corrigendum de Whittaker 2021 (PMID 41139558) | no | bloquea NUT-005 |
 | Whittaker & Wu 2021 (NUT-005) | no | bloqueado |
 | Consenso COI sobre deficiencia energética (NUT-008) | no | **desbloqueado por otra vía**, ver abajo |
 | ISSN, atleta femenina (NUT-008, y el hueco de las mujeres) | **sí**, PMC10210857, CC BY-NC | **leído** |
