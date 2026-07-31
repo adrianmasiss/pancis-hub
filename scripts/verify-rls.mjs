@@ -147,6 +147,60 @@ check("demo ve sus meal_items via join RLS", (demoMeals ?? []).length === 6);
 const { data: bMealItems } = await clientB.from("meal_items").select("id");
 check("B no ve meal_items de otros", (bMealItems ?? []).length === 0);
 
+// Sustituciones de ejercicio por dia: tabla personal nueva, mismo contrato.
+const { data: demoPlanExercise } = await demo
+  .from("workout_plan_exercises")
+  .select("id, exercise_id")
+  .limit(1)
+  .maybeSingle();
+
+if (demoPlanExercise) {
+  const { error: daySwapInsertError } = await demo
+    .from("exercise_day_swaps")
+    .insert({
+      user_id: demoSession.user.id,
+      plan_exercise_id: demoPlanExercise.id,
+      date: new Date().toISOString().slice(0, 10),
+      substitute_exercise_id: demoPlanExercise.exercise_id,
+      reason: "verificacion de RLS",
+    });
+  check(
+    "demo inserta su sustitucion del dia",
+    !daySwapInsertError,
+    daySwapInsertError?.message,
+  );
+
+  const { data: bDaySwaps } = await clientB
+    .from("exercise_day_swaps")
+    .select("id");
+  check(
+    "B no ve sustituciones de ejercicio de otros",
+    (bDaySwaps ?? []).length === 0,
+    `filas visibles: ${(bDaySwaps ?? []).length}`,
+  );
+
+  // Suplantar a otro usuario tiene que fallar en el WITH CHECK.
+  const { error: daySwapSpoofError } = await clientB
+    .from("exercise_day_swaps")
+    .insert({
+      user_id: demoSession.user.id,
+      plan_exercise_id: demoPlanExercise.id,
+      date: new Date().toISOString().slice(0, 10),
+      substitute_exercise_id: demoPlanExercise.exercise_id,
+    });
+  check(
+    "B no puede insertar una sustitucion como demo",
+    !!daySwapSpoofError,
+    daySwapSpoofError?.message,
+  );
+
+  // Se limpia para no dejar rastro de la verificacion en los datos locales.
+  await demo
+    .from("exercise_day_swaps")
+    .delete()
+    .eq("plan_exercise_id", demoPlanExercise.id);
+}
+
 console.log(
   failures === 0
     ? "\nTodas las verificaciones de RLS pasaron."

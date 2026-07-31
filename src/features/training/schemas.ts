@@ -36,9 +36,18 @@ export const updatePlanExerciseSchema = z.object({
 
 export const planExerciseIdSchema = z.object({ planExerciseId: z.uuid() });
 
+/**
+ * Sustitucion PERMANENTE del ejercicio en el plan.
+ *
+ * `confirmPlanRewrite` no tiene valor por defecto a proposito: reescribir la
+ * rutina base tiene que ser una decision explicita del usuario. La accion por
+ * defecto de la UI es la sustitucion por un dia
+ * (`training/day-swap-actions.ts`), que no destruye nada.
+ */
 export const substitutePlanExerciseSchema = z.object({
   planExerciseId: z.uuid(),
   newExerciseId: z.uuid(),
+  confirmPlanRewrite: z.literal(true),
 });
 
 export const startSessionSchema = z.object({

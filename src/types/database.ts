@@ -646,6 +646,57 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_day_swaps: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          plan_exercise_id: string
+          reason: string | null
+          source: string
+          substitute_exercise_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          plan_exercise_id: string
+          reason?: string | null
+          source?: string
+          substitute_exercise_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          plan_exercise_id?: string
+          reason?: string | null
+          source?: string
+          substitute_exercise_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_day_swaps_plan_exercise_id_fkey"
+            columns: ["plan_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plan_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_day_swaps_substitute_exercise_id_fkey"
+            columns: ["substitute_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       external_food_cache: {
         Row: {
           cache_key: string

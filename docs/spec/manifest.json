@@ -1,0 +1,43 @@
+{
+  "name": "Pancis Hub Focused Implementation Pack",
+  "created": "2026-07-27",
+  "language": "es",
+  "files": [
+    "MASTER_IMPLEMENTATION_SPEC.md",
+    "README.md",
+    "docs/00_NORTH_STAR.md",
+    "docs/01_SCOPE_AND_MVP.md",
+    "docs/02_USER_JOURNEYS.md",
+    "docs/03_FUNCTIONAL_REQUIREMENTS.md",
+    "docs/04_SCIENTIFIC_GOVERNANCE.md",
+    "docs/05_NUTRITION_SWAP_ENGINE.md",
+    "docs/06_FOOD_DATA_PLATFORM.md",
+    "docs/07A_TRAINING_PROGRAMMING_SPLITS_TEMPO_FAILURE.md",
+    "docs/07_TRAINING_BIOMECHANICS_ENGINE.md",
+    "docs/08_AI_COPILOT_ARCHITECTURE.md",
+    "docs/09_BIOMETRICS_INBODY_3D.md",
+    "docs/10_EVIDENCE_LIBRARY_AND_RAG.md",
+    "docs/11_DATABASE_SCHEMA.md",
+    "docs/12_TECHNICAL_ARCHITECTURE.md",
+    "docs/13_UX_UI_SPEC.md",
+    "docs/14_SECURITY_PRIVACY_SAFETY.md",
+    "docs/15_TESTING_AND_VALIDATION.md",
+    "docs/16_IMPLEMENTATION_ROADMAP.md",
+    "docs/17_BACKLOG_AND_ACCEPTANCE.md",
+    "docs/18_MASTER_IMPLEMENTATION_PROMPT.md",
+    "docs/19_SOURCE_REGISTER.md",
+    "docs/20_DECISION_LOG.md",
+    "manifest.json",
+    "schemas/EVIDENCE_RECORD.md",
+    "schemas/EXERCISE_SWAP_RESPONSE.md",
+    "schemas/NUTRITION_SWAP_RESPONSE.md",
+    "templates/FEATURE_ACCEPTANCE_TEMPLATE.md",
+    "templates/RESEARCH_REVIEW_TEMPLATE.md"
+  ],
+  "purpose": "Redefinición profesional e implementación enfocada de Pancis Hub",
+  "updated": "2026-07-28",
+  "corrections": [
+    "Jeff Nippard confirmado como referencia correcta",
+    "Añadida especificación de divisiones, fallo, tempo, descanso y progresión"
+  ]
+}

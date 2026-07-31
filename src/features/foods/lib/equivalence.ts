@@ -22,6 +22,10 @@
  */
 import { scaleMacros, type MacroSet } from "@/features/nutrition/lib/macros";
 import type { FoodGroup } from "@/features/foods/schemas";
+import {
+  findRestrictionMatch,
+  matchesRestriction,
+} from "@/features/foods/lib/allergens";
 
 export type EquivalenceFood = {
   id: string;
@@ -238,20 +242,13 @@ export function nutritionalDistance(a: MacroSet, b: MacroSet): number {
 }
 
 /**
- * Coincidencia simple de alergias/restricciones por nombre: si el valor
- * declarado aparece en el nombre del alimento, se excluye. Es deliberadamente
- * conservador y no sustituye la revision del usuario.
+ * Alergias y restricciones. La implementacion vive en `./allergens` y compara
+ * por palabra, no por subcadena: "leche" ya no excluye "lechuga", y declarar
+ * "lacteos" excluye queso, yogur y mantequilla.
+ *
+ * Se reexporta desde aqui para no romper a quien ya la importaba.
  */
-export function matchesRestriction(
-  foodName: string,
-  restrictions: string[],
-): boolean {
-  const name = foodName.toLowerCase();
-  return restrictions.some((restriction) => {
-    const value = restriction.trim().toLowerCase();
-    return value.length > 1 && name.includes(value);
-  });
-}
+export { matchesRestriction, findRestrictionMatch };
 
 /**
  * Criterios de busqueda de alternativas (docs 5.2).

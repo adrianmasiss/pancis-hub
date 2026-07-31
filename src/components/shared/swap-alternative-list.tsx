@@ -194,7 +194,15 @@ export function SwapAlternativeList({
       ) : null}
 
       {alternatives && alternatives.length > 0 ? (
-        <p className="text-muted-foreground text-xs">{t.compatibilityNote}</p>
+        <>
+          <p className="text-muted-foreground text-xs">{t.compatibilityNote}</p>
+          {/*
+            EQ-004: el filtro de alergenos compara el NOMBRE del alimento, y
+            un producto empacado puede contener un alergeno sin llevarlo en el
+            nombre. La sustitucion no puede ser la ultima linea de defensa.
+          */}
+          <p className="text-caution text-xs">{t.allergenNote}</p>
+        </>
       ) : null}
     </div>
   );

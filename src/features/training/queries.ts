@@ -1,4 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { todayLocalISO } from "@/lib/dates";
+import {
+  applyExerciseDaySwaps,
+  type DaySwapOrigin,
+  type ExerciseDaySwapRecord,
+} from "@/features/training/lib/day-swaps";
 import {
   analyzeRoutine,
   type RoutineAnalysis,
@@ -36,6 +42,11 @@ export type PlanExerciseView = {
   tempo: string | null;
   restSeconds: number | null;
   notes: string | null;
+  /**
+   * Si hoy este ejercicio esta sustituido, aqui viaja el original. El plan
+   * guardado NO cambia: la sustitucion se aplica al leer.
+   */
+  daySwap: DaySwapOrigin | null;
 };
 
 export type PlanDayView = {
@@ -137,6 +148,41 @@ function mapPlanExercises(
       tempo: row.tempo,
       restSeconds: row.rest_seconds,
       notes: row.notes,
+      // Sin sustitucion hasta que se apliquen las del dia. Nunca se omite el
+      // campo para que quien consuma esto no tenga que distinguir dos formas.
+      daySwap: null,
+    }));
+}
+
+/**
+ * Sustituciones vigentes del usuario para una fecha, ya resueltas contra el
+ * catalogo. Se consultan aparte del plan porque viven en su propia tabla: el
+ * plan guardado no sabe nada de ellas.
+ */
+async function getExerciseDaySwaps(
+  userId: string,
+  date: string,
+): Promise<ExerciseDaySwapRecord[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("exercise_day_swaps")
+    .select(
+      "plan_exercise_id, date, substitute_exercise_id, reason, source, exercise_catalog(name, primary_muscle, equipment)",
+    )
+    .eq("user_id", userId)
+    .eq("date", date);
+
+  return (data ?? [])
+    .filter((row) => row.exercise_catalog !== null)
+    .map((row) => ({
+      planExerciseId: row.plan_exercise_id,
+      date: row.date,
+      substituteExerciseId: row.substitute_exercise_id,
+      substituteName: row.exercise_catalog!.name,
+      substitutePrimaryMuscle: row.exercise_catalog!.primary_muscle,
+      substituteEquipment: row.exercise_catalog!.equipment,
+      reason: row.reason,
+      source: row.source as "usuario" | "asistente",
     }));
 }
 
@@ -173,19 +219,51 @@ function mapPlanDetail(plan: PlanRow): PlanDetail {
   };
 }
 
+/** Superpone las sustituciones del dia sobre cada dia del plan. */
+function withDaySwaps(
+  plan: PlanDetail,
+  swaps: ExerciseDaySwapRecord[],
+  date: string,
+): PlanDetail {
+  if (swaps.length === 0) return plan;
+  return {
+    ...plan,
+    days: plan.days.map((day) => ({
+      ...day,
+      exercises: applyExerciseDaySwaps(day.exercises, swaps, date),
+    })),
+  };
+}
+
+/**
+ * Detalle de la rutina, con las sustituciones de `date` superpuestas.
+ *
+ * Se aplican aqui porque esta es la pantalla desde la que se sustituye: si
+ * mostrara la plantilla pura, el usuario pulsaria "solo por hoy" y no veria
+ * cambiar nada. Lo que evita la confusion no es esconder la sustitucion, es
+ * marcarla: cada ejercicio sustituido viaja con su original en `daySwap` y la
+ * fila lo dice ("Hoy en lugar de X") junto al boton de volver.
+ *
+ * El plan guardado sigue intacto: esto se resuelve al leer.
+ */
 export async function getPlanDetail(
   userId: string,
   planId: string,
+  date: string = todayLocalISO(),
 ): Promise<PlanDetail | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("workout_plans")
-    .select(PLAN_SELECT)
-    .eq("id", planId)
-    .eq("user_id", userId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  return data ? mapPlanDetail(data as unknown as PlanRow) : null;
+  const [{ data }, daySwaps] = await Promise.all([
+    supabase
+      .from("workout_plans")
+      .select(PLAN_SELECT)
+      .eq("id", planId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    getExerciseDaySwaps(userId, date),
+  ]);
+  if (!data) return null;
+  return withDaySwaps(mapPlanDetail(data as unknown as PlanRow), daySwaps, date);
 }
 
 export async function getSessionDetail(
@@ -203,6 +281,11 @@ export async function getSessionDetail(
     .maybeSingle();
   if (!session) return null;
 
+  // La sesion se lee con las sustituciones del dia en que empezo, no las de
+  // hoy: revisar el lunes una sesion del sabado debe mostrar lo que se hizo.
+  const sessionDate = session.started_at.slice(0, 10);
+  const daySwaps = await getExerciseDaySwaps(userId, sessionDate);
+
   return {
     id: session.id,
     startedAt: session.started_at,
@@ -210,10 +293,14 @@ export async function getSessionDetail(
     notes: session.notes,
     planName: session.workout_plans?.name ?? null,
     dayName: session.workout_plan_days?.name ?? null,
-    plannedExercises: mapPlanExercises(
-      (session.workout_plan_days?.workout_plan_exercises ?? []) as Parameters<
-        typeof mapPlanExercises
-      >[0],
+    plannedExercises: applyExerciseDaySwaps(
+      mapPlanExercises(
+        (session.workout_plan_days?.workout_plan_exercises ?? []) as Parameters<
+          typeof mapPlanExercises
+        >[0],
+      ),
+      daySwaps,
+      sessionDate,
     ),
     sets: [...(session.workout_sets ?? [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
@@ -234,8 +321,13 @@ export async function getSessionDetail(
   };
 }
 
+/**
+ * `date` decide que sustituciones del dia se aplican al plan activo. El plan
+ * guardado nunca cambia: se lee tal cual y la excepcion se superpone.
+ */
 export async function getTrainingOverview(
   userId: string,
+  date: string = todayLocalISO(),
 ): Promise<TrainingOverview> {
   const supabase = await createClient();
   const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -246,6 +338,7 @@ export async function getTrainingOverview(
     inProgressResult,
     sessionsResult,
     setsResult,
+    daySwaps,
   ] = await Promise.all([
     supabase
       .from("workout_plans")
@@ -284,6 +377,7 @@ export async function getTrainingOverview(
       )
       .eq("workout_sessions.user_id", userId)
       .limit(1000),
+    getExerciseDaySwaps(userId, date),
   ]);
 
   const allSets: LoggedSet[] = (setsResult.data ?? []).map((set) => ({
@@ -313,7 +407,11 @@ export async function getTrainingOverview(
       dayCount: (plan.workout_plan_days ?? []).length,
     })),
     activePlan: activePlanResult.data
-      ? mapPlanDetail(activePlanResult.data as unknown as PlanRow)
+      ? withDaySwaps(
+          mapPlanDetail(activePlanResult.data as unknown as PlanRow),
+          daySwaps,
+          date,
+        )
       : null,
     sessionInProgress: inProgressResult.data
       ? {

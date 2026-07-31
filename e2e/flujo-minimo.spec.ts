@@ -108,7 +108,10 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
     .click();
   await expect(page.getByText("Alimento intercambiado.")).toBeVisible();
   // Tras aceptar, la hoja explica como queda el resto del dia.
-  await expect(page.getByText("Como queda tu dia")).toBeVisible();
+  // Por rol: el panel de consulta repite ese texto en su descripcion.
+  await expect(
+    page.getByRole("heading", { name: "Como queda tu dia" }),
+  ).toBeVisible();
 });
 
 test("horarios ordenan el dia", async ({ page }) => {
