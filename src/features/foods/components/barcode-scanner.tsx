@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Barcode, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -47,7 +53,13 @@ type BarcodeDetectorConstructor = new (options: {
   formats: string[];
 }) => BarcodeDetectorLike;
 
-function getDetectorConstructor(): BarcodeDetectorConstructor | null {
+/** La disponibilidad de camara no cambia durante la vida de la pagina. */
+const subscribeNever = () => () => {};
+const hasCamera = () =>
+  typeof navigator !== "undefined" &&
+  typeof navigator.mediaDevices?.getUserMedia === "function";
+
+function getNativeDetector(): BarcodeDetectorConstructor | null {
   if (typeof window === "undefined") return null;
   const candidate = (window as unknown as Record<string, unknown>)
     .BarcodeDetector;
@@ -57,13 +69,40 @@ function getDetectorConstructor(): BarcodeDetectorConstructor | null {
 }
 
 /**
+ * Detector para navegadores sin BarcodeDetector nativo, Safari y iPhone entre
+ * ellos (defecto D-003). `barcode-detector` es un polyfill de esa misma API
+ * sobre ZXing compilado a WebAssembly, asi que el resto del componente no
+ * cambia: sea nativo o polyfill, se usa igual.
+ *
+ * Se carga con import dinamico y solo cuando hace falta. En Chrome y Android,
+ * que traen la API nativa, no se descarga nada.
+ */
+async function loadDetectorConstructor(): Promise<BarcodeDetectorConstructor | null> {
+  const native = getNativeDetector();
+  if (native) return native;
+  if (typeof window === "undefined") return null;
+
+  try {
+    const { BarcodeDetector } = await import("barcode-detector/ponyfill");
+    return BarcodeDetector as unknown as BarcodeDetectorConstructor;
+  } catch {
+    // Si el polyfill no carga (sin red, WebAssembly bloqueado), queda la
+    // entrada manual, que nunca se esconde.
+    return null;
+  }
+}
+
+/**
  * Escaneo de codigo de barras para agregar productos empacados
  * (docs/02_PRODUCT_REQUIREMENTS.md 7.8).
  *
- * Usa BarcodeDetector, la API nativa del navegador, para no arrastrar una
- * dependencia de terceros. No todos los navegadores la traen (Safari es
- * el caso notable), asi que la entrada manual del codigo esta SIEMPRE
- * disponible: sin ella la funcion seria inutil en iPhone.
+ * Usa BarcodeDetector, la API nativa del navegador, cuando existe. Safari y
+ * iPhone no la traen, y ahi entra el polyfill de ZXing sobre WebAssembly, que
+ * se descarga bajo demanda (defecto D-003).
+ *
+ * La entrada manual del codigo sigue SIEMPRE disponible, y no es redundante:
+ * si el polyfill no carga por falta de red o por WebAssembly bloqueado, es lo
+ * unico que queda.
  *
  * Por defecto importa el producto al catalogo. `onConfirm` permite reusar
  * el mismo escaner para otro destino (por ejemplo, la despensa) sin
@@ -93,7 +132,16 @@ export function BarcodeScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const scanningRef = useRef(false);
 
-  const supportsCamera = getDetectorConstructor() !== null;
+  /**
+   * Con el polyfill, el unico requisito real es que el navegador tenga
+   * camara. Se lee con useSyncExternalStore para que el servidor devuelva
+   * false y no haya desajuste de hidratacion: alli no existe `navigator`.
+   */
+  const supportsCamera = useSyncExternalStore(
+    subscribeNever,
+    hasCamera,
+    () => false,
+  );
 
   /** Apaga la camara. Dejarla encendida al cerrar seria un fallo grave. */
   const stopCamera = useCallback(() => {
@@ -123,8 +171,13 @@ export function BarcodeScanner({
   }, []);
 
   const startCamera = useCallback(async () => {
-    const DetectorConstructor = getDetectorConstructor();
-    if (!DetectorConstructor) return;
+    // El polyfill se descarga aqui, no al montar el componente: solo paga el
+    // peso quien realmente abre el escaner en un navegador que lo necesita.
+    const DetectorConstructor = await loadDetectorConstructor();
+    if (!DetectorConstructor) {
+      setCameraError(t.noCameraSupport);
+      return;
+    }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({

@@ -117,9 +117,35 @@ objetivos no se recalculan al cambiar peso u objetivo.
 
 **Detectado:** antes de esta auditoría.
 **Gravedad:** media.
+**RESUELTO el 2026-07-31.**
 
-Falta una librería tipo ZXing. En Safari la función existe en la interfaz
-pero no llega a leer nada.
+### Qué pasaba
+
+El escáner usaba `BarcodeDetector`, la API nativa del navegador. Safari e iOS
+no la implementan, así que el botón abría la cámara y no leía nunca nada.
+
+### Solución aplicada
+
+Se añadió `barcode-detector@3.2.1` (MIT), que **no es una librería paralela
+sino un polyfill de la misma API** sobre ZXing compilado a WebAssembly. Por eso
+el resto del componente no cambió: sea nativo o polyfill, se usa igual.
+
+Decisiones de implementación:
+
+- **Carga bajo demanda.** El `import()` dinámico ocurre al abrir el escáner, no
+  al montar el componente. En Chrome y Android, que traen la API nativa, no se
+  descarga nada. Verificado en el build: el polyfill queda en chunks de 24 a
+  44 KB separados del bundle principal.
+- **La entrada manual del código no se tocó.** No es redundante: si el polyfill
+  no carga por falta de red o WebAssembly bloqueado, es lo único que queda.
+- **`supportsCamera` pasó a `useSyncExternalStore`** para que el servidor
+  devuelva `false` sin provocar desajuste de hidratación.
+
+### Pendiente
+
+**Verificación en un iPhone real.** Ni las pruebas unitarias ni Playwright con
+Chromium pueden comprobar esto: hace falta abrir el escáner en Safari con un
+producto delante.
 
 ---
 
@@ -131,3 +157,16 @@ pero no llega a leer nada.
 `articles` trae un solo bloque de siembra y `article_references` tiene columna
 `doi` pero no hay biblioteca científica detrás. No debe presentarse como
 respaldo de nada hasta la Fase 8.
+
+### Decisión (2026-07-31)
+
+**Se pospone a propósito hasta que las fuentes estén listas y confirmadas.**
+Decisión del usuario, y es la correcta: llenar la Academia antes de tener el
+modelo de datos de evidencia detrás produciría exactamente el problema que la
+Fase 2 acaba de desmontar, contenido que parece respaldado y no lo está.
+
+**Exposición actual: baja.** La Academia está suspendida de la navegación
+desde el repliegue a cuatro pantallas, así que hoy no la ve nadie salvo quien
+escriba la URL a mano.
+
+Se retoma en la Fase 8, junto con `evidence_documents` y `evidence_claims`.
