@@ -961,6 +961,99 @@ export type Database = {
         }
         Relationships: []
       }
+      formula_version_sources: {
+        Row: {
+          formula_version_id: string
+          note: string | null
+          research_source_id: string
+          role: string
+        }
+        Insert: {
+          formula_version_id: string
+          note?: string | null
+          research_source_id: string
+          role?: string
+        }
+        Update: {
+          formula_version_id?: string
+          note?: string | null
+          research_source_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formula_version_sources_formula_version_id_fkey"
+            columns: ["formula_version_id"]
+            isOneToOne: false
+            referencedRelation: "formula_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_version_sources_research_source_id_fkey"
+            columns: ["research_source_id"]
+            isOneToOne: false
+            referencedRelation: "research_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formula_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          claim_ref: string | null
+          created_at: string
+          effective_from: string
+          evidence_grade: string | null
+          id: string
+          is_active: boolean
+          is_product_parameter: boolean
+          key: string
+          limitations: string | null
+          rationale: string | null
+          unit: string | null
+          updated_at: string
+          value: Json
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          claim_ref?: string | null
+          created_at?: string
+          effective_from?: string
+          evidence_grade?: string | null
+          id?: string
+          is_active?: boolean
+          is_product_parameter?: boolean
+          key: string
+          limitations?: string | null
+          rationale?: string | null
+          unit?: string | null
+          updated_at?: string
+          value: Json
+          version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          claim_ref?: string | null
+          created_at?: string
+          effective_from?: string
+          evidence_grade?: string | null
+          id?: string
+          is_active?: boolean
+          is_product_parameter?: boolean
+          key?: string
+          limitations?: string | null
+          rationale?: string | null
+          unit?: string | null
+          updated_at?: string
+          value?: Json
+          version?: number
+        }
+        Relationships: []
+      }
       meal_items: {
         Row: {
           calories_snapshot: number
@@ -1438,6 +1531,72 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      research_sources: {
+        Row: {
+          authors: string | null
+          conflicts_of_interest: string | null
+          created_at: string
+          doi: string | null
+          evidence_grade: string | null
+          full_text_read: boolean
+          id: string
+          is_open_access: boolean
+          is_retracted: boolean
+          journal: string | null
+          limitations: string | null
+          pmid: string | null
+          population: string | null
+          source_type: string
+          title: string
+          updated_at: string
+          url: string | null
+          verified_at: string | null
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          conflicts_of_interest?: string | null
+          created_at?: string
+          doi?: string | null
+          evidence_grade?: string | null
+          full_text_read?: boolean
+          id?: string
+          is_open_access?: boolean
+          is_retracted?: boolean
+          journal?: string | null
+          limitations?: string | null
+          pmid?: string | null
+          population?: string | null
+          source_type: string
+          title: string
+          updated_at?: string
+          url?: string | null
+          verified_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          conflicts_of_interest?: string | null
+          created_at?: string
+          doi?: string | null
+          evidence_grade?: string | null
+          full_text_read?: boolean
+          id?: string
+          is_open_access?: boolean
+          is_retracted?: boolean
+          journal?: string | null
+          limitations?: string | null
+          pmid?: string | null
+          population?: string | null
+          source_type?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+          verified_at?: string | null
+          year?: number | null
         }
         Relationships: []
       }
