@@ -30,6 +30,14 @@ export type NutritionTargets = {
   fatG: number;
   fiberG: number;
   waterMl: number;
+  /**
+   * true si el objetivo calculado quedaba por debajo del piso y se subio.
+   *
+   * Antes esto ocurria en silencio: el usuario nunca se enteraba de que su
+   * configuracion era problematica. Ahora se expone para que la interfaz lo
+   * diga (claim NUT-008).
+   */
+  safetyFloorApplied: boolean;
 };
 
 const ACTIVITY_FACTORS: Record<ActivityLevel, number> = {
@@ -54,7 +62,17 @@ const PROTEIN_G_PER_KG = 1.8;
 const MIN_FAT_G_PER_KG = 0.8;
 const FIBER_G_PER_1000_KCAL = 14;
 const WATER_ML_PER_KG = 35;
-/** Piso de seguridad: nunca por debajo de BMR x 1.1. */
+/**
+ * Guarda cruda sobre el metabolismo basal.
+ *
+ * NO es un piso de seguridad de verdad, y no debe presentarse como tal: no
+ * descuenta el gasto del ejercicio, asi que deja pasar situaciones de
+ * disponibilidad energetica baja justo en quien mas entrena. El piso correcto
+ * vive en `./energy-availability` y necesita masa libre de grasa medida.
+ *
+ * Se conserva porque en el onboarding todavia no hay composicion corporal, y
+ * una guarda imperfecta es mejor que ninguna. Ver claim NUT-008.
+ */
 const SAFETY_FLOOR_FACTOR = 1.1;
 
 export function calculateAge(
@@ -91,6 +109,7 @@ export function calculateInitialTargets(input: TargetsInput): NutritionTargets {
 
   const adjusted = tdee * GOAL_ADJUSTMENTS[input.primaryGoal];
   const floor = bmr * SAFETY_FLOOR_FACTOR;
+  const safetyFloorApplied = adjusted < floor;
   const calories = Math.round(Math.max(adjusted, floor));
 
   const proteinG = Math.round(input.weightKg * PROTEIN_G_PER_KG);
@@ -101,5 +120,13 @@ export function calculateInitialTargets(input: TargetsInput): NutritionTargets {
   const fiberG = Math.round((calories / 1000) * FIBER_G_PER_1000_KCAL);
   const waterMl = Math.round(input.weightKg * WATER_ML_PER_KG);
 
-  return { calories, proteinG, carbohydrateG, fatG, fiberG, waterMl };
+  return {
+    calories,
+    proteinG,
+    carbohydrateG,
+    fatG,
+    fiberG,
+    waterMl,
+    safetyFloorApplied,
+  };
 }

@@ -106,6 +106,16 @@ export function ConfirmStep({ data, onBack }: ConfirmStepProps) {
             <SummaryRow label={s.water} value={`${targets.waterMl} ml`} />
           </dl>
           <Separator className="my-3" />
+          {/*
+            NUT-008: el piso de seguridad deja de aplicarse en silencio. Es un
+            aviso, no un error: el objetivo es valido, pero el usuario tiene
+            que saber que se le subio y por que la guarda es imperfecta.
+          */}
+          {targets.safetyFloorApplied ? (
+            <p className="text-caution mb-2 text-xs text-balance">
+              {s.safetyFloorApplied}
+            </p>
+          ) : null}
           <p className="text-muted-foreground text-xs text-balance">
             {messages.onboarding.estimateNotice}
           </p>
