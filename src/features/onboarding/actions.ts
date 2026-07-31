@@ -7,6 +7,7 @@ import {
   calculateAge,
   calculateInitialTargets,
 } from "@/features/onboarding/lib/nutrition-targets";
+import { getNutritionFormulas } from "@/features/onboarding/formula-queries";
 import {
   onboardingSchema,
   parseCommaList,
@@ -33,14 +34,20 @@ export async function completeOnboarding(
   }
 
   const birthDate = new Date(`${data.birthDate}T00:00:00`);
-  const targets = calculateInitialTargets({
-    biologicalSex: data.biologicalSex,
-    weightKg: data.weightKg,
-    heightCm: data.heightCm,
-    ageYears: calculateAge(birthDate),
-    activityLevel: data.activityLevel,
-    primaryGoal: data.primaryGoal,
-  });
+  // El valor que se GUARDA sale de formula_versions, con su fuente detras. La
+  // vista previa del cliente usa el respaldo, y si difieren manda este.
+  const formulas = await getNutritionFormulas();
+  const targets = calculateInitialTargets(
+    {
+      biologicalSex: data.biologicalSex,
+      weightKg: data.weightKg,
+      heightCm: data.heightCm,
+      ageYears: calculateAge(birthDate),
+      activityLevel: data.activityLevel,
+      primaryGoal: data.primaryGoal,
+    },
+    formulas,
+  );
 
   const { error: profileError } = await supabase
     .from("profiles")

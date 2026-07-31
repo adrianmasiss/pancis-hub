@@ -4,6 +4,7 @@ import {
   calculateBmr,
   calculateInitialTargets,
   calculateTdee,
+  DEFAULT_FORMULAS,
 } from "./nutrition-targets";
 
 describe("calculateAge", () => {
@@ -55,9 +56,9 @@ describe("calculateBmr (Mifflin-St Jeor)", () => {
 describe("calculateTdee", () => {
   it.each([
     ["sedentario", 1780 * 1.2],
-    ["ligero", 1780 * 1.375],
-    ["moderado", 1780 * 1.55],
-    ["alto", 1780 * 1.725],
+    ["ligero", 1780 * 1.4],
+    ["moderado", 1780 * 1.6],
+    ["alto", 1780 * 1.75],
   ] as const)("aplica el factor de %s", (level, expected) => {
     expect(calculateTdee(1780, level)).toBe(Math.round(expected));
   });
@@ -72,13 +73,22 @@ describe("calculateInitialTargets", () => {
     activityLevel: "moderado",
   } as const;
 
+  /**
+   * Derivado, no fijado a mano: los factores viven en formula_versions y
+   * cambian cuando la evidencia lo justifica (NUT-002 ya los redondeo). Una
+   * prueba con el numero escrito a pelo se rompe en cada revision sin aportar
+   * nada, porque lo que se quiere comprobar es el AJUSTE, no el TDEE.
+   */
+  const TDEE = calculateTdee(calculateBmr(base), base.activityLevel);
+
   it("recomposicion aplica -5 % sobre el TDEE", () => {
     const targets = calculateInitialTargets({
       ...base,
       primaryGoal: "recomposicion",
     });
-    // TDEE = 2759, -5 % = 2621.05 -> 2621
-    expect(targets.calories).toBe(2621);
+    expect(targets.calories).toBe(
+      Math.round(TDEE * DEFAULT_FORMULAS.goalAdjustments.recomposicion),
+    );
   });
 
   it("perdida de grasa aplica -15 %", () => {
@@ -86,7 +96,9 @@ describe("calculateInitialTargets", () => {
       ...base,
       primaryGoal: "perdida_grasa",
     });
-    expect(targets.calories).toBe(Math.round(2759 * 0.85));
+    expect(targets.calories).toBe(
+      Math.round(TDEE * DEFAULT_FORMULAS.goalAdjustments.perdida_grasa),
+    );
   });
 
   it("ganancia muscular aplica +10 %", () => {
@@ -94,7 +106,9 @@ describe("calculateInitialTargets", () => {
       ...base,
       primaryGoal: "ganancia_muscular",
     });
-    expect(targets.calories).toBe(Math.round(2759 * 1.1));
+    expect(targets.calories).toBe(
+      Math.round(TDEE * DEFAULT_FORMULAS.goalAdjustments.ganancia_muscular),
+    );
   });
 
   it("mantenimiento no ajusta el TDEE", () => {
@@ -102,7 +116,7 @@ describe("calculateInitialTargets", () => {
       ...base,
       primaryGoal: "mantenimiento",
     });
-    expect(targets.calories).toBe(2759);
+    expect(targets.calories).toBe(TDEE);
   });
 
   it("proteina 1.8 g/kg y grasa minima 0.8 g/kg", () => {
@@ -162,5 +176,62 @@ describe("calculateInitialTargets", () => {
       primaryGoal: "perdida_grasa",
     });
     expect(targets.carbohydrateG).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("formulas inyectables (D-002)", () => {
+  const base = {
+    biologicalSex: "masculino",
+    weightKg: 80,
+    heightCm: 180,
+    ageYears: 30,
+    activityLevel: "moderado",
+    primaryGoal: "mantenimiento",
+  } as const;
+
+  it("sin formulas usa el respaldo", () => {
+    expect(calculateInitialTargets(base)).toEqual(
+      calculateInitialTargets(base, DEFAULT_FORMULAS),
+    );
+  });
+
+  it("una formula distinta cambia el resultado", () => {
+    const conMasProteina = calculateInitialTargets(base, {
+      ...DEFAULT_FORMULAS,
+      proteinGPerKg: 2.2,
+    });
+
+    expect(conMasProteina.proteinG).toBe(176);
+    expect(calculateInitialTargets(base).proteinG).toBe(144);
+  });
+
+  it("el factor de actividad inyectado manda sobre el respaldo", () => {
+    const sedentarizado = calculateInitialTargets(base, {
+      ...DEFAULT_FORMULAS,
+      activityFactors: { ...DEFAULT_FORMULAS.activityFactors, moderado: 1.2 },
+    });
+
+    expect(sedentarizado.calories).toBeLessThan(
+      calculateInitialTargets(base).calories,
+    );
+  });
+
+  it("el piso de seguridad se marca cuando se aplica", () => {
+    // Un objetivo agresivo sobre alguien pequeno cae por debajo del piso.
+    const conPiso = calculateInitialTargets(
+      {
+        biologicalSex: "femenino",
+        weightKg: 50,
+        heightCm: 155,
+        ageYears: 30,
+        activityLevel: "sedentario",
+        primaryGoal: "perdida_grasa",
+      },
+      { ...DEFAULT_FORMULAS, goalAdjustments: { ...DEFAULT_FORMULAS.goalAdjustments, perdida_grasa: 0.5 } },
+    );
+
+    expect(conPiso.safetyFloorApplied).toBe(true);
+    // Y sin forzarlo, no se marca.
+    expect(calculateInitialTargets(base).safetyFloorApplied).toBe(false);
   });
 });
