@@ -69,12 +69,32 @@ const CORE_PATTERNS = [
 ] as const;
 
 /**
- * Referencias de volumen semanal por musculo. Son orientaciones generales
- * y prudentes: la tolerancia individual varia mucho, por eso el texto
- * habla de "suele" y no de limites exactos.
+ * Rangos de volumen semanal por musculo (BIO-004).
+ *
+ * Sustituyen al umbral unico de 22 series, que era un error CONCEPTUAL y no
+ * de calibracion: la relacion entre volumen e hipertrofia tiene rendimientos
+ * decrecientes, o sea que la curva SE APLANA, no cae. Marcar un techo
+ * convierte una curva continua en un limite binario que la evidencia no
+ * describe, y 07A ya prohibia el numero universal de series.
+ *
+ * Los rangos vienen de la investigacion aportada por el usuario en /Info,
+ * anclados en el ACSM 2026 (mayor hipertrofia con ~10 o mas series/semana).
  */
-const LOW_WEEKLY_SETS = 6;
-const HIGH_WEEKLY_SETS = 22;
+const WEEKLY_SET_RANGES = {
+  mantenimiento: { min: 2, max: 6 },
+  principiante: { min: 6, max: 10 },
+  intermedio: { min: 8, max: 16 },
+  avanzado: { min: 10, max: 20 },
+} as const;
+
+/** Por debajo de esto el estimulo directo es probablemente insuficiente. */
+const LOW_WEEKLY_SETS = WEEKLY_SET_RANGES.principiante.min;
+
+/**
+ * Punto a partir del cual conviene MIRAR, no cortar. No es un techo: la
+ * pregunta no es "te pasaste" sino "cada serie extra te esta aportando".
+ */
+const DIMINISHING_RETURNS_FROM = WEEKLY_SET_RANGES.avanzado.max;
 
 /** Un musculo secundario recibe estimulo parcial, no equivale a una serie directa. */
 const SECONDARY_SET_WEIGHT = 0.5;
@@ -181,11 +201,11 @@ export function analyzeRoutine(days: RoutineDay[]): RoutineAnalysis {
 
   // --- Volumen por musculo ---
   for (const { muscle, sets } of weeklySetsByMuscle) {
-    if (sets > HIGH_WEEKLY_SETS) {
+    if (sets > DIMINISHING_RETURNS_FROM) {
       findings.push({
         priority: "mejora",
         title: `Volumen alto en ${muscle}`,
-        detail: `Acumula unas ${sets} series semanales. Por encima de ~${HIGH_WEEKLY_SETS} el estimulo extra suele rendir poco y complica la recuperacion. Revisa si todo ese volumen te esta aportando.`,
+        detail: `Acumula unas ${sets} series semanales. Mas volumen sigue produciendo mas musculo, pero cada serie extra aporta menos que la anterior y cuesta la misma recuperacion. No es un limite: mira si tu rendimiento sube semana a semana y como duermes y te recuperas.`,
       });
     }
   }
