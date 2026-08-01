@@ -26,6 +26,22 @@ let planExerciseId = "";
 let originalExerciseId = "";
 let originalExerciseName = "";
 
+/**
+ * Fecha local en ISO, igual que `todayLocalISO()` en la app.
+ *
+ * NO se puede usar `toISOString()`: devuelve UTC, y entre medianoche UTC y
+ * medianoche local hay unas horas en que darian dias distintos. La app guarda
+ * la sustitucion con la fecha LOCAL del usuario, que es la correcta: si son
+ * las 19:00 del jueves en Costa Rica, la sustitucion es del jueves aunque en
+ * UTC ya sea viernes.
+ */
+function hoyLocal(): string {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
 /** Login y espera a que la sesion este lista antes de navegar. */
 async function login(page: Page) {
   await page.goto("/login");
@@ -98,7 +114,7 @@ test("sustituir solo por hoy no modifica el plan guardado", async ({
   // Y la sustitucion existe, con su fecha y su motivo.
   const swaps = await readDaySwaps(planExerciseId);
   expect(swaps).toHaveLength(1);
-  expect(swaps[0]!.date).toBe(new Date().toISOString().slice(0, 10));
+  expect(swaps[0]!.date).toBe(hoyLocal());
   expect(swaps[0]!.substitute_exercise_id).not.toBe(originalExerciseId);
   expect(swaps[0]!.reason).toBe("La maquina estaba ocupada");
   expect(swaps[0]!.source).toBe("usuario");

@@ -476,8 +476,13 @@ export const messages = {
     weekLabel: "vs semana pasada",
     monthLabel: "vs mes pasado",
     noComparison: "Aun no hay suficientes datos.",
+    /**
+     * BIA-001: "es una estimacion" es mucho mas debil que la cifra. Con el
+     * numero delante, el usuario entiende por que no debe reaccionar a un
+     * cambio de un punto.
+     */
     inbodyNotice:
-      "La hidratacion, el horario, la comida reciente y otras condiciones pueden afectar una medicion de composicion corporal. Compara tendencias, no valores aislados.",
+      "La bioimpedancia estima, no mide: en una persona concreta puede desviarse entre 3 y 4 puntos de porcentaje de grasa y unos 3 kg de masa magra respecto a los metodos de referencia, y tiende a quedarse corta en musculo y larga en grasa. La hidratacion, el horario y la comida reciente tambien influyen. Compara tendencias entre mediciones hechas en condiciones parecidas, no valores aislados.",
     estimateNotice:
       "Las mediciones caseras son aproximadas; lo importante es la tendencia.",
     composition: {
@@ -935,7 +940,7 @@ export const messages = {
       similar: "Lo mas parecido",
       mas_proteina: "Mas proteina",
       menos_calorias: "Menos calorias",
-      mas_saciedad: "Mas saciedad",
+      mas_saciedad: "Mas proteina y fibra",
       disponibles: "Lo que tengo en casa",
     },
     filterEmpty:

@@ -348,11 +348,22 @@ export type RankInput = {
 };
 
 /**
- * Indice de saciedad aproximado: proteina y fibra son los componentes con
- * respaldo mas consistente para sostenerla. Es una APROXIMACION util para
- * ordenar, no una medida validada.
+ * Densidad de proteina y fibra (claim EQ-001).
+ *
+ * Se llamaba `satietyIndex`, y ese nombre estaba mal: el Indice de Saciedad
+ * de Holt 1995 es una medicion EMPIRICA por alimento, no una formula de
+ * macros. Su hallazgo mas citado, la papa hervida en lo mas alto, es
+ * justamente lo que una suma proteina-mas-fibra jamas predeciria.
+ *
+ * La direccion si tiene respaldo: proteina y fibra tienen cada una su propia
+ * revision sobre apetito y saciedad. Los coeficientes 1.5 y 2 no proceden de
+ * ninguna fuente y son parametro de producto a calibrar.
+ *
+ * El codigo ya era honesto en el comentario, pero la honestidad vivia en un
+ * comentario que el usuario no lee mientras el NOMBRE viajaba hasta la
+ * interfaz.
  */
-export function satietyIndex(macros: MacroSet): number {
+export function proteinFiberDensity(macros: MacroSet): number {
   return macros.proteinG * 1.5 + macros.fiberG * 2;
 }
 
@@ -373,8 +384,11 @@ export function proteinDensity(macros: MacroSet): number {
 }
 
 export function satietyDensity(macros: MacroSet): number {
-  return perCalorie(satietyIndex(macros), macros.calories);
+  return perCalorie(proteinFiberDensity(macros), macros.calories);
 }
+
+/** Nombre anterior. Se conserva para no romper importaciones existentes. */
+export const satietyIndex = proteinFiberDensity;
 
 /** Margen minimo para considerar que un criterio mejora de verdad. */
 const MEANINGFUL_GAIN = 1.05;
