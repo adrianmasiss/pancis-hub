@@ -19,7 +19,9 @@ import {
 const KEYS = [
   "activity_factors",
   "goal_adjustments",
-  "protein_g_per_kg",
+  "protein_ranges",
+  "weekly_rate_band_percent",
+  "kcal_per_kg_body_mass",
   "min_fat_g_per_kg",
   "fiber_g_per_1000_kcal",
   "water_ml_per_kg",
@@ -39,6 +41,28 @@ function asRecord<T extends string>(
   const result = { ...fallback };
   for (const key of Object.keys(fallback) as T[]) {
     result[key] = asNumber(source[key], fallback[key]);
+  }
+  return result;
+}
+
+function asRange(value: unknown, fallback: { min: number; max: number }) {
+  if (typeof value !== "object" || value === null) return fallback;
+  const source = value as Record<string, unknown>;
+  return {
+    min: asNumber(source.min, fallback.min),
+    max: asNumber(source.max, fallback.max),
+  };
+}
+
+function asRanges<T extends string>(
+  value: unknown,
+  fallback: Record<T, { min: number; max: number }>,
+): Record<T, { min: number; max: number }> {
+  if (typeof value !== "object" || value === null) return fallback;
+  const source = value as Record<string, unknown>;
+  const result = { ...fallback };
+  for (const key of Object.keys(fallback) as T[]) {
+    result[key] = asRange(source[key], fallback[key]);
   }
   return result;
 }
@@ -71,9 +95,17 @@ export async function getNutritionFormulas(): Promise<NutritionFormulas> {
         get("goal_adjustments"),
         DEFAULT_FORMULAS.goalAdjustments,
       ),
-      proteinGPerKg: asNumber(
-        get("protein_g_per_kg"),
-        DEFAULT_FORMULAS.proteinGPerKg,
+      proteinRanges: asRanges(
+        get("protein_ranges"),
+        DEFAULT_FORMULAS.proteinRanges,
+      ),
+      weeklyRateBandPercent: asRange(
+        get("weekly_rate_band_percent"),
+        DEFAULT_FORMULAS.weeklyRateBandPercent,
+      ),
+      kcalPerKgBodyMass: asNumber(
+        get("kcal_per_kg_body_mass"),
+        DEFAULT_FORMULAS.kcalPerKgBodyMass,
       ),
       minFatGPerKg: asNumber(
         get("min_fat_g_per_kg"),
