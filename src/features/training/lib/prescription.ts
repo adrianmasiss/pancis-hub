@@ -56,23 +56,40 @@ const BASE_BY_GOAL: Record<
     isolation: { reps: [number, number]; rir: number; rest: number };
   }
 > = {
+  /*
+   * BIO-003: fuerza e hipertrofia NO responden igual a la proximidad al
+   * fallo. Robinson 2024 encuentra relacion insignificante con la fuerza (los
+   * intervalos contienen el nulo) y mejora clara de la hipertrofia al
+   * acercarse. Antes se prescribia RIR 2 para casi todo, que es justo al
+   * reves: en fuerza se puede dejar mas margen sin perder nada, y en
+   * hipertrofia es donde compensa apretar.
+   *
+   * BIO-007: suelo de 60 s de descanso, con 90 como referencia. Singer 2024
+   * encuentra beneficio por encima de 60 s, mediado por la carga de volumen,
+   * y ninguna diferencia apreciable pasados los 90. El objetivo "resistencia"
+   * prescribia 60 y 75, justo donde empieza a costar, y lo hacia porque
+   * resistencia suena a poco descanso.
+   */
   fuerza: {
-    compound: { reps: [3, 6], rir: 2, rest: 210 },
-    isolation: { reps: [6, 10], rir: 2, rest: 120 },
+    compound: { reps: [3, 6], rir: 3, rest: 210 },
+    isolation: { reps: [6, 10], rir: 3, rest: 120 },
   },
   hipertrofia: {
-    compound: { reps: [5, 10], rir: 2, rest: 150 },
-    isolation: { reps: [10, 15], rir: 1, rest: 90 },
+    compound: { reps: [5, 10], rir: 1, rest: 150 },
+    isolation: { reps: [10, 15], rir: 1, rest: 105 },
   },
   recomposicion: {
     compound: { reps: [6, 10], rir: 2, rest: 150 },
-    isolation: { reps: [10, 15], rir: 2, rest: 90 },
+    isolation: { reps: [10, 15], rir: 1, rest: 105 },
   },
   resistencia: {
-    compound: { reps: [12, 15], rir: 3, rest: 75 },
-    isolation: { reps: [15, 20], rir: 2, rest: 60 },
+    compound: { reps: [12, 15], rir: 3, rest: 90 },
+    isolation: { reps: [15, 20], rir: 2, rest: 90 },
   },
 };
+
+/** Suelo de descanso: por debajo se pierde carga de volumen (BIO-007). */
+export const MIN_REST_SECONDS = 60;
 
 /** Series base segun objetivo y si el ejercicio es compuesto. */
 function baseSets(goal: TrainingGoal, compound: boolean): number {
@@ -187,7 +204,9 @@ export function recommendPrescription(
 
   sets = clamp(sets, 2, 6);
   rir = clamp(rir, 0, 4);
-  rest = clamp(rest, 45, 300);
+  // BIO-007: el suelo sube de 45 a 60 s. Por debajo de un minuto el descanso
+  // empieza a costar carga de volumen, y eso si tiene efecto medido.
+  rest = clamp(rest, MIN_REST_SECONDS, 300);
 
   return {
     sets,
