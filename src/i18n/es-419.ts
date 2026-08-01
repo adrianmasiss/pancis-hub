@@ -254,6 +254,12 @@ export const messages = {
       water: "Agua",
       perDay: "por dia",
       none: "Sin registrar",
+      /**
+       * NUT-008: antes el piso se aplicaba en silencio y el usuario nunca se
+       * enteraba de que su configuracion era problematica.
+       */
+      safetyFloorApplied:
+        "Tu objetivo se subio a un minimo de seguridad porque el calculo daba mas bajo. Ojo: ese minimo no descuenta lo que gastas entrenando, asi que si entrenas fuerte podrias quedarte corta o corto aunque el numero parezca correcto. Registra tu composicion corporal en Progreso y podremos calcularlo bien.",
     },
     errors: {
       required: "Este campo es obligatorio.",

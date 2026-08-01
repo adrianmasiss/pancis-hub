@@ -240,3 +240,56 @@ describe("analyzeRoutine", () => {
     expect(result.findings[0]!.priority).toBe("sin_cambios");
   });
 });
+
+describe("BIO-004 · el volumen deja de tener techo", () => {
+  const dia = (sets: number) => ({
+    dayIndex: 1,
+    name: "Pecho",
+    exercises: [
+      {
+        name: "Press de banca",
+        primaryMuscle: "pecho",
+        secondaryMuscles: [],
+        movementPattern: "empuje horizontal",
+        position: 1,
+        sets,
+        repsMin: 8,
+        repsMax: 10,
+        rir: 2,
+        systemicFatigue: 6,
+      },
+    ],
+  });
+
+  /**
+   * El umbral de 22 series era un error conceptual: una curva con
+   * rendimientos decrecientes se aplana, no cae. El aviso se conserva pero
+   * deja de hablar como un limite.
+   */
+  it("un volumen muy alto se comenta, pero no como si fuera un tope", () => {
+    const analisis = analyzeRoutine([dia(24)]);
+    const aviso = analisis.findings.find((f) =>
+      f.title.includes("Volumen alto"),
+    );
+
+    expect(aviso).toBeDefined();
+    expect(aviso!.detail).toContain("sigue produciendo mas musculo");
+    expect(aviso!.detail).not.toContain("Por encima de");
+  });
+
+  it("un volumen dentro de los rangos habituales no genera aviso", () => {
+    const analisis = analyzeRoutine([dia(14)]);
+
+    expect(
+      analisis.findings.some((f) => f.title.includes("Volumen alto")),
+    ).toBe(false);
+  });
+
+  it("un volumen claramente insuficiente si se senala", () => {
+    const analisis = analyzeRoutine([dia(3)]);
+
+    expect(
+      analisis.findings.some((f) => f.title.toLowerCase().includes("volumen")),
+    ).toBe(true);
+  });
+});

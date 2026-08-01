@@ -161,3 +161,72 @@ describe("formatPrescription", () => {
     expect(text).toMatch(/^\d x \d+-\d+ · RIR \d · \d+s$/);
   });
 });
+
+describe("BIO-003 · el fallo no importa igual para fuerza que para hipertrofia", () => {
+  const ctx = { experience: "intermedio" } as const;
+
+  /**
+   * Robinson 2024: relacion insignificante entre proximidad al fallo y
+   * ganancias de fuerza (los intervalos contienen el nulo), pero la
+   * hipertrofia si mejora al acercarse. Antes se prescribia casi lo mismo
+   * para ambos, que era justo al reves.
+   */
+  it("fuerza deja mas margen al fallo que hipertrofia", () => {
+    const fuerza = recommendPrescription(sentadilla, {
+      ...ctx,
+      goal: "fuerza",
+    });
+    const hipertrofia = recommendPrescription(sentadilla, {
+      ...ctx,
+      goal: "hipertrofia",
+    });
+
+    expect(fuerza.rir).toBeGreaterThan(hipertrofia.rir);
+  });
+
+  it("en aislados de hipertrofia se llega mas cerca del fallo", () => {
+    const aislado = recommendPrescription(curl, {
+      ...ctx,
+      goal: "hipertrofia",
+    });
+    const compuesto = recommendPrescription(sentadilla, {
+      ...ctx,
+      goal: "hipertrofia",
+    });
+
+    // Fallar en un aislado cuesta menos fatiga y menos riesgo.
+    expect(aislado.rir).toBeLessThanOrEqual(compuesto.rir);
+  });
+});
+
+describe("BIO-007 · suelo de descanso", () => {
+  const ctx = { experience: "intermedio" } as const;
+
+  it("ninguna prescripcion baja de 60 segundos", () => {
+    const objetivos = [
+      "fuerza",
+      "hipertrofia",
+      "recomposicion",
+      "resistencia",
+    ] as const;
+
+    for (const goal of objetivos) {
+      for (const ejercicio of [sentadilla, curl]) {
+        expect(
+          recommendPrescription(ejercicio, { ...ctx, goal }).restSeconds,
+        ).toBeGreaterThanOrEqual(60);
+      }
+    }
+  });
+
+  /**
+   * El objetivo "resistencia" acortaba el descanso a 60 y 75 s porque
+   * resistencia suena a poco descanso, no porque mejore nada. 07A ya advertia
+   * de no imponer descansos cortos por sensacion de intensidad.
+   */
+  it("resistencia ya no acorta el descanso por debajo de la referencia", () => {
+    expect(
+      recommendPrescription(curl, { ...ctx, goal: "resistencia" }).restSeconds,
+    ).toBeGreaterThanOrEqual(90);
+  });
+});
