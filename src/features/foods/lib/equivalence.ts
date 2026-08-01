@@ -129,13 +129,68 @@ export function equivalentQuantity(
  * al sustituir, y la fibra menos porque es el mas facil de recuperar en
  * otra comida.
  */
-export const COMPATIBILITY_WEIGHTS = {
-  calories: 0.25,
-  proteinG: 0.35,
-  carbohydrateG: 0.15,
-  fatG: 0.15,
-  fiberG: 0.1,
-} as const;
+export type MacroWeights = {
+  calories: number;
+  proteinG: number;
+  carbohydrateG: number;
+  fatG: number;
+  fiberG: number;
+};
+
+/**
+ * Pesos por ROL del alimento en el plan (EQ-002).
+ *
+ * El doc 05 define tres perfiles y el codigo implementaba uno solo, parecido
+ * al proteico. Consecuencia practica: al cambiar arroz por pasta ponderaba la
+ * proteina con 0.35 y los carbohidratos con 0.15, justo al reves de lo que
+ * define el papel de ese alimento en la comida.
+ *
+ * El motor ya sabia cual es el rol: `anchorMacroForGroup()` lo calcula para
+ * la cantidad equivalente. Solo faltaba usarlo tambien aqui.
+ *
+ * Son parametros de producto a calibrar, no conclusiones cientificas: el
+ * propio doc 05 lo dice.
+ */
+export const COMPATIBILITY_PROFILES = {
+  proteico: {
+    calories: 0.25,
+    proteinG: 0.35,
+    carbohydrateG: 0.15,
+    fatG: 0.2,
+    fiberG: 0.05,
+  },
+  carbohidrato: {
+    calories: 0.25,
+    proteinG: 0.15,
+    carbohydrateG: 0.35,
+    fatG: 0.15,
+    fiberG: 0.1,
+  },
+  comida: {
+    calories: 0.25,
+    proteinG: 0.3,
+    carbohydrateG: 0.2,
+    fatG: 0.15,
+    fiberG: 0.1,
+  },
+} as const satisfies Record<string, MacroWeights>;
+
+export type CompatibilityProfile = keyof typeof COMPATIBILITY_PROFILES;
+
+/** Perfil que corresponde al rol del alimento original en el plan. */
+export function profileForGroup(group: FoodGroup): CompatibilityProfile {
+  switch (anchorMacroForGroup(group)) {
+    case "proteinG":
+      return "proteico";
+    case "carbohydrateG":
+      return "carbohidrato";
+    default:
+      return "comida";
+  }
+}
+
+/** Compatibilidad general, cuando no se conoce el rol. */
+export const COMPATIBILITY_WEIGHTS = COMPATIBILITY_PROFILES.comida;
 
 /**
  * Piso por macro para no castigar diferencias irrelevantes en cantidades
@@ -182,8 +237,15 @@ function macroScore(
 export function compatibilityScore(
   source: MacroSet,
   candidate: MacroSet,
-  options?: { sameGroup?: boolean; sameCookedState?: boolean },
+  options?: {
+    sameGroup?: boolean;
+    sameCookedState?: boolean;
+    /** Rol del alimento original. Sin el se usa el perfil de comida. */
+    profile?: CompatibilityProfile;
+  },
 ): CompatibilityScore {
+  const weights =
+    COMPATIBILITY_PROFILES[options?.profile ?? "comida"];
   const perMacro = {
     calories: macroScore(
       source.calories,
@@ -209,11 +271,11 @@ export function compatibilityScore(
   };
 
   const weighted =
-    perMacro.calories * COMPATIBILITY_WEIGHTS.calories +
-    perMacro.proteinG * COMPATIBILITY_WEIGHTS.proteinG +
-    perMacro.carbohydrateG * COMPATIBILITY_WEIGHTS.carbohydrateG +
-    perMacro.fatG * COMPATIBILITY_WEIGHTS.fatG +
-    perMacro.fiberG * COMPATIBILITY_WEIGHTS.fiberG;
+    perMacro.calories * weights.calories +
+    perMacro.proteinG * weights.proteinG +
+    perMacro.carbohydrateG * weights.carbohydrateG +
+    perMacro.fatG * weights.fatG +
+    perMacro.fiberG * weights.fiberG;
 
   const penalties =
     (options?.sameGroup === false ? COMPATIBILITY_PENALTIES.differentGroup : 0) +
@@ -443,6 +505,8 @@ export function rankAlternatives({
         compatibility: compatibilityScore(sourceMacros, macros, {
           sameGroup,
           sameCookedState: sameState,
+          // EQ-002: se pondera segun el papel del alimento ORIGINAL.
+          profile: profileForGroup(source.foodGroup),
         }),
       };
     })

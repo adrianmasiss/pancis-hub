@@ -4,6 +4,7 @@ import {
   compatibilityScore,
   equivalentQuantity,
   matchesRestriction,
+  profileForGroup,
   nutritionalDistance,
   rankAlternatives,
   formatHouseholdEquivalence,
@@ -480,5 +481,79 @@ describe("filtros de sustitucion", () => {
       expect(result.compatibility.overall).toBeGreaterThanOrEqual(0);
       expect(result.compatibility.overall).toBeLessThanOrEqual(10);
     }
+  });
+});
+
+describe("EQ-002 · pesos segun el papel del alimento", () => {
+  const arroz = {
+    id: "arroz",
+    name: "Arroz blanco cocido",
+    foodGroup: "carbohidrato" as const,
+    cookedState: "cocido" as const,
+    per100g: {
+      calories: 130,
+      proteinG: 2.7,
+      carbohydrateG: 28,
+      fatG: 0.3,
+      fiberG: 0.4,
+    },
+  };
+  const pollo = {
+    id: "pollo",
+    name: "Pechuga de pollo",
+    foodGroup: "proteina" as const,
+    cookedState: "cocido" as const,
+    per100g: {
+      calories: 165,
+      proteinG: 31,
+      carbohydrateG: 0,
+      fatG: 3.6,
+      fiberG: 0,
+    },
+  };
+
+  it("el rol del alimento decide el perfil", () => {
+    expect(profileForGroup("carbohidrato")).toBe("carbohidrato");
+    expect(profileForGroup("proteina")).toBe("proteico");
+    expect(profileForGroup("lacteo")).toBe("comida");
+  });
+
+  /**
+   * El defecto que EQ-002 corrige: con un perfil unico, sustituir arroz
+   * ponderaba la proteina mas que los carbohidratos, justo al reves del papel
+   * que ese alimento cumple en la comida.
+   */
+  it("al sustituir un carbohidrato pesan mas los carbohidratos", () => {
+    const source = { calories: 130, proteinG: 2.7, carbohydrateG: 28, fatG: 0.3, fiberG: 0.4 };
+    // Candidato que clava los carbohidratos pero falla la proteina.
+    const cuadraCarbos = { calories: 130, proteinG: 8, carbohydrateG: 28, fatG: 0.3, fiberG: 0.4 };
+    // Candidato que clava la proteina pero falla los carbohidratos.
+    const cuadraProteina = { calories: 130, proteinG: 2.7, carbohydrateG: 14, fatG: 0.3, fiberG: 0.4 };
+
+    const conPerfilCarbo = compatibilityScore(source, cuadraCarbos, {
+      profile: "carbohidrato",
+    });
+    const conPerfilCarboMalo = compatibilityScore(source, cuadraProteina, {
+      profile: "carbohidrato",
+    });
+
+    expect(conPerfilCarbo.overall).toBeGreaterThan(conPerfilCarboMalo.overall);
+  });
+
+  it("el ranking usa el perfil del alimento original", () => {
+    const [mejor] = rankAlternatives({
+      source: arroz,
+      sourceQuantityG: 150,
+      candidates: [pollo],
+      favoriteIds: new Set(),
+      recentIds: new Set(),
+      restrictions: [],
+    });
+
+    expect(mejor).toBeDefined();
+    // No se comprueba el numero, sino que el motor no rompe al cambiar de
+    // perfil y sigue devolviendo una compatibilidad en rango.
+    expect(mejor!.compatibility.overall).toBeGreaterThanOrEqual(0);
+    expect(mejor!.compatibility.overall).toBeLessThanOrEqual(10);
   });
 });

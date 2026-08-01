@@ -1260,6 +1260,10 @@ export type Database = {
           primary_goal: string | null
           theme: string
           timezone: string
+          tolerance_calories_pct: number
+          tolerance_carbs_pct: number
+          tolerance_fat_pct: number
+          tolerance_protein_pct: number
           training_days_per_week: number | null
           training_type: string | null
           unit_system: string
@@ -1283,6 +1287,10 @@ export type Database = {
           primary_goal?: string | null
           theme?: string
           timezone?: string
+          tolerance_calories_pct?: number
+          tolerance_carbs_pct?: number
+          tolerance_fat_pct?: number
+          tolerance_protein_pct?: number
           training_days_per_week?: number | null
           training_type?: string | null
           unit_system?: string
@@ -1306,6 +1314,10 @@ export type Database = {
           primary_goal?: string | null
           theme?: string
           timezone?: string
+          tolerance_calories_pct?: number
+          tolerance_carbs_pct?: number
+          tolerance_fat_pct?: number
+          tolerance_protein_pct?: number
           training_days_per_week?: number | null
           training_type?: string | null
           unit_system?: string
