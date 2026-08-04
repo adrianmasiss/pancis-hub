@@ -78,6 +78,86 @@ export async function getSourcesForFormula(
   }
 }
 
+/** Etiquetas legibles de cada constante, para explicarlas al usuario. */
+const FORMULA_LABELS: Record<string, string> = {
+  bmr_equation: "La formula con la que estimamos tu gasto en reposo",
+  activity_factors: "El factor con el que ajustamos por tu actividad",
+  protein_ranges: "Tu rango de proteina",
+  weekly_rate_band_percent: "El ritmo de cambio de peso que buscamos",
+  min_fat_g_per_kg: "Tu minimo de grasa",
+  fiber_g_per_1000_kcal: "Tu objetivo de fibra",
+  water_ml_per_kg: "La referencia de agua",
+  energy_availability_thresholds: "El minimo de energia disponible",
+  rir_by_goal: "Las repeticiones en reserva que te sugerimos",
+  min_rest_seconds: "El descanso minimo entre series",
+  weekly_set_ranges: "Los rangos de series por semana",
+  tempo_very_slow_seconds: "El limite de lentitud por repeticion",
+  frequency_is_distribution: "Como tratamos la frecuencia",
+  bia_individual_error: "El margen de error de la bioimpedancia",
+};
+
+/** Valor legible: un numero, un rango o una tabla por objetivo. */
+function formatValue(value: unknown): string {
+  if (typeof value === "number" || typeof value === "string") return String(value);
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    const isRange =
+      entries.length === 2 && "min" in (value as object) && "max" in (value as object);
+    if (isRange) {
+      const v = value as { min: number; max: number };
+      return `${v.min} a ${v.max}`;
+    }
+    return entries
+      .map(([k, v]) =>
+        v && typeof v === "object" && "min" in (v as object)
+          ? `${k} ${(v as { min: number; max: number }).min} a ${(v as { min: number; max: number }).max}`
+          : `${k} ${String(v)}`,
+      )
+      .join(", ");
+  }
+  return "";
+}
+
+export type FormulaExplanation = {
+  label: string;
+  value: string;
+  rationale: string;
+  limitations: string | null;
+  isProductParameter: boolean;
+};
+
+/**
+ * Explicacion completa de una constante, para responder "por que ese numero"
+ * SIN IA. El texto viene de la justificacion revisada al aprobar el claim, no
+ * se genera cada vez.
+ */
+export async function getFormulaExplanation(
+  key: string,
+): Promise<FormulaExplanation | null> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("formula_versions")
+      .select("value, unit, rationale, limitations, is_product_parameter")
+      .eq("key", key)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!data?.rationale) return null;
+
+    const value = formatValue(data.value);
+    return {
+      label: FORMULA_LABELS[key] ?? "Esta cifra",
+      value: data.unit ? `${value} ${data.unit}` : value,
+      rationale: data.rationale,
+      limitations: data.limitations,
+      isProductParameter: data.is_product_parameter,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Busqueda por tema, para preguntas abiertas. Busca en titulo y poblacion.
  *

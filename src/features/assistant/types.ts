@@ -49,6 +49,17 @@ export type AssistantContext = {
   weightTrend: "sube" | "baja" | "estable" | null;
   sleepHoursToday: number | null;
   activePlanName: string | null;
+  /**
+   * Explicacion de la constante por la que se pregunto, leida de
+   * `formula_versions`. La rellena la server action.
+   */
+  formulaExplanation?: {
+    label: string;
+    value: string;
+    rationale: string;
+    limitations: string | null;
+    isProductParameter: boolean;
+  } | null;
   /** Comidas del dia que siguen pendientes. */
   pendingMeals: number;
   /** Hallazgo mas prioritario de la rutina activa, si lo hay. */
@@ -76,6 +87,11 @@ export type AssistantIntent =
   | { kind: "exerciseSubstitute"; exerciseName: string }
   | { kind: "setsAndReps"; exerciseName: string }
   | { kind: "routineReview" }
+  /**
+   * "por que mi objetivo de proteina es ese numero". Se responde SIN IA:
+   * el valor, su justificacion y sus fuentes estan en formula_versions.
+   */
+  | { kind: "whyThisNumber"; formulaKey: string }
   | { kind: "fallback" };
 
 export type FoodAlternativeSuggestion = {

@@ -31,8 +31,15 @@ function ReplyCard({ reply }: { reply: AssistantReply }) {
       <CardContent className="space-y-2 py-4 text-sm">
         <div className="flex items-center gap-2">
           <Sparkles className="text-primary size-4" aria-hidden="true" />
+          {/*
+            La etiqueta depende de si la respuesta esta fundada. Decir
+            "demostrativa" debajo de fuentes de nivel A era incoherente: el
+            usuario ve evidencia solida bajo un aviso de que no es real.
+          */}
           <Badge variant="outline" className="font-normal">
-            {t.demoBadge}
+            {reply.sources && reply.sources.length > 0
+              ? t.groundedBadge
+              : t.demoBadge}
           </Badge>
           <Badge variant="secondary" className="font-normal">
             {t.sections.confidence}: {t.confidences[reply.confidence]}

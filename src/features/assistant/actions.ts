@@ -12,6 +12,7 @@ import {
 } from "@/features/assistant/persistence";
 import {
   formatSourcesForPrompt,
+  getFormulaExplanation,
   getSourcesForFormula,
 } from "@/server/tools/evidence";
 import { windowDifference, trendDirection } from "@/lib/trends";
@@ -534,7 +535,17 @@ function toBiomechanical(row: CatalogRow): BiomechanicalExercise {
 
 async function buildAskPayload(userId: string, message: string) {
   const intent = detectIntent(message);
-  const context = await buildContext(userId);
+  const baseContext = await buildContext(userId);
+
+  // "Por que ese numero" se responde SIN IA: el valor y su justificacion ya
+  // estan revisados en formula_versions.
+  const context: AssistantContext =
+    intent.kind === "whyThisNumber"
+      ? {
+          ...baseContext,
+          formulaExplanation: await getFormulaExplanation(intent.formulaKey),
+        }
+      : baseContext;
   const [foodAlternatives, exerciseAlternatives, prescription] =
     await Promise.all([
       intent.kind === "foodMissing"

@@ -335,6 +335,7 @@ export const messages = {
     title: "Asistente",
     subtitle:
       "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",
+    groundedBadge: "Con fuentes",
     evidenceGrade: "Nivel de evidencia",
     productParameter: "criterio de la app, no evidencia",
     demoBadge: "IA contextual",
