@@ -201,6 +201,39 @@ if (demoPlanExercise) {
     .eq("plan_exercise_id", demoPlanExercise.id);
 }
 
+// Copiloto: conversaciones y citas son datos personales.
+const { data: conv, error: convError } = await demo
+  .from("ai_conversations")
+  .insert({ user_id: demoSession.user.id, title: "Verificacion de RLS" })
+  .select("id")
+  .single();
+check("demo crea su conversacion", !convError, convError?.message);
+
+if (conv) {
+  const { data: bConvs } = await clientB.from("ai_conversations").select("id");
+  check(
+    "B no ve conversaciones de otros",
+    (bConvs ?? []).length === 0,
+    `filas visibles: ${(bConvs ?? []).length}`,
+  );
+
+  const { error: spoofConvError } = await clientB
+    .from("ai_conversations")
+    .insert({ user_id: demoSession.user.id, title: "Suplantacion" });
+  check(
+    "B no puede crear una conversacion como demo",
+    !!spoofConvError,
+    spoofConvError?.message,
+  );
+
+  // El doc 08 exige que el usuario pueda borrar sus conversaciones.
+  const { error: deleteError } = await demo
+    .from("ai_conversations")
+    .delete()
+    .eq("id", conv.id);
+  check("demo puede borrar su conversacion", !deleteError, deleteError?.message);
+}
+
 console.log(
   failures === 0
     ? "\nTodas las verificaciones de RLS pasaron."
