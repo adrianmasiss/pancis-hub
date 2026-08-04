@@ -3,6 +3,7 @@
  * explicitas sobre el mensaje + los datos reales del usuario. Prudente
  * por diseno: nunca diagnostica ni presenta estimaciones como certezas.
  */
+import { detectRelevantFormulas } from "@/features/assistant/lib/grounding";
 import type {
   AssistantIntent,
   AssistantProvider,
@@ -84,6 +85,16 @@ export function detectIntent(message: string): AssistantIntent {
   if (foodMatch?.[1]) {
     return { kind: "foodMissing", foodName: foodMatch[1].trim() };
   }
+  /*
+   * "por que" + un tema con constante trazable. Va al final para no pisar a
+   * las intenciones mas especificas: "por que no llegue a la proteina" es
+   * proteinShort, no una pregunta por el origen del numero.
+   */
+  if (/\b(por que|porque|de donde (sale|viene)|en que se basa)\b/.test(text)) {
+    const formulaKey = detectRelevantFormulas(text, 1)[0];
+    if (formulaKey) return { kind: "whyThisNumber", formulaKey };
+  }
+
   return { kind: "fallback" };
 }
 
@@ -211,6 +222,44 @@ export const deterministicProvider: AssistantProvider = {
           reevaluate: "Cuando completes el rango objetivo en todas las series.",
         };
       }
+      /*
+       * Se responde con lo que la app YA SABE: el valor activo, la
+       * justificacion redactada al aprobar el claim y sus limitaciones. No
+       * hace falta IA para esto, y de hecho es mejor sin ella: el texto viene
+       * de una fuente revisada en vez de generarse cada vez.
+       *
+       * El contenido lo rellena la server action, que es quien puede leer
+       * formula_versions; aqui solo se arma la forma de la respuesta.
+       */
+      case "whyThisNumber": {
+        const explanation = context.formulaExplanation;
+        if (!explanation) {
+          return {
+            observation: "Me preguntas de donde sale ese numero.",
+            interpretation:
+              "No tengo registrada la justificacion de esa cifra todavia.",
+            confidence: "baja",
+            action:
+              "Puedes preguntarme por tu proteina, tus calorias, el descanso entre series o el volumen semanal.",
+            reason:
+              "Solo explico las cifras cuyo origen esta documentado en el sistema.",
+            reevaluate: "Cuando quieras.",
+          };
+        }
+        return {
+          observation: `${explanation.label}: ${explanation.value}.`,
+          interpretation: explanation.rationale,
+          confidence: explanation.isProductParameter ? "baja" : "alta",
+          action: explanation.isProductParameter
+            ? "Es un criterio de la app y puedes ajustarlo a tu gusto, no una regla cientifica."
+            : "Puedes ajustarlo si tu experiencia te dice otra cosa: es un punto de partida, no una prescripcion.",
+          alternative: explanation.limitations ?? undefined,
+          reason: "Las fuentes que sostienen esta cifra estan abajo.",
+          reevaluate:
+            "Si cambia tu peso o tu objetivo, esta cifra se recalcula.",
+        };
+      }
+
       case "routineReview": {
         const finding = context.routineTopFinding;
         const volume = context.weeklySetsByMuscle

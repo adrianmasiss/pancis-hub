@@ -5,6 +5,16 @@ import { z } from "zod";
 import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { detectRelevantFormulas } from "@/features/assistant/lib/grounding";
+import {
+  getRecentMessages,
+  saveConversationTurn,
+} from "@/features/assistant/persistence";
+import {
+  formatSourcesForPrompt,
+  getFormulaExplanation,
+  getSourcesForFormula,
+} from "@/server/tools/evidence";
 import { windowDifference, trendDirection } from "@/lib/trends";
 import {
   rankAlternatives,
@@ -31,7 +41,11 @@ import type {
   PrescriptionSuggestion,
 } from "@/features/assistant/types";
 
-const askSchema = z.object({ message: z.string().trim().min(1).max(500) });
+const askSchema = z.object({
+  message: z.string().trim().min(1).max(500),
+  /** Conversacion a la que encadenar. Sin esto, se abre una nueva. */
+  conversationId: z.uuid().optional(),
+});
 
 const assistantReplySchema = z.object({
   observation: z.string().min(1),
@@ -54,6 +68,14 @@ Si la pregunta requiere atencion clinica o sintomas preocupantes, recomienda con
 Cuando el payload traiga foodAlternatives, exerciseAlternatives o prescription, esos valores YA fueron calculados por los motores deterministas de la app: usalos tal cual, cita sus numeros y no inventes cifras distintas ni recalcules por tu cuenta. Si prescription esta presente, tu respuesta debe incluir su esquema (series, repeticiones, RIR y descanso). Si userContext.routineTopFinding esta presente y la pregunta es sobre la rutina, apoyate en ese hallazgo.
 
 Si userContext.activeDiet esta presente, es la dieta real que el usuario esta tratando de cumplir: usala como base concreta para responder preguntas sobre que comer, sustituciones dentro del plan, o si algo encaja con su dieta. Menciona comidas y alimentos tal como aparecen ahi, no inventes alimentos que no esten en el contexto.
+
+EVIDENCIA. El payload trae "evidenciaDisponible": son las fuentes reales que sustentan las cifras del sistema, con su nivel de evidencia, la poblacion estudiada y sus limitaciones. Reglas que no se rompen:
+- Cuando expliques de donde sale un numero del sistema, apoyate en esas fuentes y menciona la POBLACION si difiere del usuario (por ejemplo, si el estudio es en hombres jovenes y quien pregunta no lo es).
+- Si una fuente esta marcada como parametro de producto, NO la presentes como ciencia: es una decision de la app, di eso.
+- Si no hay fuentes para el tema, dilo con naturalidad en vez de inventar una referencia. NUNCA cites un estudio, un PMID o un DOI que no aparezca en "evidenciaDisponible".
+- Distingue siempre entre una cifra verificada del sistema y una estimacion general tuya.
+
+CONTINUIDAD. "conversacionReciente" trae los ultimos mensajes. Usalos para no repetir lo ya dicho ni volver a pedir datos que el usuario ya dio.
 
 Debes responder en el formato estructurado solicitado:
 - observation: que observas del mensaje/contexto.
@@ -291,6 +313,9 @@ async function generateGeminiReply(input: {
   foodAlternatives?: FoodAlternativeSuggestion[];
   exerciseAlternatives?: ExerciseAlternativeSuggestion[];
   prescription?: PrescriptionSuggestion | null;
+  /** Fuentes ya resueltas. El modelo NO las busca ni las inventa. */
+  evidence?: string;
+  history?: { role: string; content: string }[];
 }): Promise<AssistantReply> {
   const { object } = await generateObject({
     model: getGeminiModel(),
@@ -309,6 +334,11 @@ async function generateGeminiReply(input: {
         // modelo debe usarlos tal cual, no recalcularlos por su cuenta.
         exerciseAlternatives: input.exerciseAlternatives ?? [],
         prescription: input.prescription ?? null,
+        // Grounding: de donde salen las cifras del sistema, con su poblacion
+        // y sus limitaciones. El modelo debe apoyarse en esto y decir cuando
+        // una cifra NO viene de aqui.
+        evidenciaDisponible: input.evidence || "Sin fuentes para este tema.",
+        conversacionReciente: input.history ?? [],
       },
       null,
       2,
@@ -320,7 +350,9 @@ async function generateGeminiReply(input: {
 
 export async function askAssistant(
   input: unknown,
-): Promise<{ error: string } | { reply: AssistantReply }> {
+): Promise<
+  { error: string } | { reply: AssistantReply; conversationId: string | null }
+> {
   const parsed = askSchema.safeParse(input);
   const supabase = await createClient();
   const {
@@ -339,25 +371,71 @@ export async function askAssistant(
     fallbackReply,
   } = await buildAskPayload(user.id, parsed.data.message);
 
+  // Grounding: se resuelve ANTES de decidir si hay IA, porque las fuentes
+  // acompanan a la respuesta tambien cuando contesta el motor deterministico.
+  const formulaKeys = detectRelevantFormulas(parsed.data.message);
+  const grounded = await Promise.all(
+    formulaKeys.map((key) => getSourcesForFormula(key)),
+  );
+  const sources = grounded.flatMap((entry) => entry.sources);
+  const replySources = sources.map((source) => ({
+    title: source.title,
+    identifier: source.identifier,
+    evidenceGrade: source.evidenceGrade,
+    population: source.population,
+    isProductParameter: source.isProductParameter,
+  }));
+
+  const history = parsed.data.conversationId
+    ? await getRecentMessages(user.id, parsed.data.conversationId)
+    : [];
+
+  const persist = (reply: AssistantReply, provider: "reglas" | "gemini") =>
+    saveConversationTurn({
+      userId: user.id,
+      conversationId: parsed.data.conversationId,
+      question: parsed.data.message,
+      answer: [reply.observation, reply.interpretation, reply.action]
+        .filter(Boolean)
+        .join("\n\n"),
+      provider,
+      sources,
+    });
+
+  // RF-015: sin IA generativa el asistente sigue respondiendo, y ahora ademas
+  // con sus fuentes.
   if (!hasGeminiApiKey()) {
-    return { reply: fallbackReply };
+    const reply = { ...fallbackReply, sources: replySources };
+    const { conversationId } = await persist(reply, "reglas");
+    return { reply, conversationId };
   }
 
   try {
-    const reply = await generateGeminiReply({
+    const generated = await generateGeminiReply({
       message: parsed.data.message,
       context,
       intent,
       foodAlternatives,
       exerciseAlternatives,
       prescription,
+      evidence: formatSourcesForPrompt(sources),
+      history: history.map((entry) => ({
+        role: entry.role,
+        content: entry.content,
+      })),
     });
-    return { reply };
+    // Las fuentes las pone el servidor, NO el modelo: asi no puede citar algo
+    // que no se le dio.
+    const reply = { ...generated, sources: replySources };
+    const { conversationId } = await persist(reply, "gemini");
+    return { reply, conversationId };
   } catch (error) {
     console.error("Gemini assistant error:", error);
   }
 
-  return { reply: fallbackReply };
+  const reply = { ...fallbackReply, sources: replySources };
+  const { conversationId } = await persist(reply, "reglas");
+  return { reply, conversationId };
 }
 
 /**
@@ -457,7 +535,17 @@ function toBiomechanical(row: CatalogRow): BiomechanicalExercise {
 
 async function buildAskPayload(userId: string, message: string) {
   const intent = detectIntent(message);
-  const context = await buildContext(userId);
+  const baseContext = await buildContext(userId);
+
+  // "Por que ese numero" se responde SIN IA: el valor y su justificacion ya
+  // estan revisados en formula_versions.
+  const context: AssistantContext =
+    intent.kind === "whyThisNumber"
+      ? {
+          ...baseContext,
+          formulaExplanation: await getFormulaExplanation(intent.formulaKey),
+        }
+      : baseContext;
   const [foodAlternatives, exerciseAlternatives, prescription] =
     await Promise.all([
       intent.kind === "foodMissing"

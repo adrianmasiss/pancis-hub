@@ -192,3 +192,30 @@ describe("respuestas de entrenamiento", () => {
     expect(reply.alternative).toContain("cuadriceps 12");
   });
 });
+
+describe('"por que ese numero" se responde sin IA', () => {
+  it("detecta la pregunta por el origen de una cifra", () => {
+    expect(detectIntent("por que mi objetivo de proteina es ese numero?")).toEqual(
+      { kind: "whyThisNumber", formulaKey: "protein_ranges" },
+    );
+    expect(detectIntent("de donde sale mi descanso entre series?")).toEqual({
+      kind: "whyThisNumber",
+      formulaKey: "min_rest_seconds",
+    });
+  });
+
+  /**
+   * "por que no llegue a la proteina" es una pregunta distinta: el usuario no
+   * pregunta el origen del numero, pregunta por su dia. Las intenciones mas
+   * especificas tienen que ganar.
+   */
+  it("no pisa a las intenciones especificas", () => {
+    expect(detectIntent("hoy no llegue a la proteina").kind).toBe(
+      "proteinShort",
+    );
+  });
+
+  it("una pregunta por un tema sin constante cae al fallback", () => {
+    expect(detectIntent("por que el cielo es azul?").kind).toBe("fallback");
+  });
+});
