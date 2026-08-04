@@ -36,6 +36,7 @@ import {
 import { ExerciseDetailSheet } from "@/features/training/components/exercise-detail-sheet";
 import type { PlanExerciseView } from "@/features/training/queries";
 import { toOptionalNumber } from "@/lib/forms";
+import { interpretTempo } from "@/features/training/lib/tempo";
 import { todayLocalISO } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 
@@ -92,6 +93,9 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
     restSeconds: exercise.restSeconds ?? undefined,
     notes: exercise.notes ?? "",
   });
+
+  // Se interpreta mientras se escribe: es lectura pura, sin efectos.
+  const tempoAdvice = form.tempo ? interpretTempo(form.tempo) : null;
 
   const loadAlternatives = async () => {
     const result = await getExerciseAlternatives({
@@ -241,10 +245,19 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
               {numberField("rir", t.fields.rir, "0.5")}
               {numberField("rpe", t.fields.rpe, "0.5")}
             </div>
+            {/*
+              BIO-006: el tempo se acepta y se interpreta, pero NO se
+              prescribe por defecto. El rango util es tan amplio (0.5 a 8 s
+              por repeticion) que rellenarlo solo seria inventar precision.
+              El aviso aparece unicamente en el extremo con evidencia.
+            */}
             <FormField
               label={t.fields.tempo}
               value={form.tempo}
               maxLength={20}
+              placeholder="2-0-1-0"
+              help={tempoAdvice?.note}
+              error={tempoAdvice?.tooSlow ? tempoAdvice.note : undefined}
               onChange={(event) =>
                 setForm((previous) => ({
                   ...previous,

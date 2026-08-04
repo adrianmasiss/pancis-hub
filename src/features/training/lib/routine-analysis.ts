@@ -224,7 +224,18 @@ export function analyzeRoutine(days: RoutineDay[]): RoutineAnalysis {
     }
   }
 
-  // --- Frecuencia ---
+  /*
+   * --- Frecuencia ---
+   *
+   * BIO-005: con el volumen igualado, repartir el mismo trabajo en mas dias
+   * NO produce mas hipertrofia de forma firme; solo en fuerza se identifica
+   * el efecto de forma consistente. La frecuencia es una herramienta de
+   * REPARTO, no un estimulo adicional, como ya decia 07A.
+   *
+   * Por eso este hallazgo no marca "entrenas poco cada musculo": solo avisa
+   * cuando hay tanto volumen en una sesion que la calidad de las ultimas
+   * series se resiente, que es el argumento practico real para repartir.
+   */
   const oncePerWeek = frequencyByMuscle.filter((entry) => entry.days === 1);
   const highVolumeOnce = oncePerWeek.filter((entry) => {
     const sets = volume.get(entry.muscle) ?? 0;
@@ -236,7 +247,7 @@ export function analyzeRoutine(days: RoutineDay[]): RoutineAnalysis {
       title: "Volumen concentrado en un solo dia",
       detail: `${highVolumeOnce
         .map((entry) => entry.muscle)
-        .join(", ")} concentra bastante volumen en una sola sesion. Repartirlo en dos dias suele permitir mantener mejor la calidad de las series.`,
+        .join(", ")} concentra bastante volumen en una sola sesion. Repartirlo en dos dias no produce mas musculo por si solo, pero suele permitir que las ultimas series salgan con mejor calidad.`,
     });
   }
 
