@@ -335,6 +335,8 @@ export const messages = {
     title: "Asistente",
     subtitle:
       "Respuestas con el contexto de tus datos: comidas, objetivos, entrenamientos y tendencias.",
+    evidenceGrade: "Nivel de evidencia",
+    productParameter: "criterio de la app, no evidencia",
     demoBadge: "IA contextual",
     demoNotice:
       "El asistente usa Gemini cuando esta configurado y conserva reglas locales como respaldo. Sus respuestas usan tus datos reales pero son orientativas.",
@@ -358,6 +360,7 @@ export const messages = {
       alternative: "Alternativa",
       reason: "Motivo",
       reevaluate: "Reevaluar",
+      sources: "De donde sale esto",
     },
     confidences: { baja: "baja", media: "media", alta: "alta" },
     limitsTitle: "Limites del asistente",

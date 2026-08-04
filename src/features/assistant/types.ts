@@ -16,6 +16,18 @@ export type AssistantReply = {
   alternative?: string;
   reason: string;
   reevaluate: string;
+  /**
+   * De donde salen las cifras que menciona la respuesta. Se resuelven desde
+   * `formula_versions`, no las inventa el modelo: si esta vacio, es que la
+   * respuesta no se apoya en ninguna constante trazable.
+   */
+  sources?: {
+    title: string;
+    identifier: string | null;
+    evidenceGrade: "A" | "B" | "C" | "D" | null;
+    population: string | null;
+    isProductParameter: boolean;
+  }[];
 };
 
 export type AssistantContext = {

@@ -38,6 +38,12 @@ function ReplyCard({ reply }: { reply: AssistantReply }) {
             {t.sections.confidence}: {t.confidences[reply.confidence]}
           </Badge>
         </div>
+        {/*
+          Las fuentes las resuelve el SERVIDOR desde formula_versions, no las
+          escribe el modelo: por eso puede citarse sin miedo a que invente un
+          estudio. La poblacion se muestra porque importa saber sobre quien se
+          estudio lo que se te esta diciendo.
+        */}
         <dl className="space-y-1.5">
           {sections
             .filter((section): section is { label: string; value: string } =>
@@ -52,6 +58,30 @@ function ReplyCard({ reply }: { reply: AssistantReply }) {
               </div>
             ))}
         </dl>
+        {reply.sources && reply.sources.length > 0 ? (
+          <div className="border-t pt-2">
+            <p className="text-muted-foreground text-xs font-medium">
+              {t.sections.sources}
+            </p>
+            <ul className="text-muted-foreground space-y-1 text-xs">
+              {reply.sources.map((source) => (
+                <li key={source.title}>
+                  {source.title}
+                  {source.identifier ? ` · ${source.identifier}` : ""}
+                  {source.evidenceGrade
+                    ? ` · ${t.evidenceGrade} ${source.evidenceGrade}`
+                    : ""}
+                  {source.isProductParameter ? (
+                    <span className="text-caution"> · {t.productParameter}</span>
+                  ) : null}
+                  {source.population ? (
+                    <span className="block italic">{source.population}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -69,6 +99,8 @@ export function AssistantChat({
   initialMessage?: string;
 }) {
   const [entries, setEntries] = useState<ChatEntry[]>([]);
+  // Se conserva entre preguntas para dar continuidad a la conversacion.
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [message, setMessage] = useState(initialMessage ?? "");
   const [pending, startTransition] = useTransition();
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -83,10 +115,16 @@ export function AssistantChat({
     setEntries((previous) => [...previous, { role: "user", text: trimmed }]);
     setMessage("");
     startTransition(async () => {
-      const result = await askAssistant({ message: trimmed });
+      const result = await askAssistant({
+        message: trimmed,
+        // Encadena con la conversacion en curso para que el asistente no
+        // vuelva a pedir datos que ya le diste.
+        conversationId: conversationId ?? undefined,
+      });
       if ("error" in result) {
         toast.error(result.error);
       } else {
+        setConversationId(result.conversationId);
         setEntries((previous) => [
           ...previous,
           { role: "assistant", reply: result.reply },
