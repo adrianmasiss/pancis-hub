@@ -648,3 +648,53 @@ llenaria de duplicados y de nombres mal escritos.
 
 El emparejador de nombres se extrajo a `src/lib/name-matching.ts`: nacio
 para los alimentos y ahora lo usan tambien los ejercicios.
+
+## 2026-08-05 - El copiloto llama herramientas, y la respuesta es una de ellas
+
+La fase 4 se habia dado por cerrada con el nombre "copiloto con
+herramientas", pero el modelo no llamaba a ninguna: el servidor adivinaba
+el tema por palabras clave y le servia todo precalculado. Funcionaba para
+las preguntas que el detector reconoce, y dejaba sin un solo dato del
+catalogo a todas las demas. Se conecta el bucle en vez de renombrar la
+fase, porque el doc 08 lo pide explicitamente y porque la alternativa era
+mantener el desajuste entre documento y codigo que ya nos costo una
+sesion de despiste.
+
+**La respuesta final viaja como herramienta (`responder`), no como salida
+estructurada.** No es una preferencia: Gemini rechaza la combinacion con
+`Function calling with a response mime type: 'application/json' is
+unsupported`. O herramientas, o JSON forzado. Pasar la respuesta por una
+herramienta sin `execute` da las dos cosas y no cuesta una llamada extra,
+porque el ultimo paso del bucle ya es la respuesta.
+
+Cuando aun asi contesta en texto plano, se reformatea en una segunda
+llamada SIN herramientas. Es el unico momento en que se puede usar salida
+estructurada, y evita tirar una respuesta buena que ya se pago.
+
+**Coste.** El plan gratuito de Gemini permite 20 peticiones por minuto y
+el bucle gasta de 2 a 4 por pregunta. El tope es `MAX_TOOL_STEPS = 4`, y
+el prompt le pide no llamar a nada si ya puede responder. Cuando se agota
+la cuota responde el motor deterministico, que es RF-015 funcionando.
+
+**El modelo nunca dicta macros.** Las herramientas reciben y devuelven
+identificadores; los numeros los pone el catalogo. Es la misma regla que
+`importExternalFood` en la fase 1.
+
+**Las `apply_*` del doc 08 no existen a proposito.** Las de escritura
+devuelven una propuesta y no reciben cliente de base de datos, asi que la
+confirmacion del usuario no es una convencion que el modelo pueda
+saltarse.
+
+## 2026-08-05 - La ambiguedad comida/ejercicio se resuelve contra el catalogo
+
+"Cambiar el arroz de mi almuerzo por papa" caia en `exerciseSubstitute`,
+porque la regla se dispara con el verbo "cambiar". El asistente contestaba
+"no encontre ese EJERCICIO" a una pregunta sobre comida.
+
+No se arregla con mas expresiones regulares, y anadirlas solo mueve el
+problema. Se pregunta al catalogo: si el nombre no es un ejercicio y si es
+un alimento, era una pregunta de comida. El catalogo es la unica fuente
+que sabe la diferencia.
+
+La busqueda de alimentos suelta palabras del final igual que la de
+ejercicios, porque lo que el usuario escribe casi nunca coincide literal.

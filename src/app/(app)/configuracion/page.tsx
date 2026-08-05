@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { AvatarUpload } from "@/features/settings/components/avatar-upload";
+import { AssistantMemoryCard } from "@/features/settings/components/assistant-memory-card";
 import { ProfileSettingsForm } from "@/features/settings/components/profile-settings-form";
+import { countConversations } from "@/features/assistant/persistence";
 import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
@@ -24,10 +26,10 @@ export default async function SettingsPage() {
     .select("display_name, height_cm, unit_system, timezone, avatar_storage_path")
     .eq("id", user.id)
     .single();
-  const avatarUrl = await resolveAvatarUrl(
-    supabase,
-    profile?.avatar_storage_path ?? null,
-  );
+  const [avatarUrl, conversationCount] = await Promise.all([
+    resolveAvatarUrl(supabase, profile?.avatar_storage_path ?? null),
+    countConversations(user.id),
+  ]);
 
   return (
     <>
@@ -45,6 +47,7 @@ export default async function SettingsPage() {
           timezone: profile?.timezone ?? "UTC",
         }}
       />
+      <AssistantMemoryCard count={conversationCount} />
     </>
   );
 }

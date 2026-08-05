@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MacroProgress } from "@/components/shared/macro-progress";
 import { AppleMacroRings } from "@/components/shared/apple-macro-rings";
+import { WhyThisNumber } from "@/features/assistant/components/why-this-number";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
 
@@ -72,7 +73,21 @@ export function NutritionCard({ data }: { data: DashboardData }) {
                 consumed={consumed.fiberG}
                 target={targets.fiberG}
               />
-              <p className="text-muted-foreground text-xs">{t.targetNote}</p>
+              {/* La trazabilidad, al lado de la cifra y no escondida en el
+                  chat: es donde la pregunta aparece de verdad. */}
+              <p className="text-muted-foreground flex flex-wrap gap-x-2 text-xs">
+                <span>{t.targetNote}</span>
+                <WhyThisNumber
+                  keys={[
+                    "bmr_equation",
+                    "activity_factors",
+                    "goal_adjustments",
+                    "protein_ranges",
+                    "min_fat_g_per_kg",
+                    "fiber_g_per_1000_kcal",
+                  ]}
+                />
+              </p>
             </div>
           </div>
         ) : (

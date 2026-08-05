@@ -1,12 +1,14 @@
 "use server";
 
-import { generateObject } from "ai";
+import { generateObject, generateText, hasToolCall, stepCountIs } from "ai";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { detectRelevantFormulas } from "@/features/assistant/lib/grounding";
 import {
+  deleteAllConversations,
   getRecentMessages,
   saveConversationTurn,
 } from "@/features/assistant/persistence";
@@ -16,19 +18,16 @@ import {
   getSourcesForFormula,
 } from "@/server/tools/evidence";
 import { windowDifference, trendDirection } from "@/lib/trends";
-import {
-  rankAlternatives,
-  type EquivalenceFood,
-} from "@/features/foods/lib/equivalence";
-import { getFavoriteFoodIds, getRecentFoodIds } from "@/features/foods/queries";
 import { getRoutineAnalysis } from "@/features/training/queries";
-import { rankComparisons } from "@/features/training/lib/exercise-comparison";
 import {
-  formatPrescription,
-  recommendPrescription,
-} from "@/features/training/lib/prescription";
-import type { BiomechanicalExercise } from "@/features/training/lib/biomechanics";
-import type { FoodGroup } from "@/features/foods/schemas";
+  findCatalogExercise,
+  findCatalogFoodByPhrase,
+  findExerciseAlternatives,
+  findFoodAlternatives,
+  findPrescription,
+} from "@/server/tools/catalog";
+import { buildAssistantToolset } from "@/server/tools/toolset";
+import type { ToolSource } from "@/server/tools/types";
 import {
   detectIntent,
   deterministicProvider,
@@ -76,6 +75,13 @@ EVIDENCIA. El payload trae "evidenciaDisponible": son las fuentes reales que sus
 - Si una fuente esta marcada como parametro de producto, NO la presentes como ciencia: es una decision de la app, di eso.
 - Si no hay fuentes para el tema, dilo con naturalidad en vez de inventar una referencia. NUNCA cites un estudio, un PMID o un DOI que no aparezca en "evidenciaDisponible".
 - Distingue siempre entre una cifra verificada del sistema y una estimacion general tuya.
+
+HERRAMIENTAS. Tienes herramientas para consultar el catalogo, los motores de la app y la biblioteca cientifica. Usalas en vez de suponer:
+- Si te falta un dato concreto (un alimento, un ejercicio, una medida, una fuente), llamala. Es preferible una llamada mas a una respuesta vaga o inventada.
+- Nunca dictes macros ni compatibilidades tu: pide ids con search_foods y deja que compare_foods calcule.
+- Las herramientas que empiezan por "propose_" NO aplican nada. Devuelven una propuesta que el usuario tiene que confirmar en pantalla; dilo asi en tu respuesta.
+- Si con lo que ya traes en el payload puedes responder, no llames a nada mas: cada llamada cuesta cuota.
+- TU RESPUESTA SE ENTREGA LLAMANDO A LA HERRAMIENTA "responder", SIEMPRE. No escribas la respuesta como texto suelto: si lo haces, el usuario no la ve.
 
 CONTINUIDAD. "conversacionReciente" trae los ultimos mensajes. Usalos para no repetir lo ya dicho ni volver a pedir datos que el usuario ya dio.
 
@@ -195,6 +201,7 @@ async function buildContext(userId: string): Promise<AssistantContext> {
 
   return {
     displayName: profile?.display_name ?? "",
+    today,
     primaryGoal: profile?.primary_goal ?? null,
     targets: targetsResult.data
       ? {
@@ -240,73 +247,14 @@ async function buildContext(userId: string): Promise<AssistantContext> {
   };
 }
 
-/** Busca el alimento mencionado y calcula alternativas reales del catalogo. */
-async function findFoodAlternatives(
-  userId: string,
-  foodName: string,
-): Promise<FoodAlternativeSuggestion[]> {
-  const supabase = await createClient();
-  const { data: matches } = await supabase
-    .from("foods")
-    .select(
-      "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
-    )
-    .ilike("name", `%${foodName}%`)
-    .is("deleted_at", null)
-    .limit(1);
-  const source = matches?.[0];
-  if (!source) return [];
-
-  const [candidatesResult, preferencesResult, favoriteIds, recentIds] =
-    await Promise.all([
-      supabase
-        .from("foods")
-        .select(
-          "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
-        )
-        .is("deleted_at", null)
-        .limit(300),
-      supabase
-        .from("dietary_preferences")
-        .select("value")
-        .eq("user_id", userId)
-        .in("preference_type", [
-          "alergia",
-          "restriccion",
-          "alimento_no_deseado",
-        ]),
-      getFavoriteFoodIds(userId),
-      getRecentFoodIds(userId),
-    ]);
-
-  const toEquivalence = (food: typeof source): EquivalenceFood => ({
-    id: food.id,
-    name: food.name,
-    foodGroup: food.food_group as FoodGroup,
-    cookedState: food.cooked_state as "crudo" | "cocido" | null,
-    per100g: {
-      calories: Number(food.calories),
-      proteinG: Number(food.protein_g),
-      carbohydrateG: Number(food.carbohydrate_g),
-      fatG: Number(food.fat_g),
-      fiberG: Number(food.fiber_g),
-    },
-  });
-
-  return rankAlternatives({
-    source: toEquivalence(source),
-    sourceQuantityG: 100,
-    candidates: (candidatesResult.data ?? []).map(toEquivalence),
-    favoriteIds,
-    recentIds: new Set(recentIds),
-    restrictions: (preferencesResult.data ?? []).map((row) => row.value),
-    maxResults: 2,
-  }).map((candidate) => ({
-    name: candidate.food.name,
-    suggestedQuantityG: candidate.suggestedQuantityG,
-    caloriesDiff: candidate.diff.calories,
-  }));
-}
+/**
+ * Tope de pasos del bucle de herramientas.
+ *
+ * Cada paso es OTRA llamada a Gemini, y la cuota del plan gratuito es el cuello
+ * de botella real del proyecto. Cuatro da margen para buscar un alimento,
+ * compararlo y responder, sin que una pregunta rara se coma la cuota del dia.
+ */
+const MAX_TOOL_STEPS = 4;
 
 async function generateGeminiReply(input: {
   message: string;
@@ -318,13 +266,14 @@ async function generateGeminiReply(input: {
   /** Fuentes ya resueltas. El modelo NO las busca ni las inventa. */
   evidence?: string;
   history?: { role: string; content: string }[];
-}): Promise<AssistantReply> {
-  const { object } = await generateObject({
+  /** Herramientas que el modelo puede llamar por su cuenta. */
+  tools: ReturnType<typeof buildAssistantToolset>;
+}): Promise<{ reply: AssistantReply | null; toolNames: string[] }> {
+  const { steps, text } = await generateText({
     model: getGeminiModel(),
-    schema: assistantReplySchema,
-    schemaName: "assistant_reply",
-    schemaDescription:
-      "Respuesta estructurada del asistente contextual de Pancis Hub.",
+    tools: input.tools,
+    // Termina cuando entrega la respuesta, o cuando se acaba el presupuesto.
+    stopWhen: [hasToolCall("responder"), stepCountIs(MAX_TOOL_STEPS)],
     system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
     prompt: JSON.stringify(
       {
@@ -347,7 +296,34 @@ async function generateGeminiReply(input: {
     ),
   });
 
-  return object;
+  const calls = steps.flatMap((step) => step.toolCalls);
+  const toolNames = calls.map((call) => call.toolName);
+  const answer = calls.find((call) => call.toolName === "responder");
+  const parsed = answer
+    ? assistantReplySchema.safeParse(answer.input)
+    : { success: false as const };
+
+  if (parsed.success) return { reply: parsed.data, toolNames };
+
+  /*
+   * A veces contesta en texto plano en vez de llamar a `responder`, sobre todo
+   * despues de usar una herramienta. Esa respuesta suele ser buena, y tirarla
+   * para caer al motor de reglas seria desperdiciar el trabajo (y la cuota) que
+   * ya se gasto. Se le da forma en una segunda llamada SIN herramientas, que es
+   * la unica forma de usar salida estructurada con Gemini.
+   */
+  if (text.trim().length > 0) {
+    const { object } = await generateObject({
+      model: getGeminiModel(),
+      schema: assistantReplySchema,
+      system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
+      prompt: `Esta es tu respuesta en texto libre. Pasala al formato estructurado sin anadir datos nuevos ni cifras que no esten aqui:\n\n${text}`,
+    });
+    return { reply: object, toolNames: [...toolNames, "(reformateo)"] };
+  }
+
+  // Ni herramienta ni texto: contesta el motor deterministico.
+  return { reply: null, toolNames };
 }
 
 export async function askAssistant(
@@ -379,19 +355,14 @@ export async function askAssistant(
   const grounded = await Promise.all(
     formulaKeys.map((key) => getSourcesForFormula(key)),
   );
+  /*
+   * Las fuentes se acumulan de dos sitios: el grounding por palabras clave y
+   * lo que devuelvan las herramientas que llame el modelo. Las dos las resuelve
+   * el servidor, asi que el modelo sigue sin poder citar un estudio que nadie
+   * le dio.
+   */
   const sources = grounded.flatMap((entry) => entry.sources);
-  const replySources = sources.map((source) => ({
-    title: source.title,
-    identifier: source.identifier,
-    evidenceGrade: source.evidenceGrade,
-    population: source.population,
-    // El papel y su nota se muestran al usuario: leer "nivel de evidencia A"
-    // debajo de una cifra sin saber que ese estudio la matiza es peor que no
-    // citarlo.
-    role: source.role,
-    note: source.note,
-    isProductParameter: source.isProductParameter,
-  }));
+  const collectSources = (extra: ToolSource[]) => sources.push(...extra);
 
   const history = parsed.data.conversationId
     ? await getRecentMessages(user.id, parsed.data.conversationId)
@@ -429,13 +400,13 @@ export async function askAssistant(
   // RF-015: sin IA generativa el asistente sigue respondiendo, y ahora ademas
   // con sus fuentes.
   if (explainedFromRegistry || !hasGeminiApiKey()) {
-    const reply = { ...fallbackReply, sources: replySources };
+    const reply = { ...fallbackReply, sources: toReplySources(sources) };
     const { conversationId } = await persist(reply, "reglas");
     return { reply, conversationId };
   }
 
   try {
-    const generated = await generateGeminiReply({
+    const { reply: generated, toolNames } = await generateGeminiReply({
       message: parsed.data.message,
       context,
       intent,
@@ -447,119 +418,103 @@ export async function askAssistant(
         role: entry.role,
         content: entry.content,
       })),
+      tools: buildAssistantToolset({
+        userId: user.id,
+        today: context.today,
+        onSources: collectSources,
+        replySchema: assistantReplySchema,
+      }),
     });
+    if (toolNames.length > 0) {
+      console.info("Copiloto, herramientas usadas:", toolNames.join(", "));
+    }
     // Las fuentes las pone el servidor, NO el modelo: asi no puede citar algo
-    // que no se le dio.
-    const reply = { ...generated, sources: replySources };
-    const { conversationId } = await persist(reply, "gemini");
+    // que no se le dio. Aqui ya incluyen lo que trajeron las herramientas.
+    const reply = {
+      ...(generated ?? fallbackReply),
+      sources: toReplySources(sources),
+    };
+    const { conversationId } = await persist(
+      reply,
+      generated ? "gemini" : "reglas",
+    );
     return { reply, conversationId };
   } catch (error) {
     console.error("Gemini assistant error:", error);
+    /*
+     * Aqui se sabe algo que el motor deterministico no puede saber: que la IA
+     * estaba configurada y fallo, casi siempre por cuota. Decirlo evita que el
+     * usuario crea que la app "es asi de simple" cuando en realidad esta
+     * degradada, y le dice que reintentar tiene sentido.
+     */
+    const reply = {
+      ...fallbackReply,
+      reason: messages.assistant.aiUnavailable,
+      sources: toReplySources(sources),
+    };
+    const { conversationId } = await persist(reply, "reglas");
+    return { reply, conversationId };
   }
 
-  const reply = { ...fallbackReply, sources: replySources };
+  const reply = { ...fallbackReply, sources: toReplySources(sources) };
   const { conversationId } = await persist(reply, "reglas");
   return { reply, conversationId };
 }
 
 /**
- * Alternativas de ejercicio usando el MISMO motor biomecanico que la
- * rutina, para que el asistente y la pantalla nunca se contradigan.
+ * Fuentes listas para la interfaz, sin repetidas.
+ *
+ * Hace falta deduplicar porque ahora llegan de dos sitios: el grounding por
+ * palabras clave y las herramientas. Preguntar por la proteina y ademas llamar
+ * a `get_claim_sources` traeria a Morton dos veces.
  */
-async function findExerciseAlternatives(
-  exerciseName: string,
-): Promise<ExerciseAlternativeSuggestion[]> {
-  const supabase = await createClient();
-  const source = await findCatalogExercise(exerciseName);
-  if (!source) return [];
+function toReplySources(sources: ToolSource[]): NonNullable<AssistantReply["sources"]> {
+  const seen = new Set<string>();
+  const unique: ToolSource[] = [];
 
-  const { data: candidates } = await supabase
-    .from("exercise_catalog")
-    .select(BIOMECHANICS_SELECT)
-    .is("deleted_at", null)
-    .limit(200);
+  for (const source of sources) {
+    const key = source.identifier ?? source.title;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(source);
+  }
 
-  return rankComparisons(
-    source,
-    (candidates ?? []).map(toBiomechanical),
-    3,
-  ).map((comparison) => ({
-    name: comparison.exercise.name,
-    compatibility: comparison.compatibility,
-    recommendation: comparison.recommendation,
+  return unique.map((source) => ({
+    title: source.title,
+    identifier: source.identifier,
+    evidenceGrade: source.evidenceGrade,
+    population: source.population,
+    // El papel y su nota se muestran al usuario: leer "nivel de evidencia A"
+    // debajo de una cifra sin saber que ese estudio la matiza es peor que no
+    // citarlo.
+    role: source.role,
+    note: source.note,
+    isProductParameter: source.isProductParameter,
   }));
 }
 
-/** Esquema sugerido para un ejercicio, con el motor de prescripcion. */
-async function findPrescription(
-  userId: string,
-  exerciseName: string,
-): Promise<PrescriptionSuggestion | null> {
-  const supabase = await createClient();
-  const [exercise, { data: profile }] = await Promise.all([
-    findCatalogExercise(exerciseName),
-    supabase
-      .from("profiles")
-      .select("primary_goal, experience_level")
-      .eq("id", userId)
-      .maybeSingle(),
-  ]);
-  if (!exercise) return null;
-  const prescription = recommendPrescription(exercise, {
-    goal:
-      profile?.primary_goal === "ganancia_muscular"
-        ? "hipertrofia"
-        : profile?.primary_goal === "perdida_grasa"
-          ? "recomposicion"
-          : "hipertrofia",
-    experience:
-      profile?.experience_level === "principiante" ||
-      profile?.experience_level === "avanzado"
-        ? profile.experience_level
-        : "intermedio",
-  });
-
-  return {
-    exerciseName: exercise.name,
-    summary: formatPrescription(prescription),
-    topReason: prescription.reasons[0] ?? "",
-    progression: prescription.progression,
-  };
-}
-
-const BIOMECHANICS_SELECT =
-  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, image_url, image_end_url";
-
-type CatalogRow = Record<string, unknown>;
-
-function toBiomechanical(row: CatalogRow): BiomechanicalExercise {
-  return {
-    id: String(row.id),
-    name: String(row.name),
-    primaryMuscle: String(row.primary_muscle),
-    secondaryMuscles: (row.secondary_muscles as string[]) ?? [],
-    movementPattern: (row.movement_pattern as string | null) ?? null,
-    equipment: (row.equipment as string | null) ?? null,
-    difficulty: (row.difficulty as string | null) ?? null,
-    joints: (row.joints as string[]) ?? [],
-    resistanceProfile: (row.resistance_profile as BiomechanicalExercise["resistanceProfile"]) ?? null,
-    hardestPoint: (row.hardest_point as string | null) ?? null,
-    stability: (row.stability as number | null) ?? null,
-    rangeOfMotion: (row.range_of_motion as number | null) ?? null,
-    technicalDemand: (row.technical_demand as number | null) ?? null,
-    systemicFatigue: (row.systemic_fatigue as number | null) ?? null,
-    progressionEase: (row.progression_ease as number | null) ?? null,
-    isUnilateral: Boolean(row.is_unilateral),
-    commonErrors: (row.common_errors as string[]) ?? [],
-    techniqueCues: (row.technique_cues as string[]) ?? [],
-    imageUrl: (row.image_url as string | null) ?? null,
-    imageEndUrl: (row.image_end_url as string | null) ?? null,
-  };
-}
-
 async function buildAskPayload(userId: string, message: string) {
-  const intent = detectIntent(message);
+  let intent = detectIntent(message);
   const baseContext = await buildContext(userId);
+
+  /*
+   * Desambiguacion contra el catalogo real.
+   *
+   * "cambiar el arroz de mi almuerzo por papa" cae en exerciseSubstitute,
+   * porque la regla se dispara con el verbo "cambiar" y no sabe de que se
+   * habla. El resultado era el peor posible: el asistente contestaba "no
+   * encontre ese EJERCICIO" a una pregunta sobre comida.
+   *
+   * Ninguna regla de texto va a resolver esto bien. El catalogo si: si eso no
+   * es un ejercicio y si es un alimento, era una pregunta de comida.
+   */
+  if (intent.kind === "exerciseSubstitute") {
+    const asExercise = await findCatalogExercise(intent.exerciseName);
+    if (!asExercise) {
+      const asFood = await findCatalogFoodByPhrase(intent.exerciseName);
+      if (asFood) intent = { kind: "foodMissing", foodName: asFood.name };
+    }
+  }
 
   // "Por que ese numero" se responde SIN IA: el valor y su justificacion ya
   // estan revisados en formula_versions.
@@ -606,29 +561,24 @@ async function buildAskPayload(userId: string, message: string) {
 }
 
 /**
- * Busca un ejercicio del catalogo por un nombre hablado.
+ * Borra el historial del copiloto.
  *
- * Lo que el usuario escribe casi nunca coincide literal: "cuantas series
- * de sentadilla hago" deja "sentadilla hago". Se prueba la frase completa
- * y luego se van soltando palabras del final hasta encontrar coincidencia,
- * asi que "sentadilla hago" acaba resolviendo a "Sentadilla con barra".
+ * Es destructivo y no se puede deshacer, asi que la interfaz pide confirmacion
+ * antes de llamar aqui. El dato es de salud: poder retirarlo es parte del trato,
+ * no una opcion avanzada escondida.
  */
-async function findCatalogExercise(
-  spokenName: string,
-): Promise<BiomechanicalExercise | null> {
+export async function forgetConversations(): Promise<
+  { error: string } | { deleted: number }
+> {
   const supabase = await createClient();
-  const words = spokenName.trim().split(/\s+/).filter(Boolean);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.assistant.actionFailed };
 
-  for (let length = words.length; length > 0; length -= 1) {
-    const candidate = words.slice(0, length).join(" ");
-    if (candidate.length < 3) continue;
-    const { data } = await supabase
-      .from("exercise_catalog")
-      .select(BIOMECHANICS_SELECT)
-      .ilike("name", `%${candidate}%`)
-      .is("deleted_at", null)
-      .limit(1);
-    if (data?.[0]) return toBiomechanical(data[0]);
-  }
-  return null;
+  const result = await deleteAllConversations(user.id);
+  if ("error" in result) return { error: messages.assistant.forgetFailed };
+
+  revalidatePath("/configuracion");
+  return result;
 }
