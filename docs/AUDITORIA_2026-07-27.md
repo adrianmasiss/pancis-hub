@@ -458,6 +458,7 @@ Ninguna constante llega a producción sin una de las tres etiquetas. Es la puert
 | 2 | Investigación fundacional (en paralelo a la 1) | no |
 | 3 | `research_sources`, `formula_versions`, fuera los números mágicos, recálculo de objetivos | sí |
 | 4 | Copiloto con herramientas, chat con grounding y citas | sí |
+| 4b | Cierre real de la 4: bucle de herramientas conectado (2026-08-05) | sí |
 | 5 | Rutina desde PDF, vista Hoy, tolerancias, confianza del dato | sí |
 | 6 | Regiones musculares y programación 07A | sí |
 | 7 | Generación de dieta y rutina inicial | sí |

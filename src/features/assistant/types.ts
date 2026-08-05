@@ -36,6 +36,8 @@ export type AssistantReply = {
 
 export type AssistantContext = {
   displayName: string;
+  /** Fecha de hoy en la zona horaria del usuario (YYYY-MM-DD). */
+  today: string;
   primaryGoal: string | null;
   targets: {
     calories: number;

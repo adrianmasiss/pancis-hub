@@ -68,6 +68,7 @@ describe("detectIntent", () => {
 
 const context: AssistantContext = {
   displayName: "Demo",
+  today: "2026-08-05",
   primaryGoal: "recomposicion",
   targets: { calories: 2091, proteinG: 126, carbohydrateG: 271, fatG: 56 },
   consumedToday: { calories: 900, proteinG: 60, carbohydrateG: 100, fatG: 25 },
@@ -264,5 +265,19 @@ describe('"por que ese numero" se responde sin IA', () => {
 
     expect(reply.confidence).toBe("baja");
     expect(reply.action).toContain("criterio de la app");
+  });
+});
+
+/**
+ * La deteccion por reglas confunde comida con ejercicio en cuanto aparece un
+ * verbo compartido. No se arregla con mas regex: se arregla preguntandole al
+ * catalogo, y eso vive en buildAskPayload. Aqui solo se fija el sintoma para
+ * que nadie "simplifique" la desambiguacion sin darse cuenta.
+ */
+describe("cambiar X por Y es ambiguo por diseno", () => {
+  it("una sustitucion de comida se detecta como ejercicio", () => {
+    const intent = detectIntent("puedo cambiar el arroz de mi almuerzo por papa hoy?");
+
+    expect(intent.kind).toBe("exerciseSubstitute");
   });
 });
