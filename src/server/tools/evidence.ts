@@ -26,7 +26,14 @@ type SourceRow = {
   is_retracted: boolean;
 };
 
-function toToolSource(row: SourceRow, isProductParameter: boolean): ToolSource {
+/** Vinculo entre una constante y una fuente, con el matiz del revisor. */
+type SourceLink = { role: string | null; note: string | null };
+
+function toToolSource(
+  row: SourceRow,
+  isProductParameter: boolean,
+  link?: SourceLink,
+): ToolSource {
   return {
     title: row.title,
     year: row.year,
@@ -34,6 +41,8 @@ function toToolSource(row: SourceRow, isProductParameter: boolean): ToolSource {
     evidenceGrade: (row.evidence_grade as ToolSource["evidenceGrade"]) ?? null,
     population: row.population,
     limitations: row.limitations,
+    role: link?.role ?? null,
+    note: link?.note ?? null,
     isProductParameter,
   };
 }
@@ -61,10 +70,26 @@ export async function getSourcesForFormula(
 
     if (!data) return { sources: [], rationale: null, limitations: null };
 
+    /*
+     * El `role` y la `note` del vinculo VIAJAN. Se consultaban y se tiraban, y
+     * eso invertia el sentido de las fuentes: Morton 2018 entra en el rango de
+     * proteina con role `matiza` porque su corte de 1.62 g/kg no es
+     * significativo, pero sin ese dato aparecia junto a las demas como si lo
+     * sustentara. Es el matiz que costo leer el texto completo en la fase 2.
+     */
     const sources = (data.formula_version_sources ?? [])
-      .map((link) => link.research_sources)
-      .filter((row): row is SourceRow => row !== null && !row.is_retracted)
-      .map((row) => toToolSource(row, data.is_product_parameter));
+      .map((link) => ({
+        row: link.research_sources,
+        role: link.role as string | null,
+        note: link.note as string | null,
+      }))
+      .filter(
+        (entry): entry is { row: SourceRow } & SourceLink =>
+          entry.row !== null && !entry.row.is_retracted,
+      )
+      .map((entry) =>
+        toToolSource(entry.row, data.is_product_parameter, entry),
+      );
 
     return {
       sources,
@@ -96,10 +121,18 @@ const FORMULA_LABELS: Record<string, string> = {
   bia_individual_error: "El margen de error de la bioimpedancia",
 };
 
-/** Valor legible: un numero, un rango o una tabla por objetivo. */
-function formatValue(value: unknown): string {
+/**
+ * Valor legible: un numero, un rango o una tabla por objetivo.
+ *
+ * `preferKey` es el objetivo del usuario. Cuando el valor es una tabla, se
+ * devuelve SOLO su fila: a quien pregunta por su proteina no le sirve leer los
+ * cuatro objetivos, le sirve el suyo.
+ */
+export function formatValue(value: unknown, preferKey?: string | null): string {
   if (typeof value === "number" || typeof value === "string") return String(value);
   if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (preferKey && preferKey in record) return formatValue(record[preferKey]);
     const entries = Object.entries(value as Record<string, unknown>);
     const isRange =
       entries.length === 2 && "min" in (value as object) && "max" in (value as object);
@@ -133,6 +166,8 @@ export type FormulaExplanation = {
  */
 export async function getFormulaExplanation(
   key: string,
+  /** Objetivo del usuario, para recortar las tablas por objetivo a su fila. */
+  goal?: string | null,
 ): Promise<FormulaExplanation | null> {
   try {
     const supabase = await createClient();
@@ -145,7 +180,7 @@ export async function getFormulaExplanation(
 
     if (!data?.rationale) return null;
 
-    const value = formatValue(data.value);
+    const value = formatValue(data.value, goal);
     return {
       label: FORMULA_LABELS[key] ?? "Esta cifra",
       value: data.unit ? `${value} ${data.unit}` : value,
@@ -197,6 +232,9 @@ export async function searchEvidence(
  * cifra, tiene que poder decir sobre quien se estudio. Es la diferencia entre
  * "necesitas 2 g/kg" y "en adultos que entrenan fuerza, mayormente hombres
  * jovenes, se observo que...".
+ *
+ * Y con el papel de cada fuente, para que no pueda citar como apoyo algo que
+ * en el registro esta marcado como matiz.
  */
 export function formatSourcesForPrompt(sources: ToolSource[]): string {
   if (sources.length === 0) return "";
@@ -209,6 +247,8 @@ export function formatSourcesForPrompt(sources: ToolSource[]): string {
         source.evidenceGrade ? `  Nivel de evidencia: ${source.evidenceGrade}` : null,
         source.population ? `  Poblacion: ${source.population}` : null,
         source.limitations ? `  Limitaciones: ${source.limitations}` : null,
+        source.role ? `  Papel en esta cifra: ${source.role}` : null,
+        source.note ? `  Nota del revisor: ${source.note}` : null,
         source.isProductParameter
           ? "  ATENCION: es un parametro de producto, no una afirmacion cientifica."
           : null,

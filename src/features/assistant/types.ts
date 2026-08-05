@@ -26,6 +26,10 @@ export type AssistantReply = {
     identifier: string | null;
     evidenceGrade: "A" | "B" | "C" | "D" | null;
     population: string | null;
+    /** `sustenta`, `matiza` o `contradice`: que hace esta fuente por la cifra. */
+    role: string | null;
+    /** El matiz registrado al aprobar el claim, si lo hay. */
+    note: string | null;
     isProductParameter: boolean;
   }[];
 };

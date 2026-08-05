@@ -246,15 +246,28 @@ export const deterministicProvider: AssistantProvider = {
             reevaluate: "Cuando quieras.",
           };
         }
+        /*
+         * La pregunta es por SU numero, no por el rango. Contestar solo "1.8 a
+         * 2.2 g/kg" deja fuera lo que de verdad se pregunta: por que le toco
+         * ese valor y no otro del rango. El objetivo se calcula con el PUNTO
+         * MEDIO (`calculateTargets` en nutrition-targets.ts), asi que se dice.
+         */
+        const yourNumber =
+          intent.formulaKey === "protein_ranges" && context.targets
+            ? ` Tu objetivo son ${Math.round(context.targets.proteinG)} g al dia: el punto medio de ese rango sobre tu peso.`
+            : "";
         return {
-          observation: `${explanation.label}: ${explanation.value}.`,
+          observation: `${explanation.label}: ${explanation.value}.${yourNumber}`,
           interpretation: explanation.rationale,
           confidence: explanation.isProductParameter ? "baja" : "alta",
           action: explanation.isProductParameter
             ? "Es un criterio de la app y puedes ajustarlo a tu gusto, no una regla cientifica."
             : "Puedes ajustarlo si tu experiencia te dice otra cosa: es un punto de partida, no una prescripcion.",
           alternative: explanation.limitations ?? undefined,
-          reason: "Las fuentes que sostienen esta cifra estan abajo.",
+          // No todas las fuentes "sostienen": alguna matiza la cifra, y decir
+          // lo contrario justo encima de la lista seria mentir por descuido.
+          reason:
+            "Abajo esta cada fuente con lo que aporta y sobre quien se estudio.",
           reevaluate:
             "Si cambia tu peso o tu objetivo, esta cifra se recalcula.",
         };

@@ -78,11 +78,28 @@ function ReplyCard({ reply }: { reply: AssistantReply }) {
                   {source.evidenceGrade
                     ? ` · ${t.evidenceGrade} ${source.evidenceGrade}`
                     : ""}
+                  {source.role ? (
+                    <span
+                      className={
+                        source.role === "sustenta" ? undefined : "text-caution"
+                      }
+                    >
+                      {" · "}
+                      {t.sourceRoles[source.role] ?? source.role}
+                    </span>
+                  ) : null}
                   {source.isProductParameter ? (
                     <span className="text-caution"> · {t.productParameter}</span>
                   ) : null}
                   {source.population ? (
                     <span className="block italic">{source.population}</span>
+                  ) : null}
+                  {/*
+                    La nota del revisor es lo que separa "nivel A" de lo que ese
+                    nivel A realmente dice sobre esta cifra.
+                  */}
+                  {source.note ? (
+                    <span className="block">{source.note}</span>
                   ) : null}
                 </li>
               ))}

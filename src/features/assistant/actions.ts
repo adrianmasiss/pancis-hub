@@ -60,6 +60,7 @@ const assistantReplySchema = z.object({
 const GEMINI_ASSISTANT_SYSTEM_PROMPT = `Eres el asistente contextual de Pancis Hub, una app de nutricion, entrenamiento y progreso.
 
 Responde en espanol latinoamericano, con tono claro, prudente y accionable.
+HABLALE A QUIEN PREGUNTA, de tu, en TODOS los campos incluido observation. Nunca hables de el en tercera persona ni lo nombres como si reportaras a otra persona: "El usuario indica que no tiene arroz" esta MAL, "No tienes arroz" esta bien. userContext.displayName es su nombre, no un sujeto del que informar.
 Usa solo el contexto entregado por la app y no inventes datos del usuario.
 No diagnostiques, no indiques medicamentos y no sustituyas profesionales de la salud.
 No modifiques objetivos, planes, rutinas ni dietas; solo sugiere proximos pasos.
@@ -71,6 +72,7 @@ Si userContext.activeDiet esta presente, es la dieta real que el usuario esta tr
 
 EVIDENCIA. El payload trae "evidenciaDisponible": son las fuentes reales que sustentan las cifras del sistema, con su nivel de evidencia, la poblacion estudiada y sus limitaciones. Reglas que no se rompen:
 - Cuando expliques de donde sale un numero del sistema, apoyate en esas fuentes y menciona la POBLACION si difiere del usuario (por ejemplo, si el estudio es en hombres jovenes y quien pregunta no lo es).
+- Cada fuente trae su "Papel en esta cifra". RESPETALO: una fuente que "matiza" o "contradice" NO se presenta como apoyo, se presenta como el limite que es, y su "Nota del revisor" es lo que hay que contar de ella. Si una fuente aparece en la lista, o la usas con su papel correcto o no la mencionas.
 - Si una fuente esta marcada como parametro de producto, NO la presentes como ciencia: es una decision de la app, di eso.
 - Si no hay fuentes para el tema, dilo con naturalidad en vez de inventar una referencia. NUNCA cites un estudio, un PMID o un DOI que no aparezca en "evidenciaDisponible".
 - Distingue siempre entre una cifra verificada del sistema y una estimacion general tuya.
@@ -78,7 +80,7 @@ EVIDENCIA. El payload trae "evidenciaDisponible": son las fuentes reales que sus
 CONTINUIDAD. "conversacionReciente" trae los ultimos mensajes. Usalos para no repetir lo ya dicho ni volver a pedir datos que el usuario ya dio.
 
 Debes responder en el formato estructurado solicitado:
-- observation: que observas del mensaje/contexto.
+- observation: que ves en su situacion, dicho a el ("No tienes arroz", "Hoy vas 60 g de proteina").
 - interpretation: que significa de forma prudente.
 - confidence: baja, media o alta.
 - action: una accion concreta y reversible.
@@ -383,6 +385,11 @@ export async function askAssistant(
     identifier: source.identifier,
     evidenceGrade: source.evidenceGrade,
     population: source.population,
+    // El papel y su nota se muestran al usuario: leer "nivel de evidencia A"
+    // debajo de una cifra sin saber que ese estudio la matiza es peor que no
+    // citarlo.
+    role: source.role,
+    note: source.note,
     isProductParameter: source.isProductParameter,
   }));
 
@@ -402,9 +409,26 @@ export async function askAssistant(
       sources,
     });
 
+  /*
+   * "Por que ese numero" NO pasa por el modelo, ni cuando hay clave.
+   *
+   * El valor, su justificacion y sus limitaciones se redactaron y se revisaron
+   * al aprobar el claim en `formula_versions`. Pasarlos por un modelo solo
+   * puede degradarlos: reescribe un texto ya aprobado, elige de que fuentes
+   * habla y cambia la persona ("el usuario Demo Pancis pregunta..." en vez de
+   * hablarle a quien pregunta). Esto ya estaba escrito como intencion en
+   * `buildAskPayload`, pero el codigo no lo hacia: la respuesta deterministica
+   * se calculaba y se descartaba en cuanto habia clave.
+   *
+   * Si la constante no tiene explicacion registrada, si baja al modelo: ahi no
+   * hay texto aprobado que proteger y la pregunta queda abierta.
+   */
+  const explainedFromRegistry =
+    intent.kind === "whyThisNumber" && context.formulaExplanation != null;
+
   // RF-015: sin IA generativa el asistente sigue respondiendo, y ahora ademas
   // con sus fuentes.
-  if (!hasGeminiApiKey()) {
+  if (explainedFromRegistry || !hasGeminiApiKey()) {
     const reply = { ...fallbackReply, sources: replySources };
     const { conversationId } = await persist(reply, "reglas");
     return { reply, conversationId };
@@ -543,7 +567,11 @@ async function buildAskPayload(userId: string, message: string) {
     intent.kind === "whyThisNumber"
       ? {
           ...baseContext,
-          formulaExplanation: await getFormulaExplanation(intent.formulaKey),
+          formulaExplanation: await getFormulaExplanation(
+            intent.formulaKey,
+            // Su objetivo recorta las tablas por objetivo a la fila que le toca.
+            baseContext.primaryGoal,
+          ),
         }
       : baseContext;
   const [foodAlternatives, exerciseAlternatives, prescription] =
