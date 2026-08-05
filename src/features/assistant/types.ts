@@ -94,6 +94,11 @@ export type AssistantIntent =
   | { kind: "setsAndReps"; exerciseName: string }
   | { kind: "routineReview" }
   /**
+   * Sintoma que necesita a un profesional, no a una app. Se detecta ANTES que
+   * cualquier otra intencion y corta: no se ofrecen ajustes de plan encima.
+   */
+  | { kind: "clinicalSymptom" }
+  /**
    * "por que mi objetivo de proteina es ese numero". Se responde SIN IA:
    * el valor, su justificacion y sus fuentes estan en formula_versions.
    */

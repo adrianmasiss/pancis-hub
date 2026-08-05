@@ -14,8 +14,20 @@ function normalize(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
+/**
+ * Sintomas que no son asunto de una app de nutricion.
+ *
+ * Va PRIMERO, antes que cualquier otra regla, y a proposito prefiere pasarse:
+ * derivar de mas a alguien que solo tenia agujetas es un ruido aceptable;
+ * contestar "prueba con una de las sugerencias" a un dolor en el pecho, no.
+ */
+const CLINICAL_SIGNALS =
+  /(dolor (fuerte|intenso|agudo|en el pecho)|dolor.*(pecho|cabeza fuerte)|me duele.*(pecho|corazon)|mareo|mareos|desmay|falta de aire|no puedo respirar|palpitacion|sangrado|sangre en|vomito|vomitos|fiebre|lesion|me lesione|desgarr|entumecimiento|hormigueo|vision borrosa)/;
+
 export function detectIntent(message: string): AssistantIntent {
   const text = normalize(message);
+
+  if (CLINICAL_SIGNALS.test(text)) return { kind: "clinicalSymptom" };
 
   if (
     /(maquina|equipo|aparato)/.test(text) &&
@@ -121,6 +133,29 @@ export const deterministicProvider: AssistantProvider = {
       : null;
 
     switch (intent.kind) {
+      /*
+       * Lo encontro el arnes de evaluacion: "llevo tres dias con dolor fuerte
+       * en el pecho al entrenar" recibia "soy una version demostrativa, prueba
+       * con una de las sugerencias". El prompt de Gemini si obliga a derivar,
+       * pero este motor no tenia ninguna regla clinica, y es justo el que
+       * responde cuando se agota la cuota.
+       *
+       * No se ofrece nada mas. Acompanar la derivacion de un consejo de dieta
+       * la convierte en un tramite.
+       */
+      case "clinicalSymptom":
+        return {
+          observation: "Lo que cuentas es un sintoma, no una duda del plan.",
+          interpretation:
+            "No puedo valorarlo, y una app de nutricion no es el sitio para hacerlo.",
+          confidence: "baja",
+          action:
+            "Consultalo con un profesional de la salud. Si es intenso, repentino o te cuesta respirar, busca atencion urgente.",
+          reason:
+            "Los sintomas pueden tener causas que no se ven desde tus datos de entrenamiento y alimentacion.",
+          reevaluate: "Cuando te haya visto un profesional.",
+        };
+
       case "foodMissing": {
         const alternativesText =
           foodAlternatives && foodAlternatives.length > 0
@@ -362,7 +397,7 @@ export const deterministicProvider: AssistantProvider = {
           alternative:
             "Registra los ingredientes directamente en tu comida con el buscador de alimentos.",
           reason:
-            "Aun no puedo generar recetas nuevas por ti: soy una version demostrativa sin IA.",
+            "Generar recetas nuevas no esta entre las cosas que puedo hacer todavia.",
           reevaluate: REEVALUATE_TOMORROW,
         };
       case "timingShift":
@@ -389,8 +424,15 @@ export const deterministicProvider: AssistantProvider = {
             "Prueba con una de las sugerencias de abajo o cuentame que parte de tu plan quieres ajustar.",
           alternative:
             "Tambien puedes explorar la Academia para entender el porque de tu plan.",
+          /*
+           * Decia "soy una version demostrativa con reglas fijas". Dejo de ser
+           * cierto en cuanto se configuro la IA, y el arnes lo pillo apareciendo
+           * DEBAJO de tres fuentes de nivel A: el usuario leia evidencia solida
+           * bajo un aviso de que la respuesta no es real. Ahora dice lo unico
+           * que se sabe seguro, que es que no se entendio la pregunta.
+           */
           reason:
-            "Soy una version demostrativa con reglas fijas; una futura version con IA entendera mas matices.",
+            "No supe a que parte de tu plan te referias, y prefiero decirlo a responder cualquier cosa.",
           reevaluate: "Cuando quieras, aqui estare.",
         };
     }

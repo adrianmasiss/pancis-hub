@@ -441,6 +441,19 @@ export async function askAssistant(
     return { reply, conversationId };
   } catch (error) {
     console.error("Gemini assistant error:", error);
+    /*
+     * Aqui se sabe algo que el motor deterministico no puede saber: que la IA
+     * estaba configurada y fallo, casi siempre por cuota. Decirlo evita que el
+     * usuario crea que la app "es asi de simple" cuando en realidad esta
+     * degradada, y le dice que reintentar tiene sentido.
+     */
+    const reply = {
+      ...fallbackReply,
+      reason: messages.assistant.aiUnavailable,
+      sources: toReplySources(sources),
+    };
+    const { conversationId } = await persist(reply, "reglas");
+    return { reply, conversationId };
   }
 
   const reply = { ...fallbackReply, sources: toReplySources(sources) };

@@ -389,6 +389,13 @@ export const messages = {
       "No diagnostica, no prescribe medicamentos ni sustituye a profesionales de la salud. No modifica tu plan sin tu confirmacion. Si tienes sintomas o dudas clinicas, consulta a un profesional.",
     actionFailed: "No pudimos responder. Intenta de nuevo.",
     forgetFailed: "No pudimos borrar el historial. Intenta de nuevo.",
+    aiUnavailable:
+      "No pude consultar la IA en este momento, asi que esta respuesta sale de las reglas de la app. Vuelve a intentarlo en un minuto.",
+    whereFrom: "¿De donde salen estos numeros?",
+    whereFromTitle: "De donde salen tus numeros",
+    whereFromDescription:
+      "Cada cifra con su justificacion, sus limitaciones y las fuentes que la sostienen.",
+    whereFromEmpty: "Todavia no hay justificacion registrada para estas cifras.",
   },
   recipes: {
     title: "Recetas",
