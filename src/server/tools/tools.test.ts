@@ -4,7 +4,7 @@ import {
   readResult,
   requiresConfirmation,
 } from "./types";
-import { formatSourcesForPrompt } from "./evidence";
+import { formatSourcesForPrompt, formatValue } from "./evidence";
 import type { ToolSource } from "./types";
 
 describe("frontera entre lectura y escritura (RF-013)", () => {
@@ -37,6 +37,31 @@ describe("frontera entre lectura y escritura (RF-013)", () => {
   });
 });
 
+describe("formatValue", () => {
+  const rangos = {
+    perdida_grasa: { min: 1.8, max: 2.4 },
+    recomposicion: { min: 1.8, max: 2.2 },
+    mantenimiento: { min: 1.6, max: 2.0 },
+  };
+
+  it("recorta la tabla a la fila del objetivo del usuario", () => {
+    expect(formatValue(rangos, "recomposicion")).toBe("1.8 a 2.2");
+  });
+
+  /** Sin objetivo conocido se muestran todas: es preferible a elegir una mal. */
+  it("sin objetivo muestra la tabla completa", () => {
+    expect(formatValue(rangos)).toContain("perdida_grasa 1.8 a 2.4");
+    expect(formatValue(rangos, "objetivo_inexistente")).toContain(
+      "mantenimiento 1.6 a 2",
+    );
+  });
+
+  it("un rango suelto y un escalar se leen igual que antes", () => {
+    expect(formatValue({ min: 0.5, max: 1 })).toBe("0.5 a 1");
+    expect(formatValue(7700)).toBe("7700");
+  });
+});
+
 describe("formatSourcesForPrompt", () => {
   const fuente: ToolSource = {
     title: "Dose-response relationship between weekly resistance training volume",
@@ -45,6 +70,8 @@ describe("formatSourcesForPrompt", () => {
     evidenceGrade: "A",
     population: "Adultos entrenados, mayoritariamente hombres jovenes",
     limitations: "Muestra sesgada por sexo y edad",
+    role: "sustenta",
+    note: null,
     isProductParameter: false,
   };
 
@@ -74,6 +101,24 @@ describe("formatSourcesForPrompt", () => {
     expect(texto).toContain("parametro de producto");
   });
 
+  /**
+   * Sin el papel, una fuente que MATIZA la cifra llega al modelo junto a las
+   * que la sostienen y se presenta como apoyo. Es el caso real de Morton 2018
+   * en el rango de proteina.
+   */
+  it("dice que papel juega cada fuente y con que matiz", () => {
+    const texto = formatSourcesForPrompt([
+      {
+        ...fuente,
+        role: "matiza",
+        note: "Su punto de quiebre de 1.62 g/kg no es significativo.",
+      },
+    ]);
+
+    expect(texto).toContain("Papel en esta cifra: matiza");
+    expect(texto).toContain("no es significativo");
+  });
+
   it("no inventa campos que la fuente no tiene", () => {
     const texto = formatSourcesForPrompt([
       {
@@ -83,6 +128,8 @@ describe("formatSourcesForPrompt", () => {
         evidenceGrade: null,
         population: null,
         limitations: null,
+        role: null,
+        note: null,
         isProductParameter: false,
       },
     ]);

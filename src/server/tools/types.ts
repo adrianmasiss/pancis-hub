@@ -35,6 +35,17 @@ export type ToolSource = {
   population: string | null;
   limitations: string | null;
   /**
+   * Papel de la fuente en la cifra: `sustenta`, `matiza`, `contradice`. Sin
+   * esto, un metaanalisis que MATIZA el numero se lee como si lo apoyara, que
+   * es exactamente lo contrario de lo que dice el registro.
+   */
+  role: string | null;
+  /**
+   * Nota escrita al aprobar el claim: por que esta fuente esta en esta cifra.
+   * Suele contener el matiz que solo aparece en el texto completo del estudio.
+   */
+  note: string | null;
+  /**
    * true cuando el valor es una decision de producto y no una afirmacion
    * cientifica. La interfaz debe dejar de presentarlo como ciencia.
    */

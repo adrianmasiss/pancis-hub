@@ -338,6 +338,15 @@ export const messages = {
     groundedBadge: "Con fuentes",
     evidenceGrade: "Nivel de evidencia",
     productParameter: "criterio de la app, no evidencia",
+    /**
+     * Que hace cada fuente por la cifra. Se muestra siempre: una fuente que
+     * matiza el numero no puede leerse igual que una que lo sostiene.
+     */
+    sourceRoles: {
+      sustenta: "sostiene esta cifra",
+      matiza: "matiza esta cifra",
+      contradice: "contradice esta cifra",
+    } as Record<string, string>,
     demoBadge: "IA contextual",
     demoNotice:
       "El asistente usa Gemini cuando esta configurado y conserva reglas locales como respaldo. Sus respuestas usan tus datos reales pero son orientativas.",

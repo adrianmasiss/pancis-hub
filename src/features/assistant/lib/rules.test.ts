@@ -218,4 +218,51 @@ describe('"por que ese numero" se responde sin IA', () => {
   it("una pregunta por un tema sin constante cae al fallback", () => {
     expect(detectIntent("por que el cielo es azul?").kind).toBe("fallback");
   });
+
+  /**
+   * Quien pregunta quiere saber por que le toco SU numero. Devolver solo el
+   * rango contesta otra pregunta: hay que decir su valor y que sale del punto
+   * medio, que es como lo calcula `calculateTargets`.
+   */
+  it("da el numero del usuario y de donde sale dentro del rango", () => {
+    const reply = deterministicProvider.generateReply({
+      context: {
+        ...context,
+        formulaExplanation: {
+          label: "Tu rango de proteina",
+          value: "1.8 a 2.2 g/kg de peso corporal",
+          rationale: "La necesidad cambia con el objetivo.",
+          limitations: "Las mujeres estan infrarrepresentadas en esta literatura.",
+          isProductParameter: false,
+        },
+      },
+      intent: { kind: "whyThisNumber", formulaKey: "protein_ranges" },
+    });
+
+    expect(reply.observation).toContain("126 g");
+    expect(reply.observation).toContain("punto medio");
+    expect(reply.confidence).toBe("alta");
+    // Las limitaciones se dicen, no se guardan para el pie de pagina.
+    expect(reply.alternative).toContain("infrarrepresentadas");
+  });
+
+  /** Un parametro de producto no puede presentarse con confianza alta. */
+  it("baja la confianza cuando la cifra es un criterio de la app", () => {
+    const reply = deterministicProvider.generateReply({
+      context: {
+        ...context,
+        formulaExplanation: {
+          label: "La referencia de agua",
+          value: "35 ml/kg",
+          rationale: "Aproximacion practica.",
+          limitations: null,
+          isProductParameter: true,
+        },
+      },
+      intent: { kind: "whyThisNumber", formulaKey: "water_ml_per_kg" },
+    });
+
+    expect(reply.confidence).toBe("baja");
+    expect(reply.action).toContain("criterio de la app");
+  });
 });
