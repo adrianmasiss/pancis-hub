@@ -2,11 +2,13 @@
 
 import { generateObject, generateText, hasToolCall, stepCountIs } from "ai";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { detectRelevantFormulas } from "@/features/assistant/lib/grounding";
 import {
+  deleteAllConversations,
   getRecentMessages,
   saveConversationTurn,
 } from "@/features/assistant/persistence";
@@ -543,4 +545,27 @@ async function buildAskPayload(userId: string, message: string) {
     prescription,
     fallbackReply,
   };
+}
+
+/**
+ * Borra el historial del copiloto.
+ *
+ * Es destructivo y no se puede deshacer, asi que la interfaz pide confirmacion
+ * antes de llamar aqui. El dato es de salud: poder retirarlo es parte del trato,
+ * no una opcion avanzada escondida.
+ */
+export async function forgetConversations(): Promise<
+  { error: string } | { deleted: number }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.assistant.actionFailed };
+
+  const result = await deleteAllConversations(user.id);
+  if ("error" in result) return { error: messages.assistant.forgetFailed };
+
+  revalidatePath("/configuracion");
+  return result;
 }

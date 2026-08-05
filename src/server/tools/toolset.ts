@@ -49,6 +49,10 @@ import type { ToolSource } from "@/server/tools/types";
 const FORMULA_KEYS: [FormulaKey, ...FormulaKey[]] = [
   "bmr_equation",
   "activity_factors",
+  "goal_adjustments",
+  "safety_floor_factor",
+  "macro_tolerances_pct",
+  "compatibility_profiles",
   "protein_ranges",
   "weekly_rate_band_percent",
   "min_fat_g_per_kg",

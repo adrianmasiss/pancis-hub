@@ -102,6 +102,52 @@ export async function saveConversationTurn(input: {
   }
 }
 
+/** Cuantas conversaciones guardadas tiene el usuario. */
+export async function countConversations(userId: string): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { count } = await supabase
+      .from("ai_conversations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Borra TODAS las conversaciones del usuario, con sus mensajes y sus citas.
+ *
+ * El doc 08 pide que la memoria sea "aislada por usuario, borrable". Aislada ya
+ * lo estaba por RLS; borrable no habia forma. Y no es una comodidad: aqui se
+ * guarda lo que alguien le cuenta a una app de salud sobre su cuerpo y su
+ * comida, asi que poder retirarlo es parte del trato.
+ *
+ * Los mensajes y las citas caen por `on delete cascade`, que lo ejecuta el
+ * motor y no depende de que el usuario tenga politica de borrado sobre ellos.
+ *
+ * A diferencia del resto del modulo, esta SI informa del fallo: un borrado que
+ * falla en silencio le haria creer al usuario que sus datos ya no estan.
+ */
+export async function deleteAllConversations(
+  userId: string,
+): Promise<{ deleted: number } | { error: true }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("ai_conversations")
+    .delete()
+    .eq("user_id", userId)
+    .select("id");
+
+  if (error) {
+    console.error("No se pudieron borrar las conversaciones:", error);
+    return { error: true };
+  }
+
+  return { deleted: data?.length ?? 0 };
+}
+
 export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;

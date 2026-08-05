@@ -107,6 +107,10 @@ export async function getSourcesForFormula(
 const FORMULA_LABELS: Record<string, string> = {
   bmr_equation: "La formula con la que estimamos tu gasto en reposo",
   activity_factors: "El factor con el que ajustamos por tu actividad",
+  goal_adjustments: "El ajuste que aplicamos por tu objetivo",
+  safety_floor_factor: "El suelo por debajo del cual no bajamos tus calorias",
+  macro_tolerances_pct: "Cuanto puede desviarse un cambio sin avisarte",
+  compatibility_profiles: "Como puntuamos si dos alimentos se parecen",
   protein_ranges: "Tu rango de proteina",
   weekly_rate_band_percent: "El ritmo de cambio de peso que buscamos",
   min_fat_g_per_kg: "Tu minimo de grasa",

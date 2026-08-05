@@ -286,6 +286,17 @@ export const messages = {
     avatarRemoved: "Foto de perfil eliminada.",
     avatarUploadFailed:
       "No pudimos subir la imagen. Usa JPG, PNG o WEBP de hasta 5 MB.",
+    assistantMemory: {
+      title: "Memoria del asistente",
+      description:
+        "El asistente recuerda tus conversaciones para no volver a pedirte lo que ya le contaste.",
+      stored: "Tienes {count} conversaciones guardadas.",
+      empty: "No hay conversaciones guardadas.",
+      forget: "Borrar el historial",
+      confirm:
+        "Se borran todas tus conversaciones con el asistente, sus respuestas y las fuentes que citaron. No se puede deshacer, y tus datos de nutricion y entrenamiento no se tocan.",
+      forgotten: "Historial borrado.",
+    },
   },
   pwa: {
     offlineTitle: "Sin conexion",
@@ -377,6 +388,7 @@ export const messages = {
     limits:
       "No diagnostica, no prescribe medicamentos ni sustituye a profesionales de la salud. No modifica tu plan sin tu confirmacion. Si tienes sintomas o dudas clinicas, consulta a un profesional.",
     actionFailed: "No pudimos responder. Intenta de nuevo.",
+    forgetFailed: "No pudimos borrar el historial. Intenta de nuevo.",
   },
   recipes: {
     title: "Recetas",

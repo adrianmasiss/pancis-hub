@@ -14,6 +14,10 @@
 export type FormulaKey =
   | "bmr_equation"
   | "activity_factors"
+  | "goal_adjustments"
+  | "safety_floor_factor"
+  | "macro_tolerances_pct"
+  | "compatibility_profiles"
   | "protein_ranges"
   | "weekly_rate_band_percent"
   | "min_fat_g_per_kg"
@@ -32,8 +36,40 @@ export type FormulaKey =
  * normaliza antes de comparar.
  */
 const TRIGGERS: Record<FormulaKey, string[]> = {
-  bmr_equation: ["metabolismo", "basal", "gasto en reposo", "tmb"],
-  activity_factors: ["actividad", "sedentario", "gasto", "tdee", "cuantas calorias"],
+  /*
+   * "calorias" a secas no disparaba NADA: solo existia dentro de las frases
+   * completas "cuantas calorias" y "pocas calorias". Preguntar "por que mi
+   * objetivo de calorias es ese numero" caia al fallback generico, siendo de
+   * las preguntas que mejor se responden sin IA. El objetivo calorico sale de
+   * una cadena (gasto en reposo, actividad y ajuste por objetivo), asi que el
+   * termino dispara las tres y se adjuntan las fuentes de todas.
+   */
+  bmr_equation: [
+    "metabolismo",
+    "basal",
+    "gasto en reposo",
+    "tmb",
+    "calorias",
+    "kcal",
+    "calorico",
+  ],
+  activity_factors: [
+    "actividad",
+    "sedentario",
+    "gasto",
+    "tdee",
+    "cuantas calorias",
+    "calorias",
+  ],
+  goal_adjustments: [
+    "calorias",
+    "objetivo calorico",
+    "ajuste por objetivo",
+    "deficit calorico",
+  ],
+  safety_floor_factor: ["piso de seguridad", "minimo de calorias", "muy pocas"],
+  macro_tolerances_pct: ["tolerancia", "margen", "cuanto me puedo pasar"],
+  compatibility_profiles: ["compatibilidad", "equivalencia", "que tan parecido"],
   protein_ranges: ["proteina", "proteinas", "gramos de proteina"],
   weekly_rate_band_percent: [
     "deficit", "bajar de peso", "perder grasa", "adelgazar", "superavit", "subir de peso",

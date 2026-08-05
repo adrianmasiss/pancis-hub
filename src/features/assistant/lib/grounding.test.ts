@@ -61,3 +61,26 @@ describe("detectRelevantFormulas", () => {
     ).toContain("bia_individual_error");
   });
 });
+
+/**
+ * "calorias" a secas no disparaba nada, asi que "por que mi objetivo de
+ * calorias es ese numero" caia al fallback generico. El objetivo calorico sale
+ * de una cadena de tres constantes y las tres tienen que llegar.
+ */
+describe("preguntas por las calorias", () => {
+  it("detecta la cadena que produce el objetivo calorico", () => {
+    const keys = detectRelevantFormulas(
+      "por que mi objetivo de calorias es ese numero?",
+    );
+
+    expect(keys).toContain("bmr_equation");
+    expect(keys).toContain("activity_factors");
+    expect(keys).toContain("goal_adjustments");
+  });
+
+  it("sigue distinguiendo la pregunta por comer muy poco", () => {
+    expect(detectRelevantFormulas("siento que como muy poco", 1)).toEqual([
+      "energy_availability_thresholds",
+    ]);
+  });
+});
