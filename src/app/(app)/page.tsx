@@ -5,6 +5,7 @@ import { HeroBanner } from "@/features/dashboard/components/hero-banner";
 import { NutritionCard } from "@/features/dashboard/components/nutrition-card";
 import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
+import { getTargetRecalculation } from "@/features/settings/target-recalculation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -17,7 +18,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const data = await getDashboardData(user.id);
+  const [data, recalculation] = await Promise.all([
+    getDashboardData(user.id),
+    getTargetRecalculation(user.id),
+  ]);
 
   return (
     /*
@@ -38,7 +42,7 @@ export default async function DashboardPage() {
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
-        <NutritionCard data={data} />
+        <NutritionCard data={data} targetsOutdated={recalculation !== null} />
         <AdherenceCard data={data} />
       </aside>
     </div>

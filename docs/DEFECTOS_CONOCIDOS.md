@@ -100,6 +100,7 @@ reproducibles, que no es lo mismo que ser correctos.
 
 **Detectado:** 2026-07-27, en la auditoría.
 **Gravedad:** alta, pero ya planificada.
+**RESUELTO el 2026-08-10**, en dos tiempos. Ver "Solución aplicada" al final.
 
 `PROTEIN_G_PER_KG = 1.8`, `MIN_FAT_G_PER_KG = 0.8`,
 `FIBER_G_PER_1000_KCAL = 14`, `WATER_ML_PER_KG = 35` y los factores de
@@ -110,6 +111,37 @@ Además, `calculateInitialTargets` solo se invoca en el onboarding: los
 objetivos no se recalculan al cambiar peso u objetivo.
 
 **Arreglo:** Fases 2 y 3 del plan (ver `AUDITORIA_2026-07-27.md`, R2.3).
+
+### Solución aplicada
+
+**Primera mitad, fase 3 (2026-08-04).** Las constantes salen de
+`formula_versions`, con su `research_sources` detrás, y se INYECTAN en
+`calculateInitialTargets` en vez de leerse dentro (la función corre también
+en el cliente, para la vista previa del onboarding). `DEFAULT_FORMULAS`
+queda como respaldo si la base no responde, que es RF-015.
+
+**Segunda mitad, 2026-08-10.** El recálculo. La fase 3 la dio por hecha y no
+lo estaba: `calculateInitialTargets` seguía invocándose solo en el
+onboarding.
+
+- `src/features/onboarding/lib/target-drift.ts` compara el objetivo activo
+  con el que saldría hoy y decide si la diferencia supera el ruido del
+  método (3 % de las calorías con piso de 60 kcal, o 5 g de proteína).
+- `src/features/settings/target-recalculation.ts` arma la propuesta en el
+  servidor; `target-actions.ts` la aplica **solo tras confirmación**,
+  archivando la versión anterior y registrando en `audit_logs`.
+- El aviso aparece en Configuración y, en una línea, junto a la cifra del
+  dashboard.
+- Objetivo y actividad ya se pueden cambiar después del onboarding
+  (`GoalSettingsForm`). Antes quedaban fijos para siempre.
+- Migración `20260805000000_target_calculation_inputs.sql`: se guarda con
+  qué datos se calculó cada objetivo, para poder explicar el aviso.
+
+**Efecto colateral del que conviene acordarse:** probándolo en la app a las
+23:00 hora de Costa Rica, `effective_from` quedó fechado el día siguiente.
+`toISOString().slice(0, 10)` otra vez. `todayInTimezone` vive ahora en
+`src/lib/dates.ts` y la usan el recálculo, el onboarding, el dashboard y el
+asistente.
 
 ---
 

@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { uploadPrivateFile } from "@/lib/storage/upload-private-file";
 import { messages } from "@/i18n/es-419";
 import {
+  goalSettingsSchema,
   profileSettingsSchema,
+  type GoalSettingsInput,
   type ProfileSettingsInput,
 } from "@/features/settings/schemas";
 
@@ -46,6 +48,47 @@ export async function updateProfileSettings(
   }
 
   revalidatePath("/configuracion");
+  return { success: true };
+}
+
+/**
+ * Cambia objetivo y nivel de actividad.
+ *
+ * Deliberadamente NO reescribe `nutrition_targets`. Cambiar el objetivo
+ * mueve las calorias, pero aplicarlo en el mismo gesto convertiria un ajuste
+ * de perfil en una reescritura silenciosa del plan: el aviso de recalculo
+ * aparece despues, con las dos cifras a la vista, y se acepta aparte.
+ */
+export async function updateGoalSettings(
+  input: GoalSettingsInput,
+): Promise<SettingsActionResult> {
+  const parsed = goalSettingsSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      primary_goal: parsed.data.primaryGoal,
+      activity_level: parsed.data.activityLevel,
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  revalidatePath("/configuracion");
+  revalidatePath("/");
   return { success: true };
 }
 
