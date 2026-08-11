@@ -14,3 +14,20 @@ export const profileSettingsSchema = z.object({
 });
 
 export type ProfileSettingsInput = z.infer<typeof profileSettingsSchema>;
+
+/**
+ * Objetivo y actividad viven aparte del resto del perfil porque son las dos
+ * entradas de la formula: cambiarlas mueve las calorias y los macros. El
+ * formulario los separa para que el efecto no sorprenda a nadie.
+ */
+export const goalSettingsSchema = z.object({
+  primaryGoal: z.enum(
+    ["recomposicion", "perdida_grasa", "ganancia_muscular", "mantenimiento"],
+    { error: t.required },
+  ),
+  activityLevel: z.enum(["sedentario", "ligero", "moderado", "alto"], {
+    error: t.required,
+  }),
+});
+
+export type GoalSettingsInput = z.infer<typeof goalSettingsSchema>;

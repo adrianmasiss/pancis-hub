@@ -10,7 +10,14 @@ import type { DashboardData } from "@/features/dashboard/queries";
 
 const t = messages.dashboard.nutrition;
 
-export function NutritionCard({ data }: { data: DashboardData }) {
+export function NutritionCard({
+  data,
+  targetsOutdated = false,
+}: {
+  data: DashboardData;
+  /** true si los objetivos guardados ya no corresponden a los datos de hoy. */
+  targetsOutdated?: boolean;
+}) {
   const { targets, consumed } = data;
 
   return (
@@ -75,6 +82,17 @@ export function NutritionCard({ data }: { data: DashboardData }) {
               />
               {/* La trazabilidad, al lado de la cifra y no escondida en el
                   chat: es donde la pregunta aparece de verdad. */}
+              {targetsOutdated ? (
+                <p className="text-caution flex flex-wrap gap-x-2 text-xs">
+                  <span className="text-balance">{t.outdated}</span>
+                  <Link
+                    href="/configuracion"
+                    className="underline underline-offset-2"
+                  >
+                    {t.outdatedLink}
+                  </Link>
+                </p>
+              ) : null}
               <p className="text-muted-foreground flex flex-wrap gap-x-2 text-xs">
                 <span>{t.targetNote}</span>
                 <WhyThisNumber

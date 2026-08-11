@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { todayInTimezone } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 import {
   calculateAge,
@@ -131,13 +132,24 @@ export async function completeOnboarding(
     .from("nutrition_targets")
     .insert({
       user_id: user.id,
-      effective_from: new Date().toISOString().slice(0, 10),
+      // Mismo motivo que en el recalculo: `toISOString` da la fecha UTC y
+      // cerca de medianoche fecharia el objetivo en el futuro.
+      effective_from: todayInTimezone(data.timezone),
       calories: targets.calories,
       protein_g: targets.proteinG,
       carbohydrate_g: targets.carbohydrateG,
       fat_g: targets.fatG,
       fiber_g: targets.fiberG,
       water_ml: targets.waterMl,
+      // Con que datos se calculo, para poder explicar despues por que dejo
+      // de corresponder (defecto D-002).
+      calculation_inputs: {
+        weightKg: data.weightKg,
+        heightCm: data.heightCm,
+        ageYears: calculateAge(birthDate),
+        activityLevel: data.activityLevel,
+        primaryGoal: data.primaryGoal,
+      },
       source: "estimacion_inicial",
       status: "active",
     });

@@ -698,3 +698,38 @@ que sabe la diferencia.
 
 La busqueda de alimentos suelta palabras del final igual que la de
 ejercicios, porque lo que el usuario escribe casi nunca coincide literal.
+
+## 2026-08-10 - Los objetivos se recalculan, pero no solos
+
+`calculateInitialTargets` corria unicamente en el onboarding. Quien bajaba
+seis kilos o cambiaba de objetivo seguia comiendo contra las cifras de su
+peso de partida, y la app no se lo decia: era la mitad viva del defecto
+D-002, que la fase 3 dejo abierta al cerrar solo la parte de las constantes
+sin fuente.
+
+**No se aplica automaticamente.** Un objetivo nutricional reescrito sin
+avisar es la clase de cambio silencioso que este producto no hace: la app
+calcula, ensena las dos columnas de cifras y espera un clic. Guardar un
+objetivo nuevo en Configuracion tampoco toca `nutrition_targets`; solo hace
+aparecer el aviso.
+
+**Un umbral, y con razon.** Se avisa cuando la diferencia supera el 3 % de
+las calorias (con un piso de 60 kcal) o 5 g de proteina. Mifflin-St Jeor
+tiene un error estandar cercano al 10 % sobre el gasto real: pedir que
+alguien confirme un ajuste menor que el error del propio metodo es vender
+una precision que no existe. La proteina entra por su cuenta porque cambiar
+de objetivo mueve su rango g/kg sin mover apenas el total.
+
+**Los objetivos definidos a mano no se tocan.** Si la fuente es `manual`, la
+estimacion de la app no tiene autoridad para proponer nada.
+
+**Se guarda con que datos se calculo** (`nutrition_targets.calculation_inputs`).
+Sin eso el aviso solo puede decir "tu objetivo cambio"; con eso dice "se
+calculo con 74 kg y hoy pesas 69.1". Las filas anteriores se quedan sin
+entradas y para esas el aviso se limita a las cifras, que es lo honesto.
+
+**Bug encontrado probandolo, no en los tipos.** `effective_from` usaba
+`toISOString().slice(0, 10)`: a las 23:00 en Costa Rica el objetivo quedaba
+fechado el dia siguiente. `todayInTimezone` sube a `src/lib/dates.ts` — ya
+estaba duplicada en el dashboard y en el asistente — y el mismo arreglo va
+al insert del onboarding, que arrastraba la misma linea.

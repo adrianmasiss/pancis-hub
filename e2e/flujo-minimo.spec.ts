@@ -675,6 +675,53 @@ test("importar una rutina escrita", async ({ page }) => {
   await expect(page.getByText(/Sentadilla con barra/).first()).toBeVisible();
 });
 
+test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  await page.goto("/configuracion");
+  // Antes de tocar nada no hay aviso: el objetivo del onboarding sigue
+  // correspondiendo a los datos del perfil.
+  await expect(
+    page.getByText("Tus objetivos ya no corresponden a tus datos"),
+  ).toHaveCount(0);
+
+  await page.getByLabel("Objetivo").selectOption("perdida_grasa");
+  await page
+    .getByRole("button", { name: "Guardar objetivo y actividad" })
+    .click();
+  await expect(page.getByText("Cambios guardados.")).toBeVisible();
+
+  // Guardar el perfil NO reescribe los objetivos: aparece la propuesta, con
+  // el motivo y las dos cifras, y espera la confirmacion.
+  await page.reload();
+  await expect(
+    page.getByText("Tus objetivos ya no corresponden a tus datos"),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Tu objetivo paso de Recomposicion corporal a Perdida/),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Actualizar mis objetivos" }).click();
+  await expect(page.getByText("Objetivos actualizados.")).toBeVisible();
+
+  // Aceptada la propuesta, el aviso desaparece y el cambio queda registrado.
+  await page.reload();
+  await expect(
+    page.getByText("Tus objetivos ya no corresponden a tus datos"),
+  ).toHaveCount(0);
+
+  await page.goto("/historial");
+  await expect(
+    page.getByText("Objetivos nutricionales actualizados").first(),
+  ).toBeVisible();
+});
+
 test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electronico").fill(email);

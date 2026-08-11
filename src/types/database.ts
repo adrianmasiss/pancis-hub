@@ -1315,6 +1315,7 @@ export type Database = {
       }
       nutrition_targets: {
         Row: {
+          calculation_inputs: Json | null
           calories: number
           carbohydrate_g: number
           created_at: string
@@ -1330,6 +1331,7 @@ export type Database = {
           water_ml: number
         }
         Insert: {
+          calculation_inputs?: Json | null
           calories: number
           carbohydrate_g: number
           created_at?: string
@@ -1345,6 +1347,7 @@ export type Database = {
           water_ml: number
         }
         Update: {
+          calculation_inputs?: Json | null
           calories?: number
           carbohydrate_g?: number
           created_at?: string

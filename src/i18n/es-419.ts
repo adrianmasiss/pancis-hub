@@ -286,6 +286,38 @@ export const messages = {
     avatarRemoved: "Foto de perfil eliminada.",
     avatarUploadFailed:
       "No pudimos subir la imagen. Usa JPG, PNG o WEBP de hasta 5 MB.",
+    goalsSection: "Objetivo y actividad",
+    // Nombre propio y no "Guardar": hay otro boton "Guardar" en la misma
+    // pagina, y dos controles con el mismo nombre accesible obligan a quien
+    // navega con lector de pantalla a adivinar cual es cual.
+    saveGoals: "Guardar objetivo y actividad",
+    goalsDescription:
+      "Cambiar cualquiera de los dos mueve tus calorias y tus macros. No se aplica solo: te lo proponemos y decides tu.",
+    targets: {
+      title: "Tus objetivos ya no corresponden a tus datos",
+      description:
+        "Se calcularon con datos que cambiaron. Esta es la estimacion con los de hoy; tu plan y tus comidas no se tocan.",
+      apply: "Actualizar mis objetivos",
+      applied: "Objetivos actualizados.",
+      applyFailed: "No pudimos actualizar tus objetivos. Intenta de nuevo.",
+      unchanged: "Tus objetivos ya corresponden a tus datos de hoy.",
+      auditReason: "Recalculo aceptado desde el aviso de objetivos",
+      current: "Ahora",
+      proposed: "Con tus datos de hoy",
+      // Cada fila del "que cambio": la razon del aviso, no un adorno.
+      changedWeight: "Pesabas {from} kg y hoy pesas {to} kg",
+      changedHeight: "Tu altura paso de {from} a {to} cm",
+      changedAge: "Tu edad paso de {from} a {to} anos",
+      changedActivity: "Tu actividad cotidiana paso de {from} a {to}",
+      changedGoal: "Tu objetivo paso de {from} a {to}",
+      noInputHistory:
+        "Este objetivo se guardo antes de que registraramos con que datos se calculo, asi que solo podemos mostrarte las cifras.",
+      weightMeasured: "Peso del {date}.",
+      safetyFloor:
+        "La estimacion quedaba por debajo de tu metabolismo basal y se subio hasta la guarda. Conviene revisarla con un profesional.",
+      estimateNotice:
+        "Es una estimacion editable, no una prescripcion. Puedes ajustarla despues en tu plan.",
+    },
     assistantMemory: {
       title: "Memoria del asistente",
       description:
@@ -1325,6 +1357,10 @@ export const messages = {
       targetNote:
         "Objetivo estimado y editable; no es una prescripcion exacta.",
       noTargets: "Aun no tienes objetivos nutricionales.",
+      // El aviso vive junto a la cifra desactualizada, no escondido en
+      // Configuracion: es donde el usuario la esta mirando.
+      outdated: "Estas cifras se calcularon con datos que ya cambiaron.",
+      outdatedLink: "Revisar",
       noMeals: "Sin comidas registradas hoy.",
       viewPlan: "Ver plan del dia",
     },
@@ -1426,6 +1462,7 @@ export const messages = {
       rutina_versionada: "Version de rutina guardada",
       rutina_restaurada: "Rutina restaurada",
       medicion_registrada: "Medicion registrada",
+      objetivos_recalculados: "Objetivos nutricionales actualizados",
     },
     retentionNote:
       "El historial no se borra automaticamente: es tu registro de lo que realmente paso.",

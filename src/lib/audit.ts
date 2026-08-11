@@ -25,6 +25,7 @@ export const AUDIT_ACTIONS = [
   "rutina_versionada",
   "rutina_restaurada",
   "medicion_registrada",
+  "objetivos_recalculados",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

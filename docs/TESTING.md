@@ -22,8 +22,13 @@ npm run test:e2e
 
 Cubre el flujo minimo completo del MVP: registrar cuenta → onboarding de
 6 pasos → registrar comida → intercambiar un alimento → sesion de
-entrenamiento con serie → registrar peso → completar diario → cambiar
-tema → cerrar sesion → iniciar sesion → verificar persistencia.
+entrenamiento con serie → registrar peso → completar diario → cambiar de
+objetivo y aceptar el recalculo → cambiar tema → cerrar sesion → iniciar
+sesion → verificar persistencia.
+
+El caso del recalculo comprueba las dos mitades de la regla: que guardar
+el perfil NO reescribe los objetivos, y que aceptar la propuesta si lo
+hace y queda en el historial.
 
 ## Estado actual (Fase C)
 

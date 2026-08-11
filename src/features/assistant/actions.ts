@@ -18,6 +18,7 @@ import {
   getSourcesForFormula,
 } from "@/server/tools/evidence";
 import { windowDifference, trendDirection } from "@/lib/trends";
+import { todayInTimezone } from "@/lib/dates";
 import { getRoutineAnalysis } from "@/features/training/queries";
 import {
   findCatalogExercise,
@@ -93,19 +94,6 @@ Debes responder en el formato estructurado solicitado:
 - alternative: una opcion alternativa si aplica.
 - reason: por que esa accion tiene sentido.
 - reevaluate: cuando revisar de nuevo.`;
-
-function todayInTimezone(timezone: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-  } catch {
-    return new Date().toISOString().slice(0, 10);
-  }
-}
 
 async function buildContext(userId: string): Promise<AssistantContext> {
   const supabase = await createClient();

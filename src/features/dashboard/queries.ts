@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { todayInTimezone } from "@/lib/dates";
 import {
   movingAverage,
   trendDirection,
@@ -102,19 +103,6 @@ export type DashboardData = {
   } | null;
 };
 
-/** Fecha YYYY-MM-DD en la zona horaria del perfil. */
-function todayInTimezone(timezone: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-  } catch {
-    return new Date().toISOString().slice(0, 10);
-  }
-}
 
 function daysAgo(date: string, days: number): string {
   const ms = new Date(`${date}T00:00:00Z`).getTime() - days * 86400000;
