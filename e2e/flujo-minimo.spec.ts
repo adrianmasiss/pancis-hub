@@ -117,14 +117,12 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   // cuatro columnas juntas son el punto: antes solo estaban objetivo y
   // consumido, y el restante lo calculaba el usuario de cabeza.
   await page.goto("/");
+  // La cifra troquelada responde "cuanto falta" antes que nada, cada macro
+  // trae su disco, y el gesto de registrar vive en la misma pantalla.
+  await expect(page.getByText(/kcal te faltan hoy|kcal de mas/)).toBeVisible();
+  await expect(page.getByText("proteina", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("columnheader", { name: "Objetivo" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("columnheader", { name: "Llevas" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("columnheader", { name: "Faltan" }),
+    page.getByRole("link", { name: "Registrar comida" }),
   ).toBeVisible();
   // Con una comida registrada, el dia ya empezo.
   await expect(

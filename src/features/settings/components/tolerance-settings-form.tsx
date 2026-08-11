@@ -6,13 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { toOptionalNumber } from "@/lib/forms";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { updateToleranceSettings } from "@/features/settings/actions";
 import {
@@ -64,12 +58,8 @@ export function ToleranceSettingsForm({
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.title}</CardTitle>
-        <CardDescription>{t.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section title={t.title} description={t.description}>
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="max-w-md space-y-4"
@@ -81,14 +71,14 @@ export function ToleranceSettingsForm({
             {field("carbsPct", t.carbs)}
             {field("fatPct", t.fat)}
           </div>
-          <p className="text-muted-foreground text-xs text-balance">
+          <p className="text-muted-foreground max-w-[62ch] text-xs text-pretty">
             {t.fiberNote}
           </p>
           <Button type="submit" disabled={pending}>
             {pending ? messages.common.loading : t.save}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

@@ -172,7 +172,7 @@ function MealStop({
           }}
           aria-expanded={open}
           aria-controls={panelId}
-          className="group/stop -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-md px-2 py-1 text-left transition-colors duration-200 hover:bg-muted/60"
+          className="group/stop hover:bg-muted/60 -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-md px-2 py-1 text-left transition-colors duration-200"
         >
           <span
             className={cn(

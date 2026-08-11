@@ -5,30 +5,40 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================================
-   PANCIS HUB — Sistema visual "Grafito"
+   PANCIS HUB — Sistema visual "Codigo de disco"
    ----------------------------------------------------------------------------
-   Referencia: instrumento editorial. Grafito frio, acero, filete de 1px.
-   El modo oscuro es la identidad; el claro es su contraparte, no al reves.
+   Referencia: el codigo de color normado de los discos olimpicos y el hierro
+   del gimnasio. 25 rojo, 20 azul, 15 amarillo, 10 verde, 5 blanco. Nadie que
+   levante tiene que aprenderselo: lo lee al otro lado de la sala.
 
-   Cuatro reglas que no se rompen:
-     1. UNA sola familia cromatica (neutros frios + acero). El color semantico
-        se usa solo para estado y siempre acompanado de icono o texto.
-     2. El acento aparece como maximo 3 veces por pantalla.
-     3. La elevacion se reserva a capas flotantes (dialogo, hoja, menu).
-        Las superficies en flujo se separan con filete, nunca con sombra.
-     4. La cifra manda. Todo dato comparable va en mono tabular, y la cifra
-        principal de cada bloque se pone en escala de display.
+   Cinco reglas que no se rompen:
+     1. EL COLOR ES LA MAGNITUD. Cada macro tiene su disco para siempre, y el
+        color aparece UNICAMENTE donde codifica un dato o un estado. Un color
+        decorativo devuelve el ruido que este sistema viene a quitar.
+     2. NO HAY TARJETAS. El contenido vive sobre el suelo. Lo que separa son
+        reglas, y su GROSOR es la jerarquia: 1px dentro de un grupo, 2px entre
+        grupos, 4px entre secciones. La rejilla de tarjetas queda prohibida.
+     3. La cifra manda y se troquela. La magnitud principal de cada pantalla va
+        en Archivo Black, una sola vez, a escala que se lee de pie y de lejos.
+        Todo lo demas es Archivo: etiquetas, botones, cuerpo y datos.
+     4. El acero no es blando. Radio 2px en superficies; el circulo se reserva
+        al disco, que es la unica forma redonda del sistema.
+     5. Elevacion solo en capas flotantes. En flujo, jamas una sombra.
 
-   Excepcion consciente: el logotipo es calido (naranja) y es un activo de
-   marca que no se toca. Queda como la unica nota calida de la interfaz.
+   Escena que decide claro/oscuro: se usa de pie, con una mano, en una cocina a
+   mediodia, en un gimnasio con fluorescente y a veces en la calle con sol. El
+   claro (tiza y acero) es la casa del diseno; el oscuro (goma de bumper) es
+   igual de real para el gimnasio, no una contraparte de cortesia.
    ========================================================================== */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-sans);
   --font-heading: var(--font-sans);
+  /* La voz de la cifra. Solo cifras. */
+  --font-stamp: var(--font-stamp);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -76,19 +86,28 @@
   --color-divider: var(--divider);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  --color-macro-protein: var(--macro-protein);
-  --color-macro-carbs: var(--macro-carbs);
-  --color-macro-fat: var(--macro-fat);
+  /* --- El codigo de disco. Cada macro lleva el suyo para siempre. --- */
+  --color-macro-protein: var(--macro-protein); /* 20 kg, azul */
+  --color-macro-carbs: var(--macro-carbs); /* 15 kg, amarillo */
+  --color-macro-fat: var(--macro-fat); /* 25 kg, rojo */
+  --color-macro-fiber: var(--macro-fiber); /* 10 kg, verde */
+  --color-macro-water: var(--macro-water); /* 5 kg, blanco */
+  /* Las calorias son la barra, no un disco: acero, nunca color. */
+  --color-macro-energy: var(--macro-energy);
 
-  /* Escala de radios comprimida: el salto entre lg y 3xl es deliberadamente
-     corto para que nada se sienta descoordinado. */
-  --radius-sm: calc(var(--radius) * 0.64);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.2);
-  --radius-2xl: calc(var(--radius) * 1.45);
-  --radius-3xl: calc(var(--radius) * 1.7);
-  --radius-4xl: calc(var(--radius) * 2);
+  /* --- Reglas. El grosor ES la jerarquia (regla 2). --- */
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  /* El acero no es blando (regla 4). Toda la escala colapsa a un troquel de
+     2 px; el circulo existe, pero se lo queda el disco y nada mas. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 3px;
+  --radius-3xl: 3px;
+  --radius-4xl: 4px;
 }
 
 /* ----------------------------------------------------------------------------
@@ -100,185 +119,187 @@
    se borra y se quita el conmutador.
    -------------------------------------------------------------------------- */
 :root {
-  /* --- Papel calido, en la misma familia que el carbon del oscuro --- */
-  --background: oklch(0.985 0.004 60);
-  --foreground: oklch(0.2 0.012 40);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.012 40);
-  --card-raised: oklch(0.972 0.005 55);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.012 40);
+  /* --- Tiza y acero. El suelo del gimnasio con luz de mediodia. --- */
+  --background: oklch(0.968 0.002 250);
+  --foreground: oklch(0.19 0.006 250);
+  /* No hay tarjetas (regla 2). Estos tokens sobreviven porque shadcn los pide,
+     y valen lo mismo que el fondo: una "tarjeta" no puede verse como tal. */
+  --card: oklch(0.968 0.002 250);
+  --card-foreground: oklch(0.19 0.006 250);
+  --card-raised: oklch(0.942 0.003 250);
+  --popover: oklch(0.995 0.001 250);
+  --popover-foreground: oklch(0.19 0.006 250);
 
-  /* --- Naranja de marca, oscurecido para leerse sobre papel (4.8:1) --- */
-  --primary: oklch(0.56 0.155 42);
-  --primary-strong: oklch(0.49 0.145 40);
-  --primary-foreground: oklch(0.99 0.004 60);
+  /* --- El acento es el acero de la barra, no un color de marca. El naranja
+         se retira de la interfaz y se queda donde nacio: en el logotipo. --- */
+  --primary: oklch(0.34 0.008 250);
+  --primary-strong: oklch(0.24 0.008 250);
+  --primary-foreground: oklch(0.98 0.001 250);
 
+  /* El naranja del logotipo, disponible solo para la marca. */
   --brand-from: oklch(0.56 0.155 42);
   --brand-to: oklch(0.56 0.155 42);
-  --brand-btn-from: oklch(0.52 0.15 41);
-  --brand-btn-to: oklch(0.52 0.15 41);
+  --brand-btn-from: oklch(0.34 0.008 250);
+  --brand-btn-to: oklch(0.34 0.008 250);
 
-  --signal: oklch(0.52 0.012 45);
-  --signal-foreground: oklch(0.99 0.004 60);
+  --signal: oklch(0.44 0.008 250);
+  --signal-foreground: oklch(0.98 0.001 250);
 
-  --secondary: oklch(0.955 0.006 55);
-  --secondary-foreground: oklch(0.27 0.012 42);
-  --muted: oklch(0.962 0.005 55);
-  --muted-foreground: oklch(0.5 0.012 45);
-  --subtle-foreground: oklch(0.62 0.012 45);
-  --accent: oklch(0.948 0.008 50);
-  --accent-foreground: oklch(0.34 0.05 42);
+  --secondary: oklch(0.93 0.003 250);
+  --secondary-foreground: oklch(0.26 0.007 250);
+  --muted: oklch(0.938 0.003 250);
+  --muted-foreground: oklch(0.46 0.006 250);
+  --subtle-foreground: oklch(0.58 0.005 250);
+  --accent: oklch(0.925 0.004 250);
+  --accent-foreground: oklch(0.24 0.008 250);
 
-  --success: oklch(0.55 0.115 165);
-  --danger: oklch(0.53 0.16 25);
-  --positive: oklch(0.55 0.115 165);
-  --positive-foreground: oklch(0.99 0.004 60);
-  --caution: oklch(0.53 0.1 75);
-  --caution-foreground: oklch(0.99 0.004 60);
-  --critical: oklch(0.53 0.16 25);
-  --critical-foreground: oklch(0.99 0.004 60);
-  --destructive: oklch(0.53 0.16 25);
+  /* Estado. Toma prestados los discos porque el codigo ya esta aprendido:
+     el rojo del 25 es la alerta, el verde del 10 la confirmacion. */
+  --success: oklch(0.48 0.115 155);
+  --danger: oklch(0.5 0.185 27);
+  --positive: oklch(0.48 0.115 155);
+  --positive-foreground: oklch(0.98 0.001 250);
+  --caution: oklch(0.52 0.13 68);
+  --caution-foreground: oklch(0.98 0.001 250);
+  --critical: oklch(0.5 0.185 27);
+  --critical-foreground: oklch(0.98 0.001 250);
+  --destructive: oklch(0.5 0.185 27);
 
-  /* Los macros mantienen su matiz, oscurecidos para el fondo claro. */
-  --macro-protein: oklch(0.5 0.16 260);
-  --macro-carbs: oklch(0.55 0.12 75);
-  --macro-fat: oklch(0.52 0.16 355);
+  /* --- EL CODIGO DE DISCO ---
+     Ajustados sobre tiza para que todos pasen 4.5:1 como texto. Sobre el
+     disco solido el texto va en su propio -ink. */
+  --macro-protein: oklch(0.46 0.15 255); /* 20 kg azul */
+  --macro-carbs: oklch(0.53 0.125 78); /* 15 kg amarillo */
+  --macro-fat: oklch(0.5 0.185 27); /* 25 kg rojo */
+  --macro-fiber: oklch(0.46 0.115 155); /* 10 kg verde */
+  --macro-water: oklch(0.55 0.01 250); /* 5 kg blanco/cromo */
+  --macro-energy: oklch(0.3 0.008 250); /* la barra: acero */
 
-  --border: oklch(0.9 0.006 55);
-  --border-strong: oklch(0.86 0.008 55);
-  --divider: oklch(0.925 0.005 55);
-  --hairline: oklch(0.925 0.005 55);
-  --input: oklch(0.875 0.007 55);
-  --ring: oklch(0.56 0.155 42);
+  /* Reglas: el grosor es la jerarquia. */
+  --rule: oklch(0.86 0.004 250);
+  --rule-strong: oklch(0.72 0.006 250);
 
-  --chart-1: oklch(0.56 0.155 42);
-  --chart-2: oklch(0.5 0.16 260);
-  --chart-3: oklch(0.55 0.115 165);
-  --chart-4: oklch(0.55 0.12 75);
-  --chart-5: oklch(0.52 0.16 355);
+  --border: oklch(0.86 0.004 250);
+  --border-strong: oklch(0.72 0.006 250);
+  --divider: oklch(0.89 0.003 250);
+  --hairline: oklch(0.89 0.003 250);
+  --input: oklch(0.78 0.005 250);
+  --ring: oklch(0.34 0.008 250);
 
-  --radius: 0.625rem;
-  --radius-card: 16px;
-  --radius-pill: 100px;
+  /* Serie categorica = el codigo, en orden de disco. */
+  --chart-1: oklch(0.5 0.185 27);
+  --chart-2: oklch(0.46 0.15 255);
+  --chart-3: oklch(0.53 0.125 78);
+  --chart-4: oklch(0.46 0.115 155);
+  --chart-5: oklch(0.4 0.008 250);
 
-  /* Sobre papel las mismas sombras del oscuro se ven sucias: se bajan. */
-  --shadow-card: 0 8px 20px -16px oklch(0.2 0.012 40 / 0.35);
-  --shadow-island:
-    0 18px 45px -16px oklch(0.2 0.012 40 / 0.28),
-    inset 0 1px 0 oklch(1 0 0 / 60%);
-  --glow-primary: 0 0 16px -4px oklch(0.56 0.155 42 / 0.45);
-  --surface-card-bg: linear-gradient(180deg, oklch(1 0 0), oklch(0.99 0.003 60));
-  --island-bg: linear-gradient(
-    180deg,
-    oklch(1 0 0 / 0.96),
-    oklch(0.975 0.005 55 / 0.96)
-  );
-  --segmented-bg: oklch(0.962 0.005 55 / 0.9);
+  --radius: 2px;
+  --radius-card: 2px;
+  --radius-pill: 2px;
 
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.2 0.012 40);
-  --sidebar-primary: oklch(0.56 0.155 42);
-  --sidebar-primary-foreground: oklch(0.99 0.004 60);
-  --sidebar-accent: oklch(0.962 0.005 55);
-  --sidebar-accent-foreground: oklch(0.27 0.012 42);
-  --sidebar-border: oklch(0.9 0.006 55);
-  --sidebar-ring: oklch(0.56 0.155 42);
+  /* La unica sombra del sistema, y solo para lo que flota. */
+  --shadow-card: none;
+  --shadow-island: 0 12px 32px -20px oklch(0.19 0.006 250 / 0.55);
+  --glow-primary: none;
+  --surface-card-bg: var(--background);
+  --island-bg: oklch(0.968 0.002 250 / 0.97);
+  --segmented-bg: oklch(0.93 0.003 250);
+
+  --sidebar: oklch(0.942 0.003 250);
+  --sidebar-foreground: oklch(0.19 0.006 250);
+  --sidebar-primary: oklch(0.24 0.008 250);
+  --sidebar-primary-foreground: oklch(0.98 0.001 250);
+  --sidebar-accent: oklch(0.9 0.004 250);
+  --sidebar-accent-foreground: oklch(0.19 0.006 250);
+  --sidebar-border: oklch(0.86 0.004 250);
+  --sidebar-ring: oklch(0.34 0.008 250);
 }
 
 /* ----------------------------------------------------------------------------
-   MODO OSCURO. Es el tema que especifica el handoff, valor por valor.
-   Los tokens marcados [handoff] son literales del paquete de diseno y no se
-   ajustan; el resto son puentes hacia nombres que ya consumian los
-   componentes shadcn del repo y se derivan de los anteriores.
+   MODO OSCURO — goma de bumper.
+   No es la contraparte de cortesia del claro: es el gimnasio. El suelo es el
+   negro mate del disco de goma y el codigo sube de luminosidad para sostenerse
+   encima. La barra sigue siendo acero.
    -------------------------------------------------------------------------- */
 .dark {
-  --background: oklch(0.17 0.008 40); /* [handoff] ~#211f1e */
-  --foreground: oklch(0.985 0 0); /* [handoff] */
-  --card: oklch(0.213 0.011 45); /* [handoff] ~#2b2725 */
-  --card-foreground: oklch(0.985 0 0);
-  --card-raised: oklch(0.255 0.012 45); /* [handoff] sub-superficie */
-  --popover: oklch(0.255 0.012 45);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: oklch(0.16 0.003 250);
+  --foreground: oklch(0.97 0.001 250);
+  --card: oklch(0.16 0.003 250);
+  --card-foreground: oklch(0.97 0.001 250);
+  --card-raised: oklch(0.21 0.004 250);
+  --popover: oklch(0.21 0.004 250);
+  --popover-foreground: oklch(0.97 0.001 250);
 
-  /* --- Naranja de marca: el acento del handoff, el mismo del logotipo --- */
-  --primary: oklch(0.72 0.17 45); /* [handoff] ~#f0803f */
-  --primary-strong: oklch(0.78 0.17 50); /* [handoff] ~#ff9754 */
-  --primary-foreground: oklch(0.18 0.05 40); /* [handoff] ~#2b1a10 */
+  /* El acento es acero pulido: lo que refleja la luz en una sala oscura. */
+  --primary: oklch(0.88 0.003 250);
+  --primary-strong: oklch(0.97 0.001 250);
+  --primary-foreground: oklch(0.16 0.003 250);
 
   --brand-from: oklch(0.72 0.17 45);
   --brand-to: oklch(0.72 0.17 45);
-  --brand-btn-from: oklch(0.72 0.17 45);
-  --brand-btn-to: oklch(0.72 0.17 45);
+  --brand-btn-from: oklch(0.88 0.003 250);
+  --brand-btn-to: oklch(0.88 0.003 250);
 
-  --signal: oklch(0.708 0 0);
-  --signal-foreground: oklch(0.17 0.008 40);
+  --signal: oklch(0.7 0.004 250);
+  --signal-foreground: oklch(0.16 0.003 250);
 
-  --secondary: oklch(0.255 0.012 45);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.24 0.01 45); /* [handoff] */
-  --muted-foreground: oklch(0.708 0 0); /* [handoff] */
-  --subtle-foreground: oklch(0.55 0.01 40); /* [handoff] placeholders */
-  --accent: oklch(0.255 0.012 45);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.24 0.004 250);
+  --secondary-foreground: oklch(0.97 0.001 250);
+  --muted: oklch(0.23 0.004 250);
+  --muted-foreground: oklch(0.72 0.004 250);
+  --subtle-foreground: oklch(0.6 0.004 250);
+  --accent: oklch(0.24 0.004 250);
+  --accent-foreground: oklch(0.97 0.001 250);
 
-  /* Estado. success y danger son literales del handoff (hex, no oklch). */
-  --success: #3fd39a; /* [handoff] */
-  --danger: #e58a8a; /* [handoff] */
-  --positive: #3fd39a;
-  --positive-foreground: oklch(0.17 0.008 40);
-  --caution: oklch(0.78 0.13 70);
-  --caution-foreground: oklch(0.17 0.008 40);
-  --critical: #e58a8a;
-  --critical-foreground: oklch(0.17 0.008 40);
-  --destructive: #e58a8a;
+  --success: oklch(0.72 0.15 155);
+  --danger: oklch(0.68 0.17 27);
+  --positive: oklch(0.72 0.15 155);
+  --positive-foreground: oklch(0.16 0.003 250);
+  --caution: oklch(0.79 0.14 72);
+  --caution-foreground: oklch(0.16 0.003 250);
+  --critical: oklch(0.68 0.17 27);
+  --critical-foreground: oklch(0.16 0.003 250);
+  --destructive: oklch(0.68 0.17 27);
 
-  /* Color por macro: fijo por dato, no decorativo. */
-  --macro-protein: #3987e5; /* [handoff] */
-  --macro-carbs: #c98500; /* [handoff] */
-  --macro-fat: #d55181; /* [handoff] */
+  /* El codigo, con la luminosidad que pide la goma negra. */
+  --macro-protein: oklch(0.66 0.16 255);
+  --macro-carbs: oklch(0.79 0.14 78);
+  --macro-fat: oklch(0.68 0.17 27);
+  --macro-fiber: oklch(0.72 0.15 155);
+  --macro-water: oklch(0.85 0.004 250);
+  --macro-energy: oklch(0.88 0.003 250);
 
-  --border: oklch(1 0 0 / 9%); /* [handoff] */
-  --border-strong: oklch(1 0 0 / 14%); /* [handoff] bordes de island */
-  --divider: oklch(1 0 0 / 7%); /* [handoff] reglas divisorias */
-  --hairline: oklch(1 0 0 / 7%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.72 0.17 45);
+  --rule: oklch(1 0 0 / 13%);
+  --rule-strong: oklch(1 0 0 / 26%);
 
-  /* Serie categorica: acento, macros y neutro. */
-  --chart-1: oklch(0.72 0.17 45);
-  --chart-2: #3987e5;
-  --chart-3: #3fd39a;
-  --chart-4: #c98500;
-  --chart-5: #d55181;
+  --border: oklch(1 0 0 / 13%);
+  --border-strong: oklch(1 0 0 / 26%);
+  --divider: oklch(1 0 0 / 10%);
+  --hairline: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 22%);
+  --ring: oklch(0.88 0.003 250);
 
-  --sidebar: oklch(0.213 0.011 45); /* [handoff] el riel usa --card */
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.72 0.17 45);
-  --sidebar-primary-foreground: oklch(0.18 0.05 40);
-  --sidebar-accent: oklch(0.255 0.012 45);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.72 0.17 45);
+  --chart-1: oklch(0.68 0.17 27);
+  --chart-2: oklch(0.66 0.16 255);
+  --chart-3: oklch(0.79 0.14 78);
+  --chart-4: oklch(0.72 0.15 155);
+  --chart-5: oklch(0.78 0.004 250);
 
-  /* [handoff] Sombras, literales del paquete. */
-  --shadow-card: 0 10px 26px -16px oklch(0 0 0 / 0.6);
-  --shadow-island:
-    0 20px 55px -14px oklch(0 0 0 / 0.8),
-    0 0 46px -8px oklch(0.72 0.17 45 / 0.38),
-    inset 0 1px 0 oklch(1 0 0 / 9%);
-  --glow-primary: 0 0 18px -2px oklch(0.72 0.17 45 / 0.55);
-  --surface-card-bg: linear-gradient(
-    180deg,
-    oklch(0.229 0.011 45),
-    oklch(0.206 0.01 45)
-  );
-  --island-bg: linear-gradient(
-    180deg,
-    oklch(0.245 0.012 45 / 0.96),
-    oklch(0.185 0.01 42 / 0.96)
-  );
-  --segmented-bg: oklch(0.225 0.011 45 / 0.9);
+  --shadow-card: none;
+  --shadow-island: 0 12px 32px -18px oklch(0 0 0 / 0.8);
+  --glow-primary: none;
+  --surface-card-bg: var(--background);
+  --island-bg: oklch(0.16 0.003 250 / 0.97);
+  --segmented-bg: oklch(0.24 0.004 250);
+
+  --sidebar: oklch(0.21 0.004 250);
+  --sidebar-foreground: oklch(0.97 0.001 250);
+  --sidebar-primary: oklch(0.88 0.003 250);
+  --sidebar-primary-foreground: oklch(0.16 0.003 250);
+  --sidebar-accent: oklch(0.26 0.004 250);
+  --sidebar-accent-foreground: oklch(0.97 0.001 250);
+  --sidebar-border: oklch(1 0 0 / 13%);
+  --sidebar-ring: oklch(0.88 0.003 250);
 }
 
 @layer base {
@@ -340,33 +361,80 @@
 
 /* ============================================================================
    TIPOGRAFIA DE DATOS
-   Toda cifra comparable (kcal, gramos, kilos, %, series x repes, horas) va en
-   monoespaciada tabular. Las columnas de numeros se alinean solas y la interfaz
-   se lee como una lectura de instrumento.
+   Una sola familia (regla 3). La monoespaciada se retira: Archivo con cifras
+   tabulares alinea las columnas igual, y sin disfrazar la interfaz de terminal.
    ========================================================================== */
 @utility num {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
 }
 
-/* Cifra protagonista de un bloque: la que se lee desde lejos. Se usa una sola
-   vez por tarjeta, si no deja de destacar y vuelve a ser texto. */
+/**
+ * LA CIFRA TROQUELADA. Una por pantalla, nunca dos.
+ *
+ * Es lo unico que usa Archivo Black, y existe para responder de un vistazo
+ * "cuanto me falta" con el telefono en una mano y sin acercarselo a la cara.
+ * Si aparece dos veces en la misma vista, ninguna de las dos manda.
+ */
 @utility num-display {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-stamp), var(--font-sans), sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 2.125rem; /* 34px */
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-weight: 500;
+  font-feature-settings: "tnum" 1;
+  font-size: clamp(3.25rem, 16vw, 4.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  font-weight: 400;
 }
 
-/* Titulo de pagina en escala editorial. */
+/* Cifra secundaria: manda dentro de su fila, no en la pantalla. */
+@utility num-strong {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+/* Titulo de pantalla. Nunca compite con la cifra: es rotulo, no protagonista. */
 @utility display-title {
-  font-size: 2.125rem; /* 34px */
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  font-weight: 500;
+  font-size: 1.375rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+/* ============================================================================
+   EL DISCO
+   La unica forma redonda del sistema. Su color ES el macro, para siempre, y
+   solo aparece cuando codifica un dato. Como chip lleva su numeral dentro;
+   como barra, el ancho es la magnitud.
+   ========================================================================== */
+@utility plate {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  background: var(--plate-color, var(--macro-energy));
+  color: var(--plate-ink, oklch(1 0 0));
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Regla entre grupos (regla 2). El grosor es la jerarquia. */
+@utility rule-band {
+  border-top: 2px solid var(--rule-strong);
+}
+
+/* Regla de seccion mayor: el canto del disco. Se reserva a LA seccion que
+   manda en la pantalla; si todas la llevan, ninguna manda. */
+@utility rule-plate {
+  border-top: 3px solid var(--foreground);
 }
 
 /* ============================================================================
@@ -376,81 +444,97 @@
    contraparte clara no quede con superficies oscuras.
    ========================================================================== */
 
-/* Superficie de tarjeta. Toda tarjeta del rediseno usa esta. */
+/* ============================================================================
+   NO HAY TARJETAS (regla 2)
+   Estos nombres sobreviven porque medio repositorio los usa, pero su
+   significado cambia: ya no dibujan un contenedor. Una "tarjeta" es ahora un
+   tramo de suelo que empieza con una regla y respira por arriba.
+   ========================================================================== */
 @utility surface-card {
-  background: var(--surface-card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* Sub-superficie dentro de una tarjeta: filas de alimento, mini-stats. */
+/* Sub-superficie: lo unico que se permite tener fondo propio, y muy leve. */
 @utility surface-raised {
   background: var(--card-raised);
-  border: 1px solid var(--divider);
-  border-radius: 10px;
+  border: 0;
+  border-radius: 2px;
 }
 
-/* Cabecera de tarjeta: eyebrow en versalitas + regla divisoria. */
 @utility card-eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.9px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
 
+/* Cabecera de seccion: la regla va ARRIBA, no debajo. Es el canto del disco
+   anunciando que empieza algo, no un subrayado decorativo del titulo. */
 @utility card-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
-  padding-bottom: 11px;
-  border-bottom: 1px solid var(--divider);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
-/* Isla flotante: barra inferior, barra de comandos. */
+/**
+ * Barra anclada: el suelo, con la regla de seccion arriba. Nada flota.
+ *
+ * Opaca a proposito. El desenfoque era decoracion —no un efecto con
+ * proposito— y dejaba el texto del contenido leyendose a traves de la
+ * navegacion, que en un telefono de pie es peor que feo: es ilegible.
+ */
 @utility island {
-  background: var(--island-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-island);
+  background: var(--background);
+  border: 0;
+  border-top: 2px solid var(--rule-strong);
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* Control segmentado de vidrio. Sustituye a los chips sueltos. */
+/* Segmentado: pestanas troqueladas sobre una regla, sin pildoras. */
 @utility segmented {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 0;
   width: max-content;
-  padding: 4px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--segmented-bg);
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 6%),
-    0 10px 26px -18px oklch(0 0 0 / 0.8);
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid var(--rule);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-/* Realce del item activo en la barra inferior. */
+/* Item activo: se marca con el canto grueso, no con un halo. */
 @utility glow-ring {
-  border: 1.5px solid var(--primary);
-  background: var(--card);
-  box-shadow:
-    var(--glow-primary),
-    inset 0 0 12px -2px color-mix(in oklch, var(--primary) 35%, transparent);
+  border: 0;
+  background: transparent;
+  box-shadow: inset 0 -3px 0 var(--foreground);
 }
 
-/* Etiqueta de seccion en versalitas. Un solo nivel, no cuatro. */
+/**
+ * Etiqueta de un dato. NO es un antetitulo.
+ *
+ * Vivia en versalitas con tracking, que es exactamente la forma del "eyebrow"
+ * que el suelo de calidad prohibe, y se habia colado diez veces en la misma
+ * pantalla. Ahora es lo que dice ser: el nombre pequeno de una cifra, en caja
+ * normal. Si lo que hay debajo es un titulo, no lleva etiqueta: el titulo se
+ * defiende solo.
+ */
 @utility label-micro {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  line-height: 1.2;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
   color: var(--muted-foreground);
 }
 
@@ -465,15 +549,17 @@
    que es el comportamiento que se espera al combinarlas.
    ========================================================================== */
 @layer components {
-/* Superficie en flujo: filete de 1px, sin sombra. */
+/* Las superficies heredadas dejan de dibujar caja. Lo que separa es la regla
+   de arriba; el fondo es el suelo (regla 2). */
 .surface-panel,
 .hairline-card,
 .glass-card,
 .glass-pill,
 .hero-banner {
-  background: var(--card);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -513,7 +599,7 @@
   }
 }
 
-/* Marca y acento: bronce plano. Sin degradado, sin resplandor. */
+/* Marca y acento: acero plano. El naranja se queda en el logotipo. */
 .bg-brand-gradient {
   background-image: none;
   background-color: var(--primary);
@@ -610,12 +696,35 @@
 
 /* La capsula flotante de navegacion pasa a barra plana anclada. */
 .dynamic-island-capsule {
-  background: color-mix(in oklch, var(--background) 88%, transparent);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  background: color-mix(in oklch, var(--background) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 0;
-  border-top: 1px solid var(--hairline);
+  border-top: 2px solid var(--rule-strong);
+  border-radius: 0;
   box-shadow: none;
+}
+
+/* ----------------------------------------------------------------------------
+   EL COLLARIN
+   El unico momento de movimiento autorizado del sistema. Marcar algo hecho
+   encaja: baja de golpe y se asienta, como el collarin que fija los discos.
+   No rebota, no brilla, y dura menos de lo que tarda el pulgar en levantarse.
+   -------------------------------------------------------------------------- */
+@keyframes collar-snap {
+  0% {
+    transform: scale(1);
+  }
+  38% {
+    transform: scale(0.86);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-collar {
+  animation: collar-snap 0.14s cubic-bezier(0.32, 0, 0.15, 1);
 }
 } /* fin @layer components */
 

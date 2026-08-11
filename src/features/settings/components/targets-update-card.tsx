@@ -4,13 +4,7 @@ import { useTransition } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { applyRecalculatedTargets } from "@/features/settings/target-actions";
 import type { TargetChange } from "@/features/onboarding/lib/target-drift";
 import type { TargetRecalculation } from "@/features/settings/target-recalculation";
@@ -135,12 +129,9 @@ export function TargetsUpdateCard({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.title}</CardTitle>
-        <CardDescription>{t.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    // Canto grueso: es lo unico de esta pagina que espera una decision.
+    <Section weight="plate" title={t.title} description={t.description}>
+      <div className="flex flex-col gap-5">
         {inputChanges.length > 0 ? (
           <ul className="flex flex-col gap-1 text-sm">
             {inputChanges.map((change) => (
@@ -185,7 +176,7 @@ export function TargetsUpdateCard({
             {t.estimateNotice}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

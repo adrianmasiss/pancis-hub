@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { MetricCard } from "@/components/shared/metric-card";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
@@ -26,14 +26,11 @@ export function AdherenceCard({ data }: { data: DashboardData }) {
   const { adherence } = data;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between gap-3">
-          <span className="truncate">{t.title}</span>
-          <span className="label-micro shrink-0">7 días</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+    <Section
+      title={t.title}
+      action={<span className="label-micro">7 días</span>}
+    >
+      <div className="flex flex-col gap-6">
         {/* Las dos metricas comparten un filete vertical en lugar de vivir en
             cajas propias: menos contorno, misma separacion. */}
         <div className="divide-hairline grid grid-cols-2 divide-x">
@@ -46,7 +43,6 @@ export function AdherenceCard({ data }: { data: DashboardData }) {
         </div>
 
         <div className="flex flex-col gap-2.5">
-          <p className="label-micro">{t.weekLabel}</p>
           <ol className="grid grid-cols-7 gap-1.5">
             {adherence.days.map((day, index) => {
               const isToday = index === adherence.days.length - 1;
@@ -93,7 +89,7 @@ export function AdherenceCard({ data }: { data: DashboardData }) {
           </ol>
           <p className="text-muted-foreground text-[0.6875rem]">{t.legend}</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

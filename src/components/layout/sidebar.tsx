@@ -26,11 +26,10 @@ function initialsOf(name: string): string {
 }
 
 /**
- * Entrada del riel, segun el handoff v2.
+ * Entrada del riel.
  *
- * Activo: pildora con degradado de acento, borde de acento al 40%, halo hacia
- * afuera y luz interior arriba, mas una barra de 3px pegada al borde
- * izquierdo. Reposo: transparente, texto atenuado. Transicion de 160ms.
+ * Activo: canto de 3px a la izquierda y peso semibold. Nada mas. En reposo el
+ * canto es transparente, asi que el texto no se desplaza al cambiar de pagina.
  */
 function NavLink({
   href,
@@ -47,33 +46,19 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
+      /*
+        El activo se marca con el canto grueso a la izquierda, como el borde de
+        un disco apoyado en el rack. Sin pildora, sin degradado y sin halo: en
+        este sistema el realce es grosor, no luz.
+      */
       className={cn(
-        "relative flex items-center gap-3 rounded-full border px-3.5 py-2.5 text-[13.5px] transition-colors duration-[160ms] ease-out [letter-spacing:0]",
+        "relative flex items-center gap-3 border-l-[3px] py-2.5 pr-3 pl-3 text-[13.5px] [letter-spacing:0] transition-colors duration-150 ease-out",
         active
-          ? "border-primary/40 text-foreground font-semibold"
-          : "hover:bg-foreground/5 hover:text-foreground border-transparent font-medium text-[var(--muted-foreground)]",
+          ? "border-l-foreground text-foreground font-semibold"
+          : "hover:text-foreground hover:border-l-rule-strong border-l-transparent font-medium text-[var(--muted-foreground)]",
       )}
-      style={
-        active
-          ? {
-              backgroundImage:
-                "linear-gradient(180deg, color-mix(in oklch, var(--primary) 20%, transparent), color-mix(in oklch, var(--primary) 10%, transparent))",
-              boxShadow:
-                "0 0 20px -6px color-mix(in oklch, var(--primary) 50%, transparent), inset 0 1px 0 oklch(1 0 0 / 8%)",
-            }
-          : undefined
-      }
     >
-      {active ? (
-        <span
-          aria-hidden="true"
-          className="bg-primary absolute inset-y-2 left-0 w-[3px] rounded-sm"
-        />
-      ) : null}
-      <Icon
-        className={cn("size-[18px] shrink-0", active && "text-primary")}
-        aria-hidden="true"
-      />
+      <Icon className="size-[18px] shrink-0" aria-hidden="true" />
       <span className="truncate">{messages.nav[labelKey]}</span>
     </Link>
   );
@@ -90,9 +75,9 @@ export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
 
   return (
     <aside className="border-border bg-sidebar text-sidebar-foreground hidden w-60 shrink-0 flex-col border-r lg:flex">
-      {/* Bloque de marca: 66px de alto y regla divisoria, segun el handoff.
-          Se conserva el logotipo real del producto en vez del monograma "P"
-          del prototipo: la marca no se cambia sin permiso. */}
+      {/* Bloque de marca. El wordmark va a una sola tinta: en un sistema
+          donde el color es la magnitud, un logotipo de cuatro tintas era la
+          mayor fuga de color de la interfaz. */}
       <div className="border-divider flex h-[66px] shrink-0 items-center border-b px-5">
         <Link
           href="/"
@@ -118,8 +103,9 @@ export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
 
         {sidebarSections.map((group) => (
           <div key={group.key} className="flex flex-col gap-px">
-            {/* Etiqueta de grupo: 10px, 700, versalitas, tracking 1.1px. */}
-            <p className="px-3 pt-4 pb-1.5 text-[10px] font-bold tracking-[1.1px] text-[var(--subtle-foreground)] uppercase">
+            {/* Etiqueta de grupo en caja normal: las versalitas con tracking
+                eran el antetitulo que el sistema retiro. */}
+            <p className="px-3 pt-4 pb-1.5 text-xs text-[var(--subtle-foreground)]">
               {group.label}
             </p>
             {group.items.map((item) => (
@@ -143,15 +129,14 @@ export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
           active={isActiveRoute(pathname, settingsNavItem.href)}
         />
         {displayName ? (
-          // Avatar de 36px con degradado de marca como respaldo, segun el
-          // handoff. No se replica su linea de rol ("Atleta Premium"): es
-          // contenido inventado del prototipo y el perfil no tiene ese campo.
+          // Respaldo en acero, no en degradado de marca: el color de esta
+          // interfaz esta reservado al codigo de discos.
           <div className="flex items-center gap-2.5 rounded-[10px] p-2">
             <Avatar className="size-9 shrink-0">
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={displayName} />
               ) : null}
-              <AvatarFallback className="text-primary-foreground bg-[linear-gradient(135deg,oklch(0.62_0.21_30),oklch(0.76_0.17_55))] text-[13px] font-bold">
+              <AvatarFallback className="bg-secondary text-secondary-foreground text-[13px] font-bold">
                 {initialsOf(displayName) || "?"}
               </AvatarFallback>
             </Avatar>

@@ -1386,6 +1386,10 @@ export const messages = {
       /** Encabezado de la primera columna: solo para lectores de pantalla. */
       macroColumn: "Macronutriente",
       over: "de mas",
+      /** Rotulo de la cifra troquelada, debajo de ella y en lenguaje llano. */
+      remainingCaption: "kcal te faltan hoy",
+      overLabel: "kcal de mas",
+      logMeal: "Registrar comida",
       dayNotStarted: "Todavia no has registrado nada de hoy.",
       planWithin:
         "Tu plan de hoy cae dentro de las tolerancias que definiste.",

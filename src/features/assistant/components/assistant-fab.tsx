@@ -20,7 +20,11 @@ export function AssistantFab() {
     <Link
       href="/asistente"
       aria-label={messages.assistant.openAssistant}
-      className="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring focus-visible:ring-offset-background surface-overlay fixed right-5 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex size-12 items-center justify-center rounded-full border-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-8 lg:bottom-8"
+      /*
+        Se apoya por encima de la barra inferior, que ahora ocupa todo el ancho
+        y esta anclada al borde: antes flotaba sobre ella y tapaba un objetivo.
+      */
+      className="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring focus-visible:ring-offset-background surface-overlay fixed right-4 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 flex size-12 items-center justify-center rounded-full border-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-8 lg:bottom-8"
     >
       <Sparkles className="size-5" aria-hidden="true" />
     </Link>

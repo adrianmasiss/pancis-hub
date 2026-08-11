@@ -34,10 +34,9 @@ export function MetricCard({
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <p className="label-micro">{label}</p>
-      {/* La cifra va en monoespaciada tabular: las metricas en rejilla se
-          alinean por si solas y se comparan de un vistazo. Sube a escala de
-          display a partir de sm; en movil caben tres por fila y 34px no. */}
-      <p className="num text-[1.75rem] leading-none font-medium sm:num-display">
+      {/* Cifra secundaria, nunca troquelada: la escala de `num-display` esta
+          reservada a UNA cifra por pantalla, y aqui van varias en rejilla. */}
+      <p className="num text-[1.625rem] leading-none font-semibold tracking-tight">
         {value}
       </p>
       {delta && DeltaIcon ? (

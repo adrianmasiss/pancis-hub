@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdherenceCard } from "@/features/dashboard/components/adherence-card";
 import { DietChecklist } from "@/features/dashboard/components/diet-checklist";
-import { HeroBanner } from "@/features/dashboard/components/hero-banner";
+import { TodayHeader } from "@/features/dashboard/components/today-header";
 import { TodayNutritionCard } from "@/features/dashboard/components/today-nutrition-card";
 import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
@@ -34,25 +34,28 @@ export default async function DashboardPage() {
       vista Hoy: sus cuatro columnas (objetivo, plan, llevas, faltan) no caben
       en 320px, y es lo primero que se viene a mirar.
     */
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="flex min-w-0 flex-col gap-5">
-        <HeroBanner data={data} />
+    /*
+      Una sola columna, tambien en escritorio.
+      El riel derecho de 320px dejaba casi mil pixeles de vacio bajo la unica
+      tarjeta que vivia ahi, y eso no se lee como aire sino como pagina a
+      medio hacer. La adherencia baja al flujo, que ademas es el orden en que
+      importa: que me falta hoy, que como, que entreno, como voy.
+    */
+    <div className="mx-auto flex w-full max-w-[46rem] flex-col gap-6">
+      <TodayHeader data={data} />
 
-        <TodayNutritionCard
-          data={data}
-          targetsOutdated={recalculation !== null}
-        />
+      {/* La respuesta del dia, arriba del pliegue y sin nada delante. */}
+      <TodayNutritionCard
+        data={data}
+        targetsOutdated={recalculation !== null}
+      />
 
-        {data.dietTemplate ? (
-          <DietChecklist template={data.dietTemplate} today={data.today} />
-        ) : null}
+      {data.dietTemplate ? (
+        <DietChecklist template={data.dietTemplate} today={data.today} />
+      ) : null}
 
-        <TrainingCard data={data} />
-      </div>
-
-      <aside className="flex min-w-0 flex-col gap-4">
-        <AdherenceCard data={data} />
-      </aside>
+      <TrainingCard data={data} />
+      <AdherenceCard data={data} />
     </div>
   );
 }

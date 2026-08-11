@@ -6,13 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toOptionalNumber } from "@/lib/forms";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { SelectField } from "@/components/shared/select-field";
 import { updateProfileSettings } from "@/features/settings/actions";
@@ -50,14 +44,11 @@ export function ProfileSettingsForm({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{messages.settings.profileSection}</CardTitle>
-        <CardDescription>
-          {messages.settings.profileDescription}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title={messages.settings.profileSection}
+      description={messages.settings.profileDescription}
+    >
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="max-w-md space-y-4"
@@ -95,7 +86,7 @@ export function ProfileSettingsForm({
             {pending ? messages.common.loading : messages.common.save}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

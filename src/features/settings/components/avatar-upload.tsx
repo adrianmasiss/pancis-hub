@@ -4,13 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { removeAvatar, uploadAvatar } from "@/features/settings/actions";
 import { messages } from "@/i18n/es-419";
 
@@ -70,12 +64,8 @@ export function AvatarUpload({ displayName, avatarUrl }: AvatarUploadProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.avatarSection}</CardTitle>
-        <CardDescription>{t.avatarDescription}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex items-center gap-4">
+    <Section title={t.avatarSection} description={t.avatarDescription}>
+      <div className="flex items-center gap-4">
         <Avatar className="size-16">
           {preview ? <AvatarImage src={preview} alt={displayName} /> : null}
           <AvatarFallback className="text-lg">
@@ -112,7 +102,7 @@ export function AvatarUpload({ displayName, avatarUrl }: AvatarUploadProps) {
             onChange={onFileChange}
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }
