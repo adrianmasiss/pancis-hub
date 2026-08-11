@@ -460,6 +460,7 @@ Ninguna constante llega a producción sin una de las tres etiquetas. Es la puert
 | 4 | Copiloto con herramientas, chat con grounding y citas | sí |
 | 4b | Cierre real de la 4: bucle de herramientas conectado (2026-08-05) | sí |
 | 5 | Rutina desde PDF, vista Hoy, tolerancias, confianza del dato | sí |
+| 5a | Vista Hoy (Inicio pasa a ser Hoy) y tolerancias usables (2026-08-10) | sí |
 | 6 | Regiones musculares y programación 07A | sí |
 | 7 | Generación de dieta y rutina inicial | sí |
 | 8 | Biblioteca navegable y RAG completo | sí |

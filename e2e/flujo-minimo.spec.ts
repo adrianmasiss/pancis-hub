@@ -112,6 +112,24 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Como queda tu dia" }),
   ).toBeVisible();
+
+  // La vista Hoy recoge lo registrado y responde lo que falta (doc 13). Las
+  // cuatro columnas juntas son el punto: antes solo estaban objetivo y
+  // consumido, y el restante lo calculaba el usuario de cabeza.
+  await page.goto("/");
+  await expect(
+    page.getByRole("columnheader", { name: "Objetivo" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "Llevas" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "Faltan" }),
+  ).toBeVisible();
+  // Con una comida registrada, el dia ya empezo.
+  await expect(
+    page.getByText("Todavia no has registrado nada de hoy."),
+  ).toHaveCount(0);
 });
 
 test("horarios ordenan el dia", async ({ page }) => {
@@ -720,6 +738,24 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
   await expect(
     page.getByText("Objetivos nutricionales actualizados").first(),
   ).toBeVisible();
+});
+
+test("el margen por macro se puede cambiar", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Las columnas existian desde la fase 3 sin ninguna pantalla que las
+  // dejara tocar: todo el mundo vivia con los valores por defecto.
+  await page.goto("/configuracion");
+  await page.getByLabel("Calorias (%)").fill("12");
+  await page.getByRole("button", { name: "Guardar mi margen" }).click();
+  await expect(page.getByText("Margen actualizado.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByLabel("Calorias (%)")).toHaveValue("12");
 });
 
 test("tema, cierre de sesion y persistencia", async ({ page }) => {

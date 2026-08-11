@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/dates";
 import {
+  DEFAULT_TOLERANCES,
+  type MacroTolerances,
+} from "@/features/nutrition/lib/tolerances";
+import {
   movingAverage,
   trendDirection,
   windowDifference,
@@ -73,6 +77,13 @@ export type DashboardData = {
   } | null;
   dietTemplate: DietTemplateView | null;
   consumed: MacroTotals;
+  /**
+   * Suma del plan del dia, con las sustituciones de hoy ya aplicadas. null
+   * cuando no hay dieta activa: no es cero, es que no se sabe.
+   */
+  plannedTotals: MacroTotals | null;
+  /** Tolerancias del usuario. Son preferencias suyas, no limites clinicos. */
+  tolerances: MacroTolerances;
   mealsLoggedToday: number;
   training: {
     activePlanName: string | null;
@@ -116,7 +127,9 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, primary_goal, timezone")
+    .select(
+      "display_name, primary_goal, timezone, tolerance_calories_pct, tolerance_protein_pct, tolerance_carbs_pct, tolerance_fat_pct",
+    )
     .eq("id", userId)
     .single();
 
@@ -445,6 +458,21 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       }
     : null;
 
+  // Lo planificado sale de las comidas ya mapeadas, con las sustituciones de
+  // hoy incorporadas: es el plan que el usuario tiene delante, no el guardado.
+  const plannedTotals: MacroTotals | null = dietTemplate
+    ? dietTemplate.meals.reduce<MacroTotals>(
+        (acc, meal) => ({
+          calories: acc.calories + meal.totals.calories,
+          proteinG: round1(acc.proteinG + meal.totals.proteinG),
+          carbohydrateG: round1(acc.carbohydrateG + meal.totals.carbohydrateG),
+          fatG: round1(acc.fatG + meal.totals.fatG),
+          fiberG: round1(acc.fiberG + meal.totals.fiberG),
+        }),
+        { calories: 0, proteinG: 0, carbohydrateG: 0, fatG: 0, fiberG: 0 },
+      )
+    : null;
+
   return {
     displayName: profile?.display_name ?? "",
     timezone,
@@ -453,6 +481,19 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     targets,
     dietTemplate,
     consumed,
+    plannedTotals,
+    tolerances: {
+      caloriesPct: Number(
+        profile?.tolerance_calories_pct ?? DEFAULT_TOLERANCES.caloriesPct,
+      ),
+      proteinPct: Number(
+        profile?.tolerance_protein_pct ?? DEFAULT_TOLERANCES.proteinPct,
+      ),
+      carbsPct: Number(
+        profile?.tolerance_carbs_pct ?? DEFAULT_TOLERANCES.carbsPct,
+      ),
+      fatPct: Number(profile?.tolerance_fat_pct ?? DEFAULT_TOLERANCES.fatPct),
+    },
     mealsLoggedToday,
     training: {
       activePlanName: plan?.name ?? null,

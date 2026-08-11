@@ -19,6 +19,12 @@ type MacroRingsProps = {
   fat: MacroData;
   size?: number;
   className?: string;
+  /**
+   * La leyenda trae las cifras consumido/objetivo de cada macro. Se apaga
+   * cuando esos mismos numeros ya estan al lado, como en la tabla de la vista
+   * Hoy: el mismo dato dos veces en la misma tarjeta no ayuda a nadie.
+   */
+  showLegend?: boolean;
 };
 
 /**
@@ -37,6 +43,7 @@ export function AppleMacroRings({
   fat,
   size = 200,
   className,
+  showLegend = true,
 }: MacroRingsProps) {
   const [activeRing, setActiveRing] = useState<
     "protein" | "carbs" | "fat" | null
@@ -186,7 +193,12 @@ export function AppleMacroRings({
       {/* Con las cifras dentro, la leyenda deja de caber en una fila: pasa a
           columna, alineada a la izquierda, para que los numeros se comparen
           verticalmente. */}
-      <div className="mt-5 flex w-full max-w-[15rem] flex-col gap-2">
+      <div
+        className={cn(
+          "mt-5 w-full max-w-[15rem] flex-col gap-2",
+          showLegend ? "flex" : "hidden",
+        )}
+      >
         {ringConfigs.map((r) => (
           <button
             key={r.id}
