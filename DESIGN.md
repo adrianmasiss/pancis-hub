@@ -235,6 +235,8 @@ Un boton secundario translucido sobre el marino da menos de 1.5:1 y se lee como 
 
 La variante `brand` no existia: la regla 1 no se podia expresar en codigo, todas las acciones salian iguales y ninguna mandaba. Cuidado con una trampa que ya costo un fallo: el degradado es una `background-image`, y el `disabled:bg-muted` de Tailwind cambia el `background-color`, asi que un boton apagado seguia viendose como la accion prominente. El estado deshabilitado se apaga en el CSS de `.bg-brand-button`, no en la utilidad.
 
+**Una pantalla puede no tener accion prominente, y esta bien.** Configuracion es una lista de formularios independientes: sus cuatro "Guardar" son acciones locales de su tarjeta y ninguna manda sobre las otras. La prominente aparece solo cuando el aviso de objetivos desajustados esta presente, porque entonces si hay algo que la pantalla esta pidiendo. Forzar una prominente donde no la hay es tan malo como tener cinco.
+
 ### `MagnitudeBar` — la primitiva de dato del sistema
 
 `src/components/shared/magnitude.tsx`. El ancho **es** la cantidad. Pista en `--rule`, relleno en el acento, capsula, 6px.
@@ -248,6 +250,12 @@ Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su nu
 `src/components/shared/macro-chip.tsx`. La misma regla, aplicada a la fila densa: rotulo corto (`P`, `C`, `G`, `F`, `Cal`) y la cifra, sin color y sin icono.
 
 Llevaba un icono por macro —llama, carne, trigo, gota, hoja— pintado con los tokens `chart-1..5`. Era el codigo de disco sobreviviendo en las pantallas de Nutricion, y ademas `chart-1` **es** el naranja del acento: cada cifra de calorias se pintaba del color reservado a lo accionable. El nombre completo viaja en `sr-only`, porque fuera de contexto "G" no dice "Grasas".
+
+### `MetricCard` — la lectura secundaria
+
+`src/components/shared/metric-card.tsx`. **La cifra primero, el rotulo debajo**, igual que la cifra troquelada de Hoy. Nunca a escala `num-display`: esa esta reservada a una por pantalla y estas van en fila de tres.
+
+Iba al reves. Con el rotulo encima, uno largo —"vs semana pasada"— envolvia a dos lineas y empujaba su cifra medio renglon por debajo de las vecinas: tres lecturas que existen para compararse de un vistazo dejaban de compartir linea base. Poniendo la cifra arriba, arrancan todas a la misma altura y el rotulo envuelve donde no estorba.
 
 ### Cards
 
@@ -288,8 +296,8 @@ Las cinco pestanas se reparten el ancho de una barra anclada al borde, no de una
 
 Al 2026-08-13, sobre `feat/sistema-visual-p7`:
 
-- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, la tarjeta de Nutricion de hoy, la navegacion completa (barra inferior, barra lateral y boton flotante), y las secciones de **Nutricion** y **Entrenamiento** con sus sub-paginas.
-- **Pendiente:** Progreso, Configuracion, Login, Recetas y Academia siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unos 15 archivos.
+- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, `MetricCard`, Hoy, la navegacion completa (barra inferior, barra lateral y boton flotante), y las secciones de **Nutricion**, **Entrenamiento**, **Progreso** y **Configuracion** con sus sub-paginas.
+- **Pendiente:** Login, Onboarding, Recetas, Academia y el chat del asistente siguen con la plantilla anterior; `@/components/ui/card` sigue importado en 11 archivos.
 
 ### Encabezado de pantalla
 

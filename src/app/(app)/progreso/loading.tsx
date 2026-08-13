@@ -15,7 +15,7 @@ import {
 export default function Loading() {
   return (
     <LoadingShell>
-      <SkeletonPageHeader actions={1} />
+      <SkeletonPageHeader actions={1} icon={false} description={false} />
 
       <SkeletonCard>
         <div className="space-y-4">

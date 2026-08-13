@@ -167,7 +167,20 @@ export function TargetsUpdateCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Button onClick={onApply} disabled={pending}>
+          {/*
+            La accion prominente de Configuracion, y solo cuando este aviso
+            existe. Los "Guardar" de cada formulario son acciones locales de su
+            tarjeta; esto es lo que la pantalla esta PIDIENDO que hagas, y sin
+            distinguirlo competia de igual a igual con cuatro botones mas.
+            Cuando no hay desajuste, la pantalla no tiene accion prominente:
+            es una pagina de formularios y ninguno manda sobre los otros.
+          */}
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={onApply}
+            disabled={pending}
+          >
             {pending ? messages.common.loading : t.apply}
           </Button>
           <p className="text-muted-foreground text-xs">

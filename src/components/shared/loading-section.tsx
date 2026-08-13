@@ -100,7 +100,7 @@ export function SkeletonCard({
 }
 
 /**
- * Reserva de la fila de MetricCard: etiqueta corta sobre cifra.
+ * Reserva de la fila de MetricCard: cifra y, debajo, su etiqueta.
  * Las clases de columna se escriben completas porque Tailwind lee el fuente y
  * no resuelve nombres construidos en tiempo de ejecucion.
  */
@@ -112,8 +112,8 @@ export function SkeletonMetricRow({ count = 3 }: { count?: 2 | 3 | 4 }) {
     <div className={cn("grid gap-4", columns)}>
       {Array.from({ length: count }, (_, index) => (
         <div key={index} className="space-y-2">
-          <Skeleton className="h-3 w-16" />
           <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-3 w-16" />
         </div>
       ))}
     </div>

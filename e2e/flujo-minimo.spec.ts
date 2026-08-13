@@ -455,9 +455,12 @@ test("composicion corporal con dos InBody", async ({ page }) => {
 
   // Las aserciones se acotan a la tarjeta de composicion: el grafico de
   // abajo repite las mismas etiquetas en su leyenda.
+  //
+  // Se sube al <section> que la contiene. Antes trepaba hasta un
+  // `data-slot=card`, atributo del componente Card que esta tarjeta ya no usa.
   const compositionCard = page
-    .getByText("Composicion corporal", { exact: true })
-    .locator("xpath=ancestor::*[@data-slot='card']");
+    .getByRole("heading", { name: "Composicion corporal" })
+    .locator("xpath=ancestor::section[1]");
 
   // Masa grasa derivada: 80 x 24 % = 19.2 kg -> 80 x 20 % = 16 kg,
   // es decir -3.2 kg contra la medicion anterior.
