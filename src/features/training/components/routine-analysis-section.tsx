@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
 import type {
   FindingPriority,
@@ -30,12 +30,8 @@ export function RoutineAnalysisSection({
   analysis: RoutineAnalysis;
 }) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.analysisTitle}</CardTitle>
-        <p className="text-muted-foreground text-xs">{t.analysisDescription}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Section title={t.analysisTitle} description={t.analysisDescription}>
+      <div className="space-y-4">
         <ul className="space-y-2">
           {analysis.findings.map((finding, index) => (
             <li
@@ -93,7 +89,7 @@ export function RoutineAnalysisSection({
         ) : null}
 
         <p className="text-muted-foreground text-xs">{t.analysisDisclaimer}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

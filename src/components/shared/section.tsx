@@ -38,9 +38,15 @@ export function Section({
       )}
     >
       {title ? (
-        <div className="mb-3 flex items-baseline justify-between gap-3">
+        /*
+          Envuelve. Con un titulo y dos botones al lado —"Rutinas", "Importar
+          rutina", "Crear rutina"— la fila se salia de 390px y el ultimo boton
+          quedaba cortado contra el borde. Envolviendo, la accion baja entera a
+          su propia linea en vez de desbordar.
+        */
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
           <h2 className="display-title">{title}</h2>
-          {action ? <div className="shrink-0">{action}</div> : null}
+          {action ? <div>{action}</div> : null}
         </div>
       ) : null}
       {description ? (

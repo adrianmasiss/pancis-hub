@@ -14,7 +14,6 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -70,23 +69,44 @@ export function MealCard({ meal }: { meal: MealView }) {
   };
 
   const title = meal.name || t.mealTypes[meal.mealType];
+  const time = formatTime(meal.scheduledTime);
 
   return (
-    <Card className={cn(meal.status === "omitida" && "opacity-60")}>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <span>{title}</span>
-          {meal.name ? (
-            <span className="text-muted-foreground text-xs font-normal">
-              {t.mealTypes[meal.mealType]}
-            </span>
-          ) : null}
-          {formatTime(meal.scheduledTime) ? (
-            <span className="text-muted-foreground flex items-center gap-1 text-xs font-normal">
-              <Clock className="size-3" aria-hidden="true" />
-              {formatTime(meal.scheduledTime)}
-            </span>
-          ) : null}
+    /*
+      La comida es una tarjeta de la lista del dia, no una `Section`: su
+      cabecera lleva titulo, cifra, meta y tres disparadores, y eso no cabe en
+      el par titulo/accion.
+
+      Se reparte en DOS filas. Antes iba todo en una sola linea flex —titulo,
+      tipo, hora, estado, kcal y tres botones— que en 390px se estrujaba hasta
+      partir el titulo. Arriba lo que identifica la comida y su energia; debajo,
+      en una linea aparte, la meta que solo se consulta.
+    */
+    <section
+      // Con nombre accesible la tarjeta es una region navegable: quien usa
+      // lector de pantalla puede saltar de comida en comida en vez de recorrer
+      // la lista entera de alimentos.
+      aria-labelledby={`comida-${meal.id}`}
+      className={cn(
+        "surface-card px-5 py-5",
+        meal.status === "omitida" && "opacity-60",
+      )}
+    >
+      <div className="mb-3">
+        <div className="flex items-baseline gap-3">
+          <h3
+            id={`comida-${meal.id}`}
+            className="display-title min-w-0 flex-1 truncate"
+          >
+            {title}
+          </h3>
+          <span className="num-strong shrink-0">
+            {meal.totals.calories.toLocaleString("es-419")}
+            <span className="text-muted-foreground font-normal"> {t.kcal}</span>
+          </span>
+        </div>
+
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <Badge
             variant={
               meal.status === "completada" ||
@@ -98,102 +118,116 @@ export function MealCard({ meal }: { meal: MealView }) {
           >
             {t.statuses[meal.status]}
           </Badge>
-          <span className="text-muted-foreground ml-auto text-sm font-normal tabular-nums">
-            {meal.totals.calories} {t.kcal}
+          {meal.name ? (
+            <span className="text-muted-foreground text-xs">
+              {t.mealTypes[meal.mealType]}
+            </span>
+          ) : null}
+          {time ? (
+            <span className="text-muted-foreground flex items-center gap-1 text-xs">
+              <Clock className="size-3" aria-hidden="true" />
+              {time}
+            </span>
+          ) : null}
+
+          {/* Los disparadores se van al final de la fila de meta: son acciones
+              sobre la comida, no parte de su nombre. */}
+          <span className="ml-auto flex shrink-0 items-center">
+            <AskAboutButton
+              question={contextualQuestions.meal(title)}
+              label={title}
+            />
+            <RecipeSwapSheet
+              mealId={meal.id}
+              mealName={title}
+              hasItems={meal.items.length > 0}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={messages.common.openMenu}
+                  disabled={pending}
+                >
+                  <MoreVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {meal.status !== "completada" &&
+                meal.status !== "completada_con_cambios" ? (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      run(
+                        () =>
+                          updateMealStatus({
+                            mealId: meal.id,
+                            status: "completada",
+                          }),
+                        t.statusUpdated,
+                      )
+                    }
+                  >
+                    <Check className="size-4" /> {t.markCompleted}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      run(
+                        () =>
+                          updateMealStatus({
+                            mealId: meal.id,
+                            status: "planificada",
+                          }),
+                        t.statusUpdated,
+                      )
+                    }
+                  >
+                    <Undo2 className="size-4" /> {t.markPlanned}
+                  </DropdownMenuItem>
+                )}
+                {meal.status !== "omitida" ? (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      run(
+                        () =>
+                          updateMealStatus({
+                            mealId: meal.id,
+                            status: "omitida",
+                          }),
+                        t.statusUpdated,
+                      )
+                    }
+                  >
+                    <CircleSlash className="size-4" /> {t.markSkipped}
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuItem
+                  onClick={() =>
+                    run(() => copyMeal({ mealId: meal.id }), t.mealCopied)
+                  }
+                >
+                  <Copy className="size-4" /> {t.copyMeal}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setNotesOpen((open) => !open)}>
+                  <NotebookPen className="size-4" /> {t.notes}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-4" /> {t.deleteMeal}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </span>
-          <AskAboutButton
-            question={contextualQuestions.meal(title)}
-            label={title}
-          />
-          <RecipeSwapSheet
-            mealId={meal.id}
-            mealName={title}
-            hasItems={meal.items.length > 0}
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={messages.common.openMenu}
-                disabled={pending}
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {meal.status !== "completada" &&
-              meal.status !== "completada_con_cambios" ? (
-                <DropdownMenuItem
-                  onClick={() =>
-                    run(
-                      () =>
-                        updateMealStatus({
-                          mealId: meal.id,
-                          status: "completada",
-                        }),
-                      t.statusUpdated,
-                    )
-                  }
-                >
-                  <Check className="size-4" /> {t.markCompleted}
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() =>
-                    run(
-                      () =>
-                        updateMealStatus({
-                          mealId: meal.id,
-                          status: "planificada",
-                        }),
-                      t.statusUpdated,
-                    )
-                  }
-                >
-                  <Undo2 className="size-4" /> {t.markPlanned}
-                </DropdownMenuItem>
-              )}
-              {meal.status !== "omitida" ? (
-                <DropdownMenuItem
-                  onClick={() =>
-                    run(
-                      () =>
-                        updateMealStatus({
-                          mealId: meal.id,
-                          status: "omitida",
-                        }),
-                      t.statusUpdated,
-                    )
-                  }
-                >
-                  <CircleSlash className="size-4" /> {t.markSkipped}
-                </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuItem
-                onClick={() =>
-                  run(() => copyMeal({ mealId: meal.id }), t.mealCopied)
-                }
-              >
-                <Copy className="size-4" /> {t.copyMeal}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setNotesOpen((open) => !open)}>
-                <NotebookPen className="size-4" /> {t.notes}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setConfirmDelete(true)}
-              >
-                <Trash2 className="size-4" /> {t.deleteMeal}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        </div>
+      </div>
+
+      <div className="space-y-3">
         {meal.items.length > 0 ? (
-          <ul className="divide-y">
+          <ul className="divide-rule divide-y">
             {meal.items.map((item) => (
               <MealItemRow key={item.id} item={item} />
             ))}
@@ -240,7 +274,7 @@ export function MealCard({ meal }: { meal: MealView }) {
         ) : null}
 
         <FoodPicker mealId={meal.id} />
-      </CardContent>
+      </div>
 
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent className="max-w-sm">
@@ -265,6 +299,6 @@ export function MealCard({ meal }: { meal: MealView }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </section>
   );
 }

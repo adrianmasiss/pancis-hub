@@ -21,6 +21,12 @@ const buttonVariants = cva(
       // --btn-glow define el tono del halo que sigue al cursor en cada variante:
       // luz sobre superficies llenas, bronce sobre superficies claras.
       variant: {
+        // La accion prominente de la pantalla, y solo una por pantalla
+        // (regla 1). Es lo unico que lleva el degradado del logotipo; el resto
+        // de las acciones reales van con `default`, que es --primary plano.
+        // Sin esta variante la regla no se podia expresar en codigo: todas las
+        // acciones salian identicas y ninguna mandaba.
+        brand: "bg-brand-button",
         default:
           "btn-spotlight bg-primary text-primary-foreground [--btn-glow:color-mix(in_oklch,white_26%,transparent)] hover:bg-primary/92 active:bg-primary/84",
         outline:

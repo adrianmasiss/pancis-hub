@@ -5,7 +5,7 @@ import { Check, Flag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -207,20 +207,20 @@ export function SessionView({ session }: { session: SessionDetail }) {
       {exercises.map((exercise) => {
         const sets = setsByExercise.get(exercise.exerciseId) ?? [];
         return (
-          <Card key={exercise.exerciseId}>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-baseline gap-2 text-base">
-                {exercise.name}
-                {exercise.target ? (
-                  <span className="text-muted-foreground text-xs font-normal">
-                    {t.targetLabel}: {exercise.target}
-                  </span>
-                ) : null}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <Section
+            key={exercise.exerciseId}
+            title={exercise.name}
+            action={
+              exercise.target ? (
+                <span className="text-muted-foreground text-xs">
+                  {t.targetLabel}: {exercise.target}
+                </span>
+              ) : null
+            }
+          >
+            <div className="space-y-3">
               {sets.length > 0 ? (
-                <ul className="divide-y">
+                <ul className="divide-rule divide-y">
                   {sets.map((set) => (
                     <li
                       key={set.id}
@@ -264,8 +264,8 @@ export function SessionView({ session }: { session: SessionDetail }) {
                 exerciseId={exercise.exerciseId}
                 lastSet={sets.filter((set) => !set.isWarmup).at(-1)}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </Section>
         );
       })}
 

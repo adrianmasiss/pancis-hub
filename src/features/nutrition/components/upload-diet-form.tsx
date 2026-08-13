@@ -1,16 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Brain, Loader2, UploadCloud } from "lucide-react";
+import { Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DietReviewEditor } from "@/features/nutrition/components/diet-review-editor";
@@ -113,39 +106,36 @@ export function UploadDietForm() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UploadCloud className="text-primary size-5" />
-            {t.uploadTitle}
-          </CardTitle>
-          <CardDescription>{t.uploadDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="diet-file">{t.fileLabel}</Label>
-            <Input
-              id="diet-file"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              onChange={handleFileChange}
-            />
-          </div>
-          {error ? (
-            <p className="text-destructive mt-4 text-sm">{error}</p>
-          ) : null}
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handleParse} disabled={!file || isLoading}>
-            {isLoading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Brain className="size-4" />
-            )}
-            {isLoading ? t.analyzing : t.analyze}
-          </Button>
-        </CardFooter>
-      </Card>
+      <Section title={t.uploadTitle} description={t.uploadDescription}>
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="diet-file">{t.fileLabel}</Label>
+          <Input
+            id="diet-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            onChange={handleFileChange}
+          />
+        </div>
+        {error ? (
+          <p className="text-destructive mt-4 text-sm">{error}</p>
+        ) : null}
+        {/* La accion prominente de esta pantalla: subir la dieta es a lo
+            unico que se entra aqui. */}
+        <Button
+          variant="brand"
+          size="lg"
+          className="mt-5"
+          onClick={handleParse}
+          disabled={!file || isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Brain className="size-4" />
+          )}
+          {isLoading ? t.analyzing : t.analyze}
+        </Button>
+      </Section>
 
       {parsedData ? (
         <DietReviewEditor

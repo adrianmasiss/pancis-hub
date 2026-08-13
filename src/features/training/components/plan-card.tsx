@@ -6,7 +6,6 @@ import { CheckCircle2, Copy, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -48,74 +47,80 @@ export function PlanCard({ plan }: { plan: PlanSummary }) {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
+    /*
+      Igual reparto que la comida en Nutricion: arriba el nombre, debajo la
+      meta. El nombre iba en la misma linea flex que la insignia, el conteo de
+      dias y el menu, y en 390px eso lo estrujaba hasta partirlo.
+    */
+    <section className="surface-card px-5 py-5">
+      <div className="flex items-baseline gap-3">
+        {/* El nombre es titulo antes que enlace: se queda en la tinta del
+            sistema y el acento se reserva al hover. Como toda `a` de la app
+            nace naranja, el titulo entero salia del color del acento y la
+            tarjeta se leia como seleccionada. */}
+        <h3 className="display-title min-w-0 flex-1 truncate">
           <Link
             href={`/entrenamiento/rutinas/${plan.id}`}
-            className="hover:underline"
+            className="text-foreground hover:text-primary transition-colors duration-[var(--dur-fast)] hover:underline"
           >
             {plan.name}
           </Link>
-          {plan.active ? <Badge>{t.activeBadge}</Badge> : null}
-          <span className="text-muted-foreground ml-auto text-xs font-normal">
-            {plan.dayCount} {t.dayLabel.toLowerCase()}
-            {plan.dayCount === 1 ? "" : "s"}
-          </span>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={messages.common.openMenu}
-                disabled={pending}
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {!plan.active ? (
-                <DropdownMenuItem
-                  onClick={() =>
-                    run(
-                      () => setActivePlan({ planId: plan.id }),
-                      t.planActivated,
-                    )
-                  }
-                >
-                  <CheckCircle2 className="size-4" /> {t.setActive}
-                </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuItem asChild>
-                <Link href={`/entrenamiento/rutinas/${plan.id}`}>
-                  <Pencil className="size-4" /> {t.editPlan}
-                </Link>
-              </DropdownMenuItem>
+        </h3>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0"
+              aria-label={messages.common.openMenu}
+              disabled={pending}
+            >
+              <MoreVertical className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {!plan.active ? (
               <DropdownMenuItem
                 onClick={() =>
-                  run(
-                    () => duplicatePlan({ planId: plan.id }),
-                    t.planDuplicated,
-                  )
+                  run(() => setActivePlan({ planId: plan.id }), t.planActivated)
                 }
               >
-                <Copy className="size-4" /> {t.duplicatePlan}
+                <CheckCircle2 className="size-4" /> {t.setActive}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setConfirmDelete(true)}
-              >
-                <Trash2 className="size-4" /> {t.deletePlan}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </CardTitle>
-      </CardHeader>
+            ) : null}
+            <DropdownMenuItem asChild>
+              <Link href={`/entrenamiento/rutinas/${plan.id}`}>
+                <Pencil className="size-4" /> {t.editPlan}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                run(() => duplicatePlan({ planId: plan.id }), t.planDuplicated)
+              }
+            >
+              <Copy className="size-4" /> {t.duplicatePlan}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="size-4" /> {t.deletePlan}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+        {plan.active ? <Badge>{t.activeBadge}</Badge> : null}
+        <span className="text-muted-foreground num text-xs">
+          {plan.dayCount} {t.dayLabel.toLowerCase()}
+          {plan.dayCount === 1 ? "" : "s"}
+        </span>
+      </div>
+
       {plan.objective ? (
-        <CardContent>
-          <p className="text-muted-foreground text-sm">{plan.objective}</p>
-        </CardContent>
+        <p className="text-muted-foreground mt-3 text-sm">{plan.objective}</p>
       ) : null}
 
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
@@ -141,6 +146,6 @@ export function PlanCard({ plan }: { plan: PlanSummary }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </section>
   );
 }

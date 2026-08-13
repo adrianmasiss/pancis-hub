@@ -6,13 +6,7 @@ import { toast } from "sonner";
 import { Link2, Link2Off, Plus, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/shared/form-field";
@@ -387,12 +381,8 @@ export function DietReviewEditor({
   };
 
   return (
-    <Card className="border-primary/40">
-      <CardHeader>
-        <CardTitle>{t.reviewTitle}</CardTitle>
-        <CardDescription>{t.reviewDescription}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <Section title={t.reviewTitle} description={t.reviewDescription}>
+      <div className="space-y-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <FormField
             label={t.dietName}
@@ -598,7 +588,7 @@ export function DietReviewEditor({
         >
           {pending ? t.saving : t.saveDiet}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

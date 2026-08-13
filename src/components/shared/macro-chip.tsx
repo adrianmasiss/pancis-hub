@@ -1,27 +1,9 @@
-import { Beef, Droplet, Flame, Leaf, Wheat, type LucideIcon } from "lucide-react";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
 const m = messages.macros;
 
 export type MacroType = "calories" | "protein" | "carbs" | "fat" | "fiber";
-
-const MACRO_ICON: Record<MacroType, LucideIcon> = {
-  calories: Flame,
-  protein: Beef,
-  carbs: Wheat,
-  fat: Droplet,
-  fiber: Leaf,
-};
-
-// Reutiliza los tokens de color de graficos ya definidos en globals.css.
-const MACRO_COLOR: Record<MacroType, string> = {
-  calories: "text-chart-1",
-  protein: "text-chart-2",
-  carbs: "text-chart-4",
-  fat: "text-chart-3",
-  fiber: "text-chart-5",
-};
 
 /** Redondeo consistente: enteros para kcal, un decimal para gramos. */
 function formatMacroValue(type: MacroType, value: number): string {
@@ -32,41 +14,53 @@ function formatMacroValue(type: MacroType, value: number): string {
 type MacroChipProps = {
   type: MacroType;
   value: number;
-  /** "full": "Proteinas: 18 g" — "compact": icono + "18 g". */
+  /** "full": "Proteinas: 18 g" — "compact": "P 18 g". */
   variant?: "full" | "compact";
   className?: string;
 };
 
+/**
+ * Un macro y su cantidad.
+ *
+ * Llevaba un icono con un color por macro —llama, carne, trigo, gota, hoja—
+ * sobre los tokens de grafico. Eso era el "codigo de disco" que este sistema
+ * retiro: pedia cinco colores, y aqui solo hay uno. Peor aun, `chart-1` ES el
+ * naranja del acento, asi que cada cifra de calorias se pintaba del color
+ * reservado a lo accionable y al avance del dia.
+ *
+ * La identidad del macro pasa a su ROTULO, que se lee y no hay que aprenderse.
+ * En compacto va la forma corta que el diccionario ya tenia sin usar (`short`:
+ * P, C, G, F) porque cuatro macros en una fila de 390px no admiten "Carbo-
+ * hidratos"; en `full` va el nombre entero.
+ */
 export function MacroChip({
   type,
   value,
   variant = "compact",
   className,
 }: MacroChipProps) {
-  const Icon = MACRO_ICON[type];
   const meta = m[type];
   const formatted = `${formatMacroValue(type, value)} ${meta.unit}`;
 
   if (variant === "full") {
     return (
       <span className={cn("inline-flex items-center gap-1.5", className)}>
-        <Icon className={cn("size-4 shrink-0", MACRO_COLOR[type])} aria-hidden="true" />
         <span>
-          {meta.label}: <span className="font-medium">{formatted}</span>
+          {meta.label}: <span className="num font-medium">{formatted}</span>
         </span>
       </span>
     );
   }
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 tabular-nums",
-        className,
-      )}
-    >
-      <Icon className={cn("size-3.5 shrink-0", MACRO_COLOR[type])} aria-hidden="true" />
-      {formatted}
+    <span className={cn("inline-flex items-baseline gap-1", className)}>
+      {/* El rotulo corto se lee de un vistazo, pero fuera de contexto "G" no
+          dice "Grasas": quien escucha la pantalla recibe el nombre entero. */}
+      <span className="text-subtle-foreground" aria-hidden="true">
+        {meta.short}
+      </span>
+      <span className="sr-only">{meta.label}:</span>
+      <span className="num">{formatted}</span>
     </span>
   );
 }

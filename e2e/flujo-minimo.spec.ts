@@ -158,8 +158,23 @@ test("horarios ordenan el dia", async ({ page }) => {
   await expect(page.getByText(/8:30/).first()).toBeVisible();
 
   // Y manda sobre el orden de creacion: el desayuno va antes que la cena.
+  //
+  // Se leen los encabezados de nivel 3, que son los titulos de las comidas.
+  // Antes esto buscaba `[data-slot=card-title]`, un atributo del componente
+  // Card que la tarjeta de comida ya no usa: se apoyaba en el detalle de
+  // implementacion de un envoltorio, no en lo que la pagina significa.
+  //
+  // Se espera a que las dos existan ANTES de leer la lista: `allTextContents`
+  // no reintenta, asi que sin esto devuelve lo que hubiera en el instante en
+  // que el servidor todavia estaba revalidando.
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Desayuno" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Cena" }),
+  ).toBeVisible();
   const titulos = await page
-    .locator("[data-slot=card-title]")
+    .getByRole("heading", { level: 3 })
     .allTextContents();
   const desayuno = titulos.findIndex((t) => t.includes("Desayuno"));
   const cena = titulos.findIndex((t) => t.includes("Cena"));
@@ -300,9 +315,9 @@ test("sustituir una comida por una receta", async ({ page }) => {
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Comida agregada.")).toBeVisible();
 
-  const mealCard = page
-    .getByText("Comida receta", { exact: true })
-    .locator("xpath=ancestor::*[@data-slot='card']");
+  // Cada comida es una region con el nombre de la comida, asi que se localiza
+  // por lo que es y no trepando el DOM hasta un `data-slot` del envoltorio.
+  const mealCard = page.getByRole("region", { name: "Comida receta" });
 
   await mealCard.getByRole("button", { name: "Agregar alimento" }).click();
   await page.getByLabel("Buscar alimento…").fill("arroz");

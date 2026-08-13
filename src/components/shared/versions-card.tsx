@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { History, RotateCcw, Save } from "lucide-react";
+import { RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import {
   Dialog,
   DialogContent,
@@ -91,15 +91,11 @@ export function VersionsCard({
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <History className="size-4" aria-hidden="true" />
-          {labels.title}
-        </CardTitle>
-        <p className="text-muted-foreground text-xs">{labels.description}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    /* El icono junto al titulo se retira: la tarjeta ya se llama "Versiones
+       de la rutina", y un reloj de 16px al lado no aclara nada que el rotulo
+       no diga. */
+    <Section title={labels.title} description={labels.description}>
+      <div className="space-y-4">
         {pendingLines.length > 0 ? (
           <section className="space-y-1 rounded-xl border border-caution/40 bg-caution/8 p-3">
             <h3 className="text-sm font-medium">{labels.pendingTitle}</h3>
@@ -176,7 +172,7 @@ export function VersionsCard({
             ))}
           </ul>
         )}
-      </CardContent>
+      </div>
 
       <Dialog
         open={confirming !== null}
@@ -207,6 +203,6 @@ export function VersionsCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </Section>
   );
 }

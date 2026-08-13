@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowRight, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/shared/select-field";
 import {
@@ -138,11 +138,8 @@ function SlotEditor({
   const meals = slot.source === "diet" ? dietMeals : todayMeals;
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{label}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <Section title={label}>
+      <div className="space-y-3">
         <SelectField
           label="Fuente"
           options={[
@@ -233,8 +230,8 @@ function SlotEditor({
             }
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }
 
@@ -344,16 +341,15 @@ export function CompareTool({
       </div>
 
       {totalsA && totalsB && diff ? (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              {t.totals}
-              <Badge variant="outline" className="ml-auto font-normal">
-                A <ArrowRight className="mx-1 inline size-3" /> B
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Section
+          title={t.totals}
+          action={
+            <Badge variant="outline" className="font-normal">
+              A <ArrowRight className="mx-1 inline size-3" /> B
+            </Badge>
+          }
+        >
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground text-xs font-medium">
@@ -399,8 +395,8 @@ export function CompareTool({
                 </p>
               </div>
             ) : null}
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
       ) : (
         <p className="text-muted-foreground text-center text-sm">{t.noData}</p>
       )}

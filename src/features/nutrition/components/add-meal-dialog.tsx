@@ -45,7 +45,9 @@ export function AddMealDialog({ date }: { date: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        {/* La accion prominente de Nutricion: es a lo que se entra. Lleva el
+            degradado del logotipo, y es la unica de la pantalla que lo lleva. */}
+        <Button variant="brand" size="lg">
           <Plus className="size-4" aria-hidden="true" />
           {t.addMeal}
         </Button>

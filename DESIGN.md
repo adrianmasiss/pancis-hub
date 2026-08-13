@@ -194,7 +194,7 @@ En `@layer base`: h1 `-0.032em`, h2 `-0.024em`, h3/h4 `-0.018em`, `small`/`text-
 
 - Movil primero, ancho de contenido con la barra inferior anclada.
 - En escritorio, barra lateral de navegacion y una columna de contenido centrada — no se reparte el contenido en columnas por rellenar el ancho.
-- **La rejilla de tarjetas esta prohibida para datos secuenciales.** Criterio explicito del usuario: una lista de dias, de comidas o de series es una lista, no una cuadricula.
+- **La rejilla de tarjetas esta prohibida para datos secuenciales.** Criterio explicito del usuario: una lista de dias, de comidas o de series es una lista, no una cuadricula. Alcanza tambien a las rutinas y a las secciones de lectura de Entrenamiento, que iban en `lg:grid-cols-2`: la segunda columna no aportaba comparacion, solo rellenaba ancho.
 
 ## Elevation & Depth
 
@@ -227,11 +227,13 @@ La respuesta va en `pointerdown`, no al soltar: `:active { transform: scale(0.97
 
 ### Buttons
 
-- **Prominente** — degradado de marca, capsula, 48px de alto. Una por pantalla.
-- **Primario** — `--primary` plano, capsula. Todas las demas acciones reales.
+- **Prominente** — `variant="brand" size="lg"`: degradado de marca, mas alto que el resto. **Una por pantalla.**
+- **Primario** — `variant="default"`, `--primary` plano. Todas las demas acciones reales.
 - **Callado** — sin relleno. **Solo descartes**: cancelar, ahora no, reintentar.
 
 Un boton secundario translucido sobre el marino da menos de 1.5:1 y se lee como fondo. Se probo y se revirtio: si es una accion, es naranja.
+
+La variante `brand` no existia: la regla 1 no se podia expresar en codigo, todas las acciones salian iguales y ninguna mandaba. Cuidado con una trampa que ya costo un fallo: el degradado es una `background-image`, y el `disabled:bg-muted` de Tailwind cambia el `background-color`, asi que un boton apagado seguia viendose como la accion prominente. El estado deshabilitado se apaga en el CSS de `.bg-brand-button`, no en la utilidad.
 
 ### `MagnitudeBar` — la primitiva de dato del sistema
 
@@ -241,9 +243,19 @@ Tres estados y ninguno mas: normal (acento), excedido (critico, hasta el tope), 
 
 Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su numeral de kilos. Aquel sistema pedia cinco colores; este tiene uno, y el naranja ya esta ocupado por lo accionable. La identidad del macro la lleva su rotulo, que se lee.
 
+### `MacroChip` — el macro en linea
+
+`src/components/shared/macro-chip.tsx`. La misma regla, aplicada a la fila densa: rotulo corto (`P`, `C`, `G`, `F`, `Cal`) y la cifra, sin color y sin icono.
+
+Llevaba un icono por macro —llama, carne, trigo, gota, hoja— pintado con los tokens `chart-1..5`. Era el codigo de disco sobreviviendo en las pantallas de Nutricion, y ademas `chart-1` **es** el naranja del acento: cada cifra de calorias se pintaba del color reservado a lo accionable. El nombre completo viaja en `sr-only`, porque fuera de contexto "G" no dice "Grasas".
+
 ### Cards
 
 `surface-card` — fondo `--card`, radio `2xl`, sin borde. `Section` (`src/components/shared/section.tsx`) es el envoltorio con titulo; `variant="plain"` quita la superficie para bloques que ya traen su propia caja dentro.
+
+**`Card` de shadcn no es una alternativa.** Su superficie ya apunta a `surface-card`, pero `CardHeader` cierra con una regla divisoria y `CardTitle` es un `card-eyebrow` en versalitas: dos decisiones del handoff v2 que este sistema revirtio. Una tarjeta migrada lleva `display-title` y ninguna regla bajo la cabecera.
+
+Cuando la cabecera no cabe en el par titulo/accion —un titulo, una cifra, meta y tres disparadores— se usa `surface-card` directamente y se reparte en dos filas: arriba lo que identifica la pieza y su cifra, debajo la meta. En una sola linea flex, 390px parten el titulo.
 
 ### Navigation
 
@@ -276,7 +288,13 @@ Las cinco pestanas se reparten el ancho de una barra anclada al borde, no de una
 
 Al 2026-08-13, sobre `feat/sistema-visual-p7`:
 
-- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, la tarjeta de Nutricion de hoy, y la navegacion completa — barra inferior, barra lateral y boton flotante.
-- **Pendiente:** Nutricion, Entrenamiento, Progreso, Configuracion y Login siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unas 25 rutas y componentes.
+- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, la tarjeta de Nutricion de hoy, la navegacion completa (barra inferior, barra lateral y boton flotante), y las secciones de **Nutricion** y **Entrenamiento** con sus sub-paginas.
+- **Pendiente:** Progreso, Configuracion, Login, Recetas y Academia siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unos 15 archivos.
+
+### Encabezado de pantalla
+
+Las pantallas migradas no pasan `icon` a `PageHeader`: la barra superior y el riel ya dicen donde estas, y un glifo de 20px junto al titulo es decoracion. La `description` se queda solo cuando explica algo que la pantalla no dice sola — "Gestiona tus comidas del dia" bajo el titulo "Nutricion" no lo hacia.
+
+Lo que si sube a la cabecera es el **contexto**: en Nutricion el selector de fecha vive dentro de `PageHeader`, no como una fila suelta debajo, porque la fecha es parte de "donde estoy".
 
 Este documento describe el sistema como la unica direccion valida para trabajo nuevo o tocado; las pantallas sin migrar no son una variante legitima.
