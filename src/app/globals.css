@@ -21,8 +21,8 @@
         boton o un dato, y se tratan distinto: se probo lo contrario y vacio la
         tira de adherencia, que era informacion.
      3. Registro iOS, no Material. Esquina continua, capsula en botones y
-        campos, iconos con variante RELLENA en el activo (Material marca con
-        pastilla; Apple cambia el simbolo), y muelles en vez de curvas.
+        campos, el item activo marcado en el PROPIO SIMBOLO — acento y trazo
+        mas grueso — nunca con pastilla detras, y muelles en vez de curvas.
      4. Tracking por tamano, nunca fijo. Apretado en display, abierto en
         cuerpos pequenos.
      5. Los dos temas son de primera clase. El claro es este mismo sistema con
@@ -201,9 +201,13 @@
 
   --shadow-card: 0 1px 2px rgb(8 32 50 / 0.04);
   --shadow-island: 0 -1px 0 var(--border);
+  /* Pieza que flota SOBRE el contenido y se mueve con el (el boton del
+     asistente). Es la excepcion a "la elevacion es salto de tono": aqui no hay
+     tono al que saltar porque debajo puede haber cualquier cosa. */
+  --shadow-lifted: 0 6px 20px -8px rgb(8 32 50 / 0.3);
   --glow-primary: none;
   --surface-card-bg: var(--card);
-  --island-bg: rgb(244 245 245 / 0.86);
+  --island-bg: rgb(244 245 245 / 0.93);
   --segmented-bg: var(--secondary);
 
   --sidebar: #f4f5f5;
@@ -285,9 +289,10 @@
 
   --shadow-card: none;
   --shadow-island: 0 -1px 0 var(--rule);
+  --shadow-lifted: 0 8px 24px -8px rgb(0 0 0 / 0.45);
   --glow-primary: none;
   --surface-card-bg: var(--card);
-  --island-bg: rgb(6 24 38 / 0.86);
+  --island-bg: rgb(6 24 38 / 0.93);
   --segmented-bg: var(--secondary);
 
   --sidebar: #061826;
@@ -461,7 +466,11 @@
  *
  * El desenfoque aqui SI tiene proposito: separa la navegacion del contenido
  * manteniendo el contexto de lo que hay debajo. Va con un filete arriba, que
- * es lo que impide que el texto se lea "a traves" de ella.
+ * es lo que marca donde acaba el contenido.
+ *
+ * El fondo va a 0.93, no a 0.86: con los rotulos de vuelta en la barra, a 0.86
+ * el parrafo de debajo se seguia leyendo entre ellos — desenfocado, pero
+ * legible, y a 10px eso es un choque. Comprobado en los dos temas.
  */
 @utility island {
   background: var(--island-bg);
@@ -490,20 +499,6 @@
   border-radius: var(--radius-pill);
   background: var(--segmented-bg);
   box-shadow: none;
-}
-
-/**
- * Item activo de la navegacion.
- *
- * Se marca SOLO con color: el icono cambia a su variante rellena y el rotulo
- * toma el acento. Nada de pastilla detras — esa es la firma de Material 3, y
- * fue lo primero que delato el diseno como Android.
- */
-@utility glow-ring {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--primary);
 }
 
 /**

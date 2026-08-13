@@ -21,12 +21,18 @@ export function AssistantFab() {
       href="/asistente"
       aria-label={messages.assistant.openAssistant}
       /*
-        Se apoya por encima de la barra inferior, que ahora ocupa todo el ancho
-        y esta anclada al borde: antes flotaba sobre ella y tapaba un objetivo.
+        Se apoya por encima de la barra inferior, que ocupa todo el ancho y esta
+        anclada al borde: antes flotaba sobre ella y tapaba un objetivo. La
+        respuesta va al pulsar, no al soltar.
+
+        Lleva sombra (`--shadow-lifted`, la unica fuera de las capas flotantes)
+        porque es lo unico del sistema que se mueve sobre contenido arbitrario:
+        aqui no hay tono al que saltar, asi que la elevacion no puede hacerla el
+        tono como en el resto.
       */
-      className="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring focus-visible:ring-offset-background surface-overlay fixed right-4 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 flex size-12 items-center justify-center rounded-full border-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-8 lg:bottom-8"
+      className="bg-primary text-primary-foreground hover:bg-primary-strong focus-visible:ring-ring focus-visible:ring-offset-background fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 items-center justify-center rounded-full border-0 shadow-[var(--shadow-lifted)] transition-[background-color,transform] duration-[var(--dur-fast)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.94] lg:right-8 lg:bottom-8"
     >
-      <Sparkles className="size-5" aria-hidden="true" />
+      <Sparkles className="size-6" strokeWidth={2} aria-hidden="true" />
     </Link>
   );
 }

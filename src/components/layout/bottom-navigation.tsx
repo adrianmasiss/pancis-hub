@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Menu } from "lucide-react";
 import {
   Sheet,
@@ -34,20 +34,15 @@ function initialsOf(name: string): string {
 }
 
 /**
- * Celda de la barra. Objetivo tactil de 44px y sin caja propia: el activo se
- * marca con el canto grueso abajo (`glow-ring`), no con una pildora.
+ * Celda de la barra: icono arriba, rotulo debajo, sin caja propia.
+ *
+ * El objetivo tactil llega a 56px de alto y a un quinto del ancho, que en 390px
+ * son 78px: de sobra para el pulgar y para el rotulo.
  */
 const TAB_BASE =
-  "relative grid h-11 w-11 place-items-center transition-colors duration-150 ease-out";
+  "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 transition-[color,transform] duration-[var(--dur-fast)] active:scale-[0.94]";
 
-/**
- * Los separadores entre grupos desaparecen: la barra a todo el ancho ya reparte
- * los objetivos, y una regla vertical dentro de otra barra con regla arriba es
- * ruido. Se conserva la funcion vacia para no tocar el mapeo de posiciones.
- */
-function Rule() {
-  return null;
-}
+const TAB_LABEL = "max-w-full truncate text-[0.625rem] leading-none";
 
 type BottomNavigationProps = {
   displayName?: string;
@@ -55,18 +50,22 @@ type BottomNavigationProps = {
 };
 
 /**
- * Navegacion inferior movil: la "isla" flotante del handoff v2.
+ * Navegacion inferior movil.
  *
- * Capsula centrada a 20px del borde, de solo icono, con separadores entre
- * grupos y realce glow-ring en el activo. El handoff coloca ademas un FAB de
- * registro rapido en el centro; no se incluye porque esa accion no existe
- * todavia en el producto y el propio handoff la deja para "definir en la
- * implementacion real".
+ * Barra anclada al borde, translucida, con las cinco pestanas repartiendose el
+ * ancho. Vuelven los rotulos: eran solo `aria-label` porque la version anterior
+ * era una capsula flotante estrecha, pero a todo el ancho caben, y un icono
+ * suelto obliga a adivinar el destino.
  *
- * Compromiso respecto al diseno anterior: se pierden las etiquetas visibles
- * bajo cada icono. La isla no da ancho para cinco etiquetas en 390px. Se
- * conservan como aria-label y title, de modo que lectores de pantalla y
- * puntero siguen teniendo el nombre del destino.
+ * El activo se marca SOLO con color y peso: el rotulo y el icono toman el
+ * acento, y el trazo del icono engorda. Nada de pastilla detras — esa es la
+ * firma de Material 3, y fue lo primero que delato el diseno como Android.
+ *
+ * (SF Symbols marcaria el activo con la variante rellena. lucide es un juego de
+ * trazo sin variantes rellenas, asi que se usa el otro eje que Apple tambien
+ * usa, el peso. Rellenar los glifos de lucide da resultados dispares: `Home`
+ * cierra silueta, pero `Utensils` y `TrendingUp` son trazos abiertos y se
+ * convierten en manchas.)
  */
 export function BottomNavigation({
   displayName,
@@ -90,53 +89,58 @@ export function BottomNavigation({
         al alcance del pulgar, y la barra se apoya en la regla de seccion en
         vez de levitar sobre el contenido.
       */
-      className="island fixed inset-x-0 bottom-0 z-40 flex items-center justify-around px-2 pt-1.5 lg:hidden"
+      className="island fixed inset-x-0 bottom-0 z-40 flex items-stretch gap-1 px-2 pt-1.5 lg:hidden"
       style={{ paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom))" }}
     >
-      {bottomNavItems.map((item, index) => {
+      {bottomNavItems.map((item) => {
         const active = isActiveRoute(pathname, item.href);
         const Icon = item.icon;
         const label = messages.nav[item.bottomNavLabelKey ?? item.labelKey];
         return (
-          <Fragment key={item.href}>
-            {index === 2 ? <Rule /> : null}
-            <Link
-              href={item.href}
-              onClick={() => triggerHaptic("selection")}
-              aria-current={active ? "page" : undefined}
-              // La isla es de solo icono: la etiqueta sigue existiendo para
-              // lectores de pantalla y como titulo accesible.
-              aria-label={label}
-              title={label}
-              className={cn(
-                TAB_BASE,
-                active
-                  ? "glow-ring text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="size-5" aria-hidden="true" />
-            </Link>
-          </Fragment>
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => triggerHaptic("selection")}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              TAB_BASE,
+              active
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Icon
+              className="size-[22px] shrink-0"
+              strokeWidth={active ? 2.25 : 1.75}
+              aria-hidden="true"
+            />
+            <span className={cn(TAB_LABEL, active && "font-semibold")}>
+              {label}
+            </span>
+          </Link>
         );
       })}
-      <Rule />
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
         <SheetTrigger asChild>
           <button
             type="button"
             onClick={() => triggerHaptic("selection")}
-            aria-label={messages.nav.more}
-            title={messages.nav.more}
             className={cn(
               TAB_BASE,
               moreActive
-                ? "glow-ring text-foreground"
+                ? "text-primary"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Menu className="size-5" aria-hidden="true" />
+            <Menu
+              className="size-[22px] shrink-0"
+              strokeWidth={moreActive ? 2.25 : 1.75}
+              aria-hidden="true"
+            />
+            <span className={cn(TAB_LABEL, moreActive && "font-semibold")}>
+              {messages.nav.more}
+            </span>
           </button>
         </SheetTrigger>
 

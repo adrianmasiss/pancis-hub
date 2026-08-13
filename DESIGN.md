@@ -119,7 +119,7 @@ Los **dos temas son de primera clase**. El claro es este mismo sistema con los n
 **Caracteristicas clave:**
 - Un acento, el del logotipo. El degradado de marca se reserva a la accion prominente.
 - Tarjeta como agrupador: sobre un marino profundo, una superficie elevada agrupa mejor que un filete.
-- Registro iOS, no Material: capsulas, esquina continua, iconos con variante rellena en el activo, muelles.
+- Registro iOS, no Material: capsulas, esquina continua, el activo marcado en el propio simbolo, muelles.
 - Tracking por tamano, nunca fijo.
 - Cifras tabulares en todo el sistema.
 
@@ -129,7 +129,7 @@ Estan tambien en la cabecera de `src/app/globals.css`, que es la fuente de verda
 
 1. **UNA accion prominente por pantalla**, con el degradado del logotipo. Las demas acciones reales van en naranja solido. Solo los descartes — cancelar, ahora no, reintentar — se quedan callados.
 2. **El color mira el PAPEL, no el pixel.** Un relleno naranja puede ser un boton o puede ser un dato, y se tratan distinto.
-3. **Registro iOS, no Material.** Esquina continua, capsula en botones y campos, iconos con variante rellena en el activo (Material marca con pastilla detras; Apple cambia el simbolo), y muelles en vez de curvas.
+3. **Registro iOS, no Material.** Esquina continua, capsula en botones y campos, el item activo marcado **en el propio simbolo** (Material marca con pastilla detras; Apple cambia el simbolo), y muelles en vez de curvas.
 4. **Tracking por tamano, nunca fijo.** Apretado en display (`-0.032em` en h1), abierto en cuerpos pequenos (`+0.006em`). Un solo valor esta mal en algun cuerpo.
 5. **Los dos temas son de primera clase.**
 
@@ -199,8 +199,8 @@ En `@layer base`: h1 `-0.032em`, h2 `-0.024em`, h3/h4 `-0.018em`, `small`/`text-
 ## Elevation & Depth
 
 - La tarjeta agrupa; la elevacion la hace el **salto de tono**, no una sombra.
-- Sombra **solo** en capas flotantes: `surface-overlay` (popovers, hojas).
-- **`island`** — la barra inferior anclada. `backdrop-filter: blur(20px) saturate(160%)` con un filete arriba. El desenfoque aqui si tiene proposito: separa la navegacion del contenido manteniendo el contexto de lo que hay debajo, y el filete es lo que impide que el texto se lea "a traves".
+- Sombra **solo** en capas flotantes: `surface-overlay` (popovers, hojas) y `--shadow-lifted` (el boton del asistente). Esa es toda la lista. El boton flotante se gana la excepcion porque es lo unico que se mueve sobre contenido arbitrario: no hay un tono debajo al que saltar.
+- **`island`** — la barra inferior anclada. `backdrop-filter: blur(20px) saturate(160%)` sobre un fondo al **0.93** de opacidad, con un filete arriba que marca donde acaba el contenido. El desenfoque aqui si tiene proposito: separa la navegacion del contenido manteniendo el contexto de lo que hay debajo. A 0.86 el parrafo de debajo se seguia leyendo entre los rotulos de las pestanas; el filete solo no basta.
 - Nunca apilar una superficie translucida clara sobre otra: la legibilidad se cae.
 
 ## Shapes
@@ -247,7 +247,11 @@ Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su nu
 
 ### Navigation
 
-`island` abajo en movil, barra lateral en escritorio. El item activo se marca **solo con color**: el icono cambia a su variante rellena y el rotulo toma el acento. **Nada de pastilla detras** — esa es la firma de Material 3, y fue lo primero que delato el diseno como Android. Por eso `glow-ring` hoy es solo color.
+`island` abajo en movil, barra lateral en escritorio. El item activo se marca **en el propio simbolo**: acento en el icono y en el rotulo, trazo mas grueso (1.75 → 2.25) y rotulo en semibold. **Nada de pastilla detras** — esa es la firma de Material 3, y fue lo primero que delato el diseno como Android. La utilidad `glow-ring`, que era esa pastilla, se retiro del CSS al quedarse sin usos.
+
+**Por que peso y no relleno.** SF Symbols marcaria el activo con la variante rellena, y asi lo pide la regla 3. lucide es un juego de trazo **sin variantes rellenas**: rellenar sus glifos da resultados dispares — `Home` cierra silueta, pero `Utensils` y `TrendingUp` son trazos abiertos y se convierten en manchas. Se usa entonces el otro eje que Apple tambien usa para esto, el peso. Si algun dia se cambia el juego de iconos por uno con pareja trazo/relleno, esta es la decision a revisar.
+
+Las cinco pestanas se reparten el ancho de una barra anclada al borde, no de una capsula flotante, y **con rotulo visible**. En la isla estrecha el rotulo solo existia como `aria-label`; a todo el ancho cabe, y un icono suelto obliga a adivinar el destino. Objetivo tactil: 56px de alto por un quinto del ancho (78px en 390px).
 
 ## Do's and Don'ts
 
@@ -272,7 +276,7 @@ Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su nu
 
 Al 2026-08-13, sobre `feat/sistema-visual-p7`:
 
-- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, y la tarjeta de Nutricion de hoy.
-- **Pendiente:** Nutricion, Entrenamiento, Progreso, Configuracion y Login siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unas 25 rutas y componentes. La barra inferior y el boton flotante todavia no siguen la maqueta.
+- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, la tarjeta de Nutricion de hoy, y la navegacion completa — barra inferior, barra lateral y boton flotante.
+- **Pendiente:** Nutricion, Entrenamiento, Progreso, Configuracion y Login siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unas 25 rutas y componentes.
 
 Este documento describe el sistema como la unica direccion valida para trabajo nuevo o tocado; las pantallas sin migrar no son una variante legitima.

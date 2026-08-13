@@ -28,8 +28,9 @@ function initialsOf(name: string): string {
 /**
  * Entrada del riel.
  *
- * Activo: canto de 3px a la izquierda y peso semibold. Nada mas. En reposo el
- * canto es transparente, asi que el texto no se desplaza al cambiar de pagina.
+ * Activo: el acento en el canto, el icono y el rotulo, mas peso semibold. En
+ * reposo el canto es transparente, asi que el texto no se desplaza al cambiar
+ * de pagina.
  */
 function NavLink({
   href,
@@ -46,19 +47,18 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      /*
-        El activo se marca con el canto grueso a la izquierda, como el borde de
-        un disco apoyado en el rack. Sin pildora, sin degradado y sin halo: en
-        este sistema el realce es grosor, no luz.
-      */
       className={cn(
-        "relative flex items-center gap-3 border-l-[3px] py-2.5 pr-3 pl-3 text-[13.5px] [letter-spacing:0] transition-colors duration-150 ease-out",
+        "relative flex items-center gap-3 rounded-r-lg border-l-[3px] py-2.5 pr-3 pl-3 text-[13.5px] [letter-spacing:0] transition-colors duration-[var(--dur-fast)]",
         active
-          ? "border-l-foreground text-foreground font-semibold"
+          ? "border-l-primary text-primary font-semibold"
           : "hover:text-foreground hover:border-l-rule-strong border-l-transparent font-medium text-[var(--muted-foreground)]",
       )}
     >
-      <Icon className="size-[18px] shrink-0" aria-hidden="true" />
+      <Icon
+        className="size-[18px] shrink-0"
+        strokeWidth={active ? 2.25 : 1.75}
+        aria-hidden="true"
+      />
       <span className="truncate">{messages.nav[labelKey]}</span>
     </Link>
   );
@@ -75,9 +75,7 @@ export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
 
   return (
     <aside className="border-border bg-sidebar text-sidebar-foreground hidden w-60 shrink-0 flex-col border-r lg:flex">
-      {/* Bloque de marca. El wordmark va a una sola tinta: en un sistema
-          donde el color es la magnitud, un logotipo de cuatro tintas era la
-          mayor fuga de color de la interfaz. */}
+      {/* Bloque de marca: el logotipo real, con su variante por tema. */}
       <div className="border-divider flex h-[66px] shrink-0 items-center border-b px-5">
         <Link
           href="/"
@@ -129,8 +127,6 @@ export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
           active={isActiveRoute(pathname, settingsNavItem.href)}
         />
         {displayName ? (
-          // Respaldo en acero, no en degradado de marca: el color de esta
-          // interfaz esta reservado al codigo de discos.
           <div className="flex items-center gap-2.5 rounded-[10px] p-2">
             <Avatar className="size-9 shrink-0">
               {avatarUrl ? (
