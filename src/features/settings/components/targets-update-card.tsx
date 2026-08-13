@@ -129,8 +129,7 @@ export function TargetsUpdateCard({
   };
 
   return (
-    // Canto grueso: es lo unico de esta pagina que espera una decision.
-    <Section weight="plate" title={t.title} description={t.description}>
+    <Section title={t.title} description={t.description}>
       <div className="flex flex-col gap-5">
         {inputChanges.length > 0 ? (
           <ul className="flex flex-col gap-1 text-sm">

@@ -1,252 +1,278 @@
 ---
 name: Pancis Hub
-description: Codigo de disco — el color es la magnitud, el disco olimpico del macro es permanente, y el grosor de la regla es toda la jerarquia.
+description: Marino profundo y el naranja del logotipo, en registro iOS. Un solo acento, que marca lo accionable y el avance del dia; tarjeta como agrupador y muelles como movimiento.
 colors:
-  chalk-floor: "oklch(0.968 0.002 250)"
-  bumper-floor: "oklch(0.16 0.003 250)"
-  ink: "oklch(0.19 0.006 250)"
-  ink-inverse: "oklch(0.97 0.001 250)"
-  muted-foreground: "oklch(0.46 0.006 250)"
-  subtle-foreground: "oklch(0.58 0.005 250)"
-  hairline: "oklch(0.89 0.003 250)"
-  rule: "oklch(0.86 0.004 250)"
-  rule-strong: "oklch(0.72 0.006 250)"
-  steel-primary: "oklch(0.34 0.008 250)"
-  steel-primary-foreground: "oklch(0.98 0.001 250)"
-  secondary: "oklch(0.93 0.003 250)"
-  brand-orange: "oklch(0.56 0.155 42)"
-  plate-red-25-fat: "oklch(0.5 0.185 27)"
-  plate-blue-20-protein: "oklch(0.46 0.15 255)"
-  plate-yellow-15-carbs: "oklch(0.53 0.125 78)"
-  plate-green-10-fiber: "oklch(0.46 0.115 155)"
-  plate-white-5-water: "oklch(0.55 0.01 250)"
-  steel-energy-bar: "oklch(0.3 0.008 250)"
-  positive: "oklch(0.48 0.115 155)"
-  caution: "oklch(0.52 0.13 68)"
-  critical: "oklch(0.5 0.185 27)"
+  background-dark: "#082032"
+  background-light: "#ecedee"
+  card-dark: "#2c394b"
+  card-light: "#ffffff"
+  card-raised-dark: "#334756"
+  card-raised-light: "#f6f7f8"
+  ink-dark: "#d2d2d2"
+  ink-light: "#082032"
+  primary: "#f05a27"
+  primary-strong: "#d94a1c"
+  primary-foreground: "#082032"
+  brand-from: "#e43030"
+  brand-to: "#fc841e"
+  muted-foreground-dark: "#9aa6b0"
+  muted-foreground-light: "#2c394b"
+  subtle-foreground-dark: "#6e7e8c"
+  subtle-foreground-light: "#6b7885"
+  rule-dark: "#334756"
+  rule-light: "#e0e2e4"
+  border-dark: "#41566a"
+  border-light: "#d8dbde"
+  positive-dark: "#46b98a"
+  positive-light: "#1f7a54"
+  caution-dark: "#f5a15c"
+  caution-light: "#8f4f14"
+  critical-dark: "#e5484d"
+  critical-light: "#c0392f"
 typography:
-  stamp:
-    fontFamily: "Archivo Black, Archivo, sans-serif"
-    fontSize: "clamp(3.25rem, 16vw, 4.5rem)"
-    fontWeight: 400
-    lineHeight: 0.86
-    letterSpacing: "-0.045em"
-  title:
-    fontFamily: "Archivo, sans-serif"
+  numDisplay:
+    fontFamily: "system-ui, Inter, sans-serif"
+    fontSize: "clamp(3.5rem, 17vw, 4.5rem)"
+    fontWeight: 800
+    lineHeight: 0.94
+    letterSpacing: "-0.038em"
+  displayTitle:
+    fontFamily: "system-ui, Inter, sans-serif"
     fontSize: "1.375rem"
     fontWeight: 700
     lineHeight: 1.15
-    letterSpacing: "-0.02em"
+    letterSpacing: "-0.022em"
   numStrong:
-    fontFamily: "Archivo, sans-serif"
+    fontFamily: "system-ui, Inter, sans-serif"
     fontSize: "1.0625rem"
     fontWeight: 600
     lineHeight: 1.1
-    letterSpacing: "-0.015em"
+    letterSpacing: "-0.014em"
   body:
-    fontFamily: "Archivo, sans-serif"
+    fontFamily: "system-ui, Inter, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
-    lineHeight: 1.4
+    lineHeight: 1.5
+    letterSpacing: "0"
   labelMicro:
-    fontFamily: "Archivo, sans-serif"
+    fontFamily: "system-ui, Inter, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1.3
-    letterSpacing: "0"
+    letterSpacing: "0.006em"
 rounded:
-  sm: "2px"
-  md: "2px"
-  lg: "2px"
-  xl: "2px"
-  2xl: "3px"
-  3xl: "3px"
-  4xl: "4px"
-  full: "50%"
+  sm: "10px"
+  md: "14px"
+  lg: "18px"
+  xl: "22px"
+  2xl: "26px"
+  3xl: "34px"
+  4xl: "40px"
+  full: "9999px"
 components:
+  button-brand:
+    background: "linear-gradient(135deg, {colors.brand-from}, {colors.brand-to})"
+    textColor: "{colors.primary-foreground}"
+    rounded: "{rounded.full}"
+    padding: "0 1.25rem"
+    height: "3rem"
   button-primary:
-    backgroundColor: "{colors.steel-primary}"
-    textColor: "{colors.steel-primary-foreground}"
-    rounded: "{rounded.sm}"
-    padding: "0 1rem"
-    height: "2.5rem"
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.primary-foreground}"
+    rounded: "{rounded.full}"
+    padding: "0 1.25rem"
+    height: "3rem"
   button-primary-hover:
-    backgroundColor: "color-mix(in oklch, {colors.steel-primary} 92%, transparent)"
-  button-secondary:
-    backgroundColor: "{colors.secondary}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    padding: "0 1rem"
-    height: "2.5rem"
-  button-outline:
+    backgroundColor: "{colors.primary-strong}"
+  button-quiet:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    padding: "0 1rem"
-    height: "2.5rem"
-  plate-fat:
-    backgroundColor: "{colors.plate-red-25-fat}"
-    textColor: "#fff"
+    textColor: "{colors.ink-dark}"
     rounded: "{rounded.full}"
-    size: "1.375rem"
-  plate-protein:
-    backgroundColor: "{colors.plate-blue-20-protein}"
-    textColor: "#fff"
+    padding: "0 1.25rem"
+    height: "3rem"
+  card:
+    backgroundColor: "{colors.card-dark}"
+    rounded: "{rounded.2xl}"
+    padding: "1.25rem"
+  magnitude-bar:
+    trackColor: "{colors.rule-dark}"
+    fillColor: "{colors.primary}"
     rounded: "{rounded.full}"
-    size: "1.375rem"
-  plate-carbs:
-    backgroundColor: "{colors.plate-yellow-15-carbs}"
-    textColor: "#fff"
-    rounded: "{rounded.full}"
-    size: "1.375rem"
-  plate-fiber:
-    backgroundColor: "{colors.plate-green-10-fiber}"
-    textColor: "#fff"
-    rounded: "{rounded.full}"
-    size: "1.375rem"
+    height: "6px"
 ---
 
-# Design System: Pancis Hub — Codigo de disco
+# Design System: Pancis Hub
 
 ## Overview
 
-**Creative North Star: "Codigo de disco"** (candidata 7 de la lista ordenada por resonancia; seed `b92093d8`).
+**Norte creativo: marino profundo + el naranja del logotipo, en registro iOS.**
 
-La tesis es literal: el color no decora, ES la magnitud. Cada macro se queda con su disco del codigo olimpico de gimnasio para siempre — 25 rojo, 20 azul, 15 amarillo, 10 verde, 5 blanco — y nada mas en la pantalla lleva color, salvo la unica excepcion declarada para estado (ver Colores). La rejilla de tarjetas queda prohibida por decision explicita: el contenido vive sobre el suelo, y lo que separa una seccion de otra es una regla horizontal cuyo GROSOR es la jerarquia (1px dentro de un grupo, 2px entre grupos, 3px en la seccion que manda la pantalla).
+La maqueta de referencia son 27 pantallas en Figma, movil y escritorio, con los dos temas y con movimiento:
+<https://www.figma.com/design/zrDvYIcBmJPjlc20hyuXxA>
 
-El mundo material es tiza y acero en claro, goma de bumper en oscuro. Importa el orden real de construccion: el handoff original es **un diseno solo oscuro** (comentario en `globals.css`, bloque `:root`); el modo claro fue derivado despues, en esta implementacion, porque el naranja de marca sobre papel caia a 2.5:1 de contraste y no se podia leer. Cualquier extension del sistema debe pensarse primero en el mundo oscuro (la goma de bumper del gimnasio) y derivar el claro despues, no al reves.
+El sistema tiene **un solo acento**, y ese acento sale del logotipo real: `#f05a27` es el punto medio del degradado del PNG de marca. Por eso la interfaz y la marca por fin concuerdan, cosa que no pasaba con las paletas anteriores. El naranja no decora: marca **lo accionable** y **el avance del dia**, y nada mas.
 
-Todo el sistema usa una sola familia, Archivo, con una unica excepcion: Archivo Black, reservada por completo a **la cifra troquelada** — el numero que responde "cuanto me falta" a escala de rotulo industrial, de pie y sin acercarse el telefono a la cara. Aparece como maximo una vez por pantalla; si aparece dos veces, ninguna manda.
+La escena que manda el diseno es concreta: de pie, con una mano, en una cocina, un gimnasio o la calle. De ahi salen el acento que se ve desde lejos, los objetivos grandes y la cifra a escala de rotulo.
 
-**Key Characteristics:**
-- El color es un codigo semantico permanente (el disco del macro), nunca una eleccion estetica por pantalla.
-- No hay tarjetas: hay suelo, y lo separan reglas cuyo grosor es la jerarquia.
-- Una sola cifra troquelada por pantalla, en Archivo Black; todo lo demas es Archivo.
-- Radio universal de 2px ("el acero no es blando"); el circulo se reserva al disco, la unica forma redonda.
-- Elevacion (sombra) solo en capas flotantes (overlays, la isla de navegacion); en flujo, nunca.
-- El mundo nativo es oscuro (goma de bumper); el claro es una derivacion de accesibilidad, no el original.
+Los **dos temas son de primera clase**. El claro es este mismo sistema con los neutros invertidos; el acento y la tinta oscura sobre el no se invierten, porque `#082032` sobre naranja da 4.9:1 en ambos y asi el boton no cambia de caracter al cambiar de tema.
 
-**Estado de la construccion (`fix`, 2026-08).** El sistema esta completamente aplicado en Hoy y en Configuracion. Nutricion, Entrenamiento, Progreso y el resto de pantallas todavia renderizan la plantilla anterior ("Grafito"), basada en tarjetas: `@/components/ui/card` sigue importado en unas 25 rutas y componentes. Este documento describe el sistema de disco como la unica direccion valida para trabajo nuevo o tocado; no describe esas pantallas sin migrar como una variante legitima.
+**Caracteristicas clave:**
+- Un acento, el del logotipo. El degradado de marca se reserva a la accion prominente.
+- Tarjeta como agrupador: sobre un marino profundo, una superficie elevada agrupa mejor que un filete.
+- Registro iOS, no Material: capsulas, esquina continua, iconos con variante rellena en el activo, muelles.
+- Tracking por tamano, nunca fijo.
+- Cifras tabulares en todo el sistema.
+
+## Las cinco reglas que no se rompen
+
+Estan tambien en la cabecera de `src/app/globals.css`, que es la fuente de verdad.
+
+1. **UNA accion prominente por pantalla**, con el degradado del logotipo. Las demas acciones reales van en naranja solido. Solo los descartes — cancelar, ahora no, reintentar — se quedan callados.
+2. **El color mira el PAPEL, no el pixel.** Un relleno naranja puede ser un boton o puede ser un dato, y se tratan distinto.
+3. **Registro iOS, no Material.** Esquina continua, capsula en botones y campos, iconos con variante rellena en el activo (Material marca con pastilla detras; Apple cambia el simbolo), y muelles en vez de curvas.
+4. **Tracking por tamano, nunca fijo.** Apretado en display (`-0.032em` en h1), abierto en cuerpos pequenos (`+0.006em`). Un solo valor esta mal en algun cuerpo.
+5. **Los dos temas son de primera clase.**
+
+### La trampa de la regla 2
+
+Merece su propio parrafo porque ya costo una regresion real.
+
+Al aplicar "quita el relleno naranja de los botones secundarios" sobre la maqueta, la regla se ejecuto mirando el **color** en vez del **papel**, y vacio la tira de adherencia de la semana: aquellos cuadros naranjas no eran botones, eran los dias cumplidos. Es decir, eran informacion, y desaparecio.
+
+Antes de aplicar cualquier regla de color a un conjunto de elementos, hay que responder por cada uno: **¿esto es una accion o es un dato?** Y despues hay que mirar el resultado, no darlo por bueno.
 
 ## Colors
 
-La paleta es deliberadamente casi monocroma: gris tiza/acero neutro para todo el andamiaje de la interfaz, y color unicamente donde ese color ES un dato — el macro que representa, o un estado del dia.
+### Acento
 
-### Primary
-- **Acero** (`steel-primary`, `oklch(0.34 0.008 250)` claro / `oklch(0.88 0.003 250)` oscuro): el unico acento de interaccion — botones primarios, foco, enlaces, el anillo de foco. Es acero pulido, no color de marca: la funcion "primary" de shadcn se redefinio a proposito para NO ser el naranja.
+- **`--primary` `#f05a27`** — el naranja del logotipo. Botones, foco, enlaces, la barra de magnitud. Igual en los dos temas.
+- **`--primary-strong` `#d94a1c`** — el estado hover/pressed.
+- **`--primary-foreground` `#082032`** — la tinta sobre naranja. No se invierte por tema (ver arriba).
+- **`--brand-from` `#e43030` → `--brand-to` `#fc841e`** — los dos extremos del degradado del logotipo. Solo la accion prominente de cada pantalla lo usa.
 
-### Secondary
-- **Naranja de marca** (`brand-orange`, `oklch(0.56 0.155 42)` claro / `oklch(0.72 0.17 45)` oscuro): el naranja historico de Pancis Hub. Vive unicamente en el wordmark (`BrandLogo`, compuesto en `currentColor` sobre la voz de la cifra) y en los PNG de `public/logo*.png`. No aparece en ningun otro elemento de interfaz — es la mayor fuga de color que el sistema identifico y cerro.
+### Neutros
 
-### El codigo de disco (el color semantico permanente)
-- **25 rojo — grasa** (`plate-red-25-fat`, `oklch(0.5 0.185 27)` / `oklch(0.68 0.17 27)`).
-- **20 azul — proteina** (`plate-blue-20-protein`, `oklch(0.46 0.15 255)` / `oklch(0.66 0.16 255)`).
-- **15 amarillo — carbohidratos** (`plate-yellow-15-carbs`, `oklch(0.53 0.125 78)` / `oklch(0.79 0.14 78)`).
-- **10 verde — fibra** (`plate-green-10-fiber`, `oklch(0.46 0.115 155)` / `oklch(0.72 0.15 155)`).
-- **5 blanco/cromo — agua** (`plate-white-5-water`, `oklch(0.55 0.01 250)` / `oklch(0.85 0.004 250)`): el token `--macro-water` existe en `globals.css` y esta reservado para el disco de 5kg, pero **no esta conectado a ningun dato hoy**. `ToleranceKey` (`src/features/nutrition/lib/tolerances.ts`) solo define `calories | protein | carbs | fat | fiber`; no hay macro "agua" en seguimiento. Documentado como reservado, no como activo.
-- **Calorias — la barra, nunca un disco** (`steel-energy-bar`, `oklch(0.3 0.008 250)` / `oklch(0.88 0.003 250)`): las calorias son acero, no color, porque son la suma de los demas y no tienen un disco propio en el rack.
+| Papel | Oscuro | Claro |
+|---|---|---|
+| Suelo (`--background`) | `#082032` | `#ecedee` |
+| Tarjeta (`--card`) | `#2c394b` | `#ffffff` |
+| Sub-superficie (`--card-raised`) | `#334756` | `#f6f7f8` |
+| Tinta (`--foreground`) | `#d2d2d2` | `#082032` |
+| Tinta secundaria (`--muted-foreground`) | `#9aa6b0` | `#2c394b` |
+| Regla (`--rule`) | `#334756` | `#e0e2e4` |
+| Borde (`--border`) | `#41566a` | `#d8dbde` |
 
-### Estado (la excepcion declarada a la regla 1)
-- **Positivo** (`positive`, `oklch(0.48 0.115 155)` / `oklch(0.72 0.15 155)`): confirmacion; toma prestado el verde del disco de 10 porque el codigo ya esta aprendido.
-- **Precaucion** (`caution`, `oklch(0.52 0.13 68)` / `oklch(0.79 0.14 72)`): el ambar de advertencia. **Es una excepcion deliberada, no un descuido**: la regla 1 ("nada mas en pantalla lleva color") admite color para estado, y las advertencias de Hoy (pasarse de un macro, plan fuera de tolerancia, objetivos desactualizados) usan `caution` a proposito.
-- **Critico** (`critical`, `oklch(0.5 0.185 27)` / `oklch(0.68 0.17 27)`): toma prestado el rojo del disco de 25 para "te pasaste".
+### Estado
 
-### Neutral
-- **Suelo claro** (`chalk-floor`, `oklch(0.968 0.002 250)`) / **suelo oscuro** (`bumper-floor`, `oklch(0.16 0.003 250)`): el fondo, y tambien el valor de `--card` — una "tarjeta" vale lo mismo que el fondo porque no puede leerse como contenedor.
-- **Tinta** (`ink`, `oklch(0.19 0.006 250)` claro / `oklch(0.97 0.001 250)` oscuro): texto primario.
-- **Tinta apagada** (`muted-foreground`, `oklch(0.46 0.006 250)` / `oklch(0.72 0.004 250)`): metadatos, unidades, captions.
-- **Filete** (`hairline` / `rule`, `oklch(0.89 0.003 250)` / `oklch(1 0 0 / 10%)`): el separador de 1px, dentro de un grupo.
-- **Filete fuerte** (`rule-strong`, `oklch(0.72 0.006 250)` / `oklch(1 0 0 / 26%)`): el separador de 2px, entre grupos y en las barras ancladas.
+- **Positivo** — `#46b98a` oscuro / `#1f7a54` claro.
+- **Precaucion** — `#f5a15c` oscuro / `#8f4f14` claro. **Es ambar, no amarillo**: la paleta tiene un tono, y un amarillo nuevo seria un segundo. El aviso se distingue del acento por claridad, no por matiz.
+- **Critico** — `#e5484d` oscuro / `#c0392f` claro. **El rojo es la unica segunda familia que se gana su sitio**, porque "te pasaste" no puede leerse como marca.
 
-### Named Rules
-**La Regla del Disco Permanente.** Un macro no cambia de color entre pantallas. Si la proteina es el disco azul de 20 en Hoy, es el disco azul de 20 en cualquier otra pantalla que la muestre — nunca una barra gris ni un color distinto.
+### Fondos tenidos de estado
 
-**La Regla del Color Unico.** Fuera del codigo de disco y de la excepcion de estado (`caution`/`positive`/`critical`), ningun elemento de interfaz lleva color. Un boton, un icono o un fondo decorativo en un color nuevo es una fuga, no una variante.
-
-**La Regla de la Marca Aislada.** El naranja de marca vive solo en el logotipo. No es un token disponible para botones, acentos ni highlights de producto.
+`--tint-caution`, `--tint-critical`, `--tint-info` y sus `-border`. **No son neutros**, asi que un remapeo de tema que solo toque los grises no los cubre: si se olvidan, quedan oscuros con texto ilegible encima. Ya paso una vez con el aviso de objetivos.
 
 ## Typography
 
-**Stamp Font:** Archivo Black (`--font-stamp`), solo para la cifra troquelada.
-**Body/UI Font:** Archivo (`--font-sans`), para absolutamente todo lo demas: titulos, etiquetas, botones, cuerpo y datos.
+Una sola familia. `font-family: system-ui, var(--font-sans), sans-serif` — y **`system-ui` va primero a proposito**: en iPhone entrega SF Pro con su tamano optico y sus tablas de tracking reales. Inter es la red de seguridad para el resto de plataformas, no la primera opcion.
 
-**Character:** una sola grotesca de senaletica industrial, con una excepcion puntual y deliberada: el numeral de rotulo que se lee al otro lado del gimnasio.
+Sin monoespaciada en ningun sitio: `font-variant-numeric: tabular-nums` alinea las columnas igual, y sin disfrazar la interfaz de terminal.
 
-### Hierarchy
-- **Stamp** (400, `clamp(3.25rem, 16vw, 4.5rem)`, line-height 0.86, utilidad `num-display`): la cifra que manda la pantalla — "cuanto me falta". Aparece como maximo una vez por vista.
-- **Title** (700, `1.375rem`, line-height 1.15, `-0.02em`, utilidad `display-title`): titulo de seccion. Nunca compite con la cifra: es rotulo, no protagonista.
-- **Num Strong** (600, `1.0625rem`, utilidad `num-strong`): la cifra secundaria que manda dentro de su propia fila (p. ej. "faltan 42g" en una fila de macro), no en la pantalla completa.
-- **Body** (400, `0.875rem` tipico): texto corrido, descripciones, avisos.
-- **Label Micro** (400, `0.75rem`, sin tracking, sin mayusculas, utilidad `label-micro`): el nombre pequeno de un dato. Ver regla siguiente — esto NO es un antetitulo.
+### Jerarquia
 
-Toda cifra que puede cambiar (kcal, gramos, porcentajes) lleva `font-variant-numeric: tabular-nums` (utilidad `.num`), para que no "baile" al actualizarse.
+- **`num-display`** — la cifra protagonista. `clamp(3.5rem, 17vw, 4.5rem)`, peso 800, tracking `-0.038em`. **Una por pantalla, nunca dos**: si aparece dos veces, ninguna manda. Responde "cuanto me falta" de un vistazo, con el telefono en una mano.
+- **`display-title`** — titulo de tarjeta o pantalla, `1.375rem`/700. Nunca compite con la cifra: es rotulo, no protagonista.
+- **`num-strong`** — cifra secundaria, `1.0625rem`/600. Manda dentro de su fila, no en la pantalla.
+- **`num`** — cifra en flujo, con tabulares y `-0.008em`.
+- **`label-micro`** — el nombre pequeno de una cifra, `0.75rem`, caja normal. **No es un antetitulo**: la version en versalitas con tracking se retiro porque llegó a repetirse diez veces en la misma pantalla.
 
-### Named Rules
-**La Regla de la Cifra Unica.** `num-display` (Archivo Black) aparece una sola vez por pantalla. Si una segunda cifra necesita mandar, es `num-strong`, nunca una segunda instancia de `num-display`.
+### Tracking por tamano
 
-**La Regla del Antetitulo Retirado.** `label-micro` es una etiqueta de dato en caja normal, sin `letter-spacing` ni mayusculas. El eyebrow en versalitas-con-tracking fue el patron que este sistema vino a eliminar (llego a repetirse diez veces en una sola pantalla); no se reintroduce ni siquiera para un titulo "importante". **Estado real:** una instancia sobrevive fuera del alcance de esta utilidad — el `CardTitle` de `Nutricion` que renderiza "Totales del dia" hereda el estilo de version anterior de `@/components/ui/card`, no de `label-micro`. Es un defecto de migracion pendiente, no una segunda forma valida de etiqueta.
+En `@layer base`: h1 `-0.032em`, h2 `-0.024em`, h3/h4 `-0.018em`, `small`/`text-xs` `+0.006em`.
 
 ## Layout
 
-No hay grid de tarjetas. El contenido se apila en una sola columna vertical ("suelo continuo"), separado por reglas horizontales cuyo grosor codifica la jerarquia — no hay contenedor visible, ni margen de tarjeta, ni sombra que agrupe visualmente.
-
-- **Escala de regla:** 1px dentro de un grupo (`.border-rule`, entre filas de una misma lista) · 2px entre grupos (`.rule-band`, entre secciones normales) · 3px en la seccion que manda la pantalla (`.rule-plate`, reservada a UNA sola seccion — si todas la llevan, ninguna manda).
-- **Densidad movil-primero:** la escena de uso es de pie, con una mano, telefono sin acercar a la cara (ver `PRODUCT.md`). El escritorio anade la barra lateral (`Sidebar`, 240px fijo, `lg:flex`); en movil esa barra desaparece y la navegacion pasa a una barra inferior anclada de icono-solo.
-- **Objetivo tactil:** celdas de navegacion inferior de 44px (`h-11 w-11`), pensadas para el pulgar.
-- **Barra fija opaca:** la navegacion inferior y la barra superior (`.island`, `.surface-bar`) son opacas sobre el fondo con blur, nunca translucidas al punto de dejar leer el contenido por debajo — el desenfoque decorativo sin este respaldo dejaba texto ilegible bajo la barra en un telefono de pie.
+- Movil primero, ancho de contenido con la barra inferior anclada.
+- En escritorio, barra lateral de navegacion y una columna de contenido centrada — no se reparte el contenido en columnas por rellenar el ancho.
+- **La rejilla de tarjetas esta prohibida para datos secuenciales.** Criterio explicito del usuario: una lista de dias, de comidas o de series es una lista, no una cuadricula.
 
 ## Elevation & Depth
 
-Sistema plano por definicion. `--shadow-card: none` en ambos temas; no hay sombra de tarjeta en todo el sistema. La unica sombra que existe (`--shadow-island`) se reserva a **capas verdaderamente flotantes** — overlays, popovers, el sheet de "mas" en movil — nunca a contenido en flujo. La profundidad en flujo se transmite por regla (grosor) y por una sub-superficie muy leve (`--card-raised`, un tono apenas mas claro/oscuro que el fondo) para el unico caso en que algo necesita un fondo propio sin llegar a ser una tarjeta.
-
-### Shadow Vocabulary
-- **island** (`0 12px 32px -20px oklch(0.19 0.006 250 / 0.55)` claro, `0 12px 32px -18px oklch(0 0 0 / 0.8)` oscuro): overlays y capas flotantes exclusivamente.
-
-### Named Rules
-**La Regla de la Elevacion Solo Flotante.** Si un elemento vive en el flujo normal de la pagina, no lleva sombra, sin excepcion. Sombra es sinonimo de "esto flota sobre el contenido", nunca de "esto es importante".
+- La tarjeta agrupa; la elevacion la hace el **salto de tono**, no una sombra.
+- Sombra **solo** en capas flotantes: `surface-overlay` (popovers, hojas).
+- **`island`** — la barra inferior anclada. `backdrop-filter: blur(20px) saturate(160%)` con un filete arriba. El desenfoque aqui si tiene proposito: separa la navegacion del contenido manteniendo el contexto de lo que hay debajo, y el filete es lo que impide que el texto se lea "a traves".
+- Nunca apilar una superficie translucida clara sobre otra: la legibilidad se cae.
 
 ## Shapes
 
-Radio universal de 2px en toda superficie rectangular (botones, inputs, sub-superficies) — "el acero no es blando", pero tampoco es afilado. Las excepciones de radio mayor (3px, 4px) son pasos de la misma escala reducida, no una familia distinta. **El circulo esta reservado por completo al disco** (`border-radius: 50%`): es la unica forma redonda de todo el sistema, y es la que lleva el codigo de color semantico.
+Escala de radios en registro iOS. Lo decide el papel y el tamano de la pieza, no el gusto: una barra de 4px es una capsula, una tarjeta de 350px pide 26.
 
-Las reglas (bordes horizontales, nunca verticales salvo el canto activo de navegacion) son el unico recurso de separacion — no hay `border` perimetral en tarjetas ni caja alrededor de contenido; solo un `border-top` que anuncia el inicio de una seccion.
+`sm 10` miniaturas y casillas · `md 14` campos pequenos · `lg 18` botones y campos · `xl 22` paneles medianos · `2xl 26` paneles grandes · `3xl 34` la tarjeta de acceso · `4xl 40` hojas y canto superior.
+
+Botones y chips van en **capsula** (`rounded-full`). En Figma la maqueta usa `cornerSmoothing 0.6` (la esquina continua de iOS); en web se aproxima con el radio generoso de esta escala.
+
+## Motion
+
+Muelles, no curvas de duracion fija: un muelle es interrumpible y hereda velocidad.
+
+- **`--ease-spring`** — muelle criticamente amortiguado, expresado como `linear()`.
+- **`--dur-fast` 140ms** — respuesta al pulsar.
+- **`--dur-base` 240ms** — transicion de estado.
+- **`--dur-enter` 380ms** — entrada.
+- **`--stagger` 60ms** — separacion entre elementos que entran.
+
+La respuesta va en `pointerdown`, no al soltar: `:active { transform: scale(0.975) }` en las acciones. El rebote se reserva a lo que "llega" tras un gesto con impulso; una tarjeta que solo aparece no rebota.
 
 ## Components
 
 ### Buttons
-- **Shape:** radio 2px (`rounded-sm`, escala colapsada).
-- **Primary:** fondo acero (`--primary`), texto invertido; altura 2.5rem, padding horizontal 1rem.
-- **Hover / Focus:** cambio de tono unicamente (`bg-primary/92` en hover, `/84` en active) — sin escala, sin rebote; foco con anillo de 2px en el color acero. Cada boton lleva un halo sutil que sigue al puntero (`.btn-spotlight`, radial-gradient de 7rem en `--btn-x`/`--btn-y`), desactivado en tactil (`@media (hover: none)`).
-- **Secondary / Outline / Ghost:** variantes de tono neutro (gris secundario, borde hairline, o transparente); ninguna introduce color nuevo.
-- **Destructive:** unica variante que usa `--destructive`/`--critical` de fondo, y solo para acciones irreversibles.
 
-### El disco (`Plate` / `PlateBar`) — componente de firma del sistema
-El unico circulo de la interfaz, y el vehiculo del codigo semantico completo.
-- **Como chip** (`Plate`): 1.375rem de diametro, fondo del color del macro, numeral de kilos ("25", "20", "15", "10") impreso dentro en su tinta de contraste — la doble senal (color + numero) existe para quien no distingue bien el color.
-- **Como barra** (`PlateBar`): pista de 1.5px del color `rule`, relleno del color del macro cuyo ANCHO es la magnitud (`value / target`), a canto vivo — nunca redondeada, nunca pildora. Incluye una muesca vertical de 2px en el color de tinta que marca donde te deja el plan del dia (`planned`), y un canto de 3px al final cuando te pasas del objetivo. **Estado real:** las tres senales (relleno, muesca, canto de "pasado") estan implementadas y activas en el codigo, pero con datos reales del usuario demo sin registro del dia las tres resultan invisibles — no es un componente sin terminar, es un componente sin datos que mostrar todavia.
+- **Prominente** — degradado de marca, capsula, 48px de alto. Una por pantalla.
+- **Primario** — `--primary` plano, capsula. Todas las demas acciones reales.
+- **Callado** — sin relleno. **Solo descartes**: cancelar, ahora no, reintentar.
 
-### Cards / Containers — retirado como forma, conservado como nombre de clase
-No existe una "tarjeta" visual en el sistema nuevo. `Section` (`src/components/shared/section.tsx`) sustituye a `Card` en toda pantalla migrada: es una `<section>` con una regla superior (`rule-band` de 2px por defecto, `rule-plate` de 3px reservada a la seccion protagonista) y aire antes del contenido — nada de fondo propio, borde perimetral ni sombra. Las clases heredadas (`.surface-panel`, `.hairline-card`, `.glass-card`, `.hero-banner`) se conservan por nombre para no romper vistas sin migrar, pero su CSS ya no dibuja caja: solo un `border-top: 1px solid var(--rule)`.
-**Estado real:** `@/components/ui/card` (el componente shadcn original, con caja, cabecera y sombra clasicas) sigue importado en ~25 archivos — Nutricion, Entrenamiento, Progreso, Academia, formularios de autenticacion, entre otros. Esas pantallas renderizan la plantilla anterior ("Grafito"), no el sistema de disco. Cualquier pantalla nueva o tocada usa `Section`, nunca `Card`.
+Un boton secundario translucido sobre el marino da menos de 1.5:1 y se lee como fondo. Se probo y se revirtio: si es una accion, es naranja.
+
+### `MagnitudeBar` — la primitiva de dato del sistema
+
+`src/components/shared/magnitude.tsx`. El ancho **es** la cantidad. Pista en `--rule`, relleno en el acento, capsula, 6px.
+
+Tres estados y ninguno mas: normal (acento), excedido (critico, hasta el tope), y la muesca vertical del plan del dia. La muesca va **sobre la misma barra** en vez de en una columna aparte, porque la pregunta es "¿el plan me lleva ahi?" y eso se responde mirando, no comparando dos cifras.
+
+Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su numeral de kilos. Aquel sistema pedia cinco colores; este tiene uno, y el naranja ya esta ocupado por lo accionable. La identidad del macro la lleva su rotulo, que se lee.
+
+### Cards
+
+`surface-card` — fondo `--card`, radio `2xl`, sin borde. `Section` (`src/components/shared/section.tsx`) es el envoltorio con titulo; `variant="plain"` quita la superficie para bloques que ya traen su propia caja dentro.
 
 ### Navigation
-- **Sidebar (escritorio, ≥1024px):** riel fijo de 240px. El item activo se marca con un canto izquierdo de 3px (`border-l-foreground`) y peso semibold — sin pildora, sin fondo, sin halo. Las etiquetas de grupo van en caja normal (`label-micro`-equivalente), nunca en versalitas.
-- **Bottom Navigation (movil, <1024px):** barra anclada a todo el ancho (`island`, no una capsula flotante), icono-solo por falta de espacio para cinco etiquetas en 390px — el nombre persiste como `aria-label`/`title` para lectores de pantalla. El activo se marca con `glow-ring` (un inset-shadow de 3px en la base, no un halo de color). Un boton "mas" abre un sheet inferior con el resto de secciones.
-- **Wordmark:** una sola tinta (`currentColor`), compuesto con la voz de la cifra (Archivo Black), nunca el PNG de cuatro tintas original.
+
+`island` abajo en movil, barra lateral en escritorio. El item activo se marca **solo con color**: el icono cambia a su variante rellena y el rotulo toma el acento. **Nada de pastilla detras** — esa es la firma de Material 3, y fue lo primero que delato el diseno como Android. Por eso `glow-ring` hoy es solo color.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** asignar a cada macro su disco del codigo olimpico para siempre — 25 rojo grasa, 20 azul proteina, 15 amarillo carbohidratos, 10 verde fibra — y mantenerlo idéntico en cualquier pantalla que lo muestre.
-- **Do** usar el grosor de regla (1px / 2px / 3px) como unico mecanismo de jerarquia entre bloques de contenido, en vez de tarjetas, sombras o fondos distintos.
-- **Do** limitar `num-display` (Archivo Black) a una cifra por pantalla; si algo mas necesita destacar, usar `num-strong`.
-- **Do** usar `caution` para advertencias de estado en Hoy — es la excepcion deliberada de color que la regla 1 admite, no una fuga.
-- **Do** construir cualquier lista o seccion nueva sobre `Section` (`rule-band`/`rule-plate`), nunca sobre `@/components/ui/card`.
-- **Do** escribir las etiquetas de dato en caja normal, sin tracking (`label-micro`); un antetitulo en versalitas es exactamente el patron retirado.
+### Do
 
-### Don't:
-- **Don't** introducir un color decorativo nuevo — cada color en la interfaz tiene que ser o el disco de un macro, o uno de los tres estados (`positive`/`caution`/`critical`).
-- **Don't** usar el naranja de marca (`brand-orange`) fuera del wordmark; no es un token disponible para botones ni acentos de producto.
-- **Don't** dibujar una caja alrededor de contenido en flujo (borde perimetral, fondo de tarjeta, sombra) — la unica sombra del sistema es para capas flotantes.
-- **Don't** dar a un disco una forma que no sea el circulo, ni dar forma circular a nada que no sea un disco.
-- **Don't** tratar las pantallas migradas de `@/components/ui/card` (Nutricion, Entrenamiento, Progreso, Academia y el resto de las ~25 rutas) como una plantilla valida para trabajo nuevo: son deuda de migracion documentada, no una segunda direccion visual legitima.
+- Una accion prominente por pantalla, y que sea la que el usuario vino a hacer.
+- Preguntarse por cada elemento si es accion o dato, antes de aplicarle una regla de color.
+- Derivar el tema claro invirtiendo neutros, y comprobar aparte los fondos tenidos de estado.
+- Poner la respuesta en `pointerdown`.
+- Mirar el resultado en el navegador. Compilar no es verlo.
+
+### Don't
+
+- No introducir un tercer color. Positivo y critico ya existen; cualquier otro matiz nuevo hay que justificarlo por papel, no por gusto.
+- No usar pastilla de fondo para el item activo de la navegacion.
+- No usar rejilla de tarjetas para datos secuenciales.
+- No poner dos `num-display` en la misma vista.
+- No apilar translucidos.
+- No dejar `letter-spacing` fijo para todos los tamanos.
+
+## Estado de la construccion
+
+Al 2026-08-13, sobre `feat/sistema-visual-p7`:
+
+- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, y la tarjeta de Nutricion de hoy.
+- **Pendiente:** Nutricion, Entrenamiento, Progreso, Configuracion y Login siguen con la plantilla anterior; `@/components/ui/card` sigue importado en unas 25 rutas y componentes. La barra inferior y el boton flotante todavia no siguen la maqueta.
+
+Este documento describe el sistema como la unica direccion valida para trabajo nuevo o tocado; las pantallas sin migrar no son una variante legitima.

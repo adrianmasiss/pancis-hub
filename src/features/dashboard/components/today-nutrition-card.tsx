@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Plus, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Plate, PlateBar } from "@/components/shared/plate";
+import { MagnitudeBar } from "@/components/shared/magnitude";
 import { WhyThisNumber } from "@/features/assistant/components/why-this-number";
 import { buildTodayNutrition } from "@/features/dashboard/lib/today";
 import type { DashboardData } from "@/features/dashboard/queries";
@@ -27,11 +27,8 @@ const listMacros = (macros: ToleranceKey[]) =>
  *
  * Una sola pregunta manda la pantalla — cuanto te falta — y va troquelada, a
  * la escala que se lee de pie sin acercarse el telefono. Debajo, una fila por
- * macro con su disco: el color es el macro, el ancho es la magnitud, y la
- * muesca vertical es donde te dejaria el plan del dia.
- *
- * Sin tarjeta, sin anillos y sin columnas: lo que separa son reglas, y su
- * grosor es la jerarquia.
+ * macro: rotulo, lo que falta, y la barra donde el ancho es la magnitud y la
+ * muesca es donde te dejaria el plan del dia.
  */
 export function TodayNutritionCard({
   data,
@@ -45,7 +42,7 @@ export function TodayNutritionCard({
 
   if (!targets) {
     return (
-      <section className="rule-plate pt-4">
+      <section className="surface-card px-5 py-5">
         <h2 className="display-title mb-3">{t.title}</h2>
         <EmptyState
           title={t.noTargets}
@@ -105,7 +102,7 @@ export function TodayNutritionCard({
               : null;
 
   return (
-    <section className="rule-plate pt-4">
+    <section className="surface-card px-5 py-5">
       <div className="mb-6 flex items-baseline justify-between gap-3">
         <h2 className="display-title">{t.title}</h2>
         <Link
@@ -136,8 +133,7 @@ export function TodayNutritionCard({
             {energy.target.toLocaleString("es-419")}
           </span>
         </p>
-        <PlateBar
-          macro="calories"
+        <MagnitudeBar
           value={energy.consumed}
           target={energy.target}
           planned={energy.planned}
@@ -162,11 +158,8 @@ export function TodayNutritionCard({
           return (
             <li key={row.macro} className="border-rule border-b py-3">
               <div className="mb-2 flex items-baseline justify-between gap-3">
-                <span className="flex min-w-0 items-center gap-2">
-                  <Plate macro={row.macro} showKg />
-                  <span className="truncate text-sm capitalize">
-                    {t.macroNames[row.macro]}
-                  </span>
+                <span className="min-w-0 truncate text-sm capitalize">
+                  {t.macroNames[row.macro]}
                 </span>
                 <span className="num-strong shrink-0">
                   {rowOver ? (
@@ -180,8 +173,7 @@ export function TodayNutritionCard({
                   )}
                 </span>
               </div>
-              <PlateBar
-                macro={row.macro}
+              <MagnitudeBar
                 value={row.consumed}
                 target={row.target}
                 planned={row.planned}

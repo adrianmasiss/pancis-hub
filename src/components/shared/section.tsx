@@ -1,13 +1,15 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Un tramo de suelo, no una tarjeta.
+ * Una tarjeta con su titulo dentro.
  *
- * Sustituye a `Card` en todas las pantallas del sistema. Lo que anuncia una
- * seccion es la regla gruesa de arriba —el canto del disco— y el aire que la
- * precede; no un borde alrededor ni una sombra. Apilar seis de estas produce
- * una hoja continua que se lee de arriba abajo, que es exactamente lo que una
- * pila de tarjetas del mismo peso no consigue.
+ * Sustituye a `Card` en todas las pantallas. Sobre el marino profundo del
+ * tema oscuro, una superficie elevada agrupa mejor que un filete: la jerarquia
+ * la hace el salto de tono, no el grosor de una regla.
+ *
+ * Se probo lo contrario —secciones separadas por reglas de 1, 2 y 3 px sobre
+ * el suelo— y funcionaba en un sistema de alto contraste, pero con estas
+ * superficies el filete desaparece.
  */
 export function Section({
   title,
@@ -16,24 +18,22 @@ export function Section({
   children,
   className,
   /**
-   * Por defecto `band`, la regla de 2px. `plate` es el canto grueso y se
-   * reserva a LA seccion que manda en la pantalla: si todas lo llevan, el
-   * grosor deja de significar jerarquia y solo hace ruido.
+   * `plain` quita la superficie y deja el contenido sobre el suelo: para
+   * bloques que ya traen su propia caja dentro, como una lista de tarjetas.
    */
-  weight = "band",
+  variant = "card",
 }: {
   title?: string;
   description?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-  weight?: "plate" | "band";
+  variant?: "card" | "plain";
 }) {
   return (
     <section
       className={cn(
-        weight === "plate" ? "rule-plate" : "rule-band",
-        "pt-5",
+        variant === "card" && "surface-card px-5 py-5",
         className,
       )}
     >

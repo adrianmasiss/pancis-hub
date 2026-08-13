@@ -5,30 +5,31 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================================
-   PANCIS HUB — Sistema visual "Codigo de disco"
+   PANCIS HUB — Sistema visual
    ----------------------------------------------------------------------------
-   Referencia: el codigo de color normado de los discos olimpicos y el hierro
-   del gimnasio. 25 rojo, 20 azul, 15 amarillo, 10 verde, 5 blanco. Nadie que
-   levante tiene que aprenderselo: lo lee al otro lado de la sala.
+   Maqueta de referencia (27 pantallas, movil y escritorio, los dos temas):
+   https://www.figma.com/design/zrDvYIcBmJPjlc20hyuXxA
 
-   Cinco reglas que no se rompen:
-     1. EL COLOR ES LA MAGNITUD. Cada macro tiene su disco para siempre, y el
-        color aparece UNICAMENTE donde codifica un dato o un estado. Un color
-        decorativo devuelve el ruido que este sistema viene a quitar.
-     2. NO HAY TARJETAS. El contenido vive sobre el suelo. Lo que separa son
-        reglas, y su GROSOR es la jerarquia: 1px dentro de un grupo, 2px entre
-        grupos, 4px entre secciones. La rejilla de tarjetas queda prohibida.
-     3. La cifra manda y se troquela. La magnitud principal de cada pantalla va
-        en Archivo Black, una sola vez, a escala que se lee de pie y de lejos.
-        Todo lo demas es Archivo: etiquetas, botones, cuerpo y datos.
-     4. El acero no es blando. Radio 2px en superficies; el circulo se reserva
-        al disco, que es la unica forma redonda del sistema.
-     5. Elevacion solo en capas flotantes. En flujo, jamas una sombra.
+   Marino profundo con el naranja del logotipo. El naranja NO es decorativo:
+   marca lo accionable y el avance del dia, nada mas.
 
-   Escena que decide claro/oscuro: se usa de pie, con una mano, en una cocina a
-   mediodia, en un gimnasio con fluorescente y a veces en la calle con sol. El
-   claro (tiza y acero) es la casa del diseno; el oscuro (goma de bumper) es
-   igual de real para el gimnasio, no una contraparte de cortesia.
+   Reglas que no se rompen:
+     1. UNA accion prominente por pantalla, con el degradado del logotipo. Las
+        demas acciones reales van en naranja solido. Solo los descartes
+        (cancelar, ahora no, reintentar) se quedan callados.
+     2. El color mira el PAPEL, no el pixel. Un relleno naranja puede ser un
+        boton o un dato, y se tratan distinto: se probo lo contrario y vacio la
+        tira de adherencia, que era informacion.
+     3. Registro iOS, no Material. Esquina continua, capsula en botones y
+        campos, iconos con variante RELLENA en el activo (Material marca con
+        pastilla; Apple cambia el simbolo), y muelles en vez de curvas.
+     4. Tracking por tamano, nunca fijo. Apretado en display, abierto en
+        cuerpos pequenos.
+     5. Los dos temas son de primera clase. El claro es este mismo sistema con
+        los neutros invertidos; el acento y la tinta sobre el NO se invierten.
+
+   Escena que manda: de pie, con una mano, en una cocina, un gimnasio o la
+   calle. Por eso el acento se ve desde lejos y los objetivos son grandes.
    ========================================================================== */
 
 @theme inline {
@@ -37,8 +38,6 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-sans);
   --font-heading: var(--font-sans);
-  /* La voz de la cifra. Solo cifras. */
-  --font-stamp: var(--font-stamp);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -86,220 +85,219 @@
   --color-divider: var(--divider);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  /* --- El codigo de disco. Cada macro lleva el suyo para siempre. --- */
-  --color-macro-protein: var(--macro-protein); /* 20 kg, azul */
-  --color-macro-carbs: var(--macro-carbs); /* 15 kg, amarillo */
-  --color-macro-fat: var(--macro-fat); /* 25 kg, rojo */
-  --color-macro-fiber: var(--macro-fiber); /* 10 kg, verde */
-  --color-macro-water: var(--macro-water); /* 5 kg, blanco */
-  /* Las calorias son la barra, no un disco: acero, nunca color. */
-  --color-macro-energy: var(--macro-energy);
-
   /* --- Reglas. El grosor ES la jerarquia (regla 2). --- */
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
 
-  /* El acero no es blando (regla 4). Toda la escala colapsa a un troquel de
-     2 px; el circulo existe, pero se lo queda el disco y nada mas. */
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 2px;
-  --radius-2xl: 3px;
-  --radius-3xl: 3px;
-  --radius-4xl: 4px;
+  /* Escala de radios en registro iOS (regla 3). Lo decide el papel y el
+     tamano de la pieza, no el gusto: una barra de 4 px es una capsula, una
+     tarjeta de 350 px pide 26. */
+  --radius-sm: 10px; /* miniaturas, casillas */
+  --radius-md: 14px; /* campos pequenos */
+  --radius-lg: 18px; /* botones y campos */
+  --radius-xl: 22px; /* paneles medianos */
+  --radius-2xl: 26px; /* paneles grandes */
+  --radius-3xl: 34px; /* la tarjeta de acceso */
+  --radius-4xl: 40px; /* hojas, canto superior */
+
+  /* Movimiento. Muelles, no curvas de duracion fija: un muelle es
+     interrumpible y hereda velocidad. El rebote se reserva a lo que "llega". */
+  --ease-spring: linear(
+    0, 0.0039 1.24%, 0.0157, 0.0352, 0.0625 4.96%, 0.1379 7.44%,
+    0.2417 10.1%, 0.5199 16.6%, 0.6415 19.8%, 0.7442, 0.8298 26.5%,
+    0.8994 30%, 0.9541 33.9%, 0.9938 38.4%, 1.0169 43.1%, 1.0263 48.3%,
+    1.0221 55.6%, 1.0106 66.2%, 1.0004 81.1%, 1
+  );
+  --dur-fast: 140ms; /* respuesta al pulsar */
+  --dur-base: 240ms; /* transicion de estado */
+  --dur-enter: 380ms; /* entrada escalonada */
+  --stagger: 60ms; /* separacion entre elementos que entran */
 }
 
 /* ----------------------------------------------------------------------------
-   MODO CLARO. El handoff no lo define: es un diseno solo oscuro.
-   Se deriva aqui para que el conmutador de tema que ya existe siga sirviendo.
-   Misma familia calida y mismo naranja; lo unico que cambia es que el acento
-   se oscurece, porque el naranja del handoff sobre papel da 2.5:1 y no se
-   puede leer. Si algun dia se decide que la app es solo oscura, este bloque
-   se borra y se quita el conmutador.
+   TEMA CLARO. Los neutros invertidos del oscuro, y nada mas.
+   El acento y la tinta oscura sobre el NO se invierten: texto #082032 sobre
+   naranja da 4.9:1 en los dos temas, asi que una sola regla evita que el
+   boton cambie de caracter al cambiar de tema.
    -------------------------------------------------------------------------- */
 :root {
-  /* --- Tiza y acero. El suelo del gimnasio con luz de mediodia. --- */
-  --background: oklch(0.968 0.002 250);
-  --foreground: oklch(0.19 0.006 250);
-  /* No hay tarjetas (regla 2). Estos tokens sobreviven porque shadcn los pide,
-     y valen lo mismo que el fondo: una "tarjeta" no puede verse como tal. */
-  --card: oklch(0.968 0.002 250);
-  --card-foreground: oklch(0.19 0.006 250);
-  --card-raised: oklch(0.942 0.003 250);
-  --popover: oklch(0.995 0.001 250);
-  --popover-foreground: oklch(0.19 0.006 250);
+  --background: #ecedee;
+  --foreground: #082032;
+  --card: #ffffff;
+  --card-foreground: #082032;
+  --card-raised: #f6f7f8;
+  --popover: #ffffff;
+  --popover-foreground: #082032;
 
-  /* --- El acento es el acero de la barra, no un color de marca. El naranja
-         se retira de la interfaz y se queda donde nacio: en el logotipo. --- */
-  --primary: oklch(0.34 0.008 250);
-  --primary-strong: oklch(0.24 0.008 250);
-  --primary-foreground: oklch(0.98 0.001 250);
+  /* El acento es el naranja del logotipo, muestreado del PNG real. */
+  --primary: #f05a27;
+  --primary-strong: #d94a1c;
+  --primary-foreground: #082032;
 
-  /* El naranja del logotipo, disponible solo para la marca. */
-  --brand-from: oklch(0.56 0.155 42);
-  --brand-to: oklch(0.56 0.155 42);
-  --brand-btn-from: oklch(0.34 0.008 250);
-  --brand-btn-to: oklch(0.34 0.008 250);
+  /* Los dos extremos del degradado del logotipo. La accion prominente de cada
+     pantalla lo usa; las demas acciones van con --primary plano. */
+  --brand-from: #e43030;
+  --brand-to: #fc841e;
+  --brand-btn-from: #e43030;
+  --brand-btn-to: #fc841e;
 
-  --signal: oklch(0.44 0.008 250);
-  --signal-foreground: oklch(0.98 0.001 250);
+  --signal: #2c394b;
+  --signal-foreground: #ecedee;
 
-  --secondary: oklch(0.93 0.003 250);
-  --secondary-foreground: oklch(0.26 0.007 250);
-  --muted: oklch(0.938 0.003 250);
-  --muted-foreground: oklch(0.46 0.006 250);
-  --subtle-foreground: oklch(0.58 0.005 250);
-  --accent: oklch(0.925 0.004 250);
-  --accent-foreground: oklch(0.24 0.008 250);
+  --secondary: #e7e9eb;
+  --secondary-foreground: #2c394b;
+  --muted: #e7e9eb;
+  --muted-foreground: #2c394b;
+  --subtle-foreground: #6b7885;
+  --accent: #e7e9eb;
+  --accent-foreground: #082032;
 
-  /* Estado. Toma prestados los discos porque el codigo ya esta aprendido:
-     el rojo del 25 es la alerta, el verde del 10 la confirmacion. */
-  --success: oklch(0.48 0.115 155);
-  --danger: oklch(0.5 0.185 27);
-  --positive: oklch(0.48 0.115 155);
-  --positive-foreground: oklch(0.98 0.001 250);
-  --caution: oklch(0.52 0.13 68);
-  --caution-foreground: oklch(0.98 0.001 250);
-  --critical: oklch(0.5 0.185 27);
-  --critical-foreground: oklch(0.98 0.001 250);
-  --destructive: oklch(0.5 0.185 27);
+  /* Estado. La paleta no traia ninguno: se derivaron, y en claro se oscurecen
+     para leerse sobre blanco. */
+  --success: #1f7a54;
+  --danger: #c0392f;
+  --positive: #1f7a54;
+  --positive-foreground: #ffffff;
+  /* El aviso es ambar, no amarillo: la paleta tiene UN tono, y un amarillo
+     nuevo seria un segundo. El rojo si se gana su sitio, porque "te pasaste"
+     no puede leerse como marca. */
+  --caution: #8f4f14;
+  --caution-foreground: #ffffff;
+  --critical: #c0392f;
+  --critical-foreground: #ffffff;
+  --destructive: #c0392f;
 
-  /* --- EL CODIGO DE DISCO ---
-     Ajustados sobre tiza para que todos pasen 4.5:1 como texto. Sobre el
-     disco solido el texto va en su propio -ink. */
-  --macro-protein: oklch(0.46 0.15 255); /* 20 kg azul */
-  --macro-carbs: oklch(0.53 0.125 78); /* 15 kg amarillo */
-  --macro-fat: oklch(0.5 0.185 27); /* 25 kg rojo */
-  --macro-fiber: oklch(0.46 0.115 155); /* 10 kg verde */
-  --macro-water: oklch(0.55 0.01 250); /* 5 kg blanco/cromo */
-  --macro-energy: oklch(0.3 0.008 250); /* la barra: acero */
+  /* Fondos tenidos de estado. NO son neutros: el remapeo de tema no los cubre,
+     y si se olvidan quedan oscuros con texto ilegible encima. */
+  --tint-caution: #fdf1e9;
+  --tint-caution-border: #f3c7ac;
+  --tint-critical: #fdecea;
+  --tint-critical-border: #f2bcb4;
+  --tint-info: #fbf3de;
+  --tint-info-border: #e8d293;
 
-  /* Reglas: el grosor es la jerarquia. */
-  --rule: oklch(0.86 0.004 250);
-  --rule-strong: oklch(0.72 0.006 250);
+  --rule: #e0e2e4;
+  --rule-strong: #d2d2d2;
 
-  --border: oklch(0.86 0.004 250);
-  --border-strong: oklch(0.72 0.006 250);
-  --divider: oklch(0.89 0.003 250);
-  --hairline: oklch(0.89 0.003 250);
-  --input: oklch(0.78 0.005 250);
-  --ring: oklch(0.34 0.008 250);
+  --border: #d8dbde;
+  --border-strong: #c4c8cc;
+  --divider: #e7e9eb;
+  --hairline: #e7e9eb;
+  --input: #d8dbde;
+  --ring: #f05a27;
 
-  /* Serie categorica = el codigo, en orden de disco. */
-  --chart-1: oklch(0.5 0.185 27);
-  --chart-2: oklch(0.46 0.15 255);
-  --chart-3: oklch(0.53 0.125 78);
-  --chart-4: oklch(0.46 0.115 155);
-  --chart-5: oklch(0.4 0.008 250);
+  --chart-1: #f05a27;
+  --chart-2: #2c394b;
+  --chart-3: #1f7a54;
+  --chart-4: #8f4f14;
+  --chart-5: #6b7885;
 
-  --radius: 2px;
-  --radius-card: 2px;
-  --radius-pill: 2px;
+  /* Registro iOS: capsula en botones y campos, 26 en paneles, 40 en hojas.
+     El radio lo decide el papel y el tamano, no el gusto. */
+  --radius: 18px;
+  --radius-card: 26px;
+  --radius-pill: 9999px;
+  --radius-sheet: 40px;
 
-  /* La unica sombra del sistema, y solo para lo que flota. */
-  --shadow-card: none;
-  --shadow-island: 0 12px 32px -20px oklch(0.19 0.006 250 / 0.55);
+  --shadow-card: 0 1px 2px rgb(8 32 50 / 0.04);
+  --shadow-island: 0 -1px 0 var(--border);
   --glow-primary: none;
-  --surface-card-bg: var(--background);
-  --island-bg: oklch(0.968 0.002 250 / 0.97);
-  --segmented-bg: oklch(0.93 0.003 250);
+  --surface-card-bg: var(--card);
+  --island-bg: rgb(244 245 245 / 0.86);
+  --segmented-bg: var(--secondary);
 
-  --sidebar: oklch(0.942 0.003 250);
-  --sidebar-foreground: oklch(0.19 0.006 250);
-  --sidebar-primary: oklch(0.24 0.008 250);
-  --sidebar-primary-foreground: oklch(0.98 0.001 250);
-  --sidebar-accent: oklch(0.9 0.004 250);
-  --sidebar-accent-foreground: oklch(0.19 0.006 250);
-  --sidebar-border: oklch(0.86 0.004 250);
-  --sidebar-ring: oklch(0.34 0.008 250);
+  --sidebar: #f4f5f5;
+  --sidebar-foreground: #082032;
+  --sidebar-primary: #f05a27;
+  --sidebar-primary-foreground: #082032;
+  --sidebar-accent: #e7e9eb;
+  --sidebar-accent-foreground: #082032;
+  --sidebar-border: #d8dbde;
+  --sidebar-ring: #f05a27;
 }
 
 /* ----------------------------------------------------------------------------
-   MODO OSCURO — goma de bumper.
-   No es la contraparte de cortesia del claro: es el gimnasio. El suelo es el
-   negro mate del disco de goma y el codigo sube de luminosidad para sostenerse
-   encima. La barra sigue siendo acero.
+   TEMA OSCURO — marino profundo. Es el tema de la maqueta y el que se disena
+   primero; el claro se deriva de este invirtiendo los neutros.
    -------------------------------------------------------------------------- */
 .dark {
-  --background: oklch(0.16 0.003 250);
-  --foreground: oklch(0.97 0.001 250);
-  --card: oklch(0.16 0.003 250);
-  --card-foreground: oklch(0.97 0.001 250);
-  --card-raised: oklch(0.21 0.004 250);
-  --popover: oklch(0.21 0.004 250);
-  --popover-foreground: oklch(0.97 0.001 250);
+  --background: #082032;
+  --foreground: #d2d2d2;
+  --card: #2c394b;
+  --card-foreground: #d2d2d2;
+  --card-raised: #334756;
+  --popover: #2c394b;
+  --popover-foreground: #d2d2d2;
 
-  /* El acento es acero pulido: lo que refleja la luz en una sala oscura. */
-  --primary: oklch(0.88 0.003 250);
-  --primary-strong: oklch(0.97 0.001 250);
-  --primary-foreground: oklch(0.16 0.003 250);
+  /* El acento NO se invierte: es el mismo naranja y la misma tinta encima. */
+  --primary: #f05a27;
+  --primary-strong: #fc841e;
+  --primary-foreground: #082032;
 
-  --brand-from: oklch(0.72 0.17 45);
-  --brand-to: oklch(0.72 0.17 45);
-  --brand-btn-from: oklch(0.88 0.003 250);
-  --brand-btn-to: oklch(0.88 0.003 250);
+  --brand-from: #e43030;
+  --brand-to: #fc841e;
+  --brand-btn-from: #e43030;
+  --brand-btn-to: #fc841e;
 
-  --signal: oklch(0.7 0.004 250);
-  --signal-foreground: oklch(0.16 0.003 250);
+  --signal: #9aa6b0;
+  --signal-foreground: #082032;
 
-  --secondary: oklch(0.24 0.004 250);
-  --secondary-foreground: oklch(0.97 0.001 250);
-  --muted: oklch(0.23 0.004 250);
-  --muted-foreground: oklch(0.72 0.004 250);
-  --subtle-foreground: oklch(0.6 0.004 250);
-  --accent: oklch(0.24 0.004 250);
-  --accent-foreground: oklch(0.97 0.001 250);
+  --secondary: #334756;
+  --secondary-foreground: #d2d2d2;
+  --muted: #334756;
+  --muted-foreground: #9aa6b0;
+  --subtle-foreground: #6e7e8c;
+  --accent: #334756;
+  --accent-foreground: #d2d2d2;
 
-  --success: oklch(0.72 0.15 155);
-  --danger: oklch(0.68 0.17 27);
-  --positive: oklch(0.72 0.15 155);
-  --positive-foreground: oklch(0.16 0.003 250);
-  --caution: oklch(0.79 0.14 72);
-  --caution-foreground: oklch(0.16 0.003 250);
-  --critical: oklch(0.68 0.17 27);
-  --critical-foreground: oklch(0.16 0.003 250);
-  --destructive: oklch(0.68 0.17 27);
+  --success: #46b98a;
+  --danger: #e5484d;
+  --positive: #46b98a;
+  --positive-foreground: #082032;
+  --caution: #f5a15c;
+  --caution-foreground: #082032;
+  --critical: #e5484d;
+  --critical-foreground: #082032;
+  --destructive: #e5484d;
 
-  /* El codigo, con la luminosidad que pide la goma negra. */
-  --macro-protein: oklch(0.66 0.16 255);
-  --macro-carbs: oklch(0.79 0.14 78);
-  --macro-fat: oklch(0.68 0.17 27);
-  --macro-fiber: oklch(0.72 0.15 155);
-  --macro-water: oklch(0.85 0.004 250);
-  --macro-energy: oklch(0.88 0.003 250);
+  --tint-caution: #33251c;
+  --tint-caution-border: #6b4a2c;
+  --tint-critical: #3a2320;
+  --tint-critical-border: #7a3b36;
+  --tint-info: #3a3320;
+  --tint-info-border: #6f6234;
 
-  --rule: oklch(1 0 0 / 13%);
-  --rule-strong: oklch(1 0 0 / 26%);
+  --rule: #334756;
+  --rule-strong: #41566a;
 
-  --border: oklch(1 0 0 / 13%);
-  --border-strong: oklch(1 0 0 / 26%);
-  --divider: oklch(1 0 0 / 10%);
-  --hairline: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 22%);
-  --ring: oklch(0.88 0.003 250);
+  --border: #41566a;
+  --border-strong: #4d6379;
+  --divider: #334756;
+  --hairline: #334756;
+  --input: #41566a;
+  --ring: #f05a27;
 
-  --chart-1: oklch(0.68 0.17 27);
-  --chart-2: oklch(0.66 0.16 255);
-  --chart-3: oklch(0.79 0.14 78);
-  --chart-4: oklch(0.72 0.15 155);
-  --chart-5: oklch(0.78 0.004 250);
+  --chart-1: #f05a27;
+  --chart-2: #9aa6b0;
+  --chart-3: #46b98a;
+  --chart-4: #f5a15c;
+  --chart-5: #6e7e8c;
 
   --shadow-card: none;
-  --shadow-island: 0 12px 32px -18px oklch(0 0 0 / 0.8);
+  --shadow-island: 0 -1px 0 var(--rule);
   --glow-primary: none;
-  --surface-card-bg: var(--background);
-  --island-bg: oklch(0.16 0.003 250 / 0.97);
-  --segmented-bg: oklch(0.24 0.004 250);
+  --surface-card-bg: var(--card);
+  --island-bg: rgb(6 24 38 / 0.86);
+  --segmented-bg: var(--secondary);
 
-  --sidebar: oklch(0.21 0.004 250);
-  --sidebar-foreground: oklch(0.97 0.001 250);
-  --sidebar-primary: oklch(0.88 0.003 250);
-  --sidebar-primary-foreground: oklch(0.16 0.003 250);
-  --sidebar-accent: oklch(0.26 0.004 250);
-  --sidebar-accent-foreground: oklch(0.97 0.001 250);
-  --sidebar-border: oklch(1 0 0 / 13%);
-  --sidebar-ring: oklch(0.88 0.003 250);
+  --sidebar: #061826;
+  --sidebar-foreground: #d2d2d2;
+  --sidebar-primary: #f05a27;
+  --sidebar-primary-foreground: #082032;
+  --sidebar-accent: #334756;
+  --sidebar-accent-foreground: #d2d2d2;
+  --sidebar-border: #41566a;
+  --sidebar-ring: #f05a27;
 }
 
 @layer base {
@@ -334,22 +332,36 @@
     border-radius: 4px;
   }
   html {
-    @apply font-sans;
+    /* system-ui va PRIMERO a proposito: en iPhone entrega SF Pro, con su
+       tamano optico y sus tablas de tracking. Inter es la red de seguridad
+       para el resto de plataformas, no la primera opcion. */
+    font-family: system-ui, var(--font-sans), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  /* Editorial: los titulos van francamente apretados; el cuerpo respira.
-     -0.03em es lo que separa un titulo "de sistema" de uno compuesto. */
-  h1,
-  h2,
-  h3,
-  h4 {
-    letter-spacing: -0.03em;
+  /* TRACKING POR TAMANO (regla 4). Apple aprieta el texto grande, porque las
+     letras se separan opticamente al crecer, y abre el pequeno para que
+     respire. Un solo valor esta mal en algun cuerpo. */
+  h1 {
+    letter-spacing: -0.032em;
+    line-height: 1.06;
     text-wrap: balance;
   }
-  h1 {
-    line-height: 1.05;
+  h2 {
+    letter-spacing: -0.024em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  h3,
+  h4 {
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  small,
+  .text-xs,
+  .text-\[11px\] {
+    letter-spacing: 0.006em;
   }
   p {
     text-wrap: pretty;
@@ -361,30 +373,30 @@
 
 /* ============================================================================
    TIPOGRAFIA DE DATOS
-   Una sola familia (regla 3). La monoespaciada se retira: Archivo con cifras
-   tabulares alinea las columnas igual, y sin disfrazar la interfaz de terminal.
+   Una sola familia. Nada de monoespaciada: las cifras tabulares alinean las
+   columnas igual, y sin disfrazar la interfaz de terminal.
    ========================================================================== */
 @utility num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.008em;
 }
 
 /**
- * LA CIFRA TROQUELADA. Una por pantalla, nunca dos.
+ * LA CIFRA PROTAGONISTA. Una por pantalla, nunca dos.
  *
- * Es lo unico que usa Archivo Black, y existe para responder de un vistazo
- * "cuanto me falta" con el telefono en una mano y sin acercarselo a la cara.
- * Si aparece dos veces en la misma vista, ninguna de las dos manda.
+ * Responde "cuanto me falta" de un vistazo, con el telefono en una mano y sin
+ * acercarselo a la cara. Si aparece dos veces en la misma vista, ninguna de
+ * las dos manda. El tracking va muy apretado porque a este cuerpo las letras
+ * se separan opticamente.
  */
 @utility num-display {
-  font-family: var(--font-stamp), var(--font-sans), sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
-  font-size: clamp(3.25rem, 16vw, 4.5rem);
-  line-height: 0.86;
-  letter-spacing: -0.045em;
-  font-weight: 400;
+  font-size: clamp(3.5rem, 17vw, 4.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.038em;
+  font-weight: 800;
 }
 
 /* Cifra secundaria: manda dentro de su fila, no en la pantalla. */
@@ -393,7 +405,7 @@
   font-feature-settings: "tnum" 1;
   font-size: 1.0625rem;
   line-height: 1.1;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.014em;
   font-weight: 600;
 }
 
@@ -401,79 +413,39 @@
 @utility display-title {
   font-size: 1.375rem;
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   font-weight: 700;
 }
 
 /* ============================================================================
-   EL DISCO
-   La unica forma redonda del sistema. Su color ES el macro, para siempre, y
-   solo aparece cuando codifica un dato. Como chip lleva su numeral dentro;
-   como barra, el ancho es la magnitud.
-   ========================================================================== */
-@utility plate {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 1.375rem;
-  height: 1.375rem;
-  border-radius: 50%;
-  background: var(--plate-color, var(--macro-energy));
-  color: var(--plate-ink, oklch(1 0 0));
-  font-size: 0.5625rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1;
-}
-
-/* Regla entre grupos (regla 2). El grosor es la jerarquia. */
-@utility rule-band {
-  border-top: 2px solid var(--rule-strong);
-}
-
-/* Regla de seccion mayor: el canto del disco. Se reserva a LA seccion que
-   manda en la pantalla; si todas la llevan, ninguna manda. */
-@utility rule-plate {
-  border-top: 3px solid var(--foreground);
-}
-
-/* ============================================================================
-   PRIMITIVOS DEL HANDOFF v2
-   Los valores son los del paquete de diseno. Lo unico que cambia respecto al
-   original es que aqui pasan por tokens en vez de ir fijos, para que la
-   contraparte clara no quede con superficies oscuras.
-   ========================================================================== */
-
-/* ============================================================================
-   NO HAY TARJETAS (regla 2)
-   Estos nombres sobreviven porque medio repositorio los usa, pero su
-   significado cambia: ya no dibujan un contenedor. Una "tarjeta" es ahora un
-   tramo de suelo que empieza con una regla y respira por arriba.
+   SUPERFICIES
+   Vuelven las tarjetas: sobre un marino profundo, una superficie elevada
+   agrupa mejor que un filete. La jerarquia la hace la elevacion del tono, no
+   el grosor de una regla.
    ========================================================================== */
 @utility surface-card {
-  background: transparent;
+  background: var(--card);
   border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
-/* Sub-superficie: lo unico que se permite tener fondo propio, y muy leve. */
+/* Sub-superficie dentro de una tarjeta: campos, filas de alimento. */
 @utility surface-raised {
   background: var(--card-raised);
   border: 0;
-  border-radius: 2px;
+  border-radius: var(--radius-lg);
 }
 
 @utility card-eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--muted-foreground);
 }
 
-/* Cabecera de seccion: la regla va ARRIBA, no debajo. Es el canto del disco
-   anunciando que empieza algo, no un subrayado decorativo del titulo. */
+/* Cabecera de tarjeta. Sin regla debajo: la tarjeta ya delimita. */
 @utility card-header {
   display: flex;
   align-items: baseline;
@@ -485,39 +457,53 @@
 }
 
 /**
- * Barra anclada: el suelo, con la regla de seccion arriba. Nada flota.
+ * Barra inferior anclada, translucida.
  *
- * Opaca a proposito. El desenfoque era decoracion —no un efecto con
- * proposito— y dejaba el texto del contenido leyendose a traves de la
- * navegacion, que en un telefono de pie es peor que feo: es ilegible.
+ * El desenfoque aqui SI tiene proposito: separa la navegacion del contenido
+ * manteniendo el contexto de lo que hay debajo. Va con un filete arriba, que
+ * es lo que impide que el texto se lea "a traves" de ella.
  */
 @utility island {
-  background: var(--background);
+  background: var(--island-bg);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 0;
-  border-top: 2px solid var(--rule-strong);
+  border-top: 1px solid var(--border);
   border-radius: 0;
   box-shadow: none;
 }
 
-/* Segmentado: pestanas troqueladas sobre una regla, sin pildoras. */
+@supports not (backdrop-filter: blur(1px)) {
+  .island {
+    background: var(--background);
+  }
+}
+
+/* Segmentado: capsula sobre superficie hundida, registro iOS. */
 @utility segmented {
   display: inline-flex;
   align-items: stretch;
-  gap: 0;
+  gap: 2px;
   width: max-content;
-  padding: 0;
+  padding: 3px;
   border: 0;
-  border-bottom: 2px solid var(--rule);
-  border-radius: 0;
-  background: transparent;
+  border-radius: var(--radius-pill);
+  background: var(--segmented-bg);
   box-shadow: none;
 }
 
-/* Item activo: se marca con el canto grueso, no con un halo. */
+/**
+ * Item activo de la navegacion.
+ *
+ * Se marca SOLO con color: el icono cambia a su variante rellena y el rotulo
+ * toma el acento. Nada de pastilla detras — esa es la firma de Material 3, y
+ * fue lo primero que delato el diseno como Android.
+ */
 @utility glow-ring {
   border: 0;
   background: transparent;
-  box-shadow: inset 0 -3px 0 var(--foreground);
+  box-shadow: none;
+  color: var(--primary);
 }
 
 /**
@@ -539,28 +525,25 @@
 }
 
 /* ============================================================================
-   SUPERFICIES
-   Se conservan los nombres de clase heredados para que las vistas que aun no
-   se han migrado adopten el sistema nuevo sin tocarlas. Lo que cambia es su
-   significado: de vidrio y resplandor a filete y superficie plana.
+   SUPERFICIES HEREDADAS
+   Nombres de clase de sistemas anteriores, redirigidos a la superficie actual
+   para que las vistas sin migrar no se queden con el aspecto viejo. Ninguno es
+   API: al migrar una vista se cambian por `surface-card`.
 
    Van en @layer components a proposito: asi cualquier utilidad de Tailwind
    aplicada en el mismo elemento (bg-primary, rounded-full, border-0...) gana,
    que es el comportamiento que se espera al combinarlas.
    ========================================================================== */
 @layer components {
-/* Las superficies heredadas dejan de dibujar caja. Lo que separa es la regla
-   de arriba; el fondo es el suelo (regla 2). */
 .surface-panel,
 .hairline-card,
 .glass-card,
 .glass-pill,
 .hero-banner {
-  background: transparent;
+  background: var(--card);
   border: 0;
-  border-top: 1px solid var(--rule);
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -599,33 +582,52 @@
   }
 }
 
-/* Marca y acento: acero plano. El naranja se queda en el logotipo. */
-.bg-brand-gradient {
-  background-image: none;
-  background-color: var(--primary);
-}
+/* ----------------------------------------------------------------------------
+   LA ACCION PROMINENTE
+   Una por pantalla, con el degradado del logotipo. Las demas acciones reales
+   van con --primary plano (el punto medio de ese mismo degradado), asi la
+   diferencia es degradado contra plano y no naranja contra invisible.
 
+   Se probo dejar las secundarias en vidrio, como manda iOS: sobre #082032 un
+   velo blanco al 8 % da un azul casi identico al fondo, por debajo de 1.5:1.
+   Esa regla asume superficies claras. Aqui no aplica.
+   -------------------------------------------------------------------------- */
+.bg-brand-gradient,
 .bg-brand-button,
 .glowing-primary-btn {
-  background-image: none;
-  background-color: var(--primary);
+  background-image: linear-gradient(
+    100deg,
+    var(--brand-btn-from),
+    var(--brand-btn-to)
+  );
+  background-color: var(--brand-btn-from);
+  color: var(--primary-foreground);
   box-shadow: none;
+  /* Respuesta al pulsar, no al soltar: es la base de que se sienta directo. */
   transition:
-    background-color 0.18s ease,
-    opacity 0.18s ease;
+    filter var(--dur-fast) ease-out,
+    transform var(--dur-fast) ease-out;
 }
 
+.bg-brand-button:hover,
 .glowing-primary-btn:hover {
-  transform: none;
-  box-shadow: none;
-  background-color: color-mix(in oklch, var(--primary) 88%, var(--foreground));
+  filter: brightness(1.06);
+}
+
+.bg-brand-button:active,
+.glowing-primary-btn:active {
+  transform: scale(0.975);
 }
 
 .text-brand-gradient {
-  background-image: none;
-  -webkit-background-clip: border-box;
-  background-clip: border-box;
-  color: var(--primary);
+  background-image: linear-gradient(
+    100deg,
+    var(--brand-from),
+    var(--brand-to)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .bg-signal {

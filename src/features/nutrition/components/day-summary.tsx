@@ -32,25 +32,21 @@ export function DaySummary({ plan }: { plan: DayPlan }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <MacroProgress
             label={d.protein}
-            macro="protein"
             consumed={plan.totals.proteinG}
             target={plan.targets.proteinG}
           />
           <MacroProgress
             label={d.carbs}
-            macro="carbs"
             consumed={plan.totals.carbohydrateG}
             target={plan.targets.carbohydrateG}
           />
           <MacroProgress
             label={d.fat}
-            macro="fat"
             consumed={plan.totals.fatG}
             target={plan.targets.fatG}
           />
           <MacroProgress
             label={d.fiber}
-            macro="fiber"
             consumed={plan.totals.fiberG}
             target={plan.targets.fiberG}
           />
