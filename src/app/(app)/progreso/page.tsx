@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MetricCard } from "@/components/shared/metric-card";
 import { PageHeader } from "@/components/shared/page-header";
+import { Section } from "@/components/shared/section";
 import { WeightTrendChart } from "@/components/charts/weight-trend-chart";
 import { CompositionChart } from "@/components/charts/composition-chart";
 import { CompositionSection } from "@/features/progress/components/composition-section";
@@ -38,20 +38,18 @@ export default async function ProgressPage() {
 
   return (
     <>
-      <PageHeader
-        icon={TrendingUp}
-        title={t.title}
-        description="Lleva un registro de tus mediciones y compara tu progreso en el tiempo."
-        actions={<MeasurementFormDialog />}
-      />
+      {/* Sin icono ni frase de presentacion: la barra superior y el riel ya
+          dicen donde estas, y "lleva un registro de tus mediciones" no decia
+          nada que la pantalla no dijera sola. */}
+      <PageHeader title={t.title} actions={<MeasurementFormDialog />} />
 
       {hasData ? (
         <>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{t.chartTitle}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <Section title={t.chartTitle}>
+            <div className="space-y-4">
+              {/* Las tres lecturas SI son una rejilla: no es una secuencia,
+                  son tres medidas del mismo peso que se comparan de un
+                  vistazo. La prohibicion de rejillas es para listas. */}
               <div className="grid grid-cols-3 gap-4">
                 <MetricCard
                   label={d.lastWeight}
@@ -86,36 +84,28 @@ export default async function ProgressPage() {
                 daily={data.weightSeries}
                 average={data.weightAverage7}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </Section>
 
           {data.composition ? (
             <CompositionSection report={data.composition} />
           ) : null}
 
           {data.fatMassSeries.length >= 2 ? (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  {t.composition.chartTitle}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CompositionChart
-                  fatMass={data.fatMassSeries}
-                  leanMass={data.leanMassSeries}
-                />
-              </CardContent>
-            </Card>
+            <Section title={t.composition.chartTitle}>
+              <CompositionChart
+                fatMass={data.fatMassSeries}
+                leanMass={data.leanMassSeries}
+              />
+            </Section>
           ) : null}
 
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold">{t.historyTitle}</h2>
+          <Section title={t.historyTitle}>
             <MeasurementsTable measurements={data.measurements} />
-            <p className="text-muted-foreground text-xs text-balance">
+            <p className="text-muted-foreground mt-3 text-xs text-balance">
               {t.inbodyNotice}
             </p>
-          </section>
+          </Section>
         </>
       ) : (
         <EmptyState

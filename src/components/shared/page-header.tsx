@@ -12,6 +12,12 @@ type PageHeaderProps = {
    */
   icon?: LucideIcon;
   actions?: React.ReactNode;
+  /**
+   * Contexto de la pantalla, bajo el titulo: el selector de fecha en
+   * Nutricion, por ejemplo. Va aqui y no como una fila suelta debajo porque
+   * es parte de "donde estoy", no del contenido.
+   */
+  children?: React.ReactNode;
   className?: string;
 };
 
@@ -26,6 +32,7 @@ export function PageHeader({
   eyebrow,
   icon: Icon,
   actions,
+  children,
   className,
 }: PageHeaderProps) {
   return (
@@ -55,6 +62,7 @@ export function PageHeader({
             {description}
           </p>
         ) : null}
+        {children ? <div className="mt-1">{children}</div> : null}
       </div>
 
       {actions ? (

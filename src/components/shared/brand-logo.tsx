@@ -5,17 +5,21 @@ import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
-  /** Alto del logo en px. */
+  /** Alto del logotipo en px. */
   height?: number;
   className?: string;
 };
 
 /**
- * Logo de Pancis Hub con variante por tema: logo.png (texto oscuro)
- * en claro y logo-dark.png (texto blanco) en oscuro. Si las imagenes
- * faltan, cae al wordmark con gradiente de marca.
+ * Logotipo real, con su variante por tema.
+ *
+ * El naranja del acento del sistema (#F05A27) se muestreo de este PNG: es el
+ * punto medio de su degradado. Por eso la marca y la interfaz por fin
+ * concuerdan, cosa que no pasaba con las paletas que se probaron antes.
+ *
+ * Si las imagenes faltan, cae a un wordmark de una sola tinta.
  */
-export function BrandLogo({ height = 36, className }: BrandLogoProps) {
+export function BrandLogo({ height = 30, className }: BrandLogoProps) {
   const [imageAvailable, setImageAvailable] = useState(true);
 
   if (imageAvailable) {
@@ -44,7 +48,7 @@ export function BrandLogo({ height = 36, className }: BrandLogoProps) {
   return (
     <span
       className={cn(
-        "text-brand-gradient text-lg font-bold [letter-spacing:0]",
+        "text-primary text-lg font-bold [letter-spacing:-0.02em]",
         className,
       )}
     >

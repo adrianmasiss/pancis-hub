@@ -6,13 +6,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { signIn } from "@/features/auth/actions";
 import { FormField } from "@/components/shared/form-field";
 import { loginSchema, type LoginInput } from "@/features/auth/schemas";
@@ -40,16 +34,15 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="shadow-[0_28px_80px_-54px_color-mix(in_oklch,var(--foreground)_70%,transparent)]">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold [letter-spacing:0]">
-          {messages.auth.login.title}
-        </CardTitle>
-        <CardDescription className="text-sm leading-6">
-          {messages.auth.login.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    /* Sin el halo que llevaba pegado (`shadow-[0_28px_80px…]`): en este
+       sistema la sombra se reserva a lo que flota sobre el contenido, y esta
+       tarjeta esta apoyada en la pagina. La elevacion la hace el salto de
+       tono, como en el resto. */
+    <Section
+      title={messages.auth.login.title}
+      description={messages.auth.login.description}
+    >
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4"
@@ -74,7 +67,14 @@ export function LoginForm() {
               {serverError}
             </p>
           ) : null}
-          <Button type="submit" size="lg" className="w-full font-semibold" disabled={pending}>
+          {/* La accion prominente: es lo unico a lo que se entra aqui. */}
+          <Button
+            type="submit"
+            variant="brand"
+            size="lg"
+            className="w-full font-semibold"
+            disabled={pending}
+          >
             {pending ? messages.common.loading : messages.auth.login.submit}
           </Button>
         </form>
@@ -91,7 +91,7 @@ export function LoginForm() {
             </Link>
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

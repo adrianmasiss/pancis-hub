@@ -733,3 +733,34 @@ entradas y para esas el aviso se limita a las cifras, que es lo honesto.
 fechado el dia siguiente. `todayInTimezone` sube a `src/lib/dates.ts` — ya
 estaba duplicada en el dashboard y en el asistente — y el mismo arreglo va
 al insert del onboarding, que arrastraba la misma linea.
+
+## 2026-08-10 - Inicio se convierte en Hoy, y las tolerancias por fin se usan
+
+La auditoria de julio dejo abierta una pregunta: el doc 13 pide una pantalla
+"Hoy" y la app tenia "Inicio". Se convierte la que ya existe en vez de
+anadir una quinta: dos pantallas diciendo casi lo mismo obligan a explicar
+cual abre la app, y la respuesta honesta era que ninguna de las dos.
+
+**La columna que faltaba es "faltan".** Habia objetivo y consumido; el
+restante lo calculaba el usuario de cabeza. Ahora la tabla trae objetivo,
+plan, llevas y faltan, que son las cuatro preguntas del doc 13.
+
+**Las tolerancias existian desde la fase 3 y no las usaba ninguna
+pantalla.** Estaban en `profiles`, con su `formula_versions` detras, y nadie
+podia ni verlas ni cambiarlas: todo el mundo vivia con los valores por
+defecto sin saberlo. Entran en dos sitios y con dos preguntas distintas que
+conviene no mezclar:
+
+- ¿El PLAN del dia cumple el objetivo? Se responde por la manana, antes de
+  comer nada, y es lo que justifica cambiar el plan.
+- ¿Lo CONSUMIDO se paso? Solo cuenta el exceso. Quedarse corto a las diez de
+  la manana no es una desviacion, es que el dia acaba de empezar.
+
+La fibra sigue sin tolerancia, como en el motor: es un objetivo de salud a
+largo plazo, no una cuenta que cuadrar cada dia.
+
+**Los anillos pierden su leyenda dentro de la tarjeta Hoy.** Traia
+consumido/objetivo de cada macro, que es exactamente lo que dicen dos
+columnas de la tabla. En telefono, ademas, la columna del plan se esconde:
+"faltan" es la razon de ser de la vista y no puede quedar tras el scroll,
+y lo que el plan aporta sigue dicho en el aviso de texto.

@@ -5,13 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { SelectField } from "@/components/shared/select-field";
 import { updateGoalSettings } from "@/features/settings/actions";
 import {
@@ -51,12 +45,11 @@ export function GoalSettingsForm({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{messages.settings.goalsSection}</CardTitle>
-        <CardDescription>{messages.settings.goalsDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title={messages.settings.goalsSection}
+      description={messages.settings.goalsDescription}
+    >
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="max-w-md space-y-4"
@@ -88,7 +81,7 @@ export function GoalSettingsForm({
             {pending ? messages.common.loading : messages.settings.saveGoals}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

@@ -7,8 +7,10 @@ import { messages } from "@/i18n/es-419";
 import {
   goalSettingsSchema,
   profileSettingsSchema,
+  toleranceSettingsSchema,
   type GoalSettingsInput,
   type ProfileSettingsInput,
+  type ToleranceSettingsInput,
 } from "@/features/settings/schemas";
 
 export type SettingsActionResult = { error: string } | { success: true };
@@ -89,6 +91,48 @@ export async function updateGoalSettings(
 
   revalidatePath("/configuracion");
   revalidatePath("/");
+  return { success: true };
+}
+
+/**
+ * Guarda el margen por macro.
+ *
+ * Las columnas existian desde la fase 3 y ninguna pantalla las dejaba tocar:
+ * todo el mundo vivia con los valores por defecto sin saberlo.
+ */
+export async function updateToleranceSettings(
+  input: ToleranceSettingsInput,
+): Promise<SettingsActionResult> {
+  const parsed = toleranceSettingsSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      tolerance_calories_pct: parsed.data.caloriesPct,
+      tolerance_protein_pct: parsed.data.proteinPct,
+      tolerance_carbs_pct: parsed.data.carbsPct,
+      tolerance_fat_pct: parsed.data.fatPct,
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  revalidatePath("/configuracion");
+  revalidatePath("/");
+  revalidatePath("/nutricion");
   return { success: true };
 }
 

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Dumbbell, Play, Timer, Flame, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Section } from "@/components/shared/section";
 import { EmptyState } from "@/components/shared/empty-state";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
@@ -21,37 +20,29 @@ export function TrainingCard({ data }: { data: DashboardData }) {
   const { training } = data;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between gap-3">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <Dumbbell
-              className="text-muted-foreground size-4 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="truncate">{t.title}</span>
-          </span>
-          <Link
-            href="/entrenamiento"
-            className="text-muted-foreground hover:text-foreground group flex shrink-0 items-center gap-0.5 text-xs font-normal transition-colors duration-200"
-          >
-            Ver rutinas
-            <ChevronRight className="size-3.5" aria-hidden="true" />
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <Section
+      title={t.title}
+      action={
+        <Link
+          href="/entrenamiento"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-0.5 text-xs transition-colors duration-150"
+        >
+          Ver rutinas
+          <ChevronRight className="size-3.5" aria-hidden="true" />
+        </Link>
+      }
+    >
+      <div className="flex flex-col gap-5">
         {training.activePlanName ? (
           <>
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <Badge variant="outline" className="label-micro border-hairline">
-                  {t.scheduled}
-                </Badge>
                 {training.estimatedMinutes ? (
                   <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
                     <Timer className="size-3.5 shrink-0" aria-hidden="true" />
-                    <span className="num">~{training.estimatedMinutes}</span>{" "}
+                    <span className="num">
+                      ~{training.estimatedMinutes}
+                    </span>{" "}
                     {t.minutes}
                   </span>
                 ) : null}
@@ -73,10 +64,7 @@ export function TrainingCard({ data }: { data: DashboardData }) {
                     con fondos de color. */}
                 <ul className="divide-hairline border-hairline divide-y border-y">
                   {training.mainExercises.map((name) => (
-                    <li
-                      key={name}
-                      className="truncate py-2.5 text-[0.8125rem]"
-                    >
+                    <li key={name} className="truncate py-2.5 text-[0.8125rem]">
                       {name}
                     </li>
                   ))}
@@ -113,7 +101,7 @@ export function TrainingCard({ data }: { data: DashboardData }) {
             icon={Dumbbell}
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { Label } from "@/components/ui/label";
 import { saveWellbeing } from "@/features/progress/wellbeing-actions";
@@ -56,12 +56,8 @@ export function WellbeingForm({ today }: { today: WellbeingEntry | null }) {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.title}</CardTitle>
-        <p className="text-muted-foreground text-xs">{t.description}</p>
-      </CardHeader>
-      <CardContent>
+    <Section title={t.title} description={t.description}>
+      <div>
         <form onSubmit={submit} className="space-y-4">
           {today ? (
             <p className="text-muted-foreground text-xs">{t.todayRegistered}</p>
@@ -126,7 +122,7 @@ export function WellbeingForm({ today }: { today: WellbeingEntry | null }) {
             {pending ? messages.common.loading : t.save}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

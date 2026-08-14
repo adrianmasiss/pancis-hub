@@ -16,14 +16,16 @@ export function StepNavigation({
 }: StepNavigationProps) {
   return (
     <div className="flex items-center justify-between gap-3 pt-2">
+      {/* "Atras" es un descarte, no una accion real: se queda callado. */}
       {onBack ? (
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="ghost" onClick={onBack}>
           {messages.common.back}
         </Button>
       ) : (
         <span />
       )}
-      <Button type="submit" disabled={pending}>
+      {/* Avanzar es LA accion de cada paso, y no hay otra que compita. */}
+      <Button type="submit" variant="brand" size="lg" disabled={pending}>
         {pending ? messages.common.loading : submitLabel}
       </Button>
     </div>

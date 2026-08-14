@@ -5,29 +5,18 @@ import Link from "next/link";
 import { DateSelector } from "@/components/shared/date-selector";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Section } from "@/components/shared/section";
 import { AddMealDialog } from "@/features/nutrition/components/add-meal-dialog";
 import { DaySummary } from "@/features/nutrition/components/day-summary";
 import { SwapQuestionPanel } from "@/features/nutrition/components/swap-question-panel";
 import { NutritionActionsMenu } from "@/features/nutrition/components/nutrition-actions-menu";
 import { MealCard } from "@/features/nutrition/components/meal-card";
 import { getDayPlan } from "@/features/nutrition/queries";
+import { todayInTimezone } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
 export const metadata: Metadata = { title: messages.nav.nutrition };
-
-function todayInTimezone(timezone: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-  } catch {
-    return new Date().toISOString().slice(0, 10);
-  }
-}
 
 export default async function NutritionPage({
   searchParams,
@@ -54,42 +43,54 @@ export default async function NutritionPage({
 
   return (
     <>
+      {/*
+        Sin icono identitario ni frase de presentacion: la barra superior y el
+        riel ya dicen donde estas, y "Gestiona tus comidas del dia" no le decia
+        al usuario nada que la pantalla no dijera sola. Lo que si es contexto
+        aqui es LA FECHA, asi que el selector sube a la cabecera en vez de
+        quedarse como una fila suelta debajo.
+      */}
       <PageHeader
-        icon={Utensils}
         title={messages.nav.nutrition}
-        description="Gestiona tus comidas del día y controla tus macros."
         actions={
           <>
             <NutritionActionsMenu date={date} />
+            {/* La accion prominente de esta pantalla: es a lo que se viene. */}
             <AddMealDialog date={date} />
           </>
         }
-      />
-      <DateSelector date={date} today={today} basePath="/nutricion" />
+      >
+        <DateSelector
+          date={date}
+          today={today}
+          basePath="/nutricion"
+          className="-ml-2"
+        />
+      </PageHeader>
+
       <DaySummary plan={plan} />
 
       {/* Consulta libre, sin alimento de partida: informa el impacto pero no
           ofrece aplicar, porque aqui no hay un item del plan al que aplicarlo.
-          Para eso esta el mismo panel colgado de cada alimento en Inicio. */}
+          Para eso esta el mismo panel colgado de cada alimento en Hoy. */}
       <SwapQuestionPanel />
+
       {plan.meals.length > 0 ? (
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-sm font-semibold">
-              {messages.nutrition.todaysMealsTitle}
-            </h2>
-            <p className="text-muted-foreground text-xs">
-              {messages.nutrition.todaysMealsNote}{" "}
-              <Link href="/" className="underline underline-offset-4">
-                {messages.nutrition.todaysMealsNoteLink}
-              </Link>
-              .
-            </p>
+        <Section variant="plain" title={messages.nutrition.todaysMealsTitle}>
+          <p className="text-muted-foreground mb-4 text-sm text-pretty">
+            {messages.nutrition.todaysMealsNote}{" "}
+            <Link href="/" className="underline underline-offset-4">
+              {messages.nutrition.todaysMealsNoteLink}
+            </Link>
+            .
+          </p>
+          {/* Lista, no rejilla: las comidas del dia son una secuencia. */}
+          <div className="flex flex-col gap-4">
+            {plan.meals.map((meal) => (
+              <MealCard key={meal.id} meal={meal} />
+            ))}
           </div>
-          {plan.meals.map((meal) => (
-            <MealCard key={meal.id} meal={meal} />
-          ))}
-        </div>
+        </Section>
       ) : (
         <EmptyState
           title={messages.nutrition.noMealsTitle}

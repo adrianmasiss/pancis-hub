@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { Dumbbell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Section } from "@/components/shared/section";
 import { CreatePlanDialog } from "@/features/training/components/create-plan-dialog";
 import { ImportRoutineDialog } from "@/features/training/components/import-routine-dialog";
 import { PlanCard } from "@/features/training/components/plan-card";
@@ -48,38 +48,51 @@ export default async function TrainingPage() {
 
   return (
     <>
+      {/*
+        UNA accion prominente (regla 1): entrenar. La cabecera tenia tres
+        botones del mismo tamano y dos de ellos en naranja solido —empezar,
+        importar y crear—, asi que ninguno mandaba y el gesto del dia se leia
+        igual que una tarea de mantenimiento. Crear e importar rutina no
+        desaparecen ni dejan de ser naranjas: bajan a la seccion de Rutinas,
+        que es de lo que tratan.
+      */}
       <PageHeader
-        icon={Dumbbell}
         title={t.title}
-        description="Organiza tus rutinas y registra tus series y descansos."
         actions={
-          <>
-            {overview.sessionInProgress ? (
-              <Button asChild size="sm" variant="outline">
-                <Link
-                  href={`/entrenamiento/sesion/${overview.sessionInProgress.id}`}
-                >
-                  {t.continueSession}
-                </Link>
-              </Button>
-            ) : overview.activePlan && nextDay ? (
-              <StartSessionButton
-                planId={overview.activePlan.id}
-                planDayId={nextDay.id}
-              />
-            ) : (
-              <StartSessionButton label={t.freeSession} variant="outline" />
-            )}
-            <ImportRoutineDialog />
-            <CreatePlanDialog />
-          </>
+          overview.sessionInProgress ? (
+            <Button asChild variant="brand" size="lg">
+              <Link
+                href={`/entrenamiento/sesion/${overview.sessionInProgress.id}`}
+              >
+                {t.continueSession}
+              </Link>
+            </Button>
+          ) : overview.activePlan && nextDay ? (
+            <StartSessionButton
+              planId={overview.activePlan.id}
+              planDayId={nextDay.id}
+              variant="brand"
+            />
+          ) : (
+            <StartSessionButton label={t.freeSession} variant="brand" />
+          )
         }
       />
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold">{t.plansSection}</h2>
+      <Section
+        variant="plain"
+        title={t.plansSection}
+        action={
+          <span className="flex flex-wrap items-center gap-2">
+            <ImportRoutineDialog />
+            <CreatePlanDialog />
+          </span>
+        }
+      >
         {overview.plans.length > 0 ? (
-          <div className="grid gap-4 lg:grid-cols-2">
+          /* Lista, no rejilla: las rutinas son una secuencia, y la de dos
+             columnas dejaba la activa compitiendo con una vecina. */
+          <div className="flex flex-col gap-4">
             {overview.plans.map((plan) => (
               <PlanCard key={plan.id} plan={plan} />
             ))}
@@ -91,97 +104,78 @@ export default async function TrainingPage() {
             icon={Dumbbell}
           />
         )}
-      </section>
+      </Section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">{t.historySection}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {overview.recentSessions.length > 0 ? (
-              <ul className="divide-y">
-                {overview.recentSessions.map((session) => (
-                  <li
-                    key={session.id}
-                    className="flex items-baseline gap-2 py-2 text-sm"
-                  >
-                    <span className="text-muted-foreground w-14 text-xs">
-                      {formatDate(session.startedAt)}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate">
-                      {session.planName ?? t.freeSession}
-                    </span>
-                    <span className="text-muted-foreground text-xs tabular-nums">
-                      {session.setsCount} {t.setsLabel} · {session.volume}{" "}
-                      {t.kgUnit}
-                      {session.durationMinutes
-                        ? ` · ${session.durationMinutes} ${t.minutesShort}`
-                        : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-            )}
-          </CardContent>
-        </Card>
+      {/*
+        Una sola columna, tambien en escritorio: las tres secciones iban en una
+        rejilla de dos columnas que dejaba "Historial" alto y solo a la
+        izquierda. El sistema pide columna centrada, no repartir por rellenar
+        el ancho.
+      */}
+      <Section title={t.historySection}>
+        {overview.recentSessions.length > 0 ? (
+          <ul className="border-rule border-t">
+            {overview.recentSessions.map((session) => (
+              <li
+                key={session.id}
+                className="border-rule flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b py-3 text-sm"
+              >
+                <span className="text-muted-foreground num w-12 shrink-0 text-xs">
+                  {formatDate(session.startedAt)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">
+                  {session.planName ?? t.freeSession}
+                </span>
+                <span className="text-muted-foreground num shrink-0 text-xs">
+                  {session.setsCount} {t.setsLabel} · {session.volume}{" "}
+                  {t.kgUnit}
+                  {session.durationMinutes
+                    ? ` · ${session.durationMinutes} ${t.minutesShort}`
+                    : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+        )}
+      </Section>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{t.prsTitle}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {overview.records.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {overview.records.map((record) => (
-                    <li
-                      key={record.exerciseId}
-                      className="flex items-baseline justify-between gap-2 text-sm"
-                    >
-                      <span className="min-w-0 flex-1 truncate">
-                        {record.exerciseName}
-                      </span>
-                      <span className="font-medium tabular-nums">
-                        {record.weightKg} {t.kgUnit} × {record.repetitions}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-              )}
-            </CardContent>
-          </Card>
+      <Section title={t.prsTitle}>
+        {overview.records.length > 0 ? (
+          <ul className="border-rule border-t">
+            {overview.records.map((record) => (
+              <li
+                key={record.exerciseId}
+                className="border-rule flex items-baseline justify-between gap-3 border-b py-3 text-sm"
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {record.exerciseName}
+                </span>
+                <span className="num-strong shrink-0">
+                  {record.weightKg} {t.kgUnit} × {record.repetitions}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+        )}
+      </Section>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                {t.muscleFrequencyTitle}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {overview.muscleSets7d.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {overview.muscleSets7d.map(([muscle, count]) => (
-                    <Badge
-                      key={muscle}
-                      variant="secondary"
-                      className="font-normal"
-                    >
-                      {muscle}: {count}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Section title={t.muscleFrequencyTitle}>
+        {overview.muscleSets7d.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {overview.muscleSets7d.map(([muscle, count]) => (
+              <Badge key={muscle} variant="secondary" className="font-normal">
+                {muscle}: {count}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+        )}
+      </Section>
     </>
   );
 }

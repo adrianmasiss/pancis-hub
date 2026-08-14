@@ -18,7 +18,9 @@ export const messages = {
       "Pancis Hub es una herramienta educativa y de seguimiento. No sustituye la evaluacion, el diagnostico ni el tratamiento de profesionales de la salud.",
   },
   nav: {
-    home: "Inicio",
+    // "Hoy" y no "Inicio": la pantalla responde que comer, que llevas, que
+    // queda y que entrenar HOY (doc 13). El nombre generico no decia nada.
+    home: "Hoy",
     nutrition: "Nutricion",
     recipes: "Recetas",
     pantry: "Despensa",
@@ -269,6 +271,7 @@ export const messages = {
       weightRange: "Ingresa un peso entre 30 y 300 kg.",
       percentRange: "Ingresa un porcentaje entre 3 y 60.",
       stepsRange: "Ingresa un numero de pasos entre 0 y 50000.",
+      toleranceRange: "Ingresa un margen entre 1 y 50 %.",
       saveFailed: "No pudimos guardar tu informacion. Intenta de nuevo.",
     },
   },
@@ -291,6 +294,21 @@ export const messages = {
     // pagina, y dos controles con el mismo nombre accesible obligan a quien
     // navega con lector de pantalla a adivinar cual es cual.
     saveGoals: "Guardar objetivo y actividad",
+    tolerances: {
+      title: "Tu margen por macro",
+      // La redaccion importa: "te avisamos si" es una preferencia, "no debes
+      // exceder" seria una afirmacion falsa. Lo dice el doc 01.
+      description:
+        "Cuanto puedes alejarte de tu objetivo antes de que te avisemos. Es tu criterio, no un limite clinico: subelo si te agobia, bajalo si quieres precision.",
+      calories: "Calorias (%)",
+      protein: "Proteina (%)",
+      carbs: "Carbohidratos (%)",
+      fat: "Grasas (%)",
+      fiberNote:
+        "La fibra no lleva margen a proposito: es un objetivo de salud a largo plazo, no una cuenta que cuadrar cada dia.",
+      save: "Guardar mi margen",
+      saved: "Margen actualizado.",
+    },
     goalsDescription:
       "Cambiar cualquiera de los dos mueve tus calorias y tus macros. No se aplica solo: te lo proponemos y decides tu.",
     targets: {
@@ -1287,7 +1305,7 @@ export const messages = {
     kcal: "kcal",
     todaysMealsTitle: "Comidas registradas hoy",
     todaysMealsNote: "Esto es lo que ya registraste. Para ver tu plan de dieta, anda al",
-    todaysMealsNoteLink: "Inicio",
+    todaysMealsNoteLink: "Hoy",
     noMealsTitle: "Sin comidas este dia",
     noMealsDescription:
       "Agrega tu primera comida y registra los alimentos que consumiste.",
@@ -1357,6 +1375,35 @@ export const messages = {
       targetNote:
         "Objetivo estimado y editable; no es una prescripcion exacta.",
       noTargets: "Aun no tienes objetivos nutricionales.",
+      // Las cuatro columnas de la vista Hoy (doc 13). "Faltan" en vez de
+      // "restante" porque es como se dice, no como se documenta.
+      columnTarget: "Objetivo",
+      columnPlanned: "Plan",
+      columnConsumed: "Llevas",
+      columnRemaining: "Faltan",
+      noPlanned:
+        "No tienes una dieta activa, asi que no hay plan del dia con el que comparar.",
+      /** Encabezado de la primera columna: solo para lectores de pantalla. */
+      macroColumn: "Macronutriente",
+      over: "de mas",
+      /** Rotulo de la cifra troquelada, debajo de ella y en lenguaje llano. */
+      remainingCaption: "kcal te faltan hoy",
+      overLabel: "kcal de mas",
+      logMeal: "Registrar comida",
+      dayNotStarted: "Todavia no has registrado nada de hoy.",
+      planWithin:
+        "Tu plan de hoy cae dentro de las tolerancias que definiste.",
+      planOutside:
+        "Tu plan de hoy no llega a tu objetivo en {macros}. Puedes ajustarlo o dejarlo: es tu margen, no un limite clinico.",
+      consumedOver:
+        "Ya pasaste tu objetivo de {macros}, mas el margen que definiste.",
+      macroNames: {
+        calories: "calorias",
+        protein: "proteina",
+        carbs: "carbohidratos",
+        fat: "grasas",
+        fiber: "fibra",
+      },
       // El aviso vive junto a la cifra desactualizada, no escondido en
       // Configuracion: es donde el usuario la esta mirando.
       outdated: "Estas cifras se calcularon con datos que ya cambiaron.",

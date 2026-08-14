@@ -13,7 +13,8 @@ type StartSessionButtonProps = {
   planId?: string;
   planDayId?: string;
   label?: string;
-  variant?: "default" | "outline";
+  /** `brand` cuando es la accion prominente de su pantalla (regla 1). */
+  variant?: "default" | "outline" | "brand";
 };
 
 export function StartSessionButton({
@@ -27,7 +28,8 @@ export function StartSessionButton({
   return (
     <Button
       variant={variant}
-      size="sm"
+      // La prominente va mas alta: la jerarquia no la hace solo el degradado.
+      size={variant === "brand" ? "lg" : "sm"}
       disabled={pending}
       onClick={() =>
         startTransition(async () => {

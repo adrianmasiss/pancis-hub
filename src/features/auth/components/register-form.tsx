@@ -5,13 +5,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { signUp } from "@/features/auth/actions";
 import { FormField } from "@/components/shared/form-field";
 import { registerSchema, type RegisterInput } from "@/features/auth/schemas";
@@ -41,12 +35,11 @@ export function RegisterForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{messages.auth.register.title}</CardTitle>
-        <CardDescription>{messages.auth.register.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title={messages.auth.register.title}
+      description={messages.auth.register.description}
+    >
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4"
@@ -84,7 +77,13 @@ export function RegisterForm() {
               {serverError}
             </p>
           ) : null}
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button
+            type="submit"
+            variant="brand"
+            size="lg"
+            className="w-full"
+            disabled={pending}
+          >
             {pending ? messages.common.loading : messages.auth.register.submit}
           </Button>
         </form>
@@ -94,7 +93,7 @@ export function RegisterForm() {
             {messages.auth.register.loginLink}
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

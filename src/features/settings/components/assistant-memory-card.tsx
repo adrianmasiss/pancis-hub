@@ -3,13 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +29,8 @@ export function AssistantMemoryCard({ count }: { count: number }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.title}</CardTitle>
-        <CardDescription>{t.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-wrap items-center justify-between gap-3">
+    <Section title={t.title} description={t.description}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground text-sm">
           {count === 0 ? t.empty : t.stored.replace("{count}", String(count))}
         </p>
@@ -51,7 +41,7 @@ export function AssistantMemoryCard({ count }: { count: number }) {
         >
           {t.forget}
         </Button>
-      </CardContent>
+      </div>
 
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent className="max-w-sm">
@@ -80,6 +70,6 @@ export function AssistantMemoryCard({ count }: { count: number }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </Section>
   );
 }

@@ -32,21 +32,41 @@ export function LoadingShell({
   );
 }
 
-/** Reserva de PageHeader: icono + titulo, descripcion y acciones, con filete. */
-export function SkeletonPageHeader({ actions = 2 }: { actions?: number }) {
+/**
+ * Reserva de PageHeader.
+ *
+ * `icon` y `description` siguen en true por defecto porque las pantallas sin
+ * migrar los pasan; las que ya estan en el sistema P7 los apagan, y si el
+ * esqueleto no lo hiciera reservaria dos lineas que nunca llegan.
+ */
+export function SkeletonPageHeader({
+  actions = 2,
+  icon = true,
+  description = true,
+  /** Fila extra bajo el titulo (el selector de fecha de Nutricion). */
+  subline = false,
+}: {
+  actions?: number;
+  icon?: boolean;
+  description?: boolean;
+  subline?: boolean;
+}) {
   return (
     <div className="border-hairline flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-6">
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex items-center gap-2.5">
-          <Skeleton className="size-5 shrink-0 rounded-sm" />
+          {icon ? <Skeleton className="size-5 shrink-0 rounded-sm" /> : null}
           <Skeleton className="h-6 w-44 sm:h-7" />
         </div>
-        <Skeleton className="h-4 w-full max-w-[42ch]" />
+        {description ? (
+          <Skeleton className="h-4 w-full max-w-[42ch]" />
+        ) : null}
+        {subline ? <Skeleton className="h-9 w-64 rounded-full" /> : null}
       </div>
       {actions > 0 ? (
         <div className="flex shrink-0 items-center gap-2">
           {Array.from({ length: actions }, (_, index) => (
-            <Skeleton key={index} className="h-8 w-24 rounded-sm" />
+            <Skeleton key={index} className="h-10 w-32 rounded-lg" />
           ))}
         </div>
       ) : null}
@@ -67,10 +87,11 @@ export function SkeletonCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn("border-hairline rounded-xl border p-5 sm:p-6", className)}
-    >
-      {title ? <Skeleton className="mb-4 h-4 w-32" /> : null}
+    /* `surface-card`, como la tarjeta real: reservaba un filete sobre el
+       fondo, y la tarjeta de este sistema es una superficie elevada sin
+       borde. El esqueleto dibujaba una caja que luego no aparecia. */
+    <div className={cn("surface-card px-5 py-5", className)}>
+      {title ? <Skeleton className="mb-4 h-5 w-32" /> : null}
       {children ?? (
         <Skeleton className={cn("w-full rounded-lg", bodyClassName)} />
       )}
@@ -79,7 +100,7 @@ export function SkeletonCard({
 }
 
 /**
- * Reserva de la fila de MetricCard: etiqueta corta sobre cifra.
+ * Reserva de la fila de MetricCard: cifra y, debajo, su etiqueta.
  * Las clases de columna se escriben completas porque Tailwind lee el fuente y
  * no resuelve nombres construidos en tiempo de ejecucion.
  */
@@ -91,8 +112,8 @@ export function SkeletonMetricRow({ count = 3 }: { count?: 2 | 3 | 4 }) {
     <div className={cn("grid gap-4", columns)}>
       {Array.from({ length: count }, (_, index) => (
         <div key={index} className="space-y-2">
-          <Skeleton className="h-3 w-16" />
           <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-3 w-16" />
         </div>
       ))}
     </div>

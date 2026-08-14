@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Clock, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { PageHeader } from "@/components/shared/page-header";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
 import { MacroChip } from "@/components/shared/macro-chip";
@@ -89,25 +89,18 @@ export default async function RecipeDetailPage({
         {recipe.isOwn ? <RecipeFormDialog recipe={recipe} /> : null}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">{t.ingredientsTitle}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <IngredientList
-              recipeId={recipe.id}
-              ingredients={recipe.ingredients}
-              editable={recipe.isOwn}
-            />
-          </CardContent>
-        </Card>
+      {/* Una columna, tambien en escritorio: ingredientes y macros no se
+          comparan entre si, se leen uno despues del otro. */}
+      <Section title={t.ingredientsTitle}>
+        <IngredientList
+          recipeId={recipe.id}
+          ingredients={recipe.ingredients}
+          editable={recipe.isOwn}
+        />
+      </Section>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">{t.macrosTitle}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <Section title={t.macrosTitle}>
+        <div className="space-y-3">
             <div className="space-y-1.5">
               <p className="text-2xl font-semibold tracking-tight tabular-nums">
                 {recipe.perServing.calories} {messages.nutrition.kcal}
@@ -130,12 +123,11 @@ export default async function RecipeDetailPage({
               <MacroChip type="carbs" value={recipe.totals.carbohydrateG} />
               <MacroChip type="fat" value={recipe.totals.fatG} />
             </p>
-          </CardContent>
-        </Card>
-      </div>
+        </div>
+      </Section>
 
-      <Card>
-        <CardContent className="space-y-6 py-6">
+      <Section>
+        <div className="space-y-6">
           <RecipeSteps
             recipeId={recipe.id}
             steps={recipe.steps}
@@ -148,8 +140,8 @@ export default async function RecipeDetailPage({
             mealPrepNotes={recipe.mealPrepNotes}
             canEdit={recipe.isOwn}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </Section>
     </>
   );
 }

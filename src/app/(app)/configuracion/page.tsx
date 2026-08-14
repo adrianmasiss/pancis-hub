@@ -6,6 +6,8 @@ import { AssistantMemoryCard } from "@/features/settings/components/assistant-me
 import { GoalSettingsForm } from "@/features/settings/components/goal-settings-form";
 import { ProfileSettingsForm } from "@/features/settings/components/profile-settings-form";
 import { TargetsUpdateCard } from "@/features/settings/components/targets-update-card";
+import { ToleranceSettingsForm } from "@/features/settings/components/tolerance-settings-form";
+import { DEFAULT_TOLERANCES } from "@/features/nutrition/lib/tolerances";
 import { getTargetRecalculation } from "@/features/settings/target-recalculation";
 import type { GoalSettingsInput } from "@/features/settings/schemas";
 import { countConversations } from "@/features/assistant/persistence";
@@ -28,7 +30,7 @@ export default async function SettingsPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, height_cm, unit_system, timezone, avatar_storage_path, primary_goal, activity_level",
+      "display_name, height_cm, unit_system, timezone, avatar_storage_path, primary_goal, activity_level, tolerance_calories_pct, tolerance_protein_pct, tolerance_carbs_pct, tolerance_fat_pct",
     )
     .eq("id", user.id)
     .single();
@@ -68,6 +70,22 @@ export default async function SettingsPage() {
           activityLevel:
             (profile?.activity_level as GoalSettingsInput["activityLevel"]) ??
             "moderado",
+        }}
+      />
+      <ToleranceSettingsForm
+        defaultValues={{
+          caloriesPct: Number(
+            profile?.tolerance_calories_pct ?? DEFAULT_TOLERANCES.caloriesPct,
+          ),
+          proteinPct: Number(
+            profile?.tolerance_protein_pct ?? DEFAULT_TOLERANCES.proteinPct,
+          ),
+          carbsPct: Number(
+            profile?.tolerance_carbs_pct ?? DEFAULT_TOLERANCES.carbsPct,
+          ),
+          fatPct: Number(
+            profile?.tolerance_fat_pct ?? DEFAULT_TOLERANCES.fatPct,
+          ),
         }}
       />
       <AssistantMemoryCard count={conversationCount} />

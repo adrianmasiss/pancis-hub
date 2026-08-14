@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/shared/form-field";
+import { Section } from "@/components/shared/section";
 import { SelectField } from "@/components/shared/select-field";
 import {
   deleteProgressPhoto,
@@ -59,11 +60,13 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
   };
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold">
-          {messages.progress.photosTitle}
-        </h2>
+    /* `plain`: las fotos traen su propia caja (la miniatura), asi que apilarlas
+       sobre otra superficie seria doble caja. La rejilla si es legitima aqui
+       —son imagenes que se comparan a la vez, no una secuencia de datos. */
+    <Section
+      variant="plain"
+      title={messages.progress.photosTitle}
+      action={
         <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
@@ -114,8 +117,8 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-
+      }
+    >
       {photos.length > 0 ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo) => (
@@ -188,6 +191,6 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </section>
+    </Section>
   );
 }

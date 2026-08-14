@@ -112,6 +112,22 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Como queda tu dia" }),
   ).toBeVisible();
+
+  // La vista Hoy recoge lo registrado y responde lo que falta (doc 13). Las
+  // cuatro columnas juntas son el punto: antes solo estaban objetivo y
+  // consumido, y el restante lo calculaba el usuario de cabeza.
+  await page.goto("/");
+  // La cifra troquelada responde "cuanto falta" antes que nada, cada macro
+  // trae su disco, y el gesto de registrar vive en la misma pantalla.
+  await expect(page.getByText(/kcal te faltan hoy|kcal de mas/)).toBeVisible();
+  await expect(page.getByText("proteina", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Registrar comida" }),
+  ).toBeVisible();
+  // Con una comida registrada, el dia ya empezo.
+  await expect(
+    page.getByText("Todavia no has registrado nada de hoy."),
+  ).toHaveCount(0);
 });
 
 test("horarios ordenan el dia", async ({ page }) => {
@@ -142,8 +158,23 @@ test("horarios ordenan el dia", async ({ page }) => {
   await expect(page.getByText(/8:30/).first()).toBeVisible();
 
   // Y manda sobre el orden de creacion: el desayuno va antes que la cena.
+  //
+  // Se leen los encabezados de nivel 3, que son los titulos de las comidas.
+  // Antes esto buscaba `[data-slot=card-title]`, un atributo del componente
+  // Card que la tarjeta de comida ya no usa: se apoyaba en el detalle de
+  // implementacion de un envoltorio, no en lo que la pagina significa.
+  //
+  // Se espera a que las dos existan ANTES de leer la lista: `allTextContents`
+  // no reintenta, asi que sin esto devuelve lo que hubiera en el instante en
+  // que el servidor todavia estaba revalidando.
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Desayuno" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Cena" }),
+  ).toBeVisible();
   const titulos = await page
-    .locator("[data-slot=card-title]")
+    .getByRole("heading", { level: 3 })
     .allTextContents();
   const desayuno = titulos.findIndex((t) => t.includes("Desayuno"));
   const cena = titulos.findIndex((t) => t.includes("Cena"));
@@ -284,9 +315,9 @@ test("sustituir una comida por una receta", async ({ page }) => {
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Comida agregada.")).toBeVisible();
 
-  const mealCard = page
-    .getByText("Comida receta", { exact: true })
-    .locator("xpath=ancestor::*[@data-slot='card']");
+  // Cada comida es una region con el nombre de la comida, asi que se localiza
+  // por lo que es y no trepando el DOM hasta un `data-slot` del envoltorio.
+  const mealCard = page.getByRole("region", { name: "Comida receta" });
 
   await mealCard.getByRole("button", { name: "Agregar alimento" }).click();
   await page.getByLabel("Buscar alimento…").fill("arroz");
@@ -424,9 +455,12 @@ test("composicion corporal con dos InBody", async ({ page }) => {
 
   // Las aserciones se acotan a la tarjeta de composicion: el grafico de
   // abajo repite las mismas etiquetas en su leyenda.
+  //
+  // Se sube al <section> que la contiene. Antes trepaba hasta un
+  // `data-slot=card`, atributo del componente Card que esta tarjeta ya no usa.
   const compositionCard = page
-    .getByText("Composicion corporal", { exact: true })
-    .locator("xpath=ancestor::*[@data-slot='card']");
+    .getByRole("heading", { name: "Composicion corporal" })
+    .locator("xpath=ancestor::section[1]");
 
   // Masa grasa derivada: 80 x 24 % = 19.2 kg -> 80 x 20 % = 16 kg,
   // es decir -3.2 kg contra la medicion anterior.
@@ -720,6 +754,24 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
   await expect(
     page.getByText("Objetivos nutricionales actualizados").first(),
   ).toBeVisible();
+});
+
+test("el margen por macro se puede cambiar", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Correo electronico").fill(email);
+  await page.getByLabel("Contrasena", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await expect(page).toHaveURL("/", { timeout: 20_000 });
+
+  // Las columnas existian desde la fase 3 sin ninguna pantalla que las
+  // dejara tocar: todo el mundo vivia con los valores por defecto.
+  await page.goto("/configuracion");
+  await page.getByLabel("Calorias (%)").fill("12");
+  await page.getByRole("button", { name: "Guardar mi margen" }).click();
+  await expect(page.getByText("Margen actualizado.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByLabel("Calorias (%)")).toHaveValue("12");
 });
 
 test("tema, cierre de sesion y persistencia", async ({ page }) => {

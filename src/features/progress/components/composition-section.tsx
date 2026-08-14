@@ -1,5 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, Minus, Sparkles } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import type {
   CompositionReport,
   MetricComparison,
@@ -20,8 +20,12 @@ const DIRECTION_ICONS = {
  * informacion (a11y).
  */
 const ASSESSMENT_STYLES = {
-  favorable: "text-primary",
-  desfavorable: "text-destructive",
+  // Favorable va en POSITIVO, no en el acento. El naranja significa "esto se
+  // toca" o "asi va tu dia"; usarlo para "este cambio es bueno" le da un
+  // tercer sentido dentro de la misma pantalla, y ademas deja el juicio del
+  // dato con el mismo color que el boton de al lado.
+  favorable: "text-positive",
+  desfavorable: "text-critical",
   neutro: "text-muted-foreground",
 } as const;
 
@@ -85,12 +89,8 @@ export function CompositionSection({ report }: { report: CompositionReport }) {
   const hasComparisons = report.measurementCount > 1;
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.title}</CardTitle>
-        <p className="text-muted-foreground text-xs">{t.description}</p>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <Section title={t.title} description={t.description}>
+      <div className="space-y-3">
         {report.isRecomposition ? (
           <div className="border-primary/40 bg-primary/5 flex gap-2 rounded-xl border p-3">
             <Sparkles
@@ -107,7 +107,7 @@ export function CompositionSection({ report }: { report: CompositionReport }) {
         ) : null}
 
         {report.comparisons.length > 0 ? (
-          <ul className="divide-y">
+          <ul className="divide-rule divide-y">
             {report.comparisons.map((comparison) => (
               <MetricRow key={comparison.metric} comparison={comparison} />
             ))}
@@ -126,7 +126,7 @@ export function CompositionSection({ report }: { report: CompositionReport }) {
             : t.singleMeasurement}
         </p>
         <p className="text-muted-foreground text-xs">{t.derivedNote}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

@@ -76,7 +76,10 @@ export function MeasurementFormDialog({
             <Pencil className="size-4" />
           </Button>
         ) : (
-          <Button size="sm">
+          // La accion prominente de Progreso: registrar una medicion es a lo
+          // unico que se entra aqui; lo demas es lectura. Dentro de la tabla
+          // este mismo dialogo es solo un lapiz, y ese no es prominente.
+          <Button variant="brand" size="lg">
             <Plus className="size-4" aria-hidden="true" />
             {t.addMeasurement}
           </Button>

@@ -61,8 +61,9 @@ export default async function FoodsLibraryPage({
 
   return (
     <>
+      {/* Sin icono identitario: la barra superior y el riel ya dicen donde
+          estas. La descripcion si se queda, porque explica que hay dentro. */}
       <PageHeader
-        icon={Apple}
         title={t.title}
         description={t.subtitle}
         actions={<FoodFormDialog />}
@@ -122,7 +123,9 @@ export default async function FoodsLibraryPage({
       />
 
       {foods.length > 0 ? (
-        <ul className="divide-y rounded-xl border px-3">
+        /* Superficie, no caja de filete: en este sistema el bloque se agrupa
+           por salto de tono, y un borde de 1px sobre el marino desaparece. */
+        <ul className="surface-card divide-rule divide-y px-5">
           {foods.map((food) => (
             <FoodRow key={food.id} food={food} />
           ))}

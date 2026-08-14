@@ -6,23 +6,30 @@ import {
 } from "@/components/shared/loading-section";
 
 /**
- * Nutricion: encabezado, selector de fecha, resumen del dia y la pila de
- * tarjetas de comida. El selector de fecha va primero y es angosto: si no se
- * reserva, el resumen sube y baja al hidratar.
+ * Nutricion: encabezado con el selector de fecha dentro, resumen del dia, el
+ * panel de "¿y si lo cambio?" y la pila de tarjetas de comida.
+ *
+ * El selector de fecha ya no es una fila suelta debajo del encabezado: subio
+ * a la cabecera, y el esqueleto lo reserva ahi. Cuando estaba en los dos
+ * sitios el resumen daba un salto al hidratar.
  */
 export default function Loading() {
   return (
     <LoadingShell>
-      <SkeletonPageHeader actions={2} />
+      <SkeletonPageHeader
+        actions={2}
+        icon={false}
+        description={false}
+        subline
+      />
 
-      <Skeleton className="h-9 w-full max-w-xs rounded-md" />
+      <SkeletonCard bodyClassName="h-52" />
+      <SkeletonCard title={false} bodyClassName="h-24" />
 
-      <SkeletonCard bodyClassName="h-32" />
-
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-40" />
-        {Array.from({ length: 3 }, (_, index) => (
-          <SkeletonCard key={index} title={false} bodyClassName="h-20" />
+      <div className="space-y-4">
+        <Skeleton className="h-5 w-56" />
+        {Array.from({ length: 2 }, (_, index) => (
+          <SkeletonCard key={index} bodyClassName="h-32" />
         ))}
       </div>
     </LoadingShell>

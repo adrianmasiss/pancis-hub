@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MetricCard } from "@/components/shared/metric-card";
 import { WeightTrendChart } from "@/components/charts/weight-trend-chart";
@@ -26,11 +26,8 @@ export function ProgressCard({ data }: { data: DashboardData }) {
     weight.trend === "sube" ? "up" : weight.trend === "baja" ? "down" : "flat";
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Section title={t.title}>
+      <div className="space-y-4">
         {hasData ? (
           <>
             <div className="grid grid-cols-3 gap-4">
@@ -83,7 +80,7 @@ export function ProgressCard({ data }: { data: DashboardData }) {
             }
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

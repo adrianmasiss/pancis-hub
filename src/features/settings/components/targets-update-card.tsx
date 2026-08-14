@@ -4,13 +4,7 @@ import { useTransition } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { applyRecalculatedTargets } from "@/features/settings/target-actions";
 import type { TargetChange } from "@/features/onboarding/lib/target-drift";
 import type { TargetRecalculation } from "@/features/settings/target-recalculation";
@@ -135,12 +129,8 @@ export function TargetsUpdateCard({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.title}</CardTitle>
-        <CardDescription>{t.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <Section title={t.title} description={t.description}>
+      <div className="flex flex-col gap-5">
         {inputChanges.length > 0 ? (
           <ul className="flex flex-col gap-1 text-sm">
             {inputChanges.map((change) => (
@@ -177,7 +167,20 @@ export function TargetsUpdateCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Button onClick={onApply} disabled={pending}>
+          {/*
+            La accion prominente de Configuracion, y solo cuando este aviso
+            existe. Los "Guardar" de cada formulario son acciones locales de su
+            tarjeta; esto es lo que la pantalla esta PIDIENDO que hagas, y sin
+            distinguirlo competia de igual a igual con cuatro botones mas.
+            Cuando no hay desajuste, la pantalla no tiene accion prominente:
+            es una pagina de formularios y ninguno manda sobre los otros.
+          */}
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={onApply}
+            disabled={pending}
+          >
             {pending ? messages.common.loading : t.apply}
           </Button>
           <p className="text-muted-foreground text-xs">
@@ -185,7 +188,7 @@ export function TargetsUpdateCard({
             {t.estimateNotice}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

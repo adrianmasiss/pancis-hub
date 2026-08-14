@@ -54,7 +54,9 @@ export function MealItemRow({ item }: { item: MealItemView }) {
   return (
     <li className="flex items-center gap-2 py-2 text-sm">
       <div className="min-w-0 flex-1">
-        <p className="truncate">
+        {/* El nombre envuelve en vez de truncarse: "Avena en hojuelas (…)" no
+            identifica nada, y la fila ya ocupa dos lineas de todos modos. */}
+        <p>
           {item.foodName}
           {item.cookedState ? (
             <span className="text-muted-foreground">
@@ -68,15 +70,18 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             </span>
           ) : null}
         </p>
-        <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+        {/* Macros y porcion de referencia en UNA linea. Eran dos parrafos, y
+            "Porcion por defecto: 100 g" repetido bajo cada alimento ocupaba
+            tanto como la cifra que si se mira. */}
+        <p className="text-muted-foreground mt-0.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-xs">
           <MacroChip type="calories" value={item.macros.calories} />
           <MacroChip type="protein" value={item.macros.proteinG} />
           <MacroChip type="carbs" value={item.macros.carbohydrateG} />
           <MacroChip type="fat" value={item.macros.fatG} />
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {t.defaultPortionLabel}: {item.defaultServingAmount}{" "}
-          {item.defaultServingUnit}
+          <span className="text-subtle-foreground">
+            {t.defaultPortionLabel}: {item.defaultServingAmount}{" "}
+            {item.defaultServingUnit}
+          </span>
         </p>
       </div>
       <div className="flex items-center gap-1">

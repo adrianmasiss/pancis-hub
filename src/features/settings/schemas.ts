@@ -31,3 +31,25 @@ export const goalSettingsSchema = z.object({
 });
 
 export type GoalSettingsInput = z.infer<typeof goalSettingsSchema>;
+
+/**
+ * Margen que el usuario acepta en cada macro.
+ *
+ * Son PREFERENCIAS suyas, no limites clinicos, y la interfaz tiene que
+ * decirlo asi. El rango 1-50 replica el check de la migracion: por debajo de
+ * 1 % ninguna sustitucion real entraria, y por encima de 50 % la tolerancia
+ * deja de significar nada.
+ */
+const tolerancePct = z
+  .number({ error: t.required })
+  .min(1, t.toleranceRange)
+  .max(50, t.toleranceRange);
+
+export const toleranceSettingsSchema = z.object({
+  caloriesPct: tolerancePct,
+  proteinPct: tolerancePct,
+  carbsPct: tolerancePct,
+  fatPct: tolerancePct,
+});
+
+export type ToleranceSettingsInput = z.infer<typeof toleranceSettingsSchema>;

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { AdherenceCard } from "@/features/dashboard/components/adherence-card";
 import { DietChecklist } from "@/features/dashboard/components/diet-checklist";
-import { HeroBanner } from "@/features/dashboard/components/hero-banner";
-import { NutritionCard } from "@/features/dashboard/components/nutrition-card";
+import { TodayHeader } from "@/features/dashboard/components/today-header";
+import { TodayNutritionCard } from "@/features/dashboard/components/today-nutrition-card";
 import { TrainingCard } from "@/features/dashboard/components/training-card";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { getTargetRecalculation } from "@/features/settings/target-recalculation";
@@ -29,22 +29,33 @@ export default async function DashboardPage() {
       320px, gap 20px, alineados arriba. Por debajo de xl el riel se apila
       bajo el contenido; el handoff es un diseno de escritorio, pero la app se
       usa tambien en telefono y ahi una segunda columna no cabe.
+
+      La nutricion subio del riel a la columna principal al convertirse en la
+      vista Hoy: sus cuatro columnas (objetivo, plan, llevas, faltan) no caben
+      en 320px, y es lo primero que se viene a mirar.
     */
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="flex min-w-0 flex-col gap-5">
-        <HeroBanner data={data} />
+    /*
+      Una sola columna, tambien en escritorio.
+      El riel derecho de 320px dejaba casi mil pixeles de vacio bajo la unica
+      tarjeta que vivia ahi, y eso no se lee como aire sino como pagina a
+      medio hacer. La adherencia baja al flujo, que ademas es el orden en que
+      importa: que me falta hoy, que como, que entreno, como voy.
+    */
+    <div className="mx-auto flex w-full max-w-[46rem] flex-col gap-6">
+      <TodayHeader data={data} />
 
-        {data.dietTemplate ? (
-          <DietChecklist template={data.dietTemplate} today={data.today} />
-        ) : null}
+      {/* La respuesta del dia, arriba del pliegue y sin nada delante. */}
+      <TodayNutritionCard
+        data={data}
+        targetsOutdated={recalculation !== null}
+      />
 
-        <TrainingCard data={data} />
-      </div>
+      {data.dietTemplate ? (
+        <DietChecklist template={data.dietTemplate} today={data.today} />
+      ) : null}
 
-      <aside className="flex min-w-0 flex-col gap-4">
-        <NutritionCard data={data} targetsOutdated={recalculation !== null} />
-        <AdherenceCard data={data} />
-      </aside>
+      <TrainingCard data={data} />
+      <AdherenceCard data={data} />
     </div>
   );
 }

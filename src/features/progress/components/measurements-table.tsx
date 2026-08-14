@@ -58,10 +58,15 @@ export function MeasurementsTable({
   };
 
   return (
-    <div className="overflow-x-auto rounded-xl border">
+    /* Sin caja propia: ahora vive dentro de una `Section`, y una tarjeta
+       dentro de otra es la doble caja que este sistema quita. El scroll
+       horizontal si se queda — la tabla tiene siete columnas y en 390px no
+       cabe de ninguna manera, asi que rueda dentro de su contenedor en vez de
+       empujar la pagina entera. */
+    <div className="-mx-1 overflow-x-auto px-1">
       <table className="w-full min-w-130 text-sm">
         <thead>
-          <tr className="text-muted-foreground border-b text-left text-xs">
+          <tr className="text-muted-foreground border-rule border-b text-left text-xs">
             <th scope="col" className="px-3 py-2 font-medium">
               {t.table.date}
             </th>
@@ -87,7 +92,10 @@ export function MeasurementsTable({
         </thead>
         <tbody>
           {measurements.map((measurement) => (
-            <tr key={measurement.id} className="border-b last:border-0">
+            <tr
+              key={measurement.id}
+              className="border-rule border-b last:border-0"
+            >
               <td className="px-3 py-2 whitespace-nowrap">
                 {formatDate(measurement.measuredAt)}
               </td>

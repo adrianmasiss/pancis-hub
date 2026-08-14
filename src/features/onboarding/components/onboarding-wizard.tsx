@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { Progress } from "@/components/ui/progress";
 import { ActivityStep } from "@/features/onboarding/components/steps/activity-step";
 import { BaselineStep } from "@/features/onboarding/components/steps/baseline-step";
@@ -60,12 +54,8 @@ export function OnboardingWizard({
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{step.title}</CardTitle>
-          <CardDescription>{step.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Section title={step.title} description={step.description}>
+        <div>
           {stepIndex === 0 ? (
             <BasicsStep defaultValues={data} onNext={advance} />
           ) : null}
@@ -96,8 +86,8 @@ export function OnboardingWizard({
           {stepIndex === 5 ? (
             <ConfirmStep data={data as OnboardingData} onBack={goBack} />
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </Section>
     </div>
   );
 }
