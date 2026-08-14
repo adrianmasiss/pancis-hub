@@ -1386,9 +1386,13 @@ export const messages = {
       /** Encabezado de la primera columna: solo para lectores de pantalla. */
       macroColumn: "Macronutriente",
       over: "de mas",
-      /** Rotulo de la cifra troquelada, debajo de ella y en lenguaje llano. */
-      remainingCaption: "kcal te faltan hoy",
-      overLabel: "kcal de mas",
+      /**
+       * Rotulo de la cifra troquelada, debajo de ella y en lenguaje llano.
+       * Sin "kcal": la unidad va pegada a la cifra, arriba, y repetirla aqui
+       * la decia dos veces en dos renglones seguidos.
+       */
+      remainingCaption: "te faltan hoy",
+      overLabel: "de mas",
       logMeal: "Registrar comida",
       dayNotStarted: "Todavia no has registrado nada de hoy.",
       planWithin:
@@ -1410,6 +1414,16 @@ export const messages = {
       outdatedLink: "Revisar",
       noMeals: "Sin comidas registradas hoy.",
       viewPlan: "Ver plan del dia",
+      // La maqueta lee la cifra en una sola frase: "vas 1 340 de 2 091".
+      progressOf: "vas {consumed} de {target}",
+      planSums: "Tu plan de hoy suma {calories} kcal",
+      // Fila "Proxima comida" de la maqueta (nodo 7:34).
+      nextMeal: "Sigue: {meal}",
+      nextMealEmpty: "Ya registraste todas las comidas del plan",
+      nextMealEmptyHint: "No queda nada pendiente por hoy.",
+      /** Sufijo de cada fila de macro: "44 g por comer". */
+      toEat: "por comer",
+      overSuffix: "de mas",
     },
     training: {
       title: "Entrenamiento",

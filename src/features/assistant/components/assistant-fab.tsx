@@ -6,15 +6,30 @@ import { Sparkles } from "lucide-react";
 import { messages } from "@/i18n/es-419";
 
 /**
- * Acceso flotante al asistente desde cualquier pantalla
- * (docs/02_PRODUCT_REQUIREMENTS.md 15).
+ * Rutas donde el flotante no aparece.
  *
- * Se oculta en la propia pagina del asistente, donde seria redundante, y
- * se coloca por encima de la barra inferior en movil para no taparla.
+ * En el asistente seria redundante. En Hoy estorba: la maqueta pone ahi un
+ * boton prominente a ancho completo pegado al borde inferior, y el flotante le
+ * cae encima del extremo derecho — no solo se ve mal, roba el toque. Un acceso
+ * permanente no puede taparle el objetivo a la accion de la pantalla.
+ *
+ * El asistente sigue a un toque desde el resto de las pantallas y desde "Mas".
+ */
+const HIDDEN_ON = ["/asistente", "/"];
+
+/**
+ * Acceso flotante al asistente (docs/02_PRODUCT_REQUIREMENTS.md 15).
+ * Se coloca por encima de la barra inferior en movil para no taparla.
  */
 export function AssistantFab() {
   const pathname = usePathname();
-  if (pathname.startsWith("/asistente")) return null;
+  if (
+    HIDDEN_ON.some((route) =>
+      route === "/" ? pathname === "/" : pathname.startsWith(route),
+    )
+  ) {
+    return null;
+  }
 
   return (
     <Link

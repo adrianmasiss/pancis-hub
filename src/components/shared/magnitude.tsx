@@ -14,10 +14,22 @@ import { cn } from "@/lib/utils";
  *   - excedido la barra en critico, hasta el tope
  *   - plan     una muesca vertical donde te dejaria el plan del dia
  */
+/**
+ * Dos alturas, las que usa la maqueta: 10px para la barra de energia, que es
+ * la que se lee de pie y a un brazo de distancia, y 4px para las filas de
+ * macro, donde la barra acompaña a la cifra en vez de mandar.
+ */
+const HEIGHTS = {
+  sm: "h-1",
+  md: "h-1.5",
+  lg: "h-2.5",
+} as const;
+
 export function MagnitudeBar({
   value,
   target,
   planned,
+  size = "md",
   className,
 }: {
   value: number;
@@ -28,6 +40,7 @@ export function MagnitudeBar({
    * se responde mirando, no comparando dos cifras.
    */
   planned?: number | null;
+  size?: keyof typeof HEIGHTS;
   className?: string;
 }) {
   const pct = target > 0 ? Math.min(Math.max(value / target, 0), 1) : 0;
@@ -40,7 +53,8 @@ export function MagnitudeBar({
   return (
     <span
       className={cn(
-        "bg-rule relative block h-1.5 w-full overflow-hidden rounded-full",
+        "bg-track relative block w-full overflow-hidden rounded-full",
+        HEIGHTS[size],
         className,
       )}
       aria-hidden="true"

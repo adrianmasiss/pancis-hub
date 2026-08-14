@@ -49,7 +49,9 @@ export function TodayHeader({ data }: { data: DashboardData }) {
           </>
         ) : null}
       </p>
-      <h1 className="text-base font-semibold">
+      {/* 18px semibold, como el frame: el saludo es una linea de contexto, no
+          un titulo de pantalla — el titular de Hoy es la cifra. */}
+      <h1 className="text-[1.125rem] font-semibold tracking-[-0.008em]">
         {greetingForHour(hour)}
         {data.displayName ? `, ${data.displayName}` : ""}
       </h1>

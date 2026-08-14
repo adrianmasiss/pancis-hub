@@ -47,6 +47,10 @@ const buttonVariants = cva(
         xs: "h-7 gap-1 rounded-sm px-2.5 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-8 gap-1.5 rounded-sm px-3 text-[0.8125rem] in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+        // La accion prominente a ancho completo, como la dibuja la maqueta:
+        // 54px de alto y capsula. Es el objetivo tactil del pulgar en la
+        // pantalla que mas se usa de pie.
+        xl: "h-[3.375rem] gap-2 rounded-full px-6 text-[0.9375rem] font-bold",
         icon: "size-10",
         "icon-xs":
           "size-7 rounded-sm in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",

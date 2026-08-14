@@ -87,6 +87,10 @@
   --color-danger: var(--danger);
   /* --- Reglas. El grosor ES la jerarquia (regla 2). --- */
   --color-rule: var(--rule);
+  /* Pista de la barra de magnitud. NO es --rule: la maqueta le da un tono
+     propio, mas claro que el filete, para que el relleno naranja se despegue
+     sin que la pista compita con el texto. */
+  --color-track: var(--track);
   --color-rule-strong: var(--rule-strong);
 
   /* Escala de radios en registro iOS (regla 3). Lo decide el papel y el
@@ -177,6 +181,7 @@
   --tint-info-border: #e8d293;
 
   --rule: #e0e2e4;
+  --track: #dcdfe2;
   --rule-strong: #d2d2d2;
 
   --border: #d8dbde;
@@ -272,6 +277,7 @@
   --tint-info-border: #6f6234;
 
   --rule: #334756;
+  --track: #3a4e5e;
   --rule-strong: #41566a;
 
   --border: #41566a;

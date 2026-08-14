@@ -56,9 +56,12 @@ test("registro y onboarding completo", async ({ page }) => {
   ).toBeVisible();
   await page.getByRole("button", { name: "Guardar y comenzar" }).click();
 
-  // Dashboard con datos reales
+  // Dashboard con datos reales.
+  //
+  // Se comprueba la cifra troquelada y no el titulo "Nutricion de hoy": la
+  // tarjeta de la maqueta no lleva titulo, porque la cifra ES el titular.
   await expect(page).toHaveURL("/", { timeout: 20_000 });
-  await expect(page.getByText("Nutricion de hoy")).toBeVisible();
+  await expect(page.getByText(/te faltan hoy/)).toBeVisible();
 });
 
 test("registrar comida e intercambiar un alimento", async ({ page }) => {
@@ -119,7 +122,8 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await page.goto("/");
   // La cifra troquelada responde "cuanto falta" antes que nada, cada macro
   // trae su disco, y el gesto de registrar vive en la misma pantalla.
-  await expect(page.getByText(/kcal te faltan hoy|kcal de mas/)).toBeVisible();
+  // "kcal" ya no viaja en el rotulo: la unidad va pegada a la cifra.
+  await expect(page.getByText(/te faltan hoy|de mas/)).toBeVisible();
   await expect(page.getByText("proteina", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar comida" }),
