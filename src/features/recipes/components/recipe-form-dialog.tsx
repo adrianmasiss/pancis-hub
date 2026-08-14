@@ -66,7 +66,9 @@ export function RecipeFormDialog({ recipe }: { recipe?: RecipeDetail }) {
             {t.editRecipe}
           </Button>
         ) : (
-          <Button size="sm">
+          // La accion prominente de Recetas. Editar, en cambio, es una accion
+          // sobre una receta concreta y se queda callada.
+          <Button variant="brand" size="lg">
             <Plus className="size-4" aria-hidden="true" />
             {t.createRecipe}
           </Button>

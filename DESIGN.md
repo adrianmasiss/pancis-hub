@@ -245,7 +245,11 @@ La variante `brand` no existia: la regla 1 no se podia expresar en codigo, todas
 | Nutricion | Agregar comida |
 | Entrenamiento | Iniciar entrenamiento |
 | Progreso | Registrar medicion |
+| Recetas | Crear receta |
+| Una receta | Agregar al plan |
 | Importar dieta | Analizar con IA |
+| Acceso, registro, recuperar | El envio del formulario |
+| Alta (cada paso) | Continuar; "Atras" es descarte y va callado |
 | Configuracion | Actualizar mis objetivos, solo si hay aviso |
 
 ### `MagnitudeBar` — la primitiva de dato del sistema
@@ -275,6 +279,14 @@ Iba al reves. Con el rotulo encima, uno largo —"vs semana pasada"— envolvia 
 **`Card` de shadcn no es una alternativa.** Su superficie ya apunta a `surface-card`, pero `CardHeader` cierra con una regla divisoria y `CardTitle` es un `card-eyebrow` en versalitas: dos decisiones del handoff v2 que este sistema revirtio. Una tarjeta migrada lleva `display-title` y ninguna regla bajo la cabecera.
 
 Cuando la cabecera no cabe en el par titulo/accion —un titulo, una cifra, meta y tres disparadores— se usa `surface-card` directamente y se reparte en dos filas: arriba lo que identifica la pieza y su cifra, debajo la meta. En una sola linea flex, 390px parten el titulo.
+
+**Tarjeta dentro de tarjeta: `surface-raised`, nunca otra `surface-card`.** Apilar la misma superficie sobre si misma no crea jerarquia, crea una doble caja. El escalon de tono para un bloque dentro de otro es `--card-raised` (el resumen de objetivos del alta, por ejemplo).
+
+### La trampa del enlace naranja
+
+En `@layer base` toda `a` nace en `--primary`. Eso esta bien para un enlace en medio de un parrafo y **mal para todo lo demas**, y ya costo dos regresiones: el nombre de una rutina salia entero en el acento, y una tarjeta de receta envuelta en `<Link>` se pintaba naranja completa —titulo y cifras— hasta leerse como un boton gigante.
+
+La regla practica: **si el enlace es una pieza y no una palabra, se le pone la tinta a mano.** Un titulo que navega lleva `text-foreground hover:text-primary`; una tarjeta entera envuelta en `<Link>` lleva `text-foreground` en su raiz. El acento vuelve en el hover, que es donde comunica "esto lleva a algun lado".
 
 ### Navigation
 
@@ -307,8 +319,8 @@ Las cinco pestanas se reparten el ancho de una barra anclada al borde, no de una
 
 Al 2026-08-13, sobre `feat/sistema-visual-p7`:
 
-- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, `MetricCard`, Hoy, la navegacion completa (barra inferior, barra lateral y boton flotante), y las secciones de **Nutricion**, **Entrenamiento**, **Progreso** y **Configuracion** con sus sub-paginas.
-- **Pendiente:** Login, Onboarding, Recetas, Academia y el chat del asistente siguen con la plantilla anterior; `@/components/ui/card` sigue importado en 11 archivos.
+- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, `MetricCard`, la navegacion completa (barra inferior, barra lateral y boton flotante), y **todas las pantallas que un usuario pisa**: acceso, alta, Hoy, Nutricion, Entrenamiento, Progreso, Recetas y Configuracion, con sus sub-paginas.
+- **Pendiente, a proposito:** la **Academia** (`D-004`: pospuesta hasta la Fase 8 y suspendida de la navegacion — migrar lo que esta apagado es trabajo que se tira) y el **chat del asistente**, que es una superficie propia de burbujas y no una migracion mecanica. `@/components/ui/card` solo sigue vivo en esos tres archivos.
 
 ### Encabezado de pantalla
 

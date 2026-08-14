@@ -7,7 +7,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="bg-ambient-aura relative min-h-dvh overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
+    /* Fondo liso. `bg-ambient-aura` era el halo del sistema anterior; hoy
+       globals.css ya lo deja en `background: none`, asi que la clase solo
+       quedaba como resto que confunde al leer. */
+    <div className="relative min-h-dvh overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       <main className="animate-fade-up relative z-10 mx-auto grid min-h-[calc(100dvh-3rem)] w-full max-w-6xl items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
         <section className="hidden max-w-xl space-y-8 lg:block">
           <div className="space-y-5">
@@ -31,7 +34,7 @@ export default function AuthLayout({
               ["Rutinas", "Siguiente sesion"],
               ["Progreso", "Tendencias"],
             ].map(([label, value]) => (
-              <div key={label} className="surface-panel rounded-lg p-4">
+              <div key={label} className="surface-card px-4 py-4">
                 <p className="text-xs font-medium text-muted-foreground">
                   {label}
                 </p>

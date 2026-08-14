@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { completeOnboarding } from "@/features/onboarding/actions";
 import {
@@ -89,11 +88,13 @@ export function ConfirmStep({ data, onBack }: ConfirmStepProps) {
         <SummaryRow label={s.baseline} value={`${data.weightKg} kg`} />
       </dl>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{s.targets}</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Sub-superficie, no otra tarjeta: esto vive dentro de la tarjeta del
+          asistente de alta, y apilar `surface-card` sobre `surface-card` es la
+          doble caja que el sistema quita. `surface-raised` es justo el escalon
+          de tono para un bloque dentro de otro. */}
+      <div className="surface-raised p-4">
+        <h3 className="mb-3 text-[0.9375rem] font-semibold">{s.targets}</h3>
+        <div>
           <dl className="space-y-2">
             <SummaryRow
               label={s.calories}
@@ -119,8 +120,8 @@ export function ConfirmStep({ data, onBack }: ConfirmStepProps) {
           <p className="text-muted-foreground text-xs text-balance">
             {messages.onboarding.estimateNotice}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {serverError ? (
         <p role="alert" className="text-destructive text-sm">

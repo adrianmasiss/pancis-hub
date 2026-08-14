@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { ChefHat, Clock, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -59,8 +58,9 @@ export default async function RecipesPage({
 
   return (
     <>
+      {/* Sin icono identitario: la barra superior y el riel ya dicen donde
+          estas. La descripcion se queda porque explica que hay dentro. */}
       <PageHeader
-        icon={ChefHat}
         title={t.title}
         description={t.subtitle}
         actions={<RecipeFormDialog />}
@@ -111,23 +111,33 @@ export default async function RecipesPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recipes.map((recipe) => (
             <Link key={recipe.id} href={`/recetas/${recipe.id}`}>
-              <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+              {/*
+                `text-foreground` no es decoracion: la tarjeta ENTERA va dentro
+                de un enlace, y toda `a` de la app nace en el acento, asi que
+                sin esto el titulo y las cifras salian naranjas y la tarjeta se
+                leia como un boton gigante. El acento vuelve solo al pasar.
+
+                Y el realce al pasar es un salto de tono, no una sombra: en
+                este sistema la sombra se reserva a lo que flota.
+              */}
+              <article className="surface-card text-foreground hover:bg-card-raised h-full overflow-hidden pb-5 transition-colors duration-[var(--dur-fast)]">
                 <FoodThumbnail
                   src={recipe.imageUrl}
                   alt={recipe.name}
                   className="aspect-video w-full rounded-none"
                 />
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-start justify-between gap-2 text-base">
-                    <span>{recipe.name}</span>
+                <div className="px-5 pt-4">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <h3 className="display-title min-w-0 flex-1">
+                      {recipe.name}
+                    </h3>
                     {recipe.isPublic && !recipe.isOwn ? (
-                      <Badge variant="outline" className="font-normal">
+                      <Badge variant="outline" className="shrink-0 font-normal">
                         {t.publicBadge}
                       </Badge>
                     ) : null}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+                  </div>
+                  <div className="space-y-2">
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium">
                     <MacroChip type="calories" value={recipe.perServing.calories} />
                     <MacroChip type="protein" value={recipe.perServing.proteinG} />
@@ -161,8 +171,9 @@ export default async function RecipesPage({
                       </Badge>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                  </div>
+                </div>
+              </article>
             </Link>
           ))}
         </div>

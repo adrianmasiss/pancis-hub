@@ -4,13 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { updatePassword } from "@/features/auth/actions";
 import { FormField } from "@/components/shared/form-field";
 import {
@@ -38,14 +32,11 @@ export function UpdatePasswordForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{messages.auth.updatePassword.title}</CardTitle>
-        <CardDescription>
-          {messages.auth.updatePassword.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title={messages.auth.updatePassword.title}
+      description={messages.auth.updatePassword.description}
+    >
+      <div>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4"
@@ -70,13 +61,19 @@ export function UpdatePasswordForm() {
               {serverError}
             </p>
           ) : null}
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button
+            type="submit"
+            variant="brand"
+            size="lg"
+            className="w-full"
+            disabled={pending}
+          >
             {pending
               ? messages.common.loading
               : messages.auth.updatePassword.submit}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

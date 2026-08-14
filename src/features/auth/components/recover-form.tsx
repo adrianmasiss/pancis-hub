@@ -5,13 +5,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Section } from "@/components/shared/section";
 import { requestPasswordReset } from "@/features/auth/actions";
 import { FormField } from "@/components/shared/form-field";
 import { recoverSchema, type RecoverInput } from "@/features/auth/schemas";
@@ -33,12 +27,11 @@ export function RecoverForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{messages.auth.recover.title}</CardTitle>
-        <CardDescription>{messages.auth.recover.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title={messages.auth.recover.title}
+      description={messages.auth.recover.description}
+    >
+      <div>
         {sent ? (
           <p role="status" className="text-sm">
             {messages.auth.recover.sent}
@@ -56,7 +49,13 @@ export function RecoverForm() {
               error={form.formState.errors.email?.message}
               {...form.register("email")}
             />
-            <Button type="submit" className="w-full" disabled={pending}>
+            <Button
+              type="submit"
+              variant="brand"
+              size="lg"
+              className="w-full"
+              disabled={pending}
+            >
               {pending ? messages.common.loading : messages.auth.recover.submit}
             </Button>
           </form>
@@ -66,7 +65,7 @@ export function RecoverForm() {
             {messages.auth.recover.backToLogin}
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }

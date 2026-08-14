@@ -80,7 +80,10 @@ export function RecipeActions({ recipe }: { recipe: RecipeDetail }) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button size="sm" onClick={() => setPlanOpen(true)}>
+      {/* La accion prominente de una receta: a lo que se entra es a meterla
+          en el plan. La lista de compras y editar son acciones reales pero
+          secundarias, y por eso no llevan el degradado. */}
+      <Button variant="brand" size="lg" onClick={() => setPlanOpen(true)}>
         <CalendarPlus className="size-4" aria-hidden="true" />
         {t.addToPlan}
       </Button>
