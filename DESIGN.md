@@ -237,6 +237,17 @@ La variante `brand` no existia: la regla 1 no se podia expresar en codigo, todas
 
 **Una pantalla puede no tener accion prominente, y esta bien.** Configuracion es una lista de formularios independientes: sus cuatro "Guardar" son acciones locales de su tarjeta y ninguna manda sobre las otras. La prominente aparece solo cuando el aviso de objetivos desajustados esta presente, porque entonces si hay algo que la pantalla esta pidiendo. Forzar una prominente donde no la hay es tan malo como tener cinco.
 
+**Cual es la prominente, cuando hay varias candidatas.** La que responde a lo que la pantalla ya declaro que importa. En Hoy convivian "Registrar comida" e "Ir a entrenar", las dos en naranja plano: dos primarias y cero prominentes. Gana registrar comida porque es la que contesta a la cifra troquelada que manda la vista; entrenar sigue siendo una accion real, y por eso se queda en naranja plano en vez de callarse.
+
+| Pantalla | Prominente |
+|---|---|
+| Hoy | Registrar comida |
+| Nutricion | Agregar comida |
+| Entrenamiento | Iniciar entrenamiento |
+| Progreso | Registrar medicion |
+| Importar dieta | Analizar con IA |
+| Configuracion | Actualizar mis objetivos, solo si hay aviso |
+
 ### `MagnitudeBar` — la primitiva de dato del sistema
 
 `src/components/shared/magnitude.tsx`. El ancho **es** la cantidad. Pista en `--rule`, relleno en el acento, capsula, 6px.

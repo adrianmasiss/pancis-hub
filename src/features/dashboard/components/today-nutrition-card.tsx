@@ -140,10 +140,25 @@ export function TodayNutritionCard({
           className="mt-3"
         />
 
-        {/* El gesto del dia, junto a la cifra que lo pide y a la altura del
-            pulgar. Estaba solo dentro de Nutricion, a dos toques: la condicion
-            de fracaso del usuario era exactamente que registrar tardara mas. */}
-        <Button asChild className="mt-4 w-full sm:w-auto">
+        {/*
+          El gesto del dia, junto a la cifra que lo pide y a la altura del
+          pulgar. Estaba solo dentro de Nutricion, a dos toques: la condicion
+          de fracaso del usuario era exactamente que registrar tardara mas.
+
+          Y es LA accion prominente de Hoy (regla 1). La pantalla tenia dos
+          botones en naranja solido —registrar comida e ir a entrenar— y
+          ninguno con el degradado: dos primarias y cero prominentes, que es la
+          misma pantalla sin jerarquia que se corrigio en Entrenamiento. Esta
+          gana porque es la que responde a la cifra troquelada que manda la
+          vista; entrenar sigue siendo una accion real, y por eso se queda en
+          naranja plano en vez de callarse.
+        */}
+        <Button
+          asChild
+          variant="brand"
+          size="lg"
+          className="mt-4 w-full sm:w-auto"
+        >
           <Link href="/nutricion">
             <Plus className="size-4" aria-hidden="true" />
             {t.logMeal}
