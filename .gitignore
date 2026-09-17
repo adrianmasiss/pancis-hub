@@ -56,3 +56,6 @@ Thumbs.db
 .claude/skills/
 .claude/settings.local.json
 .agents/skills/
+
+# claude-token-optimizer: logs y snapshots de sesion, se regeneran solos
+.claude/sessions/
