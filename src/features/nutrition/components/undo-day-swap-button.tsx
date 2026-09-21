@@ -28,7 +28,7 @@ export function UndoDaySwapButton({
     <Button
       type="button"
       variant="ghost"
-      size="icon-xs"
+      size="icon"
       aria-label={t.undo}
       title={t.undo}
       disabled={pending}

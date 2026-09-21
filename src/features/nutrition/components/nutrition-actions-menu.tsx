@@ -28,7 +28,13 @@ function shiftDate(date: string, days: number): string {
 }
 
 /** Agrupa las acciones secundarias de Nutricion (todo salvo agregar comida). */
-export function NutritionActionsMenu({ date }: { date: string }) {
+export function NutritionActionsMenu({
+  date,
+  compact = false,
+}: {
+  date: string;
+  compact?: boolean;
+}) {
   const [pending, startTransition] = useTransition();
 
   const onDuplicate = () => {
@@ -46,12 +52,12 @@ export function NutritionActionsMenu({ date }: { date: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
+          variant={compact ? "ghost" : "outline"}
+          size={compact ? "icon-sm" : "sm"}
           aria-label={messages.common.moreOptions}
         >
           <EllipsisVertical className="size-4" aria-hidden="true" />
-          {messages.common.moreOptions}
+          {compact ? null : messages.common.moreOptions}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">

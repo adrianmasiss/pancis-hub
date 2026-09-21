@@ -108,7 +108,7 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             <Check className="size-4" />
           </Button>
         ) : null}
-        <FoodSwapSheet item={item} />
+        {item.foodId ? <FoodSwapSheet item={item} /> : null}
         <Button
           size="icon"
           variant="ghost"
