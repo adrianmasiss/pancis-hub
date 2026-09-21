@@ -115,9 +115,12 @@ export default async function ProgressPage() {
         />
       )}
 
-      <WellbeingForm today={data.wellbeingToday} />
-
-      <PhotosSection photos={data.photos} />
+      {/* Dos tarjetas sueltas que no se leen en secuencia: en escritorio van
+          en paralelo en vez de una debajo de la otra a ancho completo. */}
+      <div className="grid gap-6 md:grid-cols-2 md:items-start">
+        <WellbeingForm today={data.wellbeingToday} />
+        <PhotosSection photos={data.photos} />
+      </div>
     </>
   );
 }

@@ -112,70 +112,78 @@ export default async function TrainingPage() {
         izquierda. El sistema pide columna centrada, no repartir por rellenar
         el ancho.
       */}
-      <Section title={t.historySection}>
-        {overview.recentSessions.length > 0 ? (
-          <ul className="border-rule border-t">
-            {overview.recentSessions.map((session) => (
-              <li
-                key={session.id}
-                className="border-rule flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b py-3 text-sm"
-              >
-                <span className="text-muted-foreground num w-12 shrink-0 text-xs">
-                  {formatDate(session.startedAt)}
-                </span>
-                <span className="min-w-0 flex-1 truncate">
-                  {session.planName ?? t.freeSession}
-                </span>
-                <span className="text-muted-foreground num shrink-0 text-xs">
-                  {session.setsCount} {t.setsLabel} · {session.volume}{" "}
-                  {t.kgUnit}
-                  {session.durationMinutes
-                    ? ` · ${session.durationMinutes} ${t.minutesShort}`
-                    : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-        )}
-      </Section>
+      {/*
+        Tres resumenes independientes. Apilados a ancho completo, en escritorio
+        cada uno era una franja de 1100px con una lista corta dentro y mucho
+        vacio a la derecha. Emparejados, el ojo los compara en vez de
+        recorrerlos.
+      */}
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <Section title={t.historySection}>
+          {overview.recentSessions.length > 0 ? (
+            <ul className="border-rule border-t">
+              {overview.recentSessions.map((session) => (
+                <li
+                  key={session.id}
+                  className="border-rule flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b py-3 text-sm"
+                >
+                  <span className="text-muted-foreground num w-12 shrink-0 text-xs">
+                    {formatDate(session.startedAt)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {session.planName ?? t.freeSession}
+                  </span>
+                  <span className="text-muted-foreground num shrink-0 text-xs">
+                    {session.setsCount} {t.setsLabel} · {session.volume}{" "}
+                    {t.kgUnit}
+                    {session.durationMinutes
+                      ? ` · ${session.durationMinutes} ${t.minutesShort}`
+                      : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+          )}
+        </Section>
 
-      <Section title={t.prsTitle}>
-        {overview.records.length > 0 ? (
-          <ul className="border-rule border-t">
-            {overview.records.map((record) => (
-              <li
-                key={record.exerciseId}
-                className="border-rule flex items-baseline justify-between gap-3 border-b py-3 text-sm"
-              >
-                <span className="min-w-0 flex-1 truncate">
-                  {record.exerciseName}
-                </span>
-                <span className="num-strong shrink-0">
-                  {record.weightKg} {t.kgUnit} × {record.repetitions}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-        )}
-      </Section>
+        <Section title={t.prsTitle}>
+          {overview.records.length > 0 ? (
+            <ul className="border-rule border-t">
+              {overview.records.map((record) => (
+                <li
+                  key={record.exerciseId}
+                  className="border-rule flex items-baseline justify-between gap-3 border-b py-3 text-sm"
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {record.exerciseName}
+                  </span>
+                  <span className="num-strong shrink-0">
+                    {record.weightKg} {t.kgUnit} × {record.repetitions}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+          )}
+        </Section>
 
-      <Section title={t.muscleFrequencyTitle}>
-        {overview.muscleSets7d.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {overview.muscleSets7d.map(([muscle, count]) => (
-              <Badge key={muscle} variant="secondary" className="font-normal">
-                {muscle}: {count}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-        )}
-      </Section>
+        <Section title={t.muscleFrequencyTitle}>
+          {overview.muscleSets7d.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {overview.muscleSets7d.map(([muscle, count]) => (
+                <Badge key={muscle} variant="secondary" className="font-normal">
+                  {muscle}: {count}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+          )}
+        </Section>
+      </div>
     </>
   );
 }
