@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { AvatarUpload } from "@/features/settings/components/avatar-upload";
+import { AccountCard } from "@/features/settings/components/account-card";
+import { AppearanceCard } from "@/features/settings/components/appearance-card";
 import { AssistantMemoryCard } from "@/features/settings/components/assistant-memory-card";
 import { GoalSettingsForm } from "@/features/settings/components/goal-settings-form";
 import { ProfileSettingsForm } from "@/features/settings/components/profile-settings-form";
@@ -89,6 +91,8 @@ export default async function SettingsPage() {
         }}
       />
       <AssistantMemoryCard count={conversationCount} />
+      <AppearanceCard />
+      <AccountCard email={user.email} />
     </>
   );
 }

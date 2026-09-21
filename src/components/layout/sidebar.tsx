@@ -2,35 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserMenu } from "@/features/auth/components/user-menu";
 import { messages } from "@/i18n/es-419";
 import {
-  homeNavItem,
   isActiveRoute,
-  settingsNavItem,
-  getSidebarSections,
+  sidebarItems,
   type NavLabelKey,
 } from "@/lib/navigation";
+import { useRail } from "@/lib/theme/rail";
 import { cn } from "@/lib/utils";
 
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((word) => word[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
 /**
- * Entrada del riel.
+ * Destino del riel.
  *
- * Activo: el acento en el canto, el icono y el rotulo, mas peso semibold. En
- * reposo el canto es transparente, asi que el texto no se desplaza al cambiar
- * de pagina.
+ * El activo se marca con una pastilla en el acento y la tinta invertida, como
+ * el prototipo. El rotulo se recorta al colapsar en vez de desmontarse: el
+ * riel colapsado seria iconos sin nombre para un lector de pantalla, y `title`
+ * cubre al raton, que no oye el nombre accesible.
  */
 function NavLink({
   href,
@@ -43,103 +33,114 @@ function NavLink({
   icon: LucideIcon;
   active: boolean;
 }) {
+  const label = messages.nav[labelKey];
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
+      title={label}
       className={cn(
-        "relative flex items-center gap-3 rounded-r-lg border-l-[3px] py-2.5 pr-3 pl-3 text-[13.5px] [letter-spacing:0] transition-colors duration-[var(--dur-fast)]",
+        "rail-item flex items-center gap-3 px-3 text-[14px] [letter-spacing:-0.01em] transition-[background-color,color] duration-[var(--dur-base)] active:translate-y-px",
         active
-          ? "border-l-primary text-primary font-semibold"
-          : "hover:text-foreground hover:border-l-rule-strong border-l-transparent font-medium text-[var(--muted-foreground)]",
+          ? "bg-primary text-primary-foreground font-medium"
+          : "font-normal text-white/55 hover:bg-white/[0.06] hover:text-white/90",
       )}
     >
       <Icon
-        className="size-[18px] shrink-0"
+        className="size-[19px] shrink-0"
         strokeWidth={active ? 2.25 : 1.75}
         aria-hidden="true"
       />
-      <span className="truncate">{messages.nav[labelKey]}</span>
+      <span className="app-rail-label truncate">{label}</span>
     </Link>
   );
 }
 
 type SidebarProps = {
   displayName?: string;
+  email?: string;
   avatarUrl?: string | null;
 };
 
-export function Sidebar({ displayName, avatarUrl }: SidebarProps) {
+export function Sidebar({ displayName, email, avatarUrl }: SidebarProps) {
   const pathname = usePathname();
-  const sidebarSections = getSidebarSections();
+  const { pinned, collapsed, toggle } = useRail();
 
   return (
-    <aside className="border-border bg-sidebar text-sidebar-foreground hidden w-60 shrink-0 flex-col border-r lg:flex">
-      {/* Bloque de marca: el logotipo real, con su variante por tema. */}
-      <div className="border-divider flex h-[66px] shrink-0 items-center border-b px-5">
-        <Link
-          href="/"
-          aria-label={messages.app.name}
-          className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
-        >
-          <BrandLogo height={30} />
-        </Link>
-      </div>
-
-      <nav
-        aria-label={messages.common.mainNavigation}
-        className="flex flex-1 flex-col gap-px overflow-y-auto px-3 pt-1 pb-3"
+    <aside
+      data-rail={pinned ?? undefined}
+      aria-label={messages.common.mainNavigation}
+      className="app-rail rail-dock sticky top-0 z-[2] hidden h-dvh shrink-0 flex-col items-stretch justify-start gap-4 py-3.5 pr-0 pl-3.5 md:flex"
+    >
+      {/* La marca vive fuera de la isla, como en el prototipo: el logotipo ya
+          lleva el nombre, asi que no necesita mosaico ni rotulo. */}
+      <Link
+        href="/"
+        aria-label={messages.app.name}
+        className="flex h-[46px] shrink-0 items-center justify-center rounded-xl px-2 focus-visible:outline-2 focus-visible:outline-offset-4"
       >
-        <div className="flex flex-col gap-px">
-          <NavLink
-            href={homeNavItem.href}
-            labelKey={homeNavItem.labelKey}
-            icon={homeNavItem.icon}
-            active={isActiveRoute(pathname, homeNavItem.href)}
-          />
-        </div>
+        <span className="rail-wide">
+          <BrandLogo height={26} />
+        </span>
+        <span className="rail-narrow">
+          <BrandLogo variant="mark" height={30} />
+        </span>
+      </Link>
 
-        {sidebarSections.map((group) => (
-          <div key={group.key} className="flex flex-col gap-px">
-            {/* Etiqueta de grupo en caja normal: las versalitas con tracking
-                eran el antetitulo que el sistema retiro. */}
-            <p className="px-3 pt-4 pb-1.5 text-xs text-[var(--subtle-foreground)]">
-              {group.label}
-            </p>
-            {group.items.map((item) => (
-              <NavLink
-                key={item.href}
-                href={item.href}
-                labelKey={item.labelKey}
-                icon={item.icon}
-                active={isActiveRoute(pathname, item.href)}
-              />
-            ))}
-          </div>
+      {/* La isla abraza sus destinos; el hueco que sobra es lienzo, no isla.
+          `flex-1` la estiraba hasta el pie y dejaba un bloque oscuro vacio de
+          media pantalla debajo de Configuracion. */}
+      <nav className="rail-island flex min-h-0 shrink flex-col gap-[var(--nav-gap)] overflow-x-hidden overflow-y-auto">
+        {sidebarItems.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            labelKey={item.labelKey}
+            icon={item.icon}
+            active={isActiveRoute(pathname, item.href)}
+          />
         ))}
       </nav>
 
-      <div className="border-divider shrink-0 space-y-1 border-t px-3 py-3.5">
-        <NavLink
-          href={settingsNavItem.href}
-          labelKey={settingsNavItem.labelKey}
-          icon={settingsNavItem.icon}
-          active={isActiveRoute(pathname, settingsNavItem.href)}
-        />
+      {/* Segunda isla: el pin y la cuenta. Separada de los destinos porque no
+          son destinos — son controles del propio riel. */}
+      <div className="rail-island mt-auto flex shrink-0 flex-col gap-[var(--nav-gap)]">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={!collapsed}
+          aria-label={
+            collapsed
+              ? messages.common.expandRail
+              : messages.common.collapseRail
+          }
+          title={
+            collapsed
+              ? messages.common.expandRail
+              : messages.common.collapseRail
+          }
+          className="rail-item flex items-center gap-3 px-3 text-white/45 transition-colors duration-[var(--dur-fast)] hover:bg-white/[0.06] hover:text-white/85 focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:outline-none active:translate-y-px"
+        >
+          <span className="rail-narrow">
+            <PanelLeftOpen className="size-[18px]" aria-hidden="true" />
+          </span>
+          <span className="rail-wide">
+            <PanelLeftClose className="size-[18px]" aria-hidden="true" />
+          </span>
+          <span className="app-rail-label truncate text-[14px]">
+            {collapsed
+              ? messages.common.expandRail
+              : messages.common.collapseRail}
+          </span>
+        </button>
+
         {displayName ? (
-          <div className="flex items-center gap-2.5 rounded-[10px] p-2">
-            <Avatar className="size-9 shrink-0">
-              {avatarUrl ? (
-                <AvatarImage src={avatarUrl} alt={displayName} />
-              ) : null}
-              <AvatarFallback className="bg-secondary text-secondary-foreground text-[13px] font-bold">
-                {initialsOf(displayName) || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <p className="text-foreground min-w-0 truncate text-[13px] font-semibold">
-              {displayName}
-            </p>
-          </div>
+          <UserMenu
+            variant="row"
+            displayName={displayName}
+            email={email}
+            avatarUrl={avatarUrl}
+          />
         ) : null}
       </div>
     </aside>

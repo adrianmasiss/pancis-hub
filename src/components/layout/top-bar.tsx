@@ -1,48 +1,37 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { messages } from "@/i18n/es-419";
-import { isActiveRoute, navItems } from "@/lib/navigation";
 
 /**
- * Barra superior, con el tratamiento del handoff v2: pegajosa, fondo
- * translucido con desenfoque y regla divisoria abajo.
+ * Barra superior del handoff: conmutador de tema y acceso al copiloto,
+ * alineados a la derecha sobre el lienzo.
  *
- * Del bloque derecho del handoff no se implementan el buscador con ⌘K ni la
- * campana de notificaciones: son funciones que el producto no tiene y que el
- * propio handoff deja como "aun no implementado, definir en la implementacion
- * real". Poner el hueco visual sin la funcion detras seria decorado.
+ * No es decoracion. Hasta ahora este componente existia y NADIE lo montaba, y
+ * con el se habian perdido las dos funciones que contiene: no habia forma de
+ * cambiar de tema ni de abrir el asistente desde la interfaz.
+ *
+ * La marca solo aparece en telefono: en escritorio ya la lleva el riel, y
+ * repetirla era decir lo mismo dos veces en la misma pantalla.
  */
-export function TopBar({ actions }: { actions?: React.ReactNode }) {
-  const pathname = usePathname();
-  const current = navItems.find((item) => isActiveRoute(pathname, item.href));
-
+export function TopBar() {
   return (
-    <header className="border-divider surface-bar sticky top-0 z-30 border-b">
-      <div className="flex h-14 w-full items-center justify-between gap-4 px-5 sm:h-16 sm:px-7 lg:px-10 xl:px-12">
-        {/* En movil el logo sustituye al riel lateral como ancla de marca. */}
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="lg:hidden" aria-hidden="true">
-            <BrandLogo height={26} />
-          </span>
-          {/* El handoff pone aqui el titulo de 26px/800, porque en su prototipo
-              la pantalla no tiene otro. En el repo cada pagina ya abre con un
-              PageHeader (titulo, descripcion, icono y acciones) justo debajo,
-              asi que subir esta linea a esa escala dejaba el mismo texto dos
-              veces y en dos tamanos grandes. La escala de display se queda en
-              el PageHeader, que es quien lleva el contexto completo; aqui la
-              linea vuelve a ser una referencia de ubicacion. */}
-          <p className="truncate text-[0.9375rem] font-medium tracking-[-0.015em] sm:text-base">
-            {current ? messages.nav[current.labelKey] : messages.app.name}
-          </p>
-        </div>
+    <header className="flex h-16 shrink-0 items-center justify-between gap-3 px-5 sm:px-7 md:h-[4.5rem] md:justify-end md:pr-[calc(1.75rem+var(--copilot-gutter))] lg:pr-[calc(2.75rem+var(--copilot-gutter))] lg:pl-11">
+      <span className="md:hidden" aria-hidden="true">
+        <BrandLogo variant="mark" height={28} />
+      </span>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <ThemeToggle />
-          {actions}
-        </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <ThemeToggle />
+
+        <Link
+          href="/asistente"
+          className="border-border-strong bg-card/70 text-foreground hover:bg-card focus-visible:ring-ring flex h-10 items-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors duration-[var(--dur-fast)] focus-visible:ring-2 focus-visible:outline-none active:translate-y-px"
+        >
+          <Sparkles className="text-primary size-4" aria-hidden="true" />
+          {messages.nav.assistant}
+        </Link>
       </div>
     </header>
   );
