@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/dates";
 import {
+  mapDietTemplate,
+  plannedTotalsOf,
+} from "@/features/nutrition/lib/diet-plan";
+import {
   DEFAULT_TOLERANCES,
   type MacroTolerances,
 } from "@/features/nutrition/lib/tolerances";
@@ -47,7 +51,7 @@ export type DietTemplateMealView = {
   orderIndex: number;
   items: DietTemplateItemView[];
   totals: MacroTotals;
-  /** true si ya existe una comida registrada hoy con este mismo nombre. */
+  /** true si esta comida concreta del plan ya se registro para la fecha. */
   loggedToday: boolean;
 };
 
@@ -114,7 +118,6 @@ export type DashboardData = {
   } | null;
 };
 
-
 function daysAgo(date: string, days: number): string {
   const ms = new Date(`${date}T00:00:00Z`).getTime() - days * 86400000;
   return new Date(ms).toISOString().slice(0, 10);
@@ -148,7 +151,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     mealDays7Result,
     recommendationResult,
     dietTemplateResult,
-    todayMealNamesResult,
+    todayPlanMealsResult,
     daySwapsResult,
   ] = await Promise.all([
     supabase
@@ -222,7 +225,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       .maybeSingle(),
     supabase
       .from("meals")
-      .select("name")
+      .select("source_template_meal_id")
       .eq("user_id", userId)
       .eq("date", today)
       .is("deleted_at", null),
@@ -311,13 +314,6 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
         )
       : null;
 
-  // Indice de sustituciones del dia por item del plan. Al superponerse en el
-  // mapeo, el resto del dashboard (totales, barras, checklist) trabaja ya con
-  // el sustituto sin enterarse de que hubo un cambio.
-  const daySwapByItemId = new Map(
-    (daySwapsResult.data ?? []).map((swap) => [swap.template_item_id, swap]),
-  );
-
   // Adherencia sobre los ultimos 7 dias.
   const mealDaySet = new Set(
     (mealDays7Result.data ?? []).map((row) => row.date),
@@ -354,124 +350,22 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
       }
     : null;
 
-  const todayMealNames = new Set(
-    (todayMealNamesResult.data ?? []).map((row) => row.name),
+  const loggedTemplateMealIds = new Set(
+    (todayPlanMealsResult.data ?? [])
+      .map((row) => row.source_template_meal_id)
+      .filter((id): id is string => Boolean(id)),
   );
 
-  const dietTemplate: DietTemplateView | null = dietTemplateResult.data
-    ? {
-        id: dietTemplateResult.data.id,
-        name: dietTemplateResult.data.name,
-        targetCalories: Number(dietTemplateResult.data.target_calories),
-        targetProtein: Number(dietTemplateResult.data.target_protein),
-        targetCarbs: Number(dietTemplateResult.data.target_carbs),
-        targetFat: Number(dietTemplateResult.data.target_fat),
-        meals: [...dietTemplateResult.data.diet_template_meals]
-          .sort((a, b) => a.order_index - b.order_index)
-          .map((meal) => {
-            const items: DietTemplateItemView[] = meal.diet_template_items.map(
-              (item) => {
-                const swap = daySwapByItemId.get(item.id);
-                const planFood = item.foods;
+  // El mapeo del plan (sustituciones del dia superpuestas, macros por item y
+  // totales) vive en `nutrition/lib/diet-plan`: Nutricion necesita lo mismo
+  // para una fecha cualquiera, y dos copias de esta aritmetica se separan.
+  const dietTemplate = mapDietTemplate({
+    template: dietTemplateResult.data,
+    daySwaps: daySwapsResult.data ?? [],
+    loggedTemplateMealIds,
+  });
 
-                // Con sustitucion vigente manda el sustituto: puede ser un
-                // alimento de la biblioteca o la instantanea que guardo el
-                // asistente para un producto fuera del catalogo.
-                const food = swap ? (swap.foods ?? null) : planFood;
-                const quantityG = Number(
-                  swap ? swap.quantity_g : item.quantity_g,
-                );
-                const factor = quantityG / 100;
-
-                const per100g = swap && !swap.foods
-                  ? {
-                      calories: Number(swap.external_calories ?? 0),
-                      protein_g: Number(swap.external_protein_g ?? 0),
-                      carbohydrate_g: Number(swap.external_carbohydrate_g ?? 0),
-                      fat_g: Number(swap.external_fat_g ?? 0),
-                      fiber_g: 0,
-                    }
-                  : {
-                      calories: Number(food?.calories ?? 0),
-                      protein_g: Number(food?.protein_g ?? 0),
-                      carbohydrate_g: Number(food?.carbohydrate_g ?? 0),
-                      fat_g: Number(food?.fat_g ?? 0),
-                      fiber_g: Number(food?.fiber_g ?? 0),
-                    };
-
-                return {
-                  id: item.id,
-                  foodId: food?.id ?? "",
-                  foodName:
-                    (swap && !swap.foods
-                      ? swap.external_name
-                      : food?.name) ?? "",
-                  isCustom: food?.owner_user_id !== null,
-                  quantityG,
-                  daySwap: swap
-                    ? {
-                        originalFoodName: planFood?.name ?? "",
-                        source: swap.source as "biblioteca" | "asistente",
-                      }
-                    : null,
-                  servingEquivalence: item.serving_equivalence,
-                  foodPortions: (food?.food_portions ?? []).map((portion) => ({
-                    label: portion.label,
-                    grams: Number(portion.grams),
-                  })),
-                  macros: {
-                    calories: Math.round(per100g.calories * factor),
-                    proteinG: round1(per100g.protein_g * factor),
-                    carbohydrateG: round1(per100g.carbohydrate_g * factor),
-                    fatG: round1(per100g.fat_g * factor),
-                    fiberG: round1(per100g.fiber_g * factor),
-                  },
-                };
-              },
-            );
-            const totals = items.reduce<MacroTotals>(
-              (acc, item) => ({
-                calories: acc.calories + item.macros.calories,
-                proteinG: acc.proteinG + item.macros.proteinG,
-                carbohydrateG: acc.carbohydrateG + item.macros.carbohydrateG,
-                fatG: acc.fatG + item.macros.fatG,
-                fiberG: acc.fiberG + item.macros.fiberG,
-              }),
-              {
-                calories: 0,
-                proteinG: 0,
-                carbohydrateG: 0,
-                fatG: 0,
-                fiberG: 0,
-              },
-            );
-            return {
-              id: meal.id,
-              name: meal.name,
-              mealType: meal.meal_type,
-              orderIndex: meal.order_index,
-              items,
-              totals,
-              loggedToday: Boolean(meal.name) && todayMealNames.has(meal.name),
-            };
-          }),
-      }
-    : null;
-
-  // Lo planificado sale de las comidas ya mapeadas, con las sustituciones de
-  // hoy incorporadas: es el plan que el usuario tiene delante, no el guardado.
-  const plannedTotals: MacroTotals | null = dietTemplate
-    ? dietTemplate.meals.reduce<MacroTotals>(
-        (acc, meal) => ({
-          calories: acc.calories + meal.totals.calories,
-          proteinG: round1(acc.proteinG + meal.totals.proteinG),
-          carbohydrateG: round1(acc.carbohydrateG + meal.totals.carbohydrateG),
-          fatG: round1(acc.fatG + meal.totals.fatG),
-          fiberG: round1(acc.fiberG + meal.totals.fiberG),
-        }),
-        { calories: 0, proteinG: 0, carbohydrateG: 0, fatG: 0, fiberG: 0 },
-      )
-    : null;
+  const plannedTotals = plannedTotalsOf(dietTemplate);
 
   return {
     displayName: profile?.display_name ?? "",

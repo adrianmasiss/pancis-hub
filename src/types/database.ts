@@ -1213,9 +1213,10 @@ export type Database = {
           calories_snapshot: number
           carbohydrate_snapshot: number
           created_at: string
+          external_name: string | null
           fat_snapshot: number
           fiber_snapshot: number
-          food_id: string
+          food_id: string | null
           id: string
           meal_id: string
           protein_snapshot: number
@@ -1227,9 +1228,10 @@ export type Database = {
           calories_snapshot: number
           carbohydrate_snapshot: number
           created_at?: string
+          external_name?: string | null
           fat_snapshot: number
           fiber_snapshot?: number
-          food_id: string
+          food_id?: string | null
           id?: string
           meal_id: string
           protein_snapshot: number
@@ -1241,9 +1243,10 @@ export type Database = {
           calories_snapshot?: number
           carbohydrate_snapshot?: number
           created_at?: string
+          external_name?: string | null
           fat_snapshot?: number
           fiber_snapshot?: number
-          food_id?: string
+          food_id?: string | null
           id?: string
           meal_id?: string
           protein_snapshot?: number
@@ -1279,6 +1282,7 @@ export type Database = {
           name: string | null
           notes: string | null
           scheduled_time: string | null
+          source_template_meal_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1293,6 +1297,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           scheduled_time?: string | null
+          source_template_meal_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1307,11 +1312,20 @@ export type Database = {
           name?: string | null
           notes?: string | null
           scheduled_time?: string | null
+          source_template_meal_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meals_source_template_meal_id_fkey"
+            columns: ["source_template_meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_template_meals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nutrition_targets: {
         Row: {
@@ -2070,6 +2084,10 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      log_diet_template_meal: {
+        Args: { p_date: string; p_template_meal_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -2205,4 +2223,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

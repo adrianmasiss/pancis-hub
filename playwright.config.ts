@@ -29,6 +29,9 @@ export default defineConfig({
   webServer: {
     // `next start -p` explicito: Next 16 ignora la variable PORT.
     command: `npm run build && npx next start -p ${port}`,
+    // La regresion no depende de una API externa ni consume cuota local. El
+    // asistente conserva su motor deterministico como respaldo contractual.
+    env: { GOOGLE_GENERATIVE_AI_API_KEY: "" },
     url: `http://localhost:${port}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

@@ -42,7 +42,10 @@ export async function getRecentFoodIds(userId: string): Promise<string[]> {
     .order("created_at", { ascending: false })
     .limit(60);
   const seen = new Set<string>();
-  for (const row of data ?? []) seen.add(row.food_id);
+  for (const row of data ?? []) {
+    // Los sustitutos externos conservan snapshots pero no tienen foods.id.
+    if (row.food_id) seen.add(row.food_id);
+  }
   return [...seen].slice(0, 20);
 }
 
@@ -63,7 +66,10 @@ export async function getFavoriteFoodIds(userId: string): Promise<Set<string>> {
  * pueda escribir un patron que devuelva la tabla entera.
  */
 function sanitizeSearchTerm(term: string): string {
-  return term.replace(/[,()]/g, " ").replace(/[%_\\]/g, "\\$&").trim();
+  return term
+    .replace(/[,()]/g, " ")
+    .replace(/[%_\\]/g, "\\$&")
+    .trim();
 }
 
 /** Ids de alimentos cuyo alias coincide con el termino buscado. */
@@ -127,22 +133,27 @@ export async function getFoodsLibrary(
 
   const { data } = await query;
   // Las correcciones del usuario se superponen al catalogo compartido.
-  const foods = (data ?? []).map((food) => applyCorrection({
-    id: food.id,
-    name: food.name,
-    brand: food.brand,
-    foodGroup: food.food_group as FoodGroup,
-    cookedState: food.cooked_state as "crudo" | "cocido" | null,
-    calories: Number(food.calories),
-    proteinG: Number(food.protein_g),
-    carbohydrateG: Number(food.carbohydrate_g),
-    fatG: Number(food.fat_g),
-    fiberG: Number(food.fiber_g),
-    verified: food.verified,
-    isOwn: food.owner_user_id === userId,
-    isFavorite: favoriteIds.has(food.id),
-    imageUrl: food.image_url,
-  }, corrections.get(food.id)));
+  const foods = (data ?? []).map((food) =>
+    applyCorrection(
+      {
+        id: food.id,
+        name: food.name,
+        brand: food.brand,
+        foodGroup: food.food_group as FoodGroup,
+        cookedState: food.cooked_state as "crudo" | "cocido" | null,
+        calories: Number(food.calories),
+        proteinG: Number(food.protein_g),
+        carbohydrateG: Number(food.carbohydrate_g),
+        fatG: Number(food.fat_g),
+        fiberG: Number(food.fiber_g),
+        verified: food.verified,
+        isOwn: food.owner_user_id === userId,
+        isFavorite: favoriteIds.has(food.id),
+        imageUrl: food.image_url,
+      },
+      corrections.get(food.id),
+    ),
+  );
 
   if (filters.view === "recientes") {
     const order = new Map(recentIds.map((id, index) => [id, index]));
