@@ -65,7 +65,92 @@ export type EvidenceLibrary = {
   studies: EvidenceStudy[];
   constants: EvidenceConstant[];
   personal: PersonalInference;
+  /** Los lomos del anillo: una muestra con regla, no la biblioteca entera. */
+  spines: EvidenceSpine[];
 };
+
+export type EvidenceSpine = {
+  id: string;
+  /** 1 evidencia, 2 interpretacion, 3 inferencia personalizada. */
+  layer: 1 | 2 | 3;
+  title: string;
+  meta: string;
+  /** 1 a 5. La certeza baja al acercarse a ti, que es la tesis de la pantalla. */
+  confidence: number;
+};
+
+/** Grado de evidencia a certeza de 1 a 5. Sin grado, no se afirma nada alto. */
+const GRADE_CONFIDENCE: Record<string, number> = { A: 5, B: 4, C: 3, D: 2 };
+
+/**
+ * Los siete lomos del anillo.
+ *
+ * El anillo NO puede mostrar las 41 entradas: es el resumen, y las tablas de
+ * debajo son la biblioteca completa. Asi que hace falta una regla de seleccion,
+ * y la regla es objetiva y esta escrita aqui para que nadie la confunda con
+ * gusto: **los tres de mayor grado de cada una de las dos primeras capas, y tus
+ * numeros al final**. Empatados, gana el mas reciente.
+ *
+ * Que sean tres y tres y uno no es capricho: hace que las tres capas aparezcan
+ * siempre en el anillo. Con "los siete mas fuertes" a secas, la capa de
+ * interpretacion podia no salir nunca.
+ */
+function buildSpines(
+  studies: EvidenceStudy[],
+  constants: EvidenceConstant[],
+  personal: PersonalInference,
+): EvidenceSpine[] {
+  const byGrade = (grade: string | null) =>
+    grade ? (GRADE_CONFIDENCE[grade] ?? 1) : 1;
+
+  const topStudies = [...studies]
+    .sort(
+      (a, b) =>
+        byGrade(b.evidenceGrade) - byGrade(a.evidenceGrade) ||
+        (b.year ?? 0) - (a.year ?? 0),
+    )
+    .slice(0, 3)
+    .map<EvidenceSpine>((study) => ({
+      id: study.id,
+      layer: 1,
+      title: study.title,
+      meta: [study.year, study.journal].filter(Boolean).join(" · "),
+      confidence: byGrade(study.evidenceGrade),
+    }));
+
+  const topConstants = constants
+    // Un criterio del producto no es una lectura de la evidencia: no entra a
+    // representar esta capa.
+    .filter((constant) => !constant.isProductParameter)
+    .sort((a, b) => byGrade(b.evidenceGrade) - byGrade(a.evidenceGrade))
+    .slice(0, 3)
+    .map<EvidenceSpine>((constant) => ({
+      id: constant.id,
+      layer: 2,
+      title: constant.key,
+      meta:
+        constant.sources.length > 0
+          ? `${constant.sources.length} fuentes`
+          : "sin fuentes",
+      // Una lectura nunca es mas cierta que la evidencia que la sostiene.
+      confidence: Math.max(1, byGrade(constant.evidenceGrade) - 1),
+    }));
+
+  const mine: EvidenceSpine[] = personal
+    ? [
+        {
+          id: "personal",
+          layer: 3,
+          title: `${Math.round(personal.calories)} kcal`,
+          meta: `desde ${personal.effectiveFrom}`,
+          // La capa mas cercana y la mas incierta: se afirma lo menos.
+          confidence: 2,
+        },
+      ]
+    : [];
+
+  return [...topStudies, ...topConstants, ...mine];
+}
 
 function identifierOf(pmid: string | null, doi: string | null): string | null {
   if (pmid) return `PMID ${pmid}`;
@@ -145,18 +230,21 @@ export async function getEvidenceLibrary(
 
   const target = targetsResult.data;
 
+  const personal: PersonalInference = target
+    ? {
+        effectiveFrom: target.effective_from,
+        calories: target.calories,
+        proteinG: target.protein_g,
+        carbohydrateG: target.carbohydrate_g,
+        fatG: target.fat_g,
+        fiberG: target.fiber_g,
+      }
+    : null;
+
   return {
     studies,
     constants,
-    personal: target
-      ? {
-          effectiveFrom: target.effective_from,
-          calories: target.calories,
-          proteinG: target.protein_g,
-          carbohydrateG: target.carbohydrate_g,
-          fatG: target.fat_g,
-          fiberG: target.fiber_g,
-        }
-      : null,
+    personal,
+    spines: buildSpines(studies, constants, personal),
   };
 }

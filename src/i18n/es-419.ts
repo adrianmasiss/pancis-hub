@@ -480,6 +480,20 @@ export const messages = {
     targetsFrom: (date: string) => `Vigentes desde ${date}`,
     detail: "Ver el detalle",
     detailHide: "Ocultar el detalle",
+    layerNames: {
+      1: "Evidencia",
+      2: "Interpretacion",
+      3: "Inferencia personalizada",
+    } as Record<number, string>,
+    ring: {
+      label: "Fuentes que sostienen tu plan, en perspectiva",
+      previous: "Fuente anterior",
+      next: "Fuente siguiente",
+      position: (i: number, n: number) => `${i} de ${n}`,
+      confidence: (n: number) => `${n}/5`,
+      /** El anillo es un resumen; la biblioteca completa esta debajo. */
+      note: "Una muestra: los tres de mayor grado de cada capa y tus numeros. La biblioteca completa esta debajo.",
+    },
   },
   assistant: {
     openAssistant: "Abrir asistente",

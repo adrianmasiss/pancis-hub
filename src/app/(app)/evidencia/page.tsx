@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { EvidenceLayer } from "@/features/evidence/components/evidence-layer";
+import { EvidenceRing } from "@/features/evidence/components/evidence-ring";
 import { StudyRow } from "@/features/evidence/components/study-row";
 import { ConstantRow } from "@/features/evidence/components/constant-row";
 import { getEvidenceLibrary } from "@/features/evidence/queries";
@@ -31,7 +32,9 @@ export default async function EvidencePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { studies, constants, personal } = await getEvidenceLibrary(user.id);
+  const { studies, constants, personal, spines } = await getEvidenceLibrary(
+    user.id,
+  );
 
   const fmt = (n: number) => Math.round(n).toLocaleString("es-419");
 
@@ -46,6 +49,16 @@ export default async function EvidencePage() {
           {t.subtitle}
         </p>
       </header>
+
+      {/* El anillo es el resumen en perspectiva; las tres capas de abajo son
+          la biblioteca completa y la alternativa tabular que el handoff exige
+          para cualquier visualizacion 3D. */}
+      <div className="flex flex-col gap-3">
+        <EvidenceRing spines={spines} />
+        <p className="text-subtle-foreground mx-auto max-w-[52ch] text-center text-[12px] leading-relaxed text-pretty">
+          {t.ring.note}
+        </p>
+      </div>
 
       <EvidenceLayer
         step={1}
