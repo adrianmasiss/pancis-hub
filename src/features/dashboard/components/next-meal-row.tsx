@@ -58,7 +58,7 @@ export function NextMealRow({
   return (
     <Link
       href="/nutricion"
-      className="surface-card text-foreground hover:bg-card-raised flex items-center gap-3.5 rounded-3xl px-[18px] py-4 transition-colors duration-[var(--dur-fast)]"
+      className="surface-card text-foreground hover:bg-card-raised flex h-[68px] items-center gap-3.5 rounded-3xl px-[18px] transition-colors duration-[var(--dur-fast)]"
     >
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold">

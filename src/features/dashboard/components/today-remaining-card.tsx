@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MagnitudeBar } from "@/components/shared/magnitude";
+import { EnergyRing } from "@/components/shared/energy-ring";
 import { WhyThisNumber } from "@/features/assistant/components/why-this-number";
 import type { TodayNutrition } from "@/features/dashboard/lib/today";
 import { messages } from "@/i18n/es-419";
@@ -40,75 +40,72 @@ export function TodayRemainingCard({
   const over = energy.remaining < 0;
 
   return (
-    <section className="surface-card px-6 py-6">
-      <p className="flex items-baseline gap-2">
+    <section className="border-hairline grid min-h-[232px] grid-cols-[142px_minmax(0,1fr)] items-center gap-5 border-y py-5 lg:min-h-[330px] lg:grid-cols-1 lg:content-center lg:justify-items-center lg:border-0 lg:px-8 lg:py-8">
+      <EnergyRing
+        value={energy.consumed}
+        target={energy.target}
+        label={t.progressOf
+          .replace("{consumed}", energy.consumed.toLocaleString("es-419"))
+          .replace("{target}", energy.target.toLocaleString("es-419"))}
+        className="size-[142px] lg:size-[190px]"
+      >
         <span
-          className={`num-display ${over ? "text-critical" : "text-foreground"}`}
+          className={`num text-[31px] leading-none font-medium tracking-[-0.045em] lg:text-[42px] ${over ? "text-critical" : "text-foreground"}`}
         >
           {Math.abs(energy.remaining).toLocaleString("es-419")}
         </span>
-        <span className="num-strong text-muted-foreground">kcal</span>
-      </p>
+        <span className="text-muted-foreground mt-1 text-[11px]">kcal</span>
+      </EnergyRing>
 
-      <p className="text-muted-foreground mt-1 text-[0.8125rem]">
-        {over ? t.overLabel : t.remainingCaption} ·{" "}
-        <span className="num">
+      <div className="min-w-0 lg:text-center">
+        <p className="text-primary text-[10px] font-semibold tracking-[0.14em] uppercase">
+          Objetivo diario
+        </p>
+        <p className="mt-2 text-[15px] font-medium">
+          {over ? t.overLabel : t.remainingCaption}
+        </p>
+        <p className="text-muted-foreground num mt-1 text-xs">
           {t.progressOf
             .replace("{consumed}", energy.consumed.toLocaleString("es-419"))
             .replace("{target}", energy.target.toLocaleString("es-419"))}
-        </span>
-      </p>
+        </p>
 
-      <MagnitudeBar
-        value={energy.consumed}
-        target={energy.target}
-        size="lg"
-        className="mt-[18px]"
-      />
+        {plannedCalories !== null ? (
+          <p className="text-muted-foreground mt-4 text-xs">
+            {t.planSums.replace(
+              "{calories}",
+              plannedCalories.toLocaleString("es-419"),
+            )}
+          </p>
+        ) : null}
 
-      {plannedCalories !== null ? (
-        <p className="text-muted-foreground mt-3 flex items-center gap-1.5 text-xs">
-          <span
-            className="bg-subtle-foreground size-1.5 shrink-0 rounded-full"
-            aria-hidden="true"
+        {notice ? (
+          <p className="sr-only">
+            <span className="text-balance">{notice.text}</span>
+            {notice.link ? (
+              <Link
+                href={notice.link.href}
+                className="underline underline-offset-2"
+              >
+                {notice.link.label}
+              </Link>
+            ) : null}
+          </p>
+        ) : null}
+
+        <p className="mt-3 text-xs">
+          <WhyThisNumber
+            keys={[
+              "bmr_equation",
+              "activity_factors",
+              "goal_adjustments",
+              "protein_ranges",
+              "min_fat_g_per_kg",
+              "fiber_g_per_1000_kcal",
+            ]}
           />
-          {t.planSums.replace(
-            "{calories}",
-            plannedCalories.toLocaleString("es-419"),
-          )}
         </p>
-      ) : null}
-
-      {notice ? (
-        <p
-          className={`mt-2.5 flex flex-wrap gap-x-2 text-xs text-balance ${
-            notice.tone === "caution" ? "text-caution" : "text-muted-foreground"
-          }`}
-        >
-          <span className="text-balance">{notice.text}</span>
-          {notice.link ? (
-            <Link
-              href={notice.link.href}
-              className="underline underline-offset-2"
-            >
-              {notice.link.label}
-            </Link>
-          ) : null}
-        </p>
-      ) : null}
-
-      <p className="mt-2.5 text-xs">
-        <WhyThisNumber
-          keys={[
-            "bmr_equation",
-            "activity_factors",
-            "goal_adjustments",
-            "protein_ranges",
-            "min_fat_g_per_kg",
-            "fiber_g_per_1000_kcal",
-          ]}
-        />
-      </p>
+      </div>
     </section>
   );
 }

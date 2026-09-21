@@ -136,8 +136,10 @@ function MealStop({
         triggerHaptic("warning");
         toast.error(result.error);
       } else {
-        fireCelebration();
-        toast.success(t.loggedToast);
+        if (!result.alreadyLogged) fireCelebration();
+        toast.success(
+          result.alreadyLogged ? t.alreadyLoggedToast : t.loggedToast,
+        );
       }
     });
   };
