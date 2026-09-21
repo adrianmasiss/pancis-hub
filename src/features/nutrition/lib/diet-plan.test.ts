@@ -31,6 +31,7 @@ const template: DietTemplateRow = {
       name: "Desayuno",
       meal_type: "desayuno",
       order_index: 0,
+      scheduled_time: "07:30:00",
       diet_template_items: [
         {
           id: "item-oats",

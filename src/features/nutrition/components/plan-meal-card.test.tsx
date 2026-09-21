@@ -26,6 +26,7 @@ const meal: DietTemplateMealView = {
   name: "Desayuno",
   mealType: "desayuno",
   orderIndex: 0,
+  scheduledTime: "07:30:00",
   loggedToday: false,
   items: [],
   totals: {
@@ -57,6 +58,28 @@ describe("PlanMealCard", () => {
       date: "2026-08-18",
     });
     expect(fireCelebration).toHaveBeenCalledOnce();
+  });
+
+  it("muestra la hora del plan, no la del mapa por tipo", () => {
+    // `meal_type` es "desayuno", que en el mapa de respaldo son las 07:00.
+    // Si sale 07:30 es porque manda `scheduledTime`, que es lo que se quiere:
+    // el mapa solo da cinco horas y el plan puede tener cinco comidas a horas
+    // que no coinciden con ninguna.
+    render(<PlanMealCard meal={meal} date="2026-08-18" />);
+
+    expect(screen.getByText("07:30")).toBeInTheDocument();
+    expect(screen.queryByText("07:00")).not.toBeInTheDocument();
+  });
+
+  it("cae al mapa por tipo cuando el plan no trae hora", () => {
+    render(
+      <PlanMealCard
+        meal={{ ...meal, scheduledTime: null }}
+        date="2026-08-18"
+      />,
+    );
+
+    expect(screen.getByText("07:00")).toBeInTheDocument();
   });
 
   it("no celebra un reintento idempotente", async () => {

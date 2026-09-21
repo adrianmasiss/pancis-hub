@@ -67,6 +67,7 @@ export type DietTemplateRow = {
     name: string | null;
     meal_type: string;
     order_index: number;
+    scheduled_time: string | null;
     diet_template_items: {
       id: string;
       quantity_g: number | string;
@@ -182,6 +183,7 @@ export function mapDietTemplate({
           name: meal.name,
           mealType: meal.meal_type,
           orderIndex: meal.order_index,
+          scheduledTime: meal.scheduled_time,
           items,
           totals: sumMacros(items),
           loggedToday: loggedTemplateMealIds.has(meal.id),

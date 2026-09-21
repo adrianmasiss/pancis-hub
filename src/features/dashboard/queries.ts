@@ -49,6 +49,15 @@ export type DietTemplateMealView = {
   name: string | null;
   mealType: string;
   orderIndex: number;
+  /**
+   * Hora del plan para esta comida, `HH:MM:SS` o nula.
+   *
+   * La columna existia en la tabla desde el principio y nadie la leia: la
+   * interfaz resolvia la hora con un mapa fijo por `meal_type`, y como la
+   * tabla solo admite cinco tipos, "Media manana" y "Merienda" comparten
+   * `snack` y salian las dos a la misma hora.
+   */
+  scheduledTime: string | null;
   items: DietTemplateItemView[];
   totals: MacroTotals;
   /** true si esta comida concreta del plan ya se registro para la fecha. */
@@ -218,7 +227,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     supabase
       .from("diet_templates")
       .select(
-        "id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, diet_template_items(id, quantity_g, serving_equivalence, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))))",
+        "id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, scheduled_time, diet_template_items(id, quantity_g, serving_equivalence, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))))",
       )
       .eq("user_id", userId)
       .eq("is_active", true)

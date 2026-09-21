@@ -25,6 +25,14 @@ function mealTitle(meal: DietTemplateMealView): string {
   );
 }
 
+/**
+ * Respaldo cuando el plan no trae hora.
+ *
+ * Es solo eso: un respaldo. La hora buena es `scheduledTime`, que viene de la
+ * tabla. Este mapa no puede dar mas de cinco horas distintas porque `meal_type`
+ * solo admite cinco valores, asi que con el solo "Media manana" y "Merienda"
+ * caian las dos a las 16:30.
+ */
 const MEAL_TIMES: Record<string, string> = {
   desayuno: "07:00",
   snack_manana: "10:00",
@@ -34,6 +42,14 @@ const MEAL_TIMES: Record<string, string> = {
   snack: "16:30",
   cena: "20:00",
 };
+
+/** `HH:MM:SS` de Postgres a `HH:MM`. Hora local del plan, sin zona: no se
+ *  convierte ni se interpreta, se muestra como la escribio quien hizo el plan. */
+function formatScheduled(value: string | null): string | null {
+  if (!value) return null;
+  const match = /^(\d{2}):(\d{2})/.exec(value);
+  return match ? `${match[1]}:${match[2]}` : null;
+}
 
 const THUMB_POSITIONS = ["24% 58%", "65% 28%", "43% 62%", "77% 52%"];
 
@@ -92,7 +108,8 @@ export function PlanMealCard({
   const [pending, startTransition] = useTransition();
   const title = mealTitle(meal);
   const done = meal.loggedToday;
-  const time = MEAL_TIMES[meal.mealType] ?? "—";
+  const time =
+    formatScheduled(meal.scheduledTime) ?? MEAL_TIMES[meal.mealType] ?? "—";
   const mix = macroMix(meal);
   const kcal = Math.round(meal.totals.calories);
   const share =
