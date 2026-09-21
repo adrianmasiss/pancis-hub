@@ -449,6 +449,25 @@ export const messages = {
     demoBadge: "IA contextual",
     demoNotice:
       "El asistente usa Gemini cuando esta configurado y conserva reglas locales como respaldo. Sus respuestas usan tus datos reales pero son orientativas.",
+    /** Pantalla de Copilot del handoff. */
+    copilot: {
+      emptyHeadline: "¿Que quieres ajustar hoy?",
+      /**
+       * Enumera el contexto que el asistente REALMENTE cruza. Sale de
+       * `AssistantContext`: dieta activa, comidas pendientes, objetivos,
+       * peso y su tendencia, sueno de hoy y hallazgos de la rutina. Si algun
+       * dia deja de cruzar uno, esta frase hay que cambiarla.
+       */
+      emptyContext:
+        "Tengo tu dieta activa, lo que llevas hoy, tus objetivos, la tendencia de tu peso, tu sueno de anoche y los hallazgos de tu rutina. Pregunta y lo cruzo por ti.",
+      newConversation: "Nueva",
+      proposal: "La propuesta",
+      why: "¿Por que?",
+      whyHide: "Ocultar el porque",
+      /** El asistente propone en texto; aplicar vive donde se puede aplicar. */
+      applyHint: "Los cambios se aplican en la pantalla del plan.",
+      goToPlan: "Ir a Nutricion",
+    },
     inputPlaceholder: "Escribe tu pregunta…",
     send: "Enviar",
     thinking: "Pensando…",

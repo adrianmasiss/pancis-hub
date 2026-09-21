@@ -10,8 +10,16 @@ import {
 } from "@/lib/navigation";
 
 describe("navegacion", () => {
-  it("el riel se repliega a las cuatro pantallas mas Configuracion", () => {
+  /**
+   * El riel tenia cuatro destinos y el Copiloto estaba suspendido. El handoff
+   * de `desing-reference/` lo pone PRIMERO —es la puerta de entrada al
+   * producto—, y el usuario confirmo que la app debe verse como el prototipo,
+   * asi que ahora son cinco. El orden importa: es el del conmutador del
+   * prototipo.
+   */
+  it("el riel abre con el Copiloto y cierra con Configuracion", () => {
     expect(sidebarItems.map((item) => item.href)).toEqual([
+      "/asistente",
       "/",
       "/nutricion",
       "/entrenamiento",
@@ -22,12 +30,12 @@ describe("navegacion", () => {
 
   it("las rutas suspendidas siguen declaradas pero fuera de la navegacion", () => {
     const suspended = suspendedItems.map((item) => item.href);
+    // El Asistente salio de esta lista: su motor existe y ahora se enlaza.
     expect(suspended).toEqual([
       "/recetas",
       "/despensa",
       "/historial",
       "/academia",
-      "/asistente",
     ]);
     // Siguen en navItems: la ruta responde y el codigo se conserva.
     for (const href of suspended) {
@@ -38,6 +46,11 @@ describe("navegacion", () => {
     }
   });
 
+  /**
+   * La barra inferior NO gana el quinto destino: en telefono cuatro celdas es
+   * el limite comodo del pulgar, y el copiloto ya tiene su acceso permanente
+   * en la barra superior.
+   */
   it("la barra inferior conserva sus cuatro destinos", () => {
     expect(bottomNavItems.map((item) => item.href)).toEqual([
       "/",
