@@ -6,6 +6,7 @@ import {
   History as HistoryIcon,
   Home,
   Refrigerator,
+  BookOpen,
   Settings,
   Sparkles,
   TrendingUp,
@@ -134,6 +135,16 @@ export const navItems: readonly NavItem[] = [
     suspended: true,
   },
 
+  {
+    // Sexto y ultimo destino del prototipo. Sus tres capas salen de datos
+    // reales: 20 estudios, 21 constantes y los objetivos del usuario.
+    href: "/evidencia",
+    labelKey: "evidence",
+    icon: BookOpen,
+    showInSidebar: true,
+    showInBottomNav: false,
+    section: "aprender",
+  },
   {
     href: "/configuracion",
     labelKey: "settings",

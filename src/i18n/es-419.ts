@@ -30,6 +30,7 @@ export const messages = {
     history: "Historial",
     academy: "Academia",
     assistant: "Asistente",
+    evidence: "Evidencia",
     settings: "Configuracion",
     more: "Mas",
     moreDescription: "Otras secciones de Pancis Hub",
@@ -421,6 +422,64 @@ export const messages = {
     relatedTitle: "Contenido relacionado",
     backToList: "Academia",
     empty: "Aun no hay articulos publicados en esta categoria.",
+  },
+  evidence: {
+    title: "Evidencia",
+    /**
+     * Enumera lo que hay de verdad en cada capa. Salio primero como
+     * "N fuentes en tres capas" sumando estudios y constantes, y eso llamaba
+     * "fuente" a una constante del producto, que no lo es.
+     */
+    eyebrow: (studies: number, constants: number) =>
+      `${studies} estudios · ${constants} constantes · tus numeros`,
+    /** "Capa", no "nivel": nivel ya significa el grado de evidencia A/B/C. */
+    layer: (n: number) => `Capa ${n}`,
+    headline: "Todo lo que sostiene tu plan, con su nivel de certeza",
+    subtitle:
+      "Tres capas. Cuanto mas cerca de ti habla una fuente, mas util y mas incierta es.",
+    layers: {
+      evidence: {
+        name: "Evidencia",
+        claim: "Estudios revisados por pares",
+        caveat: "Hablan de poblaciones, no de ti.",
+      },
+      interpretation: {
+        name: "Interpretacion",
+        claim: "Como el equipo lee esa evidencia",
+        caveat: "Mas utiles que un estudio suelto, y mas discutibles.",
+      },
+      personal: {
+        name: "Inferencia personalizada",
+        claim: "Tus numeros, calculados con las constantes de arriba",
+        caveat: "La capa mas cercana y la mas incierta de las tres.",
+      },
+    },
+    grade: (g: string) => `Nivel ${g}`,
+    openAccess: "Acceso abierto",
+    population: "Poblacion estudiada",
+    limitations: "Limitaciones",
+    productParameter: "Criterio de la app, no evidencia",
+    productParameterNote:
+      "No sale de un estudio: es una decision del producto, y se marca para que no se confunda con evidencia.",
+    noSources: "Sin fuentes vinculadas",
+    sourcesCount: (n: number) =>
+      n === 1 ? "1 fuente vinculada" : `${n} fuentes vinculadas`,
+    roles: {
+      sustenta: "sostiene",
+      matiza: "matiza",
+      contradice: "contradice",
+    } as Record<string, string>,
+    sourceTypes: {
+      metaanalisis: "Metaanalisis",
+      revision_sistematica: "Revision sistematica",
+      ensayo_controlado: "Ensayo controlado",
+      guia_oficial: "Guia oficial",
+    } as Record<string, string>,
+    noTargets:
+      "Todavia no tienes objetivos activos, asi que esta capa no tiene nada tuyo que mostrar.",
+    targetsFrom: (date: string) => `Vigentes desde ${date}`,
+    detail: "Ver el detalle",
+    detailHide: "Ocultar el detalle",
   },
   assistant: {
     openAssistant: "Abrir asistente",

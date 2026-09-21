@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatValue } from "@/lib/evidence/format-value";
 import type { ToolSource } from "@/server/tools/types";
 
 /**
@@ -37,7 +38,11 @@ function toToolSource(
   return {
     title: row.title,
     year: row.year,
-    identifier: row.pmid ? `PMID ${row.pmid}` : row.doi ? `DOI ${row.doi}` : null,
+    identifier: row.pmid
+      ? `PMID ${row.pmid}`
+      : row.doi
+        ? `DOI ${row.doi}`
+        : null,
     evidenceGrade: (row.evidence_grade as ToolSource["evidenceGrade"]) ?? null,
     population: row.population,
     limitations: row.limitations,
@@ -54,9 +59,11 @@ function toToolSource(
  * Excluye las retractadas: `04_SCIENTIFIC_GOVERNANCE` prohibe citarlas, y es
  * mejor no decir nada que citar algo retirado.
  */
-export async function getSourcesForFormula(
-  key: string,
-): Promise<{ sources: ToolSource[]; rationale: string | null; limitations: string | null }> {
+export async function getSourcesForFormula(key: string): Promise<{
+  sources: ToolSource[];
+  rationale: string | null;
+  limitations: string | null;
+}> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -132,28 +139,8 @@ const FORMULA_LABELS: Record<string, string> = {
  * devuelve SOLO su fila: a quien pregunta por su proteina no le sirve leer los
  * cuatro objetivos, le sirve el suyo.
  */
-export function formatValue(value: unknown, preferKey?: string | null): string {
-  if (typeof value === "number" || typeof value === "string") return String(value);
-  if (value && typeof value === "object") {
-    const record = value as Record<string, unknown>;
-    if (preferKey && preferKey in record) return formatValue(record[preferKey]);
-    const entries = Object.entries(value as Record<string, unknown>);
-    const isRange =
-      entries.length === 2 && "min" in (value as object) && "max" in (value as object);
-    if (isRange) {
-      const v = value as { min: number; max: number };
-      return `${v.min} a ${v.max}`;
-    }
-    return entries
-      .map(([k, v]) =>
-        v && typeof v === "object" && "min" in (v as object)
-          ? `${k} ${(v as { min: number; max: number }).min} a ${(v as { min: number; max: number }).max}`
-          : `${k} ${String(v)}`,
-      )
-      .join(", ");
-  }
-  return "";
-}
+/** Se reexporta para no romper a quien ya lo importaba desde aqui. */
+export { formatValue } from "@/lib/evidence/format-value";
 
 export type FormulaExplanation = {
   label: string;
@@ -248,7 +235,9 @@ export function formatSourcesForPrompt(sources: ToolSource[]): string {
       const partes = [
         `- ${source.title}${source.year ? ` (${source.year})` : ""}`,
         source.identifier ? `  ${source.identifier}` : null,
-        source.evidenceGrade ? `  Nivel de evidencia: ${source.evidenceGrade}` : null,
+        source.evidenceGrade
+          ? `  Nivel de evidencia: ${source.evidenceGrade}`
+          : null,
         source.population ? `  Poblacion: ${source.population}` : null,
         source.limitations ? `  Limitaciones: ${source.limitations}` : null,
         source.role ? `  Papel en esta cifra: ${source.role}` : null,

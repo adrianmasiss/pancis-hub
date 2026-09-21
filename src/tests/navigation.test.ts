@@ -13,17 +13,18 @@ describe("navegacion", () => {
   /**
    * El riel tenia cuatro destinos y el Copiloto estaba suspendido. El handoff
    * de `desing-reference/` lo pone PRIMERO —es la puerta de entrada al
-   * producto—, y el usuario confirmo que la app debe verse como el prototipo,
-   * asi que ahora son cinco. El orden importa: es el del conmutador del
-   * prototipo.
+   * producto—, y el usuario confirmo que la app debe verse como el prototipo.
+   * Con Evidencia cerrando, son los SEIS destinos de su conmutador `NAV`, en
+   * su orden: copilot, inicio, dieta, rutina, progreso, evidencia.
    */
-  it("el riel abre con el Copiloto y cierra con Configuracion", () => {
+  it("el riel lleva los seis destinos del prototipo y Configuracion", () => {
     expect(sidebarItems.map((item) => item.href)).toEqual([
       "/asistente",
       "/",
       "/nutricion",
       "/entrenamiento",
       "/progreso",
+      "/evidencia",
       "/configuracion",
     ]);
   });
