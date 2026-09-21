@@ -8,6 +8,7 @@ type BrandLogoProps = {
   /** Alto del logotipo en px. */
   height?: number;
   className?: string;
+  variant?: "wordmark" | "mark";
 };
 
 /**
@@ -19,10 +20,29 @@ type BrandLogoProps = {
  *
  * Si las imagenes faltan, cae a un wordmark de una sola tinta.
  */
-export function BrandLogo({ height = 30, className }: BrandLogoProps) {
+export function BrandLogo({
+  height = 30,
+  className,
+  variant = "wordmark",
+}: BrandLogoProps) {
   const [imageAvailable, setImageAvailable] = useState(true);
 
   if (imageAvailable) {
+    if (variant === "mark") {
+      return (
+        <span className={cn("inline-flex", className)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/icon-192.png"
+            alt={messages.app.name}
+            style={{ height, width: height }}
+            className="object-contain"
+            onError={() => setImageAvailable(false)}
+          />
+        </span>
+      );
+    }
+
     return (
       <span className={cn("inline-flex", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}

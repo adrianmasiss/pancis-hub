@@ -38,11 +38,11 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "border-hairline flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-6",
+        "grid h-[153px] grid-cols-[minmax(0,1fr)_auto] content-end items-start gap-x-3 gap-y-4 pb-4 lg:mb-7 lg:h-[84px] lg:content-center lg:gap-y-0 lg:pb-0",
         className,
       )}
     >
-      <div className="flex min-w-0 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-1">
         {eyebrow ? <p className="label-micro">{eyebrow}</p> : null}
         <div className="flex min-w-0 items-center gap-2.5">
           {Icon ? (
@@ -53,21 +53,24 @@ export function PageHeader({
           ) : null}
           {/* Escala editorial: el titulo es la pieza que fija el tono de la
               pagina, no una etiqueta mas de la barra. */}
-          <h1 className="min-w-0 truncate text-[1.75rem] font-medium tracking-[-0.03em] sm:display-title">
-            {title}
-          </h1>
+          <h1 className="page-display min-w-0 truncate">{title}</h1>
         </div>
         {description ? (
-          <p className="text-muted-foreground max-w-[62ch] text-[0.8125rem] leading-relaxed sm:text-sm">
+          <p className="text-muted-foreground max-w-[58ch] text-[0.9375rem] leading-[1.65]">
             {description}
           </p>
         ) : null}
-        {children ? <div className="mt-1">{children}</div> : null}
       </div>
 
       {actions ? (
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 lg:row-span-2 lg:self-center">
           {actions}
+        </div>
+      ) : null}
+
+      {children ? (
+        <div className="col-span-2 min-w-0 lg:col-span-1 lg:col-start-1 lg:row-start-2">
+          {children}
         </div>
       ) : null}
     </div>

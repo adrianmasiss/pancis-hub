@@ -1,306 +1,478 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-11T00:00:00.000Z",
-  "title": "Design System: Pancis Hub — Codigo de disco",
+  "generatedAt": "2026-09-17T18:36:47.000Z",
+  "title": "Design System: Pancis Hub",
   "extensions": {
     "colorMeta": {
-      "steel-primary": {
+      "background-dark": {
+        "role": "neutral-background",
+        "displayName": "Carbón (lienzo, oscuro)",
+        "canonical": "oklch(19% 0.009 169.2)",
+        "tonalRamp": [
+          "oklch(15% 0.009 169.2)",
+          "oklch(26.4% 0.009 169.2)",
+          "oklch(37.9% 0.009 169.2)",
+          "oklch(49.3% 0.009 169.2)",
+          "oklch(60.7% 0.009 169.2)",
+          "oklch(72.1% 0.009 169.2)",
+          "oklch(83.6% 0.009 169.2)",
+          "oklch(95% 0.009 169.2)"
+        ]
+      },
+      "background-light": {
+        "role": "neutral-background",
+        "displayName": "Piedra cálida (lienzo, claro)",
+        "canonical": "oklch(96.1% 0.005 95.1)",
+        "tonalRamp": [
+          "oklch(15% 0.005 95.1)",
+          "oklch(26.4% 0.005 95.1)",
+          "oklch(37.9% 0.005 95.1)",
+          "oklch(49.3% 0.005 95.1)",
+          "oklch(60.7% 0.005 95.1)",
+          "oklch(72.1% 0.005 95.1)",
+          "oklch(83.6% 0.005 95.1)",
+          "oklch(95% 0.005 95.1)"
+        ]
+      },
+      "card-dark": {
+        "role": "neutral-surface",
+        "displayName": "Carbón elevado (superficie, oscuro)",
+        "canonical": "oklch(21.5% 0.011 163.8)",
+        "tonalRamp": [
+          "oklch(15% 0.011 163.8)",
+          "oklch(26.4% 0.011 163.8)",
+          "oklch(37.9% 0.011 163.8)",
+          "oklch(49.3% 0.011 163.8)",
+          "oklch(60.7% 0.011 163.8)",
+          "oklch(72.1% 0.011 163.8)",
+          "oklch(83.6% 0.011 163.8)",
+          "oklch(95% 0.011 163.8)"
+        ]
+      },
+      "card-light": {
+        "role": "neutral-surface",
+        "displayName": "Marfil (superficie, claro)",
+        "canonical": "oklch(99.1% 0.003 106.4)",
+        "tonalRamp": [
+          "oklch(15% 0.003 106.4)",
+          "oklch(26.4% 0.003 106.4)",
+          "oklch(37.9% 0.003 106.4)",
+          "oklch(49.3% 0.003 106.4)",
+          "oklch(60.7% 0.003 106.4)",
+          "oklch(72.1% 0.003 106.4)",
+          "oklch(83.6% 0.003 106.4)",
+          "oklch(95% 0.003 106.4)"
+        ]
+      },
+      "card-raised-dark": {
+        "role": "neutral-surface-raised",
+        "displayName": "Carbón, sub-superficie (oscuro)",
+        "canonical": "oklch(24.8% 0.013 160.3)",
+        "tonalRamp": [
+          "oklch(15% 0.013 160.3)",
+          "oklch(26.4% 0.013 160.3)",
+          "oklch(37.9% 0.013 160.3)",
+          "oklch(49.3% 0.013 160.3)",
+          "oklch(60.7% 0.013 160.3)",
+          "oklch(72.1% 0.013 160.3)",
+          "oklch(83.6% 0.013 160.3)",
+          "oklch(95% 0.013 160.3)"
+        ]
+      },
+      "card-raised-light": {
+        "role": "neutral-surface-raised",
+        "displayName": "Marfil, sub-superficie (claro)",
+        "canonical": "oklch(94.2% 0.007 106.5)",
+        "tonalRamp": [
+          "oklch(15% 0.007 106.5)",
+          "oklch(26.4% 0.007 106.5)",
+          "oklch(37.9% 0.007 106.5)",
+          "oklch(49.3% 0.007 106.5)",
+          "oklch(60.7% 0.007 106.5)",
+          "oklch(72.1% 0.007 106.5)",
+          "oklch(83.6% 0.007 106.5)",
+          "oklch(95% 0.007 106.5)"
+        ]
+      },
+      "ink-dark": {
+        "role": "neutral-ink",
+        "displayName": "Tinta marfil (texto, oscuro)",
+        "canonical": "oklch(95% 0.01 87.5)",
+        "tonalRamp": [
+          "oklch(15% 0.01 87.5)",
+          "oklch(26.4% 0.01 87.5)",
+          "oklch(37.9% 0.01 87.5)",
+          "oklch(49.3% 0.01 87.5)",
+          "oklch(60.7% 0.01 87.5)",
+          "oklch(72.1% 0.01 87.5)",
+          "oklch(83.6% 0.01 87.5)",
+          "oklch(95% 0.01 87.5)"
+        ]
+      },
+      "ink-light": {
+        "role": "neutral-ink",
+        "displayName": "Tinta carbón (texto, claro)",
+        "canonical": "oklch(24.1% 0.024 241.4)",
+        "tonalRamp": [
+          "oklch(15% 0.024 241.4)",
+          "oklch(26.4% 0.024 241.4)",
+          "oklch(37.9% 0.024 241.4)",
+          "oklch(49.3% 0.024 241.4)",
+          "oklch(60.7% 0.024 241.4)",
+          "oklch(72.1% 0.024 241.4)",
+          "oklch(83.6% 0.024 241.4)",
+          "oklch(95% 0.024 241.4)"
+        ]
+      },
+      "primary": {
         "role": "primary",
-        "displayName": "Acero",
-        "canonical": "oklch(0.34 0.008 250)",
+        "displayName": "Terracota (acento, oscuro — canónico)",
+        "canonical": "oklch(66.4% 0.172 38.4)",
         "tonalRamp": [
-          "oklch(0.16 0.003 250)",
-          "oklch(0.24 0.008 250)",
-          "oklch(0.34 0.008 250)",
-          "oklch(0.44 0.008 250)",
-          "oklch(0.58 0.006 250)",
-          "oklch(0.72 0.006 250)",
-          "oklch(0.86 0.004 250)",
-          "oklch(0.98 0.001 250)"
+          "oklch(15% 0.172 38.4)",
+          "oklch(26.4% 0.172 38.4)",
+          "oklch(37.9% 0.172 38.4)",
+          "oklch(49.3% 0.172 38.4)",
+          "oklch(60.7% 0.172 38.4)",
+          "oklch(72.1% 0.172 38.4)",
+          "oklch(83.6% 0.172 38.4)",
+          "oklch(95% 0.172 38.4)"
         ]
       },
-      "brand-orange": {
-        "role": "secondary",
-        "displayName": "Naranja de marca (solo logotipo)",
-        "canonical": "oklch(0.56 0.155 42)",
+      "primary-strong": {
+        "role": "primary",
+        "displayName": "Terracota, hover/presión (oscuro)",
+        "canonical": "oklch(70.8% 0.157 39.7)",
         "tonalRamp": [
-          "oklch(0.2 0.06 42)",
-          "oklch(0.32 0.1 42)",
-          "oklch(0.44 0.13 42)",
-          "oklch(0.56 0.155 42)",
-          "oklch(0.68 0.16 42)",
-          "oklch(0.72 0.17 45)",
-          "oklch(0.85 0.1 45)",
-          "oklch(0.95 0.04 45)"
+          "oklch(15% 0.157 39.7)",
+          "oklch(26.4% 0.157 39.7)",
+          "oklch(37.9% 0.157 39.7)",
+          "oklch(49.3% 0.157 39.7)",
+          "oklch(60.7% 0.157 39.7)",
+          "oklch(72.1% 0.157 39.7)",
+          "oklch(83.6% 0.157 39.7)",
+          "oklch(95% 0.157 39.7)"
         ]
       },
-      "plate-red-25-fat": {
-        "role": "macro-code",
-        "displayName": "Disco 25 rojo — grasa",
-        "canonical": "oklch(0.5 0.185 27)",
+      "primary-foreground": {
+        "role": "on-primary",
+        "displayName": "Tinta sobre terracota",
+        "canonical": "oklch(18.5% 0.008 67.3)",
         "tonalRamp": [
-          "oklch(0.22 0.08 27)",
-          "oklch(0.32 0.13 27)",
-          "oklch(0.42 0.16 27)",
-          "oklch(0.5 0.185 27)",
-          "oklch(0.58 0.18 27)",
-          "oklch(0.68 0.17 27)",
-          "oklch(0.8 0.12 27)",
-          "oklch(0.92 0.05 27)"
+          "oklch(15% 0.008 67.3)",
+          "oklch(26.4% 0.008 67.3)",
+          "oklch(37.9% 0.008 67.3)",
+          "oklch(49.3% 0.008 67.3)",
+          "oklch(60.7% 0.008 67.3)",
+          "oklch(72.1% 0.008 67.3)",
+          "oklch(83.6% 0.008 67.3)",
+          "oklch(95% 0.008 67.3)"
         ]
       },
-      "plate-blue-20-protein": {
-        "role": "macro-code",
-        "displayName": "Disco 20 azul — proteina",
-        "canonical": "oklch(0.46 0.15 255)",
+      "muted-foreground-dark": {
+        "role": "neutral-muted",
+        "displayName": "Tinta secundaria (oscuro)",
+        "canonical": "oklch(69.4% 0.012 123.5)",
         "tonalRamp": [
-          "oklch(0.2 0.08 255)",
-          "oklch(0.3 0.12 255)",
-          "oklch(0.38 0.14 255)",
-          "oklch(0.46 0.15 255)",
-          "oklch(0.56 0.155 255)",
-          "oklch(0.66 0.16 255)",
-          "oklch(0.8 0.1 255)",
-          "oklch(0.92 0.04 255)"
+          "oklch(15% 0.012 123.5)",
+          "oklch(26.4% 0.012 123.5)",
+          "oklch(37.9% 0.012 123.5)",
+          "oklch(49.3% 0.012 123.5)",
+          "oklch(60.7% 0.012 123.5)",
+          "oklch(72.1% 0.012 123.5)",
+          "oklch(83.6% 0.012 123.5)",
+          "oklch(95% 0.012 123.5)"
         ]
       },
-      "plate-yellow-15-carbs": {
-        "role": "macro-code",
-        "displayName": "Disco 15 amarillo — carbohidratos",
-        "canonical": "oklch(0.53 0.125 78)",
+      "muted-foreground-light": {
+        "role": "neutral-muted",
+        "displayName": "Tinta secundaria (claro)",
+        "canonical": "oklch(48.4% 0.023 236.2)",
         "tonalRamp": [
-          "oklch(0.24 0.06 78)",
-          "oklch(0.36 0.09 78)",
-          "oklch(0.45 0.11 78)",
-          "oklch(0.53 0.125 78)",
-          "oklch(0.65 0.13 78)",
-          "oklch(0.79 0.14 78)",
-          "oklch(0.88 0.09 78)",
-          "oklch(0.95 0.04 78)"
+          "oklch(15% 0.023 236.2)",
+          "oklch(26.4% 0.023 236.2)",
+          "oklch(37.9% 0.023 236.2)",
+          "oklch(49.3% 0.023 236.2)",
+          "oklch(60.7% 0.023 236.2)",
+          "oklch(72.1% 0.023 236.2)",
+          "oklch(83.6% 0.023 236.2)",
+          "oklch(95% 0.023 236.2)"
         ]
       },
-      "plate-green-10-fiber": {
-        "role": "macro-code",
-        "displayName": "Disco 10 verde — fibra",
-        "canonical": "oklch(0.46 0.115 155)",
+      "border-dark": {
+        "role": "neutral-border",
+        "displayName": "Filete verde-gris (oscuro)",
+        "canonical": "oklch(32% 0.014 158.1)",
         "tonalRamp": [
-          "oklch(0.2 0.06 155)",
-          "oklch(0.3 0.09 155)",
-          "oklch(0.38 0.1 155)",
-          "oklch(0.46 0.115 155)",
-          "oklch(0.58 0.13 155)",
-          "oklch(0.72 0.15 155)",
-          "oklch(0.85 0.09 155)",
-          "oklch(0.94 0.04 155)"
+          "oklch(15% 0.014 158.1)",
+          "oklch(26.4% 0.014 158.1)",
+          "oklch(37.9% 0.014 158.1)",
+          "oklch(49.3% 0.014 158.1)",
+          "oklch(60.7% 0.014 158.1)",
+          "oklch(72.1% 0.014 158.1)",
+          "oklch(83.6% 0.014 158.1)",
+          "oklch(95% 0.014 158.1)"
         ]
       },
-      "plate-white-5-water": {
-        "role": "macro-code-reserved",
-        "displayName": "Disco 5 blanco/cromo — agua (token reservado, sin macro conectado hoy)",
-        "canonical": "oklch(0.55 0.01 250)",
+      "border-light": {
+        "role": "neutral-border",
+        "displayName": "Filete (claro)",
+        "canonical": "oklch(89.6% 0.009 106.6)",
         "tonalRamp": [
-          "oklch(0.25 0.004 250)",
-          "oklch(0.38 0.006 250)",
-          "oklch(0.46 0.008 250)",
-          "oklch(0.55 0.01 250)",
-          "oklch(0.68 0.008 250)",
-          "oklch(0.85 0.004 250)",
-          "oklch(0.94 0.002 250)",
-          "oklch(0.98 0.001 250)"
+          "oklch(15% 0.009 106.6)",
+          "oklch(26.4% 0.009 106.6)",
+          "oklch(37.9% 0.009 106.6)",
+          "oklch(49.3% 0.009 106.6)",
+          "oklch(60.7% 0.009 106.6)",
+          "oklch(72.1% 0.009 106.6)",
+          "oklch(83.6% 0.009 106.6)",
+          "oklch(95% 0.009 106.6)"
         ]
       },
-      "steel-energy-bar": {
-        "role": "macro-code",
-        "displayName": "La barra — calorias (acero, nunca disco)",
-        "canonical": "oklch(0.3 0.008 250)",
+      "positive-dark": {
+        "role": "state-positive",
+        "displayName": "Positivo — según plan (oscuro)",
+        "canonical": "oklch(70.8% 0.126 162.9)",
         "tonalRamp": [
-          "oklch(0.12 0.003 250)",
-          "oklch(0.2 0.006 250)",
-          "oklch(0.3 0.008 250)",
-          "oklch(0.42 0.008 250)",
-          "oklch(0.56 0.006 250)",
-          "oklch(0.7 0.004 250)",
-          "oklch(0.86 0.003 250)",
-          "oklch(0.97 0.001 250)"
+          "oklch(15% 0.126 162.9)",
+          "oklch(26.4% 0.126 162.9)",
+          "oklch(37.9% 0.126 162.9)",
+          "oklch(49.3% 0.126 162.9)",
+          "oklch(60.7% 0.126 162.9)",
+          "oklch(72.1% 0.126 162.9)",
+          "oklch(83.6% 0.126 162.9)",
+          "oklch(95% 0.126 162.9)"
         ]
       },
-      "positive": {
-        "role": "state",
-        "displayName": "Positivo (presta el verde del disco de 10)",
-        "canonical": "oklch(0.48 0.115 155)",
+      "positive-light": {
+        "role": "state-positive",
+        "displayName": "Positivo — según plan (claro)",
+        "canonical": "oklch(51.7% 0.103 160.8)",
         "tonalRamp": [
-          "oklch(0.22 0.06 155)",
-          "oklch(0.32 0.09 155)",
-          "oklch(0.4 0.1 155)",
-          "oklch(0.48 0.115 155)",
-          "oklch(0.6 0.13 155)",
-          "oklch(0.72 0.15 155)",
-          "oklch(0.85 0.09 155)",
-          "oklch(0.94 0.04 155)"
+          "oklch(15% 0.103 160.8)",
+          "oklch(26.4% 0.103 160.8)",
+          "oklch(37.9% 0.103 160.8)",
+          "oklch(49.3% 0.103 160.8)",
+          "oklch(60.7% 0.103 160.8)",
+          "oklch(72.1% 0.103 160.8)",
+          "oklch(83.6% 0.103 160.8)",
+          "oklch(95% 0.103 160.8)"
         ]
       },
-      "caution": {
-        "role": "state",
-        "displayName": "Precaucion (ambar — excepcion deliberada de color)",
-        "canonical": "oklch(0.52 0.13 68)",
+      "caution-dark": {
+        "role": "state-caution",
+        "displayName": "Precaución — desvío leve (oscuro)",
+        "canonical": "oklch(77.9% 0.131 58.5)",
         "tonalRamp": [
-          "oklch(0.24 0.06 68)",
-          "oklch(0.36 0.09 68)",
-          "oklch(0.44 0.11 68)",
-          "oklch(0.52 0.13 68)",
-          "oklch(0.64 0.135 68)",
-          "oklch(0.79 0.14 72)",
-          "oklch(0.88 0.09 72)",
-          "oklch(0.95 0.04 72)"
+          "oklch(15% 0.131 58.5)",
+          "oklch(26.4% 0.131 58.5)",
+          "oklch(37.9% 0.131 58.5)",
+          "oklch(49.3% 0.131 58.5)",
+          "oklch(60.7% 0.131 58.5)",
+          "oklch(72.1% 0.131 58.5)",
+          "oklch(83.6% 0.131 58.5)",
+          "oklch(95% 0.131 58.5)"
         ]
       },
-      "critical": {
-        "role": "state",
-        "displayName": "Critico (presta el rojo del disco de 25)",
-        "canonical": "oklch(0.5 0.185 27)",
+      "caution-light": {
+        "role": "state-caution",
+        "displayName": "Precaución — desvío leve (claro)",
+        "canonical": "oklch(49.4% 0.11 57.3)",
         "tonalRamp": [
-          "oklch(0.22 0.08 27)",
-          "oklch(0.32 0.13 27)",
-          "oklch(0.42 0.16 27)",
-          "oklch(0.5 0.185 27)",
-          "oklch(0.58 0.18 27)",
-          "oklch(0.68 0.17 27)",
-          "oklch(0.8 0.12 27)",
-          "oklch(0.92 0.05 27)"
+          "oklch(15% 0.11 57.3)",
+          "oklch(26.4% 0.11 57.3)",
+          "oklch(37.9% 0.11 57.3)",
+          "oklch(49.3% 0.11 57.3)",
+          "oklch(60.7% 0.11 57.3)",
+          "oklch(72.1% 0.11 57.3)",
+          "oklch(83.6% 0.11 57.3)",
+          "oklch(95% 0.11 57.3)"
         ]
       },
-      "chalk-floor": {
-        "role": "neutral",
-        "displayName": "Suelo — tiza (claro) / goma de bumper (oscuro)",
-        "canonical": "oklch(0.968 0.002 250)",
+      "critical-dark": {
+        "role": "state-critical",
+        "displayName": "Crítico — requiere atención (oscuro)",
+        "canonical": "oklch(62.6% 0.193 23)",
         "tonalRamp": [
-          "oklch(0.16 0.003 250)",
-          "oklch(0.21 0.004 250)",
-          "oklch(0.3 0.004 250)",
-          "oklch(0.46 0.006 250)",
-          "oklch(0.72 0.006 250)",
-          "oklch(0.86 0.004 250)",
-          "oklch(0.938 0.003 250)",
-          "oklch(0.968 0.002 250)"
+          "oklch(15% 0.193 23)",
+          "oklch(26.4% 0.193 23)",
+          "oklch(37.9% 0.193 23)",
+          "oklch(49.3% 0.193 23)",
+          "oklch(60.7% 0.193 23)",
+          "oklch(72.1% 0.193 23)",
+          "oklch(83.6% 0.193 23)",
+          "oklch(95% 0.193 23)"
+        ]
+      },
+      "critical-light": {
+        "role": "state-critical",
+        "displayName": "Crítico — requiere atención (claro)",
+        "canonical": "oklch(54.4% 0.173 28.4)",
+        "tonalRamp": [
+          "oklch(15% 0.173 28.4)",
+          "oklch(26.4% 0.173 28.4)",
+          "oklch(37.9% 0.173 28.4)",
+          "oklch(49.3% 0.173 28.4)",
+          "oklch(60.7% 0.173 28.4)",
+          "oklch(72.1% 0.173 28.4)",
+          "oklch(83.6% 0.173 28.4)",
+          "oklch(95% 0.173 28.4)"
         ]
       }
     },
     "typographyMeta": {
-      "stamp": {
-        "displayName": "Cifra troquelada",
-        "purpose": "La unica cifra en Archivo Black. Maximo una por pantalla; responde 'cuanto me falta' a distancia de brazo."
+      "numDisplay": {
+        "displayName": "Cifra protagonista",
+        "purpose": "Una sola por pantalla dentro de un medidor. Responde 'cuánto llevas/falta' a distancia de brazo; nunca compite consigo misma en la misma vista."
       },
-      "title": {
-        "displayName": "Titulo de seccion",
-        "purpose": "Rotulo de seccion, nunca protagonista frente a la cifra troquelada."
+      "pageTitle": {
+        "displayName": "Título de página",
+        "purpose": "Rótulo de pantalla; nunca compite en peso con la cifra protagonista."
       },
-      "numStrong": {
-        "displayName": "Cifra de fila",
-        "purpose": "Manda dentro de su propia fila (una fila de macro), no en toda la pantalla."
-      },
-      "labelMicro": {
-        "displayName": "Etiqueta de dato",
-        "purpose": "El nombre pequeno de un dato, en caja normal. No es un antetitulo/eyebrow; ese patron fue retirado del sistema."
+      "body": {
+        "displayName": "Cuerpo",
+        "purpose": "Texto de lectura y ficha. Párrafos de explicación no superan ~60 caracteres de medida."
       }
     },
     "shadows": [
       {
-        "name": "island",
-        "value": "0 12px 32px -20px oklch(0.19 0.006 250 / 0.55)",
-        "purpose": "Unica sombra del sistema. Solo para capas flotantes: overlays, popovers, el sheet de navegacion. Nunca en flujo."
+        "name": "shadow-card-light",
+        "value": "0 1px 1px rgb(21 33 42 / 0.03), 0 14px 34px -28px rgb(21 33 42 / 0.28)",
+        "purpose": "Elevación de tarjeta en modo claro. En oscuro (Regla 6, 'El oscuro es la experiencia principal') surface-card no lleva sombra: el salto de tono carbón/carbón-elevado hace ese trabajo solo."
+      },
+      {
+        "name": "shadow-island",
+        "value": "0 18px 48px -22px rgb(0 0 0 / 0.9)",
+        "purpose": "Barra fija translúcida (navegación inferior, barra superior) y capas flotantes. Único lugar del sistema, junto con shadow-lifted, donde una sombra real acompaña la elevación en oscuro."
+      },
+      {
+        "name": "shadow-lifted",
+        "value": "0 8px 24px -8px rgb(0 0 0 / 0.45)",
+        "purpose": "Pieza que flota sobre el contenido y se mueve con él (botón del copiloto/asistente). Excepción declarada a 'la elevación es salto de tono': aquí no hay tono fijo debajo al que saltar."
       }
     ],
     "motion": [
       {
-        "name": "collar-snap",
-        "value": "scale(1) -> scale(0.86) -> scale(1), 0.14s cubic-bezier(0.32,0,0.15,1)",
-        "purpose": "Unico gesto de movimiento autorizado: marcar algo como hecho. Encaja como un collarin de disco, no rebota."
+        "name": "ease-spring",
+        "value": "linear(0, 0.0039 1.24%, 0.0157, 0.0352, 0.0625 4.96%, 0.1379 7.44%, 0.2417 10.1%, 0.5199 16.6%, 0.6415 19.8%, 0.7442, 0.8298 26.5%, 0.8994 30%, 0.9541 33.9%, 0.9938 38.4%, 1.0169 43.1%, 1.0263 48.3%, 1.0221 55.6%, 1.0106 66.2%, 1.0004 81.1%, 1)",
+        "purpose": "Muelle único del sistema, no una curva de duración fija: es interrumpible y hereda velocidad. Todo movimiento de estado, entrada o segmentado lo usa."
       },
       {
-        "name": "fade-up",
-        "value": "opacity 0 + translateY(4px) -> opacity 1, 0.28s cubic-bezier(0.22,0.61,0.36,1)",
-        "purpose": "Entrada discreta de contenido nuevo en pantalla."
+        "name": "dur-fast",
+        "value": "140ms",
+        "purpose": "Respuesta táctil inmediata (pulsación de botón)."
+      },
+      {
+        "name": "dur-base",
+        "value": "240ms",
+        "purpose": "Transición de estado (activo/inactivo, segmentado, checkbox)."
+      },
+      {
+        "name": "dur-enter",
+        "value": "380ms",
+        "purpose": "Entrada de página o de bloque nuevo en pantalla."
+      },
+      {
+        "name": "stagger",
+        "value": "60ms",
+        "purpose": "Separación entre elementos que entran en secuencia (stagger-item)."
       }
-    ],
-    "breakpoints": [
-      { "name": "lg", "value": "1024px" }
     ]
   },
   "components": [
     {
-      "name": "Boton primario",
+      "name": "Botón — brand",
       "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Fondo acero, texto invertido, halo sutil que sigue al puntero en hover.",
-      "html": "<button class=\"ds-btn-primary\">Registrar comida</button>",
-      "css": ".ds-btn-primary { background: oklch(0.34 0.008 250); color: oklch(0.98 0.001 250); border: none; border-radius: 2px; height: 2.5rem; padding: 0 1rem; font-size: 0.875rem; font-weight: 500; font-family: Archivo, sans-serif; letter-spacing: 0; transition: background-color 0.2s ease; } .ds-btn-primary:hover { background: color-mix(in oklch, oklch(0.34 0.008 250) 92%, transparent); } .ds-btn-primary:active { background: color-mix(in oklch, oklch(0.34 0.008 250) 84%, transparent); transition-duration: 75ms; } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.34 0.008 250); outline-offset: 2px; }"
+      "refersTo": "button-brand",
+      "description": "Terracota sólido, sin degradado de interfaz (Regla 3). Es la única acción dominante por pantalla.",
+      "html": "<button class=\"ds-btn-brand\">Confirmar</button>",
+      "css": ".ds-btn-brand { background-color: #e8663b; color: #15120f; border: none; border-radius: 14px; height: 3.375rem; padding: 0 1.5rem; font-weight: 700; font-size: 0.9375rem; letter-spacing: -0.01em; cursor: pointer; box-shadow: 0 8px 22px -14px rgb(232 102 59 / 0.7); transition: filter 140ms ease-out, transform 140ms ease-out, box-shadow 140ms ease-out; } .ds-btn-brand:hover { filter: brightness(1.06); } .ds-btn-brand:active { transform: translateY(1px); } .ds-btn-brand:focus-visible { outline: none; box-shadow: 0 0 0 2px #101513, 0 0 0 4px rgb(232 102 59 / 0.35); } .ds-btn-brand:disabled { background-color: #202722; color: #9b9e96; box-shadow: none; filter: none; cursor: not-allowed; }"
     },
     {
-      "name": "El disco (chip de macro)",
-      "kind": "custom",
-      "refersTo": "plate-protein",
-      "description": "El circulo unico del sistema. Color = macro permanente; numeral de kilos impreso dentro como segunda senal para colorblind.",
-      "html": "<span class=\"ds-plate\" aria-hidden=\"true\">20</span>",
-      "css": ".ds-plate { display: inline-grid; place-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; background: oklch(0.46 0.15 255); color: #fff; font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.02em; line-height: 1; font-family: Archivo, sans-serif; }"
+      "name": "Botón — default",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Tinta sólida invertida: acción local importante que no debe competir con el terracota de la acción dominante.",
+      "html": "<button class=\"ds-btn-default\">Ver detalle</button>",
+      "css": ".ds-btn-default { background-color: #15212a; color: #f3f2ee; border: none; border-radius: 12px; height: 2.5rem; padding: 0 1rem; font-weight: 600; font-size: 0.875rem; letter-spacing: -0.01em; cursor: pointer; transition: filter 200ms ease-out, transform 75ms ease-out; } .ds-btn-default:hover { filter: brightness(1.12); } .ds-btn-default:active { filter: brightness(0.92); transform: translateY(1px); } .ds-btn-default:focus-visible { outline: none; box-shadow: 0 0 0 2px #f3f2ee, 0 0 0 4px rgb(21 33 42 / 0.3); }"
     },
     {
-      "name": "Barra de disco (PlateBar)",
-      "kind": "custom",
-      "refersTo": "plate-protein",
-      "description": "El ancho es la magnitud. Pista de regla, relleno del color del macro, muesca del plan y canto de sobrepaso — visibles solo cuando hay datos registrados.",
-      "html": "<span class=\"ds-platebar\" aria-hidden=\"true\"><span class=\"ds-platebar-fill\" style=\"width:62%\"></span><span class=\"ds-platebar-notch\" style=\"left:calc(80% - 1px)\"></span></span>",
-      "css": ".ds-platebar { position: relative; display: block; height: 0.375rem; width: 100%; background: color-mix(in oklch, oklch(0.86 0.004 250) 60%, transparent); } .ds-platebar-fill { position: absolute; inset-block: 0; left: 0; background: oklch(0.46 0.15 255); transition: width 0.2s ease-out; } .ds-platebar-notch { position: absolute; top: -3px; bottom: -3px; width: 2px; background: oklch(0.19 0.006 250); }"
+      "name": "Botón — outline",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Fondo de superficie y borde preciso; acción secundaria que necesita presencia sin pesar como la dominante.",
+      "html": "<button class=\"ds-btn-outline\">Cancelar</button>",
+      "css": ".ds-btn-outline { background-color: rgb(21 27 24 / 0.8); color: #f1eee7; border: 1px solid #424b45; border-radius: 12px; height: 2.5rem; padding: 0 1rem; font-weight: 600; font-size: 0.875rem; letter-spacing: -0.01em; cursor: pointer; transition: border-color 200ms ease-out, background-color 200ms ease-out; } .ds-btn-outline:hover { border-color: rgb(241 238 231 / 0.2); background-color: #151b18; } .ds-btn-outline:active { background-color: #202722; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px #101513, 0 0 0 4px rgb(232 102 59 / 0.3); }"
     },
     {
-      "name": "Section (reemplazo de Card)",
+      "name": "Tarjeta (surface-card)",
       "kind": "card",
-      "refersTo": "section-band",
-      "description": "Un tramo de suelo, no una tarjeta. La regla superior anuncia la seccion; sin fondo, borde perimetral ni sombra.",
-      "html": "<section class=\"ds-section\"><h2 class=\"ds-section-title\">Nutricion de hoy</h2></section>",
-      "css": ".ds-section { border-top: 2px solid oklch(0.72 0.006 250); padding-top: 1.25rem; } .ds-section-title { font-size: 1.375rem; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700; font-family: Archivo, sans-serif; }"
+      "refersTo": "card",
+      "description": "Superficie con borde fino y radio contenido. Agrupa unidades reales de contenido (Regla 5); las secuencias usan filas y divisores, no una tarjeta por fragmento.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-eyebrow\">Proteína</p><p class=\"ds-card-value\">128 g</p></div>",
+      "css": ".ds-card { background-color: #151b18; border: 1px solid #29312c; border-radius: 18px; padding: 20px; box-shadow: none; } .ds-card-eyebrow { margin: 0 0 4px; font-size: 0.8125rem; color: #9b9e96; } .ds-card-value { margin: 0; font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.014em; color: #f1eee7; font-variant-numeric: tabular-nums; }"
     },
     {
-      "name": "Navegacion inferior (item)",
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Superficie ligeramente teñida, foco por cambio de borde más halo suave — nunca solo color de texto. Radio real implementado: 22px (var(--radius-xl)); la prosa de DESIGN.md documenta 12px para campos y aún no se reconcilió con el componente Input construido — mencionar antes de tratar uno de los dos como autoritativo.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar alimento\">",
+      "css": ".ds-input { background-color: rgb(28 35 31 / 0.6); color: #f1eee7; border: 1px solid #3a433d; border-radius: 22px; height: 2.75rem; padding: 0 14px; font-size: 1rem; transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease; } .ds-input::placeholder { color: #727a72; } .ds-input:focus-visible { outline: none; border-color: #e8663b; background-color: #151b18; box-shadow: 0 0 0 3px rgb(232 102 59 / 0.2); }"
+    },
+    {
+      "name": "Barra de magnitud",
+      "kind": "custom",
+      "refersTo": "magnitude-bar",
+      "description": "Componente firma: el relleno terracota sobre una pista propia (no el filete) es la unidad visual mínima de progreso en todo el sistema — macros, adherencia, series.",
+      "html": "<span class=\"ds-magbar\" aria-hidden=\"true\"><span class=\"ds-magbar-fill\" style=\"width:64%\"></span></span>",
+      "css": ".ds-magbar { display: block; position: relative; height: 6px; width: 100%; border-radius: 9999px; background-color: #303833; overflow: hidden; } .ds-magbar-fill { position: absolute; inset-block: 0; left: 0; background-color: #e8663b; border-radius: 9999px; transition: width 240ms ease-out; }"
+    },
+    {
+      "name": "Navegación — ítem activo/inactivo",
       "kind": "nav",
-      "refersTo": "bottom-nav-item",
-      "description": "Celda de 44px, icono-solo, activo marcado con inset-shadow en la base (glow-ring), no con pildora ni color.",
-      "html": "<a class=\"ds-navitem ds-navitem-active\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></a>",
-      "css": ".ds-navitem { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; color: oklch(0.46 0.006 250); transition: color 0.15s ease-out; } .ds-navitem:hover { color: oklch(0.19 0.006 250); } .ds-navitem-active { color: oklch(0.19 0.006 250); box-shadow: inset 0 -3px 0 oklch(0.19 0.006 250); }"
+      "refersTo": "nav-item",
+      "description": "En escritorio el activo lleva una regla terracota e icono naranja; en móvil el dock usa iconos y rótulos y el activo toma el naranja sin pastilla adicional.",
+      "html": "<a class=\"ds-navitem ds-navitem-active\" aria-current=\"page\">Hoy</a><a class=\"ds-navitem\">Nutrición</a>",
+      "css": ".ds-navitem { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; color: #9b9e96; font-size: 0.875rem; font-weight: 500; text-decoration: none; border-left: 2px solid transparent; transition: color 200ms ease, border-color 200ms ease; } .ds-navitem:hover { color: #f1eee7; } .ds-navitem-active { color: #e8663b; border-left-color: #e8663b; }"
     }
   ],
   "narrative": {
-    "northStar": "Codigo de disco",
-    "overview": "La tesis es literal: el color no decora, ES la magnitud. Cada macro se queda con su disco del codigo olimpico de gimnasio para siempre — 25 rojo, 20 azul, 15 amarillo, 10 verde, 5 blanco — y nada mas en la pantalla lleva color, salvo la unica excepcion declarada para estado. La rejilla de tarjetas queda prohibida por decision explicita: el contenido vive sobre el suelo, y lo que separa una seccion de otra es una regla horizontal cuyo GROSOR es la jerarquia. El mundo material es tiza y acero en claro, goma de bumper en oscuro; el handoff original es un diseno solo oscuro y el modo claro fue derivado despues por motivos de contraste.",
+    "northStar": "El instrumento editorial de salud",
+    "overview": "Pancis Hub combina la contundencia de una marca de entrenamiento con la precisión de un producto de datos. Carbón cálido, tinta marfil, filetes finos y una densidad controlada construyen una interfaz propia, sobria y táctil. La escena sigue siendo móvil, de pie y con una mano. En escritorio no se estira una pantalla móvil: se aprovecha el ancho para relacionar datos que se leen juntos. El Figma anterior se conserva como antecedente de estructura, no como límite creativo ni como una captura que deba copiarse.",
     "keyCharacteristics": [
-      "El color es un codigo semantico permanente (el disco del macro), nunca una eleccion estetica por pantalla.",
-      "No hay tarjetas: hay suelo, y lo separan reglas cuyo grosor es la jerarquia.",
-      "Una sola cifra troquelada por pantalla, en Archivo Black; todo lo demas es Archivo.",
-      "Radio universal de 2px; el circulo se reserva al disco, la unica forma redonda.",
-      "Elevacion solo en capas flotantes; en flujo, nunca.",
-      "El mundo nativo es oscuro (goma de bumper); el claro es una derivacion de accesibilidad."
+      "Una respuesta visual por pantalla: una cifra, decisión o estado manda; el resto construye contexto.",
+      "El terracota decide y mide — marca la acción principal, el foco y el avance; no colorea títulos, tarjetas completas ni controles secundarios.",
+      "Sin degradados de interfaz: el degradado pertenece al logotipo, los botones son sólidos y seguros.",
+      "Las cápsulas son excepciones reservadas a estados compactos, cantidades o filtros; el resto usa radios contenidos.",
+      "No todo vive en una tarjeta: las secuencias usan filas y divisores, los bloques secundarios pueden vivir directamente sobre el lienzo.",
+      "El oscuro es la experiencia principal; el claro se conserva como alternativa, pero el producto se diseña y verifica primero en nocturno."
     ],
     "rules": [
-      { "name": "La Regla del Disco Permanente", "body": "Un macro no cambia de color entre pantallas.", "section": "colors" },
-      { "name": "La Regla del Color Unico", "body": "Fuera del codigo de disco y de la excepcion de estado, ningun elemento de interfaz lleva color.", "section": "colors" },
-      { "name": "La Regla de la Marca Aislada", "body": "El naranja de marca vive solo en el logotipo.", "section": "colors" },
-      { "name": "La Regla de la Cifra Unica", "body": "num-display aparece una sola vez por pantalla.", "section": "typography" },
-      { "name": "La Regla del Antetitulo Retirado", "body": "label-micro es una etiqueta en caja normal, sin tracking ni mayusculas; el eyebrow fue retirado del sistema.", "section": "typography" },
-      { "name": "La Regla de la Elevacion Solo Flotante", "body": "Si un elemento vive en el flujo normal, no lleva sombra, sin excepcion.", "section": "elevation" }
+      { "name": "La Regla de Una Respuesta Visual", "body": "Una cifra, decisión o estado manda por pantalla; el resto construye contexto.", "section": "layout" },
+      { "name": "La Regla del Terracota que Decide y Mide", "body": "El acento marca la acción principal, el foco y el avance. No colorea títulos, tarjetas completas ni controles secundarios.", "section": "colors" },
+      { "name": "La Regla de Sin Degradados de Interfaz", "body": "El degradado pertenece al logotipo; los botones son sólidos y seguros.", "section": "colors" },
+      { "name": "La Regla de las Cápsulas como Excepción", "body": "Se reservan para estados compactos, cantidades o filtros. Botones, campos y tarjetas usan radios contenidos.", "section": "shapes" },
+      { "name": "La Regla de No Todo Vive en una Tarjeta", "body": "Las tarjetas agrupan unidades reales. Las secuencias usan filas y divisores; los bloques secundarios pueden vivir directamente sobre el lienzo.", "section": "components" },
+      { "name": "La Regla del Oscuro Principal", "body": "El producto se diseña y verifica primero en nocturno; el claro es la alternativa, no el punto de partida.", "section": "colors" },
+      { "name": "La Regla de Compilar no es Verificar", "body": "Todo cambio visual se revisa a 390px y 1440px, en ambos temas cuando toca tokens compartidos.", "section": "layout" }
     ],
     "dos": [
-      "Do asignar a cada macro su disco del codigo olimpico para siempre.",
-      "Do usar el grosor de regla como unico mecanismo de jerarquia entre bloques.",
-      "Do limitar num-display a una cifra por pantalla.",
-      "Do usar caution para advertencias de estado en Hoy.",
-      "Do construir cualquier seccion nueva sobre Section, nunca sobre @/components/ui/card.",
-      "Do escribir las etiquetas de dato en caja normal, sin tracking."
+      "Do usar el terracota únicamente para la acción dominante, el foco y el estado de avance.",
+      "Do redondear a uno de los cuatro radios contenidos del sistema (control 12px, acción 14px, tarjeta 18px, pastilla 9999px).",
+      "Do agrupar contenido real en surface-card y resolver secuencias con filas y filetes.",
+      "Do verificar cada cambio visual a 390px y 1440px, en claro y oscuro cuando el token es compartido.",
+      "Do usar Geist Sans local para evitar que el build dependa de una petición remota."
     ],
     "donts": [
-      "Don't introducir un color decorativo nuevo fuera del codigo de disco y los tres estados.",
-      "Don't usar el naranja de marca fuera del wordmark.",
-      "Don't dibujar una caja alrededor de contenido en flujo.",
-      "Don't dar a un disco una forma que no sea el circulo, ni dar forma circular a nada mas.",
-      "Don't tratar las pantallas migradas de @/components/ui/card como plantilla valida para trabajo nuevo."
+      "Don't introducir fuentes remotas que hagan depender el build de internet.",
+      "Don't usar degradados rojo–naranja en botones.",
+      "Don't redondear todo a 9999px.",
+      "Don't apilar tarjetas para cada párrafo o fila.",
+      "Don't convertir datos secuenciales en una cuadrícula.",
+      "Don't usar terracota para enlaces estructurales o títulos completos.",
+      "Don't añadir un segundo color de marca.",
+      "Don't depender de sombras negras genéricas."
     ]
   }
 }

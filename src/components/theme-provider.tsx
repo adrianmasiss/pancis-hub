@@ -10,6 +10,14 @@ import {
   type ReactNode,
 } from "react";
 
+import {
+  applyPalette,
+  DEFAULT_PALETTE,
+  MODE_STORAGE_KEY,
+  PALETTE_STORAGE_KEY,
+} from "@/lib/theme/apply";
+import { isPaletteName, type PaletteName } from "@/lib/theme/palettes";
+
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
 
@@ -26,9 +34,12 @@ type ThemeContextValue = {
   resolvedTheme: ResolvedTheme;
   systemTheme: ResolvedTheme;
   setTheme: (theme: Theme) => void;
+  /** Una de las ocho paletas del handoff. */
+  palette: PaletteName;
+  setPalette: (palette: PaletteName) => void;
 };
 
-const STORAGE_KEY = "theme";
+const STORAGE_KEY = MODE_STORAGE_KEY;
 const QUERY = "(prefers-color-scheme: dark)";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -36,6 +47,19 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
   return window.matchMedia(QUERY).matches ? "dark" : "light";
+}
+
+function getStoredPalette(): PaletteName {
+  if (typeof window === "undefined") return DEFAULT_PALETTE;
+
+  try {
+    const stored = window.localStorage.getItem(PALETTE_STORAGE_KEY);
+    if (isPaletteName(stored)) return stored;
+  } catch {
+    // localStorage can be unavailable in private or restricted contexts.
+  }
+
+  return DEFAULT_PALETTE;
 }
 
 function getStoredTheme(defaultTheme: Theme): Theme {
@@ -80,6 +104,9 @@ export function ThemeProvider({
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
     getSystemTheme(),
   );
+  const [palette, setPaletteState] = useState<PaletteName>(() =>
+    getStoredPalette(),
+  );
 
   const resolvedTheme: ResolvedTheme =
     theme === "system" && enableSystem
@@ -88,22 +115,27 @@ export function ThemeProvider({
         ? "dark"
         : "light";
 
+  /**
+   * Un solo punto de escritura para el tema: los diecinueve tokens de la
+   * paleta y el modo salen juntos, porque `applyPalette` tambien alterna la
+   * clase `dark` y `color-scheme`. Separarlos dejaba un fotograma con los
+   * tokens de un modo y la clase del otro.
+   */
   const applyTheme = useCallback(
-    (nextTheme: ResolvedTheme) => {
+    (nextPalette: PaletteName, nextMode: ResolvedTheme) => {
       const restoreTransitions = disableTransitionOnChange
         ? disableTransitionsTemporarily()
         : null;
 
-      document.documentElement.classList.toggle("dark", nextTheme === "dark");
-      document.documentElement.style.colorScheme = nextTheme;
+      applyPalette(nextPalette, nextMode);
       restoreTransitions?.();
     },
     [disableTransitionOnChange],
   );
 
   useEffect(() => {
-    applyTheme(resolvedTheme);
-  }, [applyTheme, resolvedTheme]);
+    applyTheme(palette, resolvedTheme);
+  }, [applyTheme, palette, resolvedTheme]);
 
   useEffect(() => {
     const media = window.matchMedia(QUERY);
@@ -123,9 +155,25 @@ export function ThemeProvider({
     }
   }, []);
 
+  const setPalette = useCallback((next: PaletteName) => {
+    setPaletteState(next);
+    try {
+      window.localStorage.setItem(PALETTE_STORAGE_KEY, next);
+    } catch {
+      // Ignore storage failures; the selected palette still applies in memory.
+    }
+  }, []);
+
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme, resolvedTheme, systemTheme, setTheme }),
-    [theme, resolvedTheme, systemTheme, setTheme],
+    () => ({
+      theme,
+      resolvedTheme,
+      systemTheme,
+      setTheme,
+      palette,
+      setPalette,
+    }),
+    [theme, resolvedTheme, systemTheme, setTheme, palette, setPalette],
   );
 
   return (
@@ -141,6 +189,8 @@ export function useTheme() {
       resolvedTheme: "light" as ResolvedTheme,
       systemTheme: "light" as ResolvedTheme,
       setTheme: () => {},
+      palette: DEFAULT_PALETTE,
+      setPalette: () => {},
     };
   }
 

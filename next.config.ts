@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Solo desarrollo. Next bloquea sus recursos de dev pedidos desde un host
+  // distinto a localhost; con el bloqueo activo el router no puede pedir el
+  // RSC de la ruta siguiente y cae a navegacion dura, lo que anula cualquier
+  // view transition. Se permite el loopback por IP para poder verificar la
+  // animacion cuando :3000 en "localhost" lo ocupa otro proyecto.
+  allowedDevOrigins: ["127.0.0.1", "192.168.50.107"],
   experimental: {
+    // Integracion de Next con <ViewTransition> de React: sin esto el
+    // componente renderiza, pero la navegacion entre /login y /registro no
+    // dispara la transicion y el panel de acento salta de lado sin animar.
+    viewTransition: true,
     serverActions: {
       bodySizeLimit: "8mb",
     },

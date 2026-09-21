@@ -1,16 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/**
- * Una tarjeta con su titulo dentro.
- *
- * Sustituye a `Card` en todas las pantallas. Sobre el marino profundo del
- * tema oscuro, una superficie elevada agrupa mejor que un filete: la jerarquia
- * la hace el salto de tono, no el grosor de una regla.
- *
- * Se probo lo contrario —secciones separadas por reglas de 1, 2 y 3 px sobre
- * el suelo— y funcionaba en un sistema de alto contraste, pero con estas
- * superficies el filete desaparece.
- */
+/** Agrupador semantico con superficie opcional, titulo y accion local. */
 export function Section({
   title,
   description,
@@ -33,7 +23,7 @@ export function Section({
   return (
     <section
       className={cn(
-        variant === "card" && "surface-card px-5 py-5",
+        variant === "card" && "surface-card px-5 py-5 sm:px-6 sm:py-6",
         className,
       )}
     >
@@ -44,7 +34,7 @@ export function Section({
           quedaba cortado contra el borde. Envolviendo, la accion baja entera a
           su propia linea en vez de desbordar.
         */
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
           <h2 className="display-title">{title}</h2>
           {action ? <div>{action}</div> : null}
         </div>

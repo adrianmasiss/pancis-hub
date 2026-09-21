@@ -5,39 +5,23 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================================
-   PANCIS HUB — Sistema visual
-   ----------------------------------------------------------------------------
-   Maqueta de referencia (27 pantallas, movil y escritorio, los dos temas):
-   https://www.figma.com/design/zrDvYIcBmJPjlc20hyuXxA
+   PANCIS HUB — Performance editorial
 
-   Marino profundo con el naranja del logotipo. El naranja NO es decorativo:
-   marca lo accionable y el avance del dia, nada mas.
+   Piedra calida, tinta profunda y un solo acento naranja. Los datos crean la
+   jerarquia; el color marca decisiones y avance. Sin degradados de interfaz,
+   capsulas por defecto ni tarjetas para cada fragmento de contenido.
 
-   Reglas que no se rompen:
-     1. UNA accion prominente por pantalla, con el degradado del logotipo. Las
-        demas acciones reales van en naranja solido. Solo los descartes
-        (cancelar, ahora no, reintentar) se quedan callados.
-     2. El color mira el PAPEL, no el pixel. Un relleno naranja puede ser un
-        boton o un dato, y se tratan distinto: se probo lo contrario y vacio la
-        tira de adherencia, que era informacion.
-     3. Registro iOS, no Material. Esquina continua, capsula en botones y
-        campos, el item activo marcado en el PROPIO SIMBOLO — acento y trazo
-        mas grueso — nunca con pastilla detras, y muelles en vez de curvas.
-     4. Tracking por tamano, nunca fijo. Apretado en display, abierto en
-        cuerpos pequenos.
-     5. Los dos temas son de primera clase. El claro es este mismo sistema con
-        los neutros invertidos; el acento y la tinta sobre el NO se invierten.
-
-   Escena que manda: de pie, con una mano, en una cocina, un gimnasio o la
-   calle. Por eso el acento se ve desde lejos y los objetivos son grandes.
+   La fuente de verdad completa vive en DESIGN.md.
    ========================================================================== */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-sans);
-  --font-heading: var(--font-sans);
+  /* Tres familias, como el handoff. La mono ya no es un alias de la sans:
+     las cifras comparables y las etiquetas de seccion son suyas. */
+  --font-sans: var(--font-app);
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-karrik), var(--font-app);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -77,7 +61,7 @@
   /* Filete: el separador por defecto del sistema. */
   --color-hairline: var(--hairline);
 
-  /* --- Tokens del handoff v2 --- */
+  /* Tokens semanticos compartidos. */
   --color-card-raised: var(--card-raised);
   --color-primary-strong: var(--primary-strong);
   --color-subtle-foreground: var(--subtle-foreground);
@@ -85,7 +69,6 @@
   --color-divider: var(--divider);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  /* --- Reglas. El grosor ES la jerarquia (regla 2). --- */
   --color-rule: var(--rule);
   /* Pista de la barra de magnitud. NO es --rule: la maqueta le da un tono
      propio, mas claro que el filete, para que el relleno naranja se despegue
@@ -93,68 +76,104 @@
   --color-track: var(--track);
   --color-rule-strong: var(--rule-strong);
 
-  /* Escala de radios en registro iOS (regla 3). Lo decide el papel y el
-     tamano de la pieza, no el gusto: una barra de 4 px es una capsula, una
-     tarjeta de 350 px pide 26. */
-  --radius-sm: 10px; /* miniaturas, casillas */
-  --radius-md: 14px; /* campos pequenos */
-  --radius-lg: 18px; /* botones y campos */
-  --radius-xl: 22px; /* paneles medianos */
-  --radius-2xl: 26px; /* paneles grandes */
-  --radius-3xl: 34px; /* la tarjeta de acceso */
-  --radius-4xl: 40px; /* hojas, canto superior */
+  /* Cuatro valores, sin excepciones (handoff). Todo lo demas se redondea a
+     uno de estos: 24 tarjeta, 16 panel interno, 12 control, 9999 pastilla.
+     Los nombres de Tailwind se remapean a esa escala en vez de anadir una
+     paralela, para que `rounded-xl` de lo que el sistema dice. */
+  --radius-sm: 12px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 24px;
+  --radius-4xl: 24px;
+  --radius-control: 12px;
+  --radius-panel: 16px;
+  --radius-card-sys: 24px;
 
   /* Movimiento. Muelles, no curvas de duracion fija: un muelle es
      interrumpible y hereda velocidad. El rebote se reserva a lo que "llega". */
-  --ease-spring: linear(
-    0, 0.0039 1.24%, 0.0157, 0.0352, 0.0625 4.96%, 0.1379 7.44%,
-    0.2417 10.1%, 0.5199 16.6%, 0.6415 19.8%, 0.7442, 0.8298 26.5%,
-    0.8994 30%, 0.9541 33.9%, 0.9938 38.4%, 1.0169 43.1%, 1.0263 48.3%,
-    1.0221 55.6%, 1.0106 66.2%, 1.0004 81.1%, 1
+  /* EL muelle del sistema. El handoff lo define como una sola funcion
+     `linear()` de dieciocho puntos, no como una curva de duracion fija:
+     criticamente amortiguado, rebasa un 2,6 % y se asienta. Un muelle se puede
+     interrumpir a mitad sin saltos, que es lo que importa cuando alguien cambia
+     de pantalla mientras algo todavia esta entrando.
+
+     Es UNO solo a proposito: `--ease-spring` queda como alias para el codigo
+     que ya lo usaba, y no se anaden curvas por pantalla. */
+  --pc-spring: linear(
+    0,
+    0.0039 1.24%,
+    0.0157,
+    0.0352 3.73%,
+    0.0625 4.98%,
+    0.1407 7.47%,
+    0.2461 9.96%,
+    0.3789 12.45%,
+    0.5371 14.94%,
+    0.9297 19.92%,
+    1.0195,
+    1.0742,
+    1.0977,
+    1.0938,
+    1.0703 29.88%,
+    1.0117 34.86%,
+    0.9961,
+    0.9883 39.84%,
+    0.9922 44.82%,
+    1.0039 54.78%,
+    1 74.7%,
+    1
   );
+  --ease-spring: var(--pc-spring);
   --dur-fast: 140ms; /* respuesta al pulsar */
   --dur-base: 240ms; /* transicion de estado */
   --dur-enter: 380ms; /* entrada escalonada */
+  --dur-long: 560ms; /* transicion larga: riel, cajon, cambio de pantalla */
   --stagger: 60ms; /* separacion entre elementos que entran */
+
+  /* Anchos del riel. Los fija el CSS por punto de corte para que el servidor
+     ya sirva el ancho correcto; el pin del usuario los sobrescribe despues. */
+  --rail-w: 0px;
+  /* Pasillo que las pantallas dejan libre a la derecha para que el acceso
+     flotante al copiloto no caiga encima del contenido (handoff). */
+  --copilot-gutter: 0px;
 }
 
-/* ----------------------------------------------------------------------------
-   TEMA CLARO. Los neutros invertidos del oscuro, y nada mas.
-   El acento y la tinta oscura sobre el NO se invierten: texto #082032 sobre
-   naranja da 4.9:1 en los dos temas, asi que una sola regla evita que el
-   boton cambie de caracter al cambiar de tema.
-   -------------------------------------------------------------------------- */
+/* Tema claro: piedra calida y tinta carbon. */
 :root {
-  --background: #ecedee;
-  --foreground: #082032;
-  --card: #ffffff;
-  --card-foreground: #082032;
-  --card-raised: #f6f7f8;
+  --font-app:
+    var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --background: #f3f2ee;
+  --foreground: #15212a;
+  --card: #fcfcfa;
+  --card-foreground: #15212a;
+  --card-raised: #ecece7;
   --popover: #ffffff;
-  --popover-foreground: #082032;
+  --popover-foreground: #15212a;
 
   /* El acento es el naranja del logotipo, muestreado del PNG real. */
-  --primary: #f05a27;
-  --primary-strong: #d94a1c;
-  --primary-foreground: #082032;
+  --primary: #f45a24;
+  --primary-strong: #d94716;
+  --primary-foreground: #15191c;
 
-  /* Los dos extremos del degradado del logotipo. La accion prominente de cada
-     pantalla lo usa; las demas acciones van con --primary plano. */
-  --brand-from: #e43030;
-  --brand-to: #fc841e;
-  --brand-btn-from: #e43030;
-  --brand-btn-to: #fc841e;
+  /* Compatibilidad con nombres anteriores; la interfaz usa color solido. */
+  --brand-from: #f45a24;
+  --brand-to: #f45a24;
+  --brand-btn-from: #f45a24;
+  --brand-btn-to: #f45a24;
 
-  --signal: #2c394b;
-  --signal-foreground: #ecedee;
+  --signal: #15212a;
+  --signal-foreground: #f6f5f1;
 
-  --secondary: #e7e9eb;
-  --secondary-foreground: #2c394b;
-  --muted: #e7e9eb;
-  --muted-foreground: #2c394b;
-  --subtle-foreground: #6b7885;
-  --accent: #e7e9eb;
-  --accent-foreground: #082032;
+  --secondary: #e8e7e1;
+  --secondary-foreground: #26343d;
+  --muted: #e8e7e1;
+  --muted-foreground: #53616a;
+  --subtle-foreground: #778087;
+  --accent: #e8e7e1;
+  --accent-foreground: #15212a;
 
   /* Estado. La paleta no traia ninguno: se derivaron, y en claro se oscurecen
      para leerse sobre blanco. */
@@ -180,135 +199,731 @@
   --tint-info: #fbf3de;
   --tint-info-border: #e8d293;
 
-  --rule: #e0e2e4;
-  --track: #dcdfe2;
-  --rule-strong: #d2d2d2;
+  --rule: #dfded8;
+  --track: #d8d8d2;
+  --rule-strong: #cfcec7;
 
-  --border: #d8dbde;
-  --border-strong: #c4c8cc;
-  --divider: #e7e9eb;
-  --hairline: #e7e9eb;
-  --input: #d8dbde;
-  --ring: #f05a27;
+  --border: #ddddd6;
+  --border-strong: #c9c9c1;
+  --divider: #e5e4de;
+  --hairline: #e5e4de;
+  --input: #d3d3cc;
+  --ring: #f45a24;
 
-  --chart-1: #f05a27;
+  --chart-1: #f45a24;
   --chart-2: #2c394b;
   --chart-3: #1f7a54;
   --chart-4: #8f4f14;
   --chart-5: #6b7885;
 
-  /* Registro iOS: capsula en botones y campos, 26 en paneles, 40 en hojas.
-     El radio lo decide el papel y el tamano, no el gusto. */
   --radius: 18px;
   --radius-card: 26px;
   --radius-pill: 9999px;
-  --radius-sheet: 40px;
+  --radius-sheet: 28px;
 
-  --shadow-card: 0 1px 2px rgb(8 32 50 / 0.04);
-  --shadow-island: 0 -1px 0 var(--border);
+  --shadow-card:
+    0 1px 1px rgb(21 33 42 / 0.03), 0 14px 34px -28px rgb(21 33 42 / 0.28);
+  --shadow-island: 0 18px 48px -22px rgb(8 15 20 / 0.75);
   /* Pieza que flota SOBRE el contenido y se mueve con el (el boton del
      asistente). Es la excepcion a "la elevacion es salto de tono": aqui no hay
      tono al que saltar porque debajo puede haber cualquier cosa. */
-  --shadow-lifted: 0 6px 20px -8px rgb(8 32 50 / 0.3);
+  --shadow-lifted: 0 16px 34px -16px rgb(8 15 20 / 0.5);
   --glow-primary: none;
   --surface-card-bg: var(--card);
-  --island-bg: rgb(244 245 245 / 0.93);
+  --island-bg: rgb(16 26 33 / 0.96);
   --segmented-bg: var(--secondary);
 
-  --sidebar: #f4f5f5;
-  --sidebar-foreground: #082032;
-  --sidebar-primary: #f05a27;
-  --sidebar-primary-foreground: #082032;
-  --sidebar-accent: #e7e9eb;
-  --sidebar-accent-foreground: #082032;
-  --sidebar-border: #d8dbde;
-  --sidebar-ring: #f05a27;
+  --sidebar: #101a21;
+  --sidebar-foreground: #eef1f2;
+  --sidebar-primary: #f45a24;
+  --sidebar-primary-foreground: #15191c;
+  --sidebar-accent: #233039;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #26343d;
+  --sidebar-ring: #f45a24;
 }
 
-/* ----------------------------------------------------------------------------
-   TEMA OSCURO — marino profundo. Es el tema de la maqueta y el que se disena
-   primero; el claro se deriva de este invirtiendo los neutros.
-   -------------------------------------------------------------------------- */
+/* Tema oscuro principal: valores reconstruidos de la direccion aprobada en
+   Figma. El azul pizarra de las tarjetas hace el trabajo de elevacion; no se
+   necesitan sombras ni contornos alrededor de cada bloque. */
 .dark {
-  --background: #082032;
-  --foreground: #d2d2d2;
-  --card: #2c394b;
-  --card-foreground: #d2d2d2;
-  --card-raised: #334756;
-  --popover: #2c394b;
-  --popover-foreground: #d2d2d2;
+  --background: #101513;
+  --foreground: #f1eee7;
+  --card: #151b18;
+  --card-foreground: #f1eee7;
+  --card-raised: #1c231f;
+  --popover: #171d1a;
+  --popover-foreground: #f1eee7;
 
   /* El acento NO se invierte: es el mismo naranja y la misma tinta encima. */
-  --primary: #f05a27;
-  --primary-strong: #fc841e;
-  --primary-foreground: #082032;
+  --primary: #e8663b;
+  --primary-strong: #f17a50;
+  --primary-foreground: #15120f;
 
-  --brand-from: #e43030;
-  --brand-to: #fc841e;
-  --brand-btn-from: #e43030;
-  --brand-btn-to: #fc841e;
+  --brand-from: #e8663b;
+  --brand-to: #e8663b;
+  --brand-btn-from: #e8663b;
+  --brand-btn-to: #e8663b;
 
-  --signal: #9aa6b0;
-  --signal-foreground: #082032;
+  --signal: #f1eee7;
+  --signal-foreground: #101513;
 
-  --secondary: #334756;
-  --secondary-foreground: #d2d2d2;
-  --muted: #334756;
-  --muted-foreground: #9aa6b0;
-  --subtle-foreground: #6e7e8c;
-  --accent: #334756;
-  --accent-foreground: #d2d2d2;
+  --secondary: #202722;
+  --secondary-foreground: #e7e3da;
+  --muted: #202722;
+  --muted-foreground: #9b9e96;
+  --subtle-foreground: #727a72;
+  --accent: #232a25;
+  --accent-foreground: #f1eee7;
 
   --success: #46b98a;
   --danger: #e5484d;
   --positive: #46b98a;
-  --positive-foreground: #082032;
+  --positive-foreground: #101513;
   --caution: #f5a15c;
-  --caution-foreground: #082032;
+  --caution-foreground: #101513;
   --critical: #e5484d;
-  --critical-foreground: #082032;
+  --critical-foreground: #101513;
   --destructive: #e5484d;
 
-  --tint-caution: #33251c;
-  --tint-caution-border: #6b4a2c;
-  --tint-critical: #3a2320;
-  --tint-critical-border: #7a3b36;
-  --tint-info: #3a3320;
-  --tint-info-border: #6f6234;
+  --tint-caution: #2d211a;
+  --tint-caution-border: #66452f;
+  --tint-critical: #30201e;
+  --tint-critical-border: #6f3935;
+  --tint-info: #29271b;
+  --tint-info-border: #5b5633;
 
-  --rule: #334756;
-  --track: #3a4e5e;
-  --rule-strong: #41566a;
+  --rule: #29312c;
+  --track: #303833;
+  --rule-strong: #3a433d;
 
-  --border: #41566a;
-  --border-strong: #4d6379;
-  --divider: #334756;
-  --hairline: #334756;
-  --input: #41566a;
-  --ring: #f05a27;
+  --border: #2d3530;
+  --border-strong: #424b45;
+  --divider: #29312c;
+  --hairline: #29312c;
+  --input: #3a433d;
+  --ring: #e8663b;
 
-  --chart-1: #f05a27;
-  --chart-2: #9aa6b0;
+  --chart-1: #e8663b;
+  --chart-2: #9b9e96;
   --chart-3: #46b98a;
   --chart-4: #f5a15c;
-  --chart-5: #6e7e8c;
+  --chart-5: #727a72;
 
   --shadow-card: none;
-  --shadow-island: 0 -1px 0 var(--rule);
+  --shadow-island: 0 18px 48px -22px rgb(0 0 0 / 0.9);
   --shadow-lifted: 0 8px 24px -8px rgb(0 0 0 / 0.45);
   --glow-primary: none;
   --surface-card-bg: var(--card);
-  --island-bg: rgb(6 24 38 / 0.93);
+  --island-bg: rgb(18 24 21 / 0.96);
   --segmented-bg: var(--secondary);
 
-  --sidebar: #061826;
-  --sidebar-foreground: #d2d2d2;
-  --sidebar-primary: #f05a27;
-  --sidebar-primary-foreground: #082032;
-  --sidebar-accent: #334756;
-  --sidebar-accent-foreground: #d2d2d2;
-  --sidebar-border: #41566a;
-  --sidebar-ring: #f05a27;
+  --sidebar: #0b100e;
+  --sidebar-foreground: #f1eee7;
+  --sidebar-primary: #e8663b;
+  --sidebar-primary-foreground: #15120f;
+  --sidebar-accent: #1b211e;
+  --sidebar-accent-foreground: #f1eee7;
+  --sidebar-border: #252c28;
+  --sidebar-ring: #e8663b;
+}
+
+/* ============================================================================
+   ACCESO — la puerta de entrada del producto.
+
+   Referencia de interaccion: el video del usuario (panel de color que cambia
+   de lado entre entrar y crear cuenta). De ahi se toma SOLO el comportamiento;
+   el color es el del sistema. La pantalla ya no redefine la paleta: hereda
+   `--background`, `--card` y el unico acento terracota como el resto de la
+   app, para que el isotipo naranja y la interfaz por fin concuerden.
+   ========================================================================== */
+/* Superficies del navegador que no pasan por ninguna variable de componente:
+   sin esto el cursor de texto queda con el azul por defecto del sistema. */
+.auth-shell input {
+  caret-color: var(--primary);
+}
+
+.auth-shell ::selection {
+  background: color-mix(in oklch, var(--primary) 30%, transparent);
+  color: var(--foreground);
+}
+
+/* La tarjeta contiene los dos paneles y recorta el que viaja. El relleno de
+   10px es lo que hace que el panel de acento flote DENTRO de la tarjeta en
+   vez de sangrar a sus bordes: asi el desplazamiento se lee como una pieza
+   que se mueve sobre una mesa, no como media tarjeta que cambia de color. */
+.auth-card {
+  position: relative;
+  border-radius: 26px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.2),
+    0 40px 80px -40px rgb(0 0 0 / 0.75);
+}
+
+@media (min-width: 1024px) {
+  .auth-card {
+    padding: 10px;
+    overflow: hidden;
+  }
+}
+
+/* El panel de acento. Terracota solido: el mismo token que la accion
+   dominante, no un segundo color de marca. */
+.auth-accent {
+  position: relative;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 18px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Filetes de medicion, el motivo del sistema. Van en tinta a muy baja opacidad
+   —no es un degradado— para que el panel tenga materia y no sea un bloque de
+   color plano de plantilla. */
+.auth-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.07;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--primary-foreground) 0 1px,
+    transparent 1px 22px
+  );
+  -webkit-mask-image: linear-gradient(180deg, transparent 58%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 58%, #000 100%);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------------------
+   El intercambio Entrar <-> Crear cuenta.
+
+   /login y /registro son rutas reales con sus propias server actions; no se
+   fusionan en un estado local. El "mismo panel cambia de lado" lo resuelve la
+   View Transitions API: ambos paneles comparten `name` entre las dos paginas y
+   el navegador anima solo la reubicacion.
+
+   La curva es `--ease-spring` y no `ease-out` a proposito: un muelle es la
+   unica curva que se corresponde con como se mueve algo con masa, y su leve
+   sobrepaso al llegar hace que el panel se sienta lanzado en vez de arrastrado.
+   -------------------------------------------------------------------------- */
+::view-transition-group(.auth-panel) {
+  animation-duration: 460ms;
+  animation-timing-function: var(--ease-spring);
+}
+
+/* El panel de acento viaja POR ENCIMA del formulario, como en la referencia:
+   es la pieza que el dedo acaba de empujar y debe mantener la atencion. */
+::view-transition-group(auth-accent-panel) {
+  z-index: 2;
+}
+
+::view-transition-image-pair(.auth-panel) {
+  animation-name: auth-panel-blur;
+  animation-duration: 460ms;
+  animation-timing-function: var(--ease-spring);
+}
+
+/* Desenfoque a media vuelta: tapa los artefactos de interpolacion entre las
+   dos capturas y lee como velocidad (el rastro de algo que se mueve rapido). */
+@keyframes auth-panel-blur {
+  35% {
+    filter: blur(4px);
+  }
+}
+
+/* El contenido de cada panel se cruza por opacidad mientras la caja viaja.
+   Asimetrico a proposito: lo viejo se va rapido para no competir, lo nuevo
+   entra despues y mas despacio, cuando ya hay sitio para leerlo. */
+::view-transition-old(.auth-content) {
+  animation: 140ms ease-in both auth-content-fade reverse;
+}
+
+::view-transition-new(.auth-content) {
+  animation: 260ms ease-out 160ms both auth-content-fade;
+}
+
+@keyframes auth-content-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* El resto de la pantalla no se mueve.
+
+   Por defecto el navegador funde TODA la pagina (`root`) mientras los paneles
+   viajan: la tarjeta, el aviso legal y el lienzo se apagan a la vez y el
+   desplazamiento se pierde en un parpadeo general. Aqui solo deben moverse los
+   dos paneles; todo lo demas es el ancla espacial que deja leer ese
+   movimiento.
+
+   Acotado al tipo de transicion `auth-swap` que declaran los enlaces de esta
+   pantalla, para no desactivar el fundido de raiz en el resto de la app. Si el
+   navegador no soporta `:active-view-transition-type()`, la regla se ignora y
+   queda el fundido por defecto: peor, pero no roto. */
+:root:active-view-transition-type(auth-swap)::view-transition-old(root) {
+  display: none;
+}
+
+:root:active-view-transition-type(auth-swap)::view-transition-new(root) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* ============================================================================
+   PUENTE DE PALETAS — los 19 tokens del handoff mandan sobre todo el sistema
+
+   El handoff (`desing-reference/`) define ocho paletas x dos modos sobre los
+   mismos diecinueve tokens, y la regla de que ninguna pantalla escribe un color
+   suelto. Aqui esos tokens se mapean UNA vez a los nombres semanticos que ya
+   consumen los 327 archivos del repo, de modo que cambiar de paleta no toca
+   ningun componente.
+
+   El selector es `html[data-pc]` (0,1,1) y no `:root` a proposito: tiene que
+   ganarle a `.dark` (0,1,0), que sigue trayendo los literales del sistema
+   anterior. Mientras el proveedor de tema no haya escrito el atributo —antes de
+   hidratar, o con JS desactivado— este bloque no aplica y la app se ve con la
+   direccion terracota actual en vez de quedarse sin color.
+   ========================================================================== */
+html[data-pc] {
+  --background: var(--pc-bg);
+  --sidebar: var(--pc-sidebar);
+
+  --card: var(--pc-card);
+  --popover: var(--pc-card);
+  --surface-card-bg: var(--pc-card);
+
+  --card-raised: var(--pc-raised);
+  --secondary: var(--pc-raised);
+  --muted: var(--pc-raised);
+  --accent: var(--pc-raised);
+  --segmented-bg: var(--pc-raised);
+
+  --foreground: var(--pc-fg);
+  --card-foreground: var(--pc-fg);
+  --popover-foreground: var(--pc-fg);
+  --secondary-foreground: var(--pc-fg);
+  --accent-foreground: var(--pc-fg);
+  --sidebar-foreground: var(--pc-fg);
+  --signal: var(--pc-fg);
+  --signal-foreground: var(--pc-bg);
+
+  --muted-foreground: var(--pc-muted);
+  --subtle-foreground: var(--pc-subtle);
+
+  --rule: var(--pc-rule);
+  --divider: var(--pc-rule);
+  --hairline: var(--pc-rule);
+  --track: var(--pc-rule);
+  --sidebar-border: var(--pc-rule);
+
+  --border: var(--pc-border);
+  --input: var(--pc-border);
+  --border-strong: var(--pc-border);
+  --rule-strong: var(--pc-border);
+
+  --primary: var(--pc-primary);
+  --ring: var(--pc-primary);
+  --chart-1: var(--pc-primary);
+  --sidebar-primary: var(--pc-primary);
+  --sidebar-ring: var(--pc-primary);
+  --primary-strong: var(--pc-primary-strong);
+  --primary-foreground: var(--pc-primary-fg);
+  --sidebar-primary-foreground: var(--pc-primary-fg);
+
+  /* El degradado pertenece al logotipo; los botones siguen siendo solidos, asi
+     que ambos extremos apuntan al acento. `--pc-brand-*` queda disponible para
+     las piezas de marca que si lo usan. */
+  --brand-from: var(--pc-primary);
+  --brand-to: var(--pc-primary);
+  --brand-btn-from: var(--pc-primary);
+  --brand-btn-to: var(--pc-primary);
+
+  --positive: var(--pc-positive);
+  --success: var(--pc-positive);
+  --caution: var(--pc-caution);
+  --critical: var(--pc-critical);
+  --danger: var(--pc-critical);
+  --destructive: var(--pc-critical);
+
+  --tint-caution: var(--pc-tint-caution);
+  --tint-caution-border: var(--pc-tint-caution-border);
+
+  /* Derivados: el handoff no da token propio, y dejarlos con el literal del
+     sistema anterior los volvia ilegibles en las paletas claras. */
+  --positive-foreground: var(--pc-bg);
+  --caution-foreground: var(--pc-bg);
+  --critical-foreground: var(--pc-bg);
+  --sidebar-accent: var(--pc-raised);
+  --sidebar-accent-foreground: var(--pc-fg);
+  --tint-critical: color-mix(in oklab, var(--pc-critical) 14%, var(--pc-bg));
+  --tint-critical-border: color-mix(
+    in oklab,
+    var(--pc-critical) 38%,
+    var(--pc-bg)
+  );
+  --tint-info: color-mix(in oklab, var(--pc-caution) 14%, var(--pc-bg));
+  --tint-info-border: color-mix(in oklab, var(--pc-caution) 38%, var(--pc-bg));
+}
+
+/* ============================================================================
+   SHELL ADAPTADO — tres clases de dispositivo, no dos
+
+   La escena principal es el telefono (PRODUCT.md). El handoff, en cambio,
+   nacio en escritorio y solo resuelve movil en dos pantallas; esto cierra el
+   hueco de en medio, que hasta ahora recibia el dock del telefono estirado a
+   lo ancho de una tablet.
+
+     < 768   telefono   dock inferior con rotulos
+     768+    tablet     riel de 64 px, solo iconos
+     1280+   escritorio riel de 244 px, desplegado
+
+   El ancho lo fija el CSS por punto de corte, asi que el servidor ya sirve el
+   correcto y no hay salto al hidratar. El pin del usuario lo sobrescribe con
+   `data-rail` en el propio riel, que gana por especificidad.
+   ========================================================================== */
+@media (min-width: 768px) {
+  :root {
+    --rail-w: 64px;
+  }
+
+  /* El pasillo solo existe donde el flotante existe. Hoy y el propio asistente
+     no lo muestran, y reservarlo ahi dejaba 74px de vacio a la derecha sin que
+     nada fuera a ocuparlos. Lo marca `AssistantFab`, que es quien sabe si se
+     esta rindiendo. */
+  html[data-copilot="on"] {
+    --copilot-gutter: 74px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --rail-w: 244px;
+  }
+}
+
+/* El pin manda sobre el punto de corte, en los dos sentidos: se puede desplegar
+   en tablet y colapsar en escritorio. */
+[data-rail="expanded"] {
+  --rail-w: 244px;
+}
+
+[data-rail="collapsed"] {
+  --rail-w: 64px;
+}
+
+.app-rail {
+  width: calc(var(--rail-w) + 28px);
+  transition: width var(--dur-long) var(--pc-spring);
+}
+
+/* El estado del riel lo decide el CSS, no React: colapsado por defecto,
+   desplegado desde 1280px, y el pin de la persona sobrescribe los dos. Asi el
+   servidor ya rinde el riel correcto y no hay un fotograma con el ancho de
+   tablet en una pantalla de escritorio.
+
+   El rotulo no se desmonta al colapsar: se recorta. Desmontado, el riel
+   colapsado seria iconos sin nombre para un lector de pantalla. */
+.app-rail-label {
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  max-width: 0;
+  transition:
+    opacity var(--dur-base) ease-out,
+    max-width var(--dur-long) var(--pc-spring);
+}
+
+@media (min-width: 1280px) {
+  .app-rail-label {
+    opacity: 1;
+    max-width: 12rem;
+  }
+}
+
+[data-rail="expanded"] .app-rail-label {
+  opacity: 1;
+  max-width: 12rem;
+}
+
+[data-rail="collapsed"] .app-rail-label {
+  opacity: 0;
+  max-width: 0;
+}
+
+/* Piezas que cambian de forma con el ancho —el logotipo completo frente al
+   isotipo, el icono del pin— se rinden las dos y se alternan aqui, por lo
+   mismo: si lo decidiera React, parpadearian al hidratar. `contents` deja que
+   el hijo conserve su propia caja. */
+.rail-wide {
+  display: none;
+}
+
+.rail-narrow {
+  display: contents;
+}
+
+@media (min-width: 1280px) {
+  .rail-wide {
+    display: contents;
+  }
+
+  .rail-narrow {
+    display: none;
+  }
+}
+
+[data-rail="expanded"] .rail-wide {
+  display: contents;
+}
+
+[data-rail="expanded"] .rail-narrow {
+  display: none;
+}
+
+[data-rail="collapsed"] .rail-wide {
+  display: none;
+}
+
+[data-rail="collapsed"] .rail-narrow {
+  display: contents;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-rail,
+  .app-rail-label {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ============================================================================
+   LA TARJETA PROTAGONISTA — la excepcion documentada del handoff
+
+   El heroe del dia NO es una tarjeta mas: el handoff lo dibuja como una banda
+   de acento, una superficie clara sobre el lienzo oscuro, con el degradado de
+   marca sangrando hacia el borde. Es la unica pieza del sistema que lo lleva,
+   y por eso se reconoce la pantalla de un vistazo.
+
+   Sale de los tokens de la paleta activa, no de literales: en Gilded es crema
+   sobre casi negro; en Pancis, naranja sobre marino. Todo lo de dentro hereda
+   `--pc-primary-fg` como tinta, asi que los macros se leen sin declarar el
+   color pieza por pieza.
+   ========================================================================== */
+.hero-band {
+  position: relative;
+  border-radius: var(--radius-card-sys);
+  background:
+    radial-gradient(
+      120% 140% at 82% 118%,
+      color-mix(in oklab, var(--pc-brand-from, var(--primary)) 42%, transparent)
+        0%,
+      transparent 62%
+    ),
+    var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid
+    color-mix(in oklab, var(--primary-foreground) 12%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, #ffffff 24%, transparent),
+    0 30px 64px -38px rgb(0 0 0 / 0.75);
+  overflow: hidden;
+}
+
+/* Dentro de la banda la jerarquia se hace con opacidad de la MISMA tinta, no
+   con grises nuevos: un gris fijo que funciona sobre crema se pierde sobre
+   naranja, y la banda cambia de color con la paleta. */
+.hero-band .hero-muted {
+  color: color-mix(in oklab, var(--primary-foreground) 72%, transparent);
+}
+
+.hero-band .hero-subtle {
+  color: color-mix(in oklab, var(--primary-foreground) 55%, transparent);
+}
+
+.hero-band .hero-tile {
+  background: color-mix(in oklab, #ffffff 34%, transparent);
+  border: 1px solid
+    color-mix(in oklab, var(--primary-foreground) 10%, transparent);
+  border-radius: var(--radius-panel);
+}
+
+.hero-band .hero-track {
+  background: color-mix(in oklab, var(--primary-foreground) 14%, transparent);
+}
+
+/* ============================================================================
+   EL RIEL COMO ISLA — la darsena flotante del handoff
+
+   El riel deja de ser un panel pegado al borde y pasa a ser una isla que
+   flota sobre el lienzo, como en el prototipo. Medidas y receta suyas: alto de
+   item 44px, separacion 11, relleno 8, y la isla con el riel oscurecido un 8 %
+   contra negro, filete en tinta al 8 % y luz interior.
+
+   El radio es lo que cambia con el pin: pastilla completa cuando solo hay
+   iconos, 26px cuando se despliega. La transicion de radio es la del handoff.
+   ========================================================================== */
+.rail-dock {
+  --nav-h: 44px;
+  --nav-gap: 11px;
+  --cap-pad: 8px;
+}
+
+/* En pantallas bajas el riel se aprieta antes de desbordarse. */
+@media (max-height: 760px) {
+  .rail-dock {
+    --nav-h: 40px;
+    --nav-gap: 6px;
+    --cap-pad: 6px;
+  }
+}
+
+@media (max-height: 620px) {
+  .rail-dock {
+    --nav-h: 34px;
+    --nav-gap: 4px;
+  }
+}
+
+.rail-island {
+  background: color-mix(in oklab, var(--sidebar) 92%, #000000);
+  border: 1px solid color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
+    0 22px 50px -28px rgb(0 0 0 / 0.78);
+  border-radius: 9999px;
+  padding: var(--cap-pad);
+  transition: border-radius 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* El radio sigue al ancho, no al pin: desde 1280px el riel esta desplegado
+   aunque nadie haya tocado el pin, y una isla en pastilla alrededor de
+   rotulos de texto se lee como un error. Misma cascada que el resto del riel:
+   punto de corte primero, `data-rail` sobrescribe. */
+@media (min-width: 1280px) {
+  .rail-island {
+    border-radius: 26px;
+  }
+
+  .rail-item {
+    border-radius: 15px;
+  }
+}
+
+[data-rail="expanded"] .rail-island {
+  border-radius: 26px;
+}
+
+[data-rail="collapsed"] .rail-island {
+  border-radius: 9999px;
+}
+
+.rail-item {
+  height: var(--nav-h);
+  border-radius: 9999px;
+  transition: border-radius 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-rail="expanded"] .rail-item {
+  border-radius: 15px;
+}
+
+[data-rail="collapsed"] .rail-item {
+  border-radius: 9999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-island,
+  .rail-item {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ============================================================================
+   FONDO AMBIENTAL — las manchas del handoff
+
+   Tres degradados radiales fijos detras de todo, respirando muy despacio. El
+   prototipo los pone sobre el lienzo para que el casi negro no sea plano; sin
+   ellos la pantalla se ve correcta pero muerta.
+
+   Dos apartes del prototipo, y ambos son accesibilidad:
+
+   - El prototipo anima `transform: scale()` sobre una capa a pantalla
+     completa. Un objeto grande que se mueve por todo el viewport es de lo
+     que mas dispara el mareo, asi que aqui solo respira la opacidad.
+   - El ciclo es de 14s (~0,07 Hz), por debajo del umbral de 0,2 Hz que se
+     asocia a molestia; se conserva. Con `prefers-reduced-motion` se para del
+     todo y se queda fija.
+   ========================================================================== */
+.app-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.72;
+  animation: app-ambient 14s ease-in-out infinite;
+  background:
+    /* La mancha fria de arriba. El prototipo la fija en un azul claro; aqui
+       sale del color de tarjeta ACLARADO, porque el token crudo ya es oscuro
+       y mezclado contra transparent no levantaba nada sobre el casi negro.
+       Aclarado sigue a la paleta: azul pizarra en Gilded, marino en Pancis. */
+    radial-gradient(
+      52% 44% at 84% 2%,
+      color-mix(
+          in oklch,
+          color-mix(in oklch, var(--pc-card, var(--card)) 48%, #ffffff) 34%,
+          transparent
+        )
+        0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      46% 40% at 99% 78%,
+      color-mix(
+        in oklch,
+        var(--pc-brand-from, var(--primary)) 26%,
+        transparent
+      ),
+      transparent 72%
+    ),
+    radial-gradient(
+      38% 34% at 2% 98%,
+      color-mix(in oklch, var(--pc-brand-to, var(--primary)) 18%, transparent),
+      transparent 74%
+    );
+}
+
+@keyframes app-ambient {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-ambient {
+    animation: none;
+    opacity: 0.72;
+  }
 }
 
 @layer base {
@@ -318,11 +933,10 @@
   body {
     /* Fondo liso. Sin degradados, sin cuadriculas: el contenido es el motivo. */
     @apply bg-background text-foreground;
-    /* [handoff, regla 3] Cifras tabulares en todo el sistema: kcal, gramos y
-       porcentajes dejan de "bailar" al actualizarse. */
+    /* Cifras tabulares: kcal, gramos y porcentajes no bailan al actualizarse. */
     font-variant-numeric: tabular-nums;
   }
-  /* [handoff, regla 7] Sin azules del navegador. */
+  /* Los enlaces heredan el acento de producto, no el azul del navegador. */
   a {
     color: var(--primary);
     text-decoration: none;
@@ -343,10 +957,7 @@
     border-radius: 4px;
   }
   html {
-    /* system-ui va PRIMERO a proposito: en iPhone entrega SF Pro, con su
-       tamano optico y sus tablas de tracking. Inter es la red de seguridad
-       para el resto de plataformas, no la primera opcion. */
-    font-family: system-ui, var(--font-sans), sans-serif;
+    font-family: var(--font-app);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -402,16 +1013,21 @@
  * se separan opticamente.
  */
 @utility num-display {
+  /* Geist Mono, 34px, peso 700, tracking -0.04em (handoff). La cifra es
+     monoespaciada a proposito: es la unica familia en la que dos numeros del
+     mismo largo ocupan lo mismo, y aqui se comparan a diario. */
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
-  font-size: clamp(3.5rem, 17vw, 4.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.038em;
-  font-weight: 800;
+  font-size: clamp(2rem, 9vw, 2.125rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 700;
 }
 
 /* Cifra secundaria: manda dentro de su fila, no en la pantalla. */
 @utility num-strong {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
   font-size: 1.0625rem;
@@ -421,31 +1037,54 @@
 }
 
 /* Titulo de pantalla. Nunca compite con la cifra: es rotulo, no protagonista. */
+/* Titulo de seccion: Karrik 21px, peso 400, tracking -0.022em (handoff). */
 @utility display-title {
-  font-size: 1.375rem;
+  font-family: var(--font-heading);
+  font-size: 1.3125rem;
   line-height: 1.15;
   letter-spacing: -0.022em;
-  font-weight: 700;
+  font-weight: 400;
 }
 
-/* ============================================================================
-   SUPERFICIES
-   Vuelven las tarjetas: sobre un marino profundo, una superficie elevada
-   agrupa mejor que un filete. La jerarquia la hace la elevacion del tono, no
-   el grosor de una regla.
-   ========================================================================== */
+/* Titulo de pantalla: Karrik 38px, peso 400, tracking -0.03em (handoff).
+   Karrik solo de 26px arriba, asi que aqui es seguro. */
+@utility page-display {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 6vw, 2.375rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+}
+
+/* Superficies: borde preciso, radio contenido y sombra tenida. */
+/**
+ * Tarjeta solida del handoff: radio 24, filete en tinta al 9 %, fondo de
+ * tarjeta al 58 % y una luz interior arriba. La eleccion entre esta y el
+ * vidrio esmerilado NO es estetica: el vidrio es solo para lo que se
+ * superpone (menus, hojas, popovers); todo lo que va en flujo usa esta.
+ */
 @utility surface-card {
-  background: var(--card);
-  border: 0;
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  background: color-mix(in oklch, var(--card) 58%, transparent);
+  border: 1px solid color-mix(in oklch, var(--foreground) 9%, transparent);
+  border-radius: var(--radius-card-sys);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, #ffffff 7%, transparent),
+    0 24px 56px -34px rgb(0 0 0 / 0.6);
+}
+
+/* Vidrio esmerilado: SOLO para lo que se superpone al contenido. */
+@utility surface-glass {
+  background: color-mix(in oklch, var(--card) 52%, transparent);
+  backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid color-mix(in oklch, var(--foreground) 9%, transparent);
+  border-radius: var(--radius-card-sys);
 }
 
 /* Sub-superficie dentro de una tarjeta: campos, filas de alimento. */
 @utility surface-raised {
   background: var(--card-raised);
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-panel);
 }
 
 @utility card-eyebrow {
@@ -480,12 +1119,11 @@
  */
 @utility island {
   background: var(--island-bg);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 0;
-  border-top: 1px solid var(--border);
-  border-radius: 0;
-  box-shadow: none;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 22px;
+  box-shadow: var(--shadow-island);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -517,12 +1155,15 @@
  * defiende solo.
  */
 @utility label-micro {
-  font-size: 0.75rem;
+  /* Etiqueta de seccion del handoff: Geist Mono 10px, peso 500, +0.11em y
+     caja alta. Es el rotulo pequeno de una cifra, no un titulo. */
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
   line-height: 1.3;
-  letter-spacing: 0;
-  text-transform: none;
-  font-weight: 400;
-  color: var(--muted-foreground);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--subtle-foreground);
 }
 
 /* ============================================================================
@@ -536,217 +1177,122 @@
    que es el comportamiento que se espera al combinarlas.
    ========================================================================== */
 @layer components {
-.surface-panel,
-.hairline-card,
-.glass-card,
-.glass-pill,
-.hero-banner {
-  background: var(--card);
-  border: 0;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
+  .app-canvas {
+    background-color: var(--background);
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--foreground) 3.5%, transparent) 0.65px,
+      transparent 0.75px
+    );
+    background-size: 22px 22px;
+  }
 
-/* Las pseudo-capas decorativas del sistema anterior se retiran. */
-.hero-banner::before,
-.hero-banner::after,
-.bg-ambient-aura::before,
-.bg-ambient-aura::after {
-  content: none;
-}
+  .surface-panel,
+  .hairline-card,
+  .glass-card,
+  .glass-pill,
+  .hero-banner {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 
-.bg-ambient-aura {
-  background: none;
-}
+  /* Las pseudo-capas decorativas del sistema anterior se retiran. */
+  .hero-banner::before,
+  .hero-banner::after,
+  .bg-ambient-aura::before,
+  .bg-ambient-aura::after {
+    content: none;
+  }
 
-/* Capa flotante: lo unico que proyecta sombra en todo el sistema. */
-.surface-overlay {
-  background: var(--popover);
-  border: 1px solid var(--hairline);
-  box-shadow:
-    0 1px 2px color-mix(in oklch, var(--foreground) 5%, transparent),
-    0 16px 48px -24px color-mix(in oklch, var(--foreground) 32%, transparent);
-}
+  .bg-ambient-aura {
+    background: none;
+  }
 
-/* Barra fija translucida (barra superior, navegacion inferior). */
-.surface-bar {
-  background: color-mix(in oklch, var(--background) 88%, transparent);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-}
+  /* Capa flotante: lo unico que proyecta sombra en todo el sistema. */
+  .surface-overlay {
+    background: var(--popover);
+    border: 1px solid var(--hairline);
+    box-shadow:
+      0 1px 2px color-mix(in oklch, var(--foreground) 5%, transparent),
+      0 16px 48px -24px color-mix(in oklch, var(--foreground) 32%, transparent);
+  }
 
-@supports not (backdrop-filter: blur(1px)) {
+  /* Barra fija translucida (barra superior, navegacion inferior). */
   .surface-bar {
-    background: var(--background);
+    background: color-mix(in oklch, var(--background) 94%, transparent);
+    border-bottom: 1px solid
+      color-mix(in oklch, var(--foreground) 8%, transparent);
+    backdrop-filter: blur(18px) saturate(115%);
+    -webkit-backdrop-filter: blur(18px) saturate(115%);
   }
-}
 
-/* ----------------------------------------------------------------------------
-   LA ACCION PROMINENTE
-   Una por pantalla, con el degradado del logotipo. Las demas acciones reales
-   van con --primary plano (el punto medio de ese mismo degradado), asi la
-   diferencia es degradado contra plano y no naranja contra invisible.
-
-   Se probo dejar las secundarias en vidrio, como manda iOS: sobre #082032 un
-   velo blanco al 8 % da un azul casi identico al fondo, por debajo de 1.5:1.
-   Esa regla asume superficies claras. Aqui no aplica.
-   -------------------------------------------------------------------------- */
-.bg-brand-gradient,
-.bg-brand-button,
-.glowing-primary-btn {
-  background-image: linear-gradient(
-    100deg,
-    var(--brand-btn-from),
-    var(--brand-btn-to)
-  );
-  background-color: var(--brand-btn-from);
-  color: var(--primary-foreground);
-  box-shadow: none;
-  /* Respuesta al pulsar, no al soltar: es la base de que se sienta directo. */
-  transition:
-    filter var(--dur-fast) ease-out,
-    transform var(--dur-fast) ease-out;
-}
-
-.bg-brand-button:hover,
-.glowing-primary-btn:hover {
-  filter: brightness(1.06);
-}
-
-.bg-brand-button:active,
-.glowing-primary-btn:active {
-  transform: scale(0.975);
-}
-
-/**
- * Deshabilitado.
- *
- * El `disabled:bg-muted` del boton cambia el background-COLOR, y aqui el
- * degradado es una background-IMAGE: se pintaba encima y un boton apagado
- * seguia viendose como la accion prominente de la pantalla. Es el estado con
- * el que abre cualquier formulario vacio, asi que se ve antes que el activo.
- */
-.bg-brand-button:disabled,
-.bg-brand-button[aria-disabled="true"],
-.glowing-primary-btn:disabled {
-  background-image: none;
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-  transform: none;
-  filter: none;
-}
-
-.text-brand-gradient {
-  background-image: linear-gradient(
-    100deg,
-    var(--brand-from),
-    var(--brand-to)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.bg-signal {
-  background: var(--signal);
-  color: var(--signal-foreground);
-}
-
-/* ----------------------------------------------------------------------------
-   FOCO QUE SIGUE AL CURSOR
-   Un halo suave centrado en el puntero. Las coordenadas llegan por variables
-   CSS desde un handler de pointermove, asi que no hay estado de React ni
-   re-render: solo dos custom properties y una transicion de opacidad.
-
-   z-index:-1 + isolation:isolate deja el halo por encima del fondo del boton
-   pero por debajo de su texto, sin tocar el z-index de los hijos.
-   -------------------------------------------------------------------------- */
-.btn-spotlight {
-  position: relative;
-  isolation: isolate;
-}
-
-.btn-spotlight::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: radial-gradient(
-    7rem circle at var(--btn-x, 50%) var(--btn-y, 50%),
-    var(--btn-glow, transparent),
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.btn-spotlight:hover::before {
-  opacity: 1;
-}
-
-/* Sin puntero fino (tactil) el halo no aporta y se queda pegado tras el tap. */
-@media (hover: none) {
-  .btn-spotlight::before {
-    display: none;
+  @supports not (backdrop-filter: blur(1px)) {
+    .surface-bar {
+      background: var(--background);
+    }
   }
-}
 
-/* ----------------------------------------------------------------------------
+  /* Accion prominente: naranja solido, sin degradado de interfaz. */
+  .bg-brand-gradient,
+  .bg-brand-button,
+  .glowing-primary-btn {
+    background-image: linear-gradient(
+      100deg,
+      var(--brand-btn-from),
+      var(--brand-btn-to)
+    );
+    background-color: var(--brand-btn-from);
+    color: var(--primary-foreground);
+    box-shadow: none;
+    transition:
+      background-color var(--dur-fast) ease-out,
+      transform var(--dur-fast) ease-out;
+  }
+
+  .bg-brand-button:hover,
+  .glowing-primary-btn:hover {
+    filter: brightness(1.06);
+  }
+
+  .bg-brand-button:active,
+  .glowing-primary-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* El estado deshabilitado sustituye el acento, no baja la opacidad. */
+  .bg-brand-button:disabled,
+  .bg-brand-button[aria-disabled="true"],
+  .glowing-primary-btn:disabled {
+    background-image: none;
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    transform: none;
+    filter: none;
+  }
+
+  /* ----------------------------------------------------------------------------
    DESPLIEGUE FLUIDO
    Transicion de grid-template-rows 0fr -> 1fr: anima a la altura real del
    contenido sin medirla en JS y sin max-height inventados que cortan el texto.
    -------------------------------------------------------------------------- */
-.reveal {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.reveal[data-open="true"] {
-  grid-template-rows: 1fr;
-}
-
-.reveal > * {
-  overflow: hidden;
-  min-height: 0;
-}
-
-/* La capsula flotante de navegacion pasa a barra plana anclada. */
-.dynamic-island-capsule {
-  background: color-mix(in oklch, var(--background) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 0;
-  border-top: 2px solid var(--rule-strong);
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* ----------------------------------------------------------------------------
-   EL COLLARIN
-   El unico momento de movimiento autorizado del sistema. Marcar algo hecho
-   encaja: baja de golpe y se asienta, como el collarin que fija los discos.
-   No rebota, no brilla, y dura menos de lo que tarda el pulgar en levantarse.
-   -------------------------------------------------------------------------- */
-@keyframes collar-snap {
-  0% {
-    transform: scale(1);
+  .reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-  38% {
-    transform: scale(0.86);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 
-.animate-collar {
-  animation: collar-snap 0.14s cubic-bezier(0.32, 0, 0.15, 1);
-}
+  .reveal[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+
+  .reveal > * {
+    overflow: hidden;
+    min-height: 0;
+  }
 } /* fin @layer components */
 
 /* ============================================================================
@@ -765,7 +1311,31 @@
 }
 
 .animate-fade-up {
-  animation: fade-up 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: fade-up 0.42s var(--ease-spring) both;
+}
+
+.stagger-item {
+  animation: fade-up var(--dur-enter) var(--ease-spring) both;
+  animation-delay: calc(var(--stagger-index, 0) * var(--stagger));
+}
+
+.metric-ring {
+  background: conic-gradient(
+    var(--primary) var(--ring-progress, 0%),
+    var(--track) 0
+  );
+}
+
+.metric-ring::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: inherit;
+  background: var(--background);
+}
+
+.nutrition-photo {
+  filter: saturate(0.72) contrast(1.04) brightness(0.82);
 }
 
 .interactive-bounce {

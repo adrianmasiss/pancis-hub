@@ -57,6 +57,8 @@ export const messages = {
     openMenu: "Abrir menu",
     moreOptions: "Mas opciones",
     mainNavigation: "Navegacion principal",
+    expandRail: "Desplegar la navegacion",
+    collapseRail: "Colapsar la navegacion",
     skipToContent: "Saltar al contenido",
     themeToggle: "Cambiar tema",
     themeLight: "Claro",
@@ -111,13 +113,36 @@ export const messages = {
     description: "No pudimos cargar esta seccion. Intenta de nuevo.",
   },
   auth: {
+    common: {
+      or: "o",
+      comingSoon: "Proximamente",
+      emailMethod: "Correo",
+      phoneMethod: "Telefono",
+    },
+    social: {
+      google: "Continuar con Google",
+      apple: "Continuar con Apple",
+      passkey: "Continuar con una llave de acceso",
+    },
+    splitPanel: {
+      toRegister: {
+        heading: "¿Nuevo en Pancis Hub?",
+        body: "Crea tu cuenta y empieza a seguir tu plan hoy mismo.",
+      },
+      toLogin: {
+        heading: "¿Ya tienes cuenta?",
+        body: "Entra para seguir donde quedaste.",
+      },
+    },
     login: {
-      title: "Inicia sesion",
+      title: "Entra a tu cuenta",
       description: "Bienvenido de vuelta a Pancis Hub.",
       submit: "Iniciar sesion",
       noAccount: "¿No tienes cuenta?",
       registerLink: "Registrate",
       forgotPassword: "¿Olvidaste tu contrasena?",
+      rememberMe: "No cerrar sesion",
+      cta: "Entrar",
     },
     register: {
       title: "Crea tu cuenta",
@@ -145,6 +170,10 @@ export const messages = {
       email: "Correo electronico",
       password: "Contrasena",
       passwordConfirm: "Confirmar contrasena",
+      emailPlaceholder: "tu correo",
+      passwordPlaceholder: "tu contrasena",
+      showPassword: "Mostrar la contrasena",
+      hidePassword: "Ocultar la contrasena",
     },
     errors: {
       invalidCredentials: "Correo o contrasena incorrectos.",
@@ -289,6 +318,15 @@ export const messages = {
     avatarRemoved: "Foto de perfil eliminada.",
     avatarUploadFailed:
       "No pudimos subir la imagen. Usa JPG, PNG o WEBP de hasta 5 MB.",
+    appearanceSection: "Apariencia",
+    appearanceDescription:
+      "Ocho paletas sobre los mismos diecinueve tokens. El cambio es inmediato y se recuerda en este dispositivo.",
+    paletteLabel: "Paleta",
+    modeLabel: "Modo",
+    accountSection: "Cuenta",
+    accountDescription:
+      "La sesion abierta en este dispositivo. Al cerrarla vuelves a la pantalla de acceso.",
+    accountEmailLabel: "Sesion iniciada como",
     goalsSection: "Objetivo y actividad",
     // Nombre propio y no "Guardar": hay otro boton "Guardar" en la misma
     // pagina, y dos controles con el mismo nombre accesible obligan a quien
@@ -445,7 +483,8 @@ export const messages = {
     whereFromTitle: "De donde salen tus numeros",
     whereFromDescription:
       "Cada cifra con su justificacion, sus limitaciones y las fuentes que la sostienen.",
-    whereFromEmpty: "Todavia no hay justificacion registrada para estas cifras.",
+    whereFromEmpty:
+      "Todavia no hay justificacion registrada para estas cifras.",
   },
   recipes: {
     title: "Recetas",
@@ -528,7 +567,8 @@ export const messages = {
     },
     notes: {
       storageTitle: "Conservacion",
-      storagePlaceholder: "Ej. hasta 3 dias en refrigeracion, en envase hermetico",
+      storagePlaceholder:
+        "Ej. hasta 3 dias en refrigeracion, en envase hermetico",
       mealPrepTitle: "Meal prep",
       mealPrepPlaceholder: "Ej. rinde 4 porciones; congelar las que no se usen",
       save: "Guardar notas",
@@ -1002,7 +1042,32 @@ export const messages = {
     },
   },
   swap: {
+    verdict: {
+      heading: "Si haces el cambio",
+      gain: (name: string, protein: string, kcal: string, dir: string) =>
+        `${name} aporta ${protein} g mas de proteina con ${kcal} kcal ${dir}.`,
+      loss: (name: string, protein: string) =>
+        `${name} aporta ${protein} g mas de proteina. El cambio saldria a perdida.`,
+      even: (name: string) =>
+        `${name} deja el dia practicamente igual en proteina y energia.`,
+      more: "mas",
+      less: "menos",
+      dayEffect: "Efecto en el dia",
+      before: "Ahora",
+      after: "Despues",
+      closer: "Te acerca al objetivo",
+      farther: "Te aleja del objetivo",
+      same: "No cambia",
+      detail: "Ver nutriente a nutriente",
+      detailHide: "Ocultar el detalle",
+      confirm: "Aplicar el cambio",
+      ofTarget: (target: string) => `de ${target}`,
+      noTargets:
+        "Sin objetivos nutricionales no se puede decir si el cambio te acerca o te aleja; solo la diferencia entre los dos alimentos.",
+    },
     trigger: "Intercambiar",
+    /** Rotulo corto de la capsula en Nutricion; cabe junto al alimento. */
+    triggerShort: "Cambiar",
     title: "Intercambiar alimento",
     description:
       "Alternativas con aporte similar. Son aproximaciones nutricionales, no equivalencias exactas.",
@@ -1029,7 +1094,10 @@ export const messages = {
       "Ninguna alternativa mejora en ese criterio. Prueba con otro o usa la opcion mas parecida.",
     densityNote:
       "Proteina y saciedad se comparan por caloria: mas aporte para la misma energia.",
-    confirmSwap: "Confirmar intercambio",
+    // El boton de cada alternativa ya no aplica el cambio: lo elige y abre el
+    // veredicto. Se renombro con la accion: un boton que dice "confirmar" y no
+    // confirma es una interfaz que miente.
+    confirmSwap: "Ver el cambio",
     swapped: "Alimento intercambiado.",
     failed: "No pudimos completar el intercambio. Intenta de nuevo.",
     modifiedReason: "Sustitucion de alimento aceptada por el usuario.",
@@ -1070,6 +1138,35 @@ export const messages = {
   },
   nutrition: {
     title: "Nutricion",
+    dayHero: {
+      eyebrow: "Plan del dia",
+      rangeLabel: "El dia",
+      mealsCount: (n: number) => `${n} ${n === 1 ? "comida" : "comidas"}`,
+      rangeToday: "Hoy",
+      rangeWeek: "Semana",
+      rangeBlock: "Bloque",
+      rangeComingSoon: "Proximamente",
+      over: (n: string, target: string) => `+${n} sobre ${target}`,
+      under: (n: string, target: string) => `${n} de ${target}`,
+      logged: (done: number, pending: number) =>
+        pending === 0
+          ? `${done} ${done === 1 ? "registrada" : "registradas"}`
+          : `${done} ${done === 1 ? "registrada" : "registradas"} · ${pending} pendiente${pending === 1 ? "" : "s"}`,
+      stateOver: (n: string) => `Vas ${n} por encima del presupuesto.`,
+      stateUnder: (n: string) => `Te quedan ${n} del presupuesto.`,
+      stateMet: "Estas justo en el presupuesto.",
+      pendingOne: (name: string) =>
+        `${name} es la unica que queda por registrar.`,
+      pendingMany: (n: number) => `Quedan ${n} comidas por registrar.`,
+      pendingNone: "No queda nada pendiente por hoy.",
+      macroShort: "Faltan",
+      macroOver: "De sobra",
+      macroMet: "Cumplido",
+      macroOf: (target: string) => `de ${target}`,
+      noPlanTitle: "Todavia no tienes un plan de dieta activo",
+      noPlanBody:
+        "Los totales del dia ya funcionan, pero el plan es lo que dice que te toca en cada comida. Importa el tuyo o crealo desde cero.",
+    },
     aiDiet: {
       pageTitle: "Importar dieta con IA",
       pageDescription:
@@ -1122,9 +1219,26 @@ export const messages = {
       todayChecklist:
         "Completa tus comidas para descontarlas de tu meta diaria.",
       logMeal: "Marcar como comida",
+      /** Riel de comidas del handoff. */
+      rail: {
+        statePending: "Pendiente",
+        stateLogged: "Registrada",
+        shareOfDay: (pct: number) => `${pct} % del dia`,
+        modified: "Sustituida hoy",
+        macroMix: (p: number, c: number, g: number) =>
+          `Reparto de energia: ${p} % proteina, ${c} % carbohidratos, ${g} % grasas`,
+        progress: (pct: number) => `${pct} % del plan registrado`,
+        collapse: "Ocultar el detalle",
+        expand: "Ver el detalle",
+      },
       logged: "Registrada hoy",
+      /** Rotulo accesible del circulo que registra la comida. */
+      logAction: "Marcar como comida",
       logging: "Registrando…",
       loggedToast: "Comida registrada en tu diario de hoy.",
+      alreadyLoggedToast: "Esta comida ya estaba registrada para ese dia.",
+      logFailed:
+        "No pudimos registrar la comida. Revisa tu conexion e intenta de nuevo.",
       swapMeal: "Ver sustitutos",
       noTemplate: "Aun no tienes una dieta activa.",
       uploadCta: "Importar con IA",
@@ -1304,7 +1418,8 @@ export const messages = {
     consumedOf: "de",
     kcal: "kcal",
     todaysMealsTitle: "Comidas registradas hoy",
-    todaysMealsNote: "Esto es lo que ya registraste. Para ver tu plan de dieta, anda al",
+    todaysMealsNote:
+      "Esto es lo que ya registraste. Para ver tu plan de dieta, anda al",
     todaysMealsNoteLink: "Hoy",
     noMealsTitle: "Sin comidas este dia",
     noMealsDescription:
@@ -1395,8 +1510,7 @@ export const messages = {
       overLabel: "de mas",
       logMeal: "Registrar comida",
       dayNotStarted: "Todavia no has registrado nada de hoy.",
-      planWithin:
-        "Tu plan de hoy cae dentro de las tolerancias que definiste.",
+      planWithin: "Tu plan de hoy cae dentro de las tolerancias que definiste.",
       planOutside:
         "Tu plan de hoy no llega a tu objetivo en {macros}. Puedes ajustarlo o dejarlo: es tu margen, no un limite clinico.",
       consumedOver:

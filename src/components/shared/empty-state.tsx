@@ -19,22 +19,20 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "border-hairline flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-6 py-12 text-center sm:py-14",
+        "bg-card-raised/55 flex flex-col items-start justify-center gap-3 rounded-2xl px-6 py-10 text-left sm:min-h-48 sm:px-8 sm:py-12",
         className,
       )}
     >
       {Icon ? (
         <Icon
-          className="text-muted-foreground/70 size-6"
+          className="text-primary size-6"
           aria-hidden="true"
           strokeWidth={1.5}
         />
       ) : null}
-      <h2 className="text-[0.9375rem] font-medium tracking-[-0.012em]">
-        {title}
-      </h2>
+      <h2 className="text-base font-semibold tracking-[-0.02em]">{title}</h2>
       {description ? (
-        <p className="text-muted-foreground max-w-[46ch] text-[0.8125rem] leading-relaxed text-balance">
+        <p className="text-muted-foreground max-w-[46ch] text-[0.8125rem] leading-relaxed text-pretty">
           {description}
         </p>
       ) : null}

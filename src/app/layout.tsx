@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PwaRuntime } from "@/components/shared/pwa-runtime";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,25 +9,24 @@ import { messages } from "@/i18n/es-419";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: [
-    // --background de cada tema.
-    { media: "(prefers-color-scheme: light)", color: "#ecedee" },
-    { media: "(prefers-color-scheme: dark)", color: "#082032" },
-  ],
+  themeColor: "#0d1210",
 };
 
 /**
- * Inter para todo el sistema.
+ * Display del sistema (handoff): Karrik, de trazo irregular, solo de 26px
+ * arriba. Por debajo de ese cuerpo el ruido del trazo se come la legibilidad,
+ * asi que manda la sans.
  *
- * Se eligio por cercania a SF Pro: mismos principios de diseno, y en iPhone la
- * cascada `system-ui` de mas abajo entrega SF de verdad. Manrope, que estaba
- * antes, es una grotesca geometrica de contadores redondos — se leia como
- * Android, que es justo lo que este rediseno vino a corregir.
+ * Se sirve local desde `src/app/fonts/`: el handoff la incluye en su paquete y
+ * DESIGN.md prohibe fuentes remotas que aten el build a la red.
  */
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
+const karrik = localFont({
+  variable: "--font-karrik",
   display: "swap",
+  src: [
+    { path: "./fonts/Karrik-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Karrik-Italic.woff2", weight: "400", style: "italic" },
+  ],
 });
 
 /**
@@ -33,17 +34,13 @@ const inter = Inter({
  * contrastar lo construido con lo decidido sin abrir el repositorio.
  */
 const DIRECTION_CONTRACT = `<!--
-SISTEMA: Marino profundo (#082032) con el naranja del logotipo (#F05A27,
-muestreado del PNG). El naranja no decora: marca lo accionable.
-ACCION: una prominente por pantalla con el degradado de marca; las demas
-acciones reales en naranja solido; solo los descartes se quedan callados.
-REGISTRO: iOS. Esquina continua, capsula en botones y campos, iconos con
-variante rellena en el activo, muelles en vez de curvas de duracion fija.
-TIPO: Inter con tracking por tamano — apretado en display, abierto en cuerpos
-pequenos. Nunca un solo valor para todos.
-TEMAS: los dos son de primera clase. El claro invierte los neutros; el acento
-y la tinta oscura sobre el no se invierten.
-MAQUETA: figma.com/design/zrDvYIcBmJPjlc20hyuXxA
+SISTEMA: instrumento editorial de salud. Carbon calido, marfil y un unico
+acento terracota para decisiones, estado y progreso.
+ACCION: jerarquia por escala, ritmo y filetes. Las superficies solo aparecen
+cuando explican una elevacion real.
+FORMA: composicion asimetrica, radios contenidos, datos tabulares y fotografia
+gastronomica tratada como contexto, no como decoracion.
+TIPO: Geist Sans; titulares sobrios, cifras calibradas y lectura compacta.
 -->`;
 
 export const metadata: Metadata = {
@@ -71,7 +68,7 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${inter.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${karrik.variable} dark h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {/*
@@ -83,7 +80,7 @@ export default function RootLayout({
         <div hidden dangerouslySetInnerHTML={{ __html: DIRECTION_CONTRACT }} />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
