@@ -59,3 +59,8 @@ Thumbs.db
 
 # claude-token-optimizer: logs y snapshots de sesion, se regeneran solos
 .claude/sessions/
+
+# Handoff de diseno: 3,2 MB de prototipos, capturas y tipografias que sirven
+# para rehacer la interfaz contra su referencia, no para construir el producto.
+# Los .woff2 que la app SI usa viven en src/app/fonts/ y esos si se versionan.
+desing-reference/
