@@ -105,10 +105,14 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await page.getByLabel("Buscar").selectOption("similar");
   await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
 
-  await page
-    .getByRole("button", { name: "Confirmar intercambio" })
-    .first()
-    .click();
+  // Intercambiar son DOS gestos desde que existe el veredicto: elegir la
+  // alternativa abre la comparacion, y aplicar es el segundo. Es la regla del
+  // producto —proponer, no ejecutar— y antes un toque en la lista cambiaba el
+  // dia sin ensenar que pasaba con el.
+  await page.getByRole("button", { name: "Ver el cambio" }).first().click();
+  await expect(page.getByText("SI HACES EL CAMBIO")).toBeVisible();
+  await expect(page.getByText("Efecto en el dia")).toBeVisible();
+  await page.getByRole("button", { name: "Aplicar el cambio" }).click();
   await expect(page.getByText("Alimento intercambiado.")).toBeVisible();
   // Tras aceptar, la hoja explica como queda el resto del dia.
   // Por rol: el panel de consulta repite ese texto en su descripcion.
@@ -278,7 +282,10 @@ test("sustituir una comida por una receta", async ({ page }) => {
 
   await page.getByRole("button", { name: "Agregar ingrediente" }).click();
   await page.getByLabel("Buscar alimento…").fill("pechuga");
-  await page.getByRole("button", { name: /Pechuga de pollo/ }).first().click();
+  await page
+    .getByRole("button", { name: /Pechuga de pollo/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText(/Pechuga de pollo/).first()).toBeVisible();
 
@@ -325,7 +332,10 @@ test("sustituir una comida por una receta", async ({ page }) => {
 
   await mealCard.getByRole("button", { name: "Agregar alimento" }).click();
   await page.getByLabel("Buscar alimento…").fill("arroz");
-  await page.getByRole("button", { name: /Arroz blanco/ }).first().click();
+  await page
+    .getByRole("button", { name: /Arroz blanco/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText("Alimento agregado.")).toBeVisible();
 
@@ -339,7 +349,9 @@ test("sustituir una comida por una receta", async ({ page }) => {
     .getByRole("button", { name: "Sustituir la comida" })
     .first()
     .click();
-  await expect(page.getByText("Comida sustituida por la receta.")).toBeVisible();
+  await expect(
+    page.getByText("Comida sustituida por la receta."),
+  ).toBeVisible();
   await expect(page.getByText(/Bowl de prueba/).first()).toBeVisible();
 });
 
@@ -495,7 +507,10 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Rutina creada.")).toBeVisible();
 
-  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
+  await page
+    .getByRole("link", { name: /Rutina biomecanica/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Agregar dia" }).click();
   await page.getByRole("button", { name: "Agregar ejercicio" }).first().click();
   await page.getByLabel("Buscar ejercicio…").fill("sentadilla");
@@ -514,9 +529,7 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   // Que este en el DOM no basta: se comprueba que el archivo cargo.
   await expect
     .poll(() =>
-      startImage.evaluate(
-        (img) => (img as HTMLImageElement).naturalWidth > 0,
-      ),
+      startImage.evaluate((img) => (img as HTMLImageElement).naturalWidth > 0),
     )
     .toBe(true);
   await expect(
@@ -549,7 +562,10 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/entrenamiento");
-  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
+  await page
+    .getByRole("link", { name: /Rutina biomecanica/ })
+    .first()
+    .click();
 
   // Requisito 13: la prescripcion se muestra aparte, con sus motivos.
   await page
@@ -636,39 +652,57 @@ test("asistente accesible y conectado a los motores", async ({ page }) => {
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Requisito 15: acceso al asistente desde cualquier pantalla.
+  //
+  // El acceso dejo de ser un boton flotante y vive en la barra superior, que
+  // esta en todas las pantallas de la app. El flotante desaparecia en Hoy y en
+  // el propio asistente, asi que "desde cualquier pantalla" no era cierto; la
+  // barra si lo cumple. `AssistantFab` sigue en el repo, sin montar.
   await page.goto("/progreso");
-  const fab = page.getByRole("link", { name: "Abrir asistente" });
-  await expect(fab).toBeVisible();
-  await fab.click();
+  const acceso = page.getByRole("link", { name: "Asistente", exact: true });
+  await expect(acceso.first()).toBeVisible();
+  await acceso.first().click();
   await expect(page).toHaveURL(/\/asistente/, { timeout: 20_000 });
-  // En su propia pagina el acceso flotante seria redundante.
-  await expect(
-    page.getByRole("link", { name: "Abrir asistente" }),
-  ).toHaveCount(0);
 
   // Requisito 15: acceso desde un ejercicio concreto, con la pregunta ya
   // redactada para que active la comparacion biomecanica.
   await page.goto("/entrenamiento");
-  await page.getByRole("link", { name: /Rutina biomecanica/ }).first().click();
   await page
-    .getByRole("link", { name: /Preguntar al asistente — Sentadilla con barra/ })
+    .getByRole("link", { name: /Rutina biomecanica/ })
+    .first()
+    .click();
+  await page
+    .getByRole("link", {
+      name: /Preguntar al asistente — Sentadilla con barra/,
+    })
     .click();
   await expect(page).toHaveURL(/\/asistente\?q=/, { timeout: 20_000 });
   const prefilled = page.getByRole("textbox").first();
   await expect(prefilled).toHaveValue(/Sentadilla con barra/);
   // No se envia sola: gastaria una llamada al modelo sin que el usuario
   // lo pida.
-  await expect(page.getByText(/Observacion/)).toHaveCount(0);
-  await page.getByRole("button", { name: /Enviar/ }).first().click();
-  await expect(page.getByText(/Observacion/).first()).toBeVisible({
-    timeout: 30_000,
-  });
+  //
+  // La respuesta ya no rotula sus seis secciones: la accion es el titular y el
+  // porque —motivo, cuando reevaluar y fuentes— se pliega tras "¿Por que?".
+  // Por eso se afirma sobre ese desplegable, que es lo que garantiza que la
+  // respuesta llego con su fundamento y no solo con una frase.
+  await expect(page.getByRole("button", { name: /¿Por que\?/ })).toHaveCount(0);
+  await page
+    .getByRole("button", { name: /Enviar/ })
+    .first()
+    .click();
+  const porque = page.getByRole("button", { name: /¿Por que\?/ }).first();
+  await expect(porque).toBeVisible({ timeout: 30_000 });
+  await porque.click();
+  await expect(page.getByText("MOTIVO")).toBeVisible();
 
   // Pregunta de entrenamiento resuelta con el motor de prescripcion.
   await page.goto("/asistente");
   const input = page.getByRole("textbox").first();
   await input.fill("cuantas series de sentadilla hago");
-  await page.getByRole("button", { name: /Enviar|Preguntar/ }).first().click();
+  await page
+    .getByRole("button", { name: /Enviar|Preguntar/ })
+    .first()
+    .click();
   await expect(page.getByText(/RIR/).first()).toBeVisible({ timeout: 30_000 });
 });
 
@@ -684,16 +718,18 @@ test("importar una rutina escrita", async ({ page }) => {
 
   // Formato tipico de mensaje, con una linea inventada que no existe en
   // el catalogo y otra que no es un ejercicio.
-  await page.getByLabel("Texto de la rutina").fill(
-    [
-      "Dia 1 - Pierna",
-      "Sentadilla con barra 4x8-10 RIR 2 desc 120",
-      "Prensa de pierna 3x12",
-      "Maquina inventada xyz 3x10",
-      "Dia 2 - Torso",
-      "Press de banca 4x6-8 RIR 1 rest 3min",
-    ].join("\n"),
-  );
+  await page
+    .getByLabel("Texto de la rutina")
+    .fill(
+      [
+        "Dia 1 - Pierna",
+        "Sentadilla con barra 4x8-10 RIR 2 desc 120",
+        "Prensa de pierna 3x12",
+        "Maquina inventada xyz 3x10",
+        "Dia 2 - Torso",
+        "Press de banca 4x6-8 RIR 1 rest 3min",
+      ].join("\n"),
+    );
   await page.getByRole("button", { name: "Analizar" }).click();
 
   // Se revisa antes de guardar: dias, ejercicios y lo que queda fuera.
@@ -729,7 +765,16 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
     page.getByText("Tus objetivos ya no corresponden a tus datos"),
   ).toHaveCount(0);
 
-  await page.getByLabel("Objetivo").selectOption("perdida_grasa");
+  /*
+    Mismo cuidado que con el margen: es un `select` controlado, y elegir antes
+    de que React tome el control deja el valor viejo puesto. Afirmar la
+    seleccion antes de guardar convierte un fallo intermitente en un fallo
+    inmediato y en el sitio correcto.
+  */
+  const objetivo = page.getByLabel("Objetivo");
+  await expect(objetivo).not.toHaveValue("");
+  await objetivo.selectOption("perdida_grasa");
+  await expect(objetivo).toHaveValue("perdida_grasa");
   await page
     .getByRole("button", { name: "Guardar objetivo y actividad" })
     .click();
@@ -770,7 +815,20 @@ test("el margen por macro se puede cambiar", async ({ page }) => {
   // Las columnas existian desde la fase 3 sin ninguna pantalla que las
   // dejara tocar: todo el mundo vivia con los valores por defecto.
   await page.goto("/configuracion");
-  await page.getByLabel("Calorias (%)").fill("12");
+  /*
+    El campo es un `input[type=number]` controlado. Rellenarlo sin esperar a
+    que hidrate mezclaba el valor: con "5" dentro y `fill("12")` quedaba "512",
+    y la validacion lo rechazaba con razon ("entre 1 y 50 %"). La prueba fallaba
+    por una carrera, no por la funcion.
+
+    Esperar a que el campo traiga SU valor garantiza que React ya tomo el
+    control, y afirmar despues del relleno impide volver a perseguir el mismo
+    fantasma.
+  */
+  const margenCalorias = page.getByLabel("Calorias (%)");
+  await expect(margenCalorias).not.toHaveValue("");
+  await margenCalorias.fill("12");
+  await expect(margenCalorias).toHaveValue("12");
   await page.getByRole("button", { name: "Guardar mi margen" }).click();
   await expect(page.getByText("Margen actualizado.")).toBeVisible();
 

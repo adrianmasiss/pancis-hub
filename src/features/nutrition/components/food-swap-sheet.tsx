@@ -22,17 +22,37 @@ import type { SwapFilter } from "@/features/foods/lib/equivalence";
 import type { MealItemView } from "@/features/nutrition/queries";
 import type { RebalanceReport } from "@/features/nutrition/lib/rebalance";
 import { RebalanceSummary } from "@/components/shared/rebalance-summary";
+import { SwapVerdict } from "@/features/nutrition/components/swap-verdict";
+import type { SwapCandidate } from "@/features/foods/lib/equivalence";
+import type { MacroSet } from "@/features/nutrition/lib/macros";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.swap;
 
-export function FoodSwapSheet({ item }: { item: MealItemView }) {
+/**
+ * Sustituir un alimento YA REGISTRADO.
+ *
+ * Lleva el mismo paso de veredicto que la hoja del plan: elegir selecciona y
+ * abre la comparacion, y aplicar es un segundo gesto. Salio sin el, y como las
+ * dos hojas comparten el rotulo del boton, aqui decia "Ver el cambio" y
+ * aplicaba directo — un boton que promete mirar y ejecuta.
+ */
+export function FoodSwapSheet({
+  item,
+  dayTotals,
+  dayTargets,
+}: {
+  item: MealItemView;
+  dayTotals?: MacroSet;
+  dayTargets?: MacroSet | null;
+}) {
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SwapSuggestions | null>(null);
   const [rebalance, setRebalance] = useState<RebalanceReport | null>(null);
   const [filter, setFilter] = useState<SwapFilter>("similar");
   const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [picked, setPicked] = useState<SwapCandidate | null>(null);
 
   const load = async (nextFilter: SwapFilter = filter) => {
     setLoading(true);
@@ -48,12 +68,28 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
   const changeFilter = (next: SwapFilter) => {
     setFilter(next);
     setSuggestions(null);
+    setPicked(null);
     void load(next);
   };
 
-  const confirm = (foodId: string, quantityG: number) => {
+  const pick = (foodId: string, quantityG: number) => {
+    setPicked(
+      suggestions?.alternatives.find(
+        (alternative) =>
+          alternative.food.id === foodId &&
+          alternative.suggestedQuantityG === quantityG,
+      ) ?? null,
+    );
+  };
+
+  const confirm = () => {
+    if (!picked) return;
     startTransition(async () => {
-      const result = await swapMealItem({ itemId: item.id, foodId, quantityG });
+      const result = await swapMealItem({
+        itemId: item.id,
+        foodId: picked.food.id,
+        quantityG: picked.suggestedQuantityG,
+      });
       if ("error" in result) {
         toast.error(result.error);
       } else {
@@ -93,7 +129,19 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
           <SheetTitle>{t.title}</SheetTitle>
           <SheetDescription>{t.description}</SheetDescription>
         </SheetHeader>
-        <div className="overflow-y-auto px-4 pb-6">
+        <div className="flex flex-col gap-5 overflow-y-auto px-4 pb-6">
+          {picked ? (
+            <SwapVerdict
+              fromName={item.foodName}
+              toName={picked.food.name}
+              diff={picked.diff}
+              dayTotals={dayTotals}
+              dayTargets={dayTargets}
+              pending={pending}
+              onConfirm={confirm}
+            />
+          ) : null}
+
           <SwapAlternativeList
             sourceName={item.foodName}
             sourceQuantityG={item.quantityG}
@@ -103,7 +151,7 @@ export function FoodSwapSheet({ item }: { item: MealItemView }) {
             loading={loading}
             alternatives={suggestions?.alternatives ?? null}
             pending={pending}
-            onConfirm={confirm}
+            onConfirm={pick}
             beforeList={
               rebalance ? <RebalanceSummary report={rebalance} /> : null
             }

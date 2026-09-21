@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { NutritionEditorialImage } from "@/components/shared/nutrition-editorial-image";
 import { AddMealDialog } from "@/features/nutrition/components/add-meal-dialog";
 import { DaySummary } from "@/features/nutrition/components/day-summary";
+import { MealCard } from "@/features/nutrition/components/meal-card";
+import { Section } from "@/components/shared/section";
 import { DayHeroCard } from "@/features/nutrition/components/day-hero-card";
 import { NutritionActionsMenu } from "@/features/nutrition/components/nutrition-actions-menu";
 import { getDayPlan, getDietPlanForDate } from "@/features/nutrition/queries";
@@ -198,6 +200,42 @@ export default async function NutritionPage({
       ) : (
         <DaySummary plan={plan} />
       )}
+
+      {/*
+        Lo que la persona REGISTRO. `getDayPlan` ya traia `plan.meals` y la
+        pantalla las tiraba: se consultaban y no se rendian en ninguna parte,
+        asi que "Agregar comida" creaba algo invisible y no habia forma de
+        anadirle alimentos ni de corregirla. `MealCard` y `FoodPicker`
+        existian sin montarse.
+
+        Va DEBAJO del plan a proposito: al entrar la pregunta es "que me
+        toca", y "que comi" es la segunda.
+      */}
+      <div className="pt-6">
+        <Section
+          title={messages.nutrition.loggedTitle}
+          description={messages.nutrition.loggedDescription}
+          variant="plain"
+        >
+          {plan.meals.length > 0 ? (
+            <ul className="flex flex-col gap-3">
+              {plan.meals.map((meal) => (
+                <li key={meal.id}>
+                  <MealCard
+                    meal={meal}
+                    dayTotals={plan.totals}
+                    dayTargets={plan.targets}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-[15px] leading-[1.65]">
+              {messages.nutrition.loggedEmpty}
+            </p>
+          )}
+        </Section>
+      </div>
     </>
   );
 }

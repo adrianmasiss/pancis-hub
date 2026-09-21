@@ -1503,6 +1503,15 @@ export const messages = {
     noMealsDescription:
       "Agrega tu primera comida y registra los alimentos que consumiste.",
     emptyMeal: "Sin alimentos registrados.",
+    /**
+     * Las comidas que la persona REGISTRO, frente al plan que dice lo que le
+     * toca. Son dos cosas distintas y la pantalla necesitaba nombrarlas: el
+     * plan responde "que me toca" y esto responde "que comi".
+     */
+    loggedTitle: "Lo que registraste hoy",
+    loggedDescription:
+      "Lo que ya comiste, con sus alimentos. El plan de arriba dice lo que te toca; esto dice lo que hubo.",
+    loggedEmpty: "Todavia no registraste ninguna comida hoy.",
     noTargetsNote:
       "Aun no tienes objetivos nutricionales activos; completa el onboarding para calcularlos.",
     cookedState: { crudo: "crudo", cocido: "cocido" },
