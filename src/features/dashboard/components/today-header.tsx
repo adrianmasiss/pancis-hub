@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Plus, Search } from "lucide-react";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
 
@@ -39,22 +41,62 @@ export function TodayHeader({ data }: { data: DashboardData }) {
     : null;
 
   return (
-    <header className="flex flex-col gap-0.5">
-      <p className="label-micro">
-        <span className="first-letter:uppercase">{longDate}</span>
-        {goalLabel ? (
-          <>
-            <span aria-hidden="true"> &middot; </span>
-            {goalLabel}
-          </>
-        ) : null}
-      </p>
-      {/* 18px semibold, como el frame: el saludo es una linea de contexto, no
-          un titulo de pantalla — el titular de Hoy es la cifra. */}
-      <h1 className="text-[1.125rem] font-semibold tracking-[-0.008em]">
-        {greetingForHour(hour)}
-        {data.displayName ? `, ${data.displayName}` : ""}
-      </h1>
+    <header className="relative flex min-h-[118px] flex-col justify-end pb-5 lg:min-h-[112px] lg:justify-center lg:pb-0">
+      <div className="lg:hidden">
+        <p className="text-muted-foreground text-[13px] leading-5">
+          <span className="first-letter:uppercase">{longDate}</span>
+        </p>
+        <h1 className="text-[22px] leading-6 font-medium tracking-[-0.03em]">
+          {greetingForHour(hour)}
+          {data.displayName ? `, ${data.displayName}` : ""}
+        </h1>
+        <Link
+          href="/configuracion"
+          aria-label={messages.nav.settings}
+          className="border-hairline text-muted-foreground absolute top-14 right-0 flex size-10 items-center justify-center rounded-full border bg-transparent text-xs font-medium"
+        >
+          {data.displayName
+            .split(/\s+/)
+            .map((part) => part[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase() || "?"}
+        </Link>
+      </div>
+
+      <div className="hidden lg:block">
+        <h1 className="text-[30px] leading-8 font-medium tracking-[-0.04em]">
+          {greetingForHour(hour)}
+          {data.displayName ? `, ${data.displayName}` : ""}
+        </h1>
+        <p className="text-muted-foreground mt-2 text-[13px]">
+          <span className="first-letter:uppercase">{longDate}</span>
+          {goalLabel ? (
+            <>
+              <span aria-hidden="true"> &middot; </span>
+              {goalLabel}
+            </>
+          ) : null}
+        </p>
+      </div>
+
+      <div className="absolute top-[34px] right-0 hidden items-center gap-3 lg:flex">
+        <Link
+          href="/nutricion/alimentos"
+          className="border-hairline text-muted-foreground hover:text-foreground flex h-11 w-[220px] items-center gap-2.5 rounded-md border bg-transparent px-4 text-[12px] transition-colors hover:border-white/20"
+        >
+          <Search className="size-3.5" aria-hidden="true" />
+          Buscar alimento
+        </Link>
+        <Link
+          href="/nutricion"
+          className="bg-primary text-primary-foreground flex h-11 w-[176px] items-center justify-center gap-2 rounded-md text-[13px] font-semibold transition-transform active:translate-y-px"
+        >
+          <Plus className="size-3.5" aria-hidden="true" />
+          Registrar comida
+        </Link>
+      </div>
     </header>
   );
 }

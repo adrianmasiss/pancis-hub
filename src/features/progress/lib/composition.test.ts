@@ -22,7 +22,11 @@ const snapshot = (
 describe("deriveSnapshot", () => {
   it("calcula masa grasa y masa magra", () => {
     const derived = deriveSnapshot(
-      snapshot({ measuredAt: "2026-07-01", weightKg: 80, bodyFatPercentage: 20 }),
+      snapshot({
+        measuredAt: "2026-07-01",
+        weightKg: 80,
+        bodyFatPercentage: 20,
+      }),
     );
     expect(derived.fatMassKg).toBe(16);
     expect(derived.leanMassKg).toBe(64);
@@ -43,7 +47,9 @@ describe("buildCompositionReport", () => {
   });
 
   it("con una sola medicion no inventa comparaciones", () => {
-    const report = buildCompositionReport([snapshot({ measuredAt: "2026-07-01" })])!;
+    const report = buildCompositionReport([
+      snapshot({ measuredAt: "2026-07-01" }),
+    ])!;
     expect(report.measurementCount).toBe(1);
     expect(report.previous).toBeNull();
     expect(report.baseline).toBeNull();
@@ -58,9 +64,21 @@ describe("buildCompositionReport", () => {
 
   it("compara contra la anterior y contra la linea base", () => {
     const report = buildCompositionReport([
-      snapshot({ measuredAt: "2026-05-01", weightKg: 90, bodyFatPercentage: 28 }),
-      snapshot({ measuredAt: "2026-06-01", weightKg: 86, bodyFatPercentage: 25 }),
-      snapshot({ measuredAt: "2026-07-01", weightKg: 84, bodyFatPercentage: 23 }),
+      snapshot({
+        measuredAt: "2026-05-01",
+        weightKg: 90,
+        bodyFatPercentage: 28,
+      }),
+      snapshot({
+        measuredAt: "2026-06-01",
+        weightKg: 86,
+        bodyFatPercentage: 25,
+      }),
+      snapshot({
+        measuredAt: "2026-07-01",
+        weightKg: 84,
+        bodyFatPercentage: 23,
+      }),
     ])!;
 
     const weight = report.comparisons.find((c) => c.metric === "weightKg")!;
@@ -109,7 +127,9 @@ describe("buildCompositionReport", () => {
       }),
     ])!;
 
-    const fat = report.comparisons.find((c) => c.metric === "bodyFatPercentage")!;
+    const fat = report.comparisons.find(
+      (c) => c.metric === "bodyFatPercentage",
+    )!;
     expect(fat.assessment).toBe("favorable");
 
     const muscle = report.comparisons.find(
@@ -207,8 +227,16 @@ describe("compositionSeries", () => {
   it("sirve para metricas derivadas", () => {
     const series = compositionSeries(
       [
-        snapshot({ measuredAt: "2026-06-01", weightKg: 80, bodyFatPercentage: 25 }),
-        snapshot({ measuredAt: "2026-07-01", weightKg: 78, bodyFatPercentage: 22 }),
+        snapshot({
+          measuredAt: "2026-06-01",
+          weightKg: 80,
+          bodyFatPercentage: 25,
+        }),
+        snapshot({
+          measuredAt: "2026-07-01",
+          weightKg: 78,
+          bodyFatPercentage: 22,
+        }),
       ],
       "fatMassKg",
     );

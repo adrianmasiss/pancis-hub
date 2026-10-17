@@ -12,11 +12,7 @@
  */
 
 export type FindingPriority =
-  | "alta"
-  | "mejora"
-  | "opcional"
-  | "observacion"
-  | "sin_cambios";
+  "alta" | "mejora" | "opcional" | "observacion" | "sin_cambios";
 
 export type RoutineFinding = {
   priority: FindingPriority;
@@ -247,7 +243,9 @@ export function analyzeRoutine(days: RoutineDay[]): RoutineAnalysis {
       title: "Volumen concentrado en un solo dia",
       detail: `${highVolumeOnce
         .map((entry) => entry.muscle)
-        .join(", ")} concentra bastante volumen en una sola sesion. Repartirlo en dos dias no produce mas musculo por si solo, pero suele permitir que las ultimas series salgan con mejor calidad.`,
+        .join(
+          ", ",
+        )} concentra bastante volumen en una sola sesion. Repartirlo en dos dias no produce mas musculo por si solo, pero suele permitir que las ultimas series salgan con mejor calidad.`,
     });
   }
 
@@ -310,7 +308,9 @@ export function analyzeRoutine(days: RoutineDay[]): RoutineAnalysis {
           .map((exercise) => exercise.name)
           .join(", ")} exige mucho y va al final, mientras que ${lightEarly
           .map((exercise) => exercise.name)
-          .join(", ")} abre la sesion. Los ejercicios mas demandantes suelen rendir mas cuando llegas fresco.`,
+          .join(
+            ", ",
+          )} abre la sesion. Los ejercicios mas demandantes suelen rendir mas cuando llegas fresco.`,
       });
     }
   }

@@ -13,11 +13,21 @@ import {
 } from "@/features/nutrition/actions";
 import { FoodSwapSheet } from "@/features/nutrition/components/food-swap-sheet";
 import type { MealItemView } from "@/features/nutrition/queries";
+import type { MacroSet } from "@/features/nutrition/lib/macros";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.nutrition;
 
-export function MealItemRow({ item }: { item: MealItemView }) {
+export function MealItemRow({
+  item,
+  dayTotals,
+  dayTargets,
+}: {
+  item: MealItemView;
+  /** Totales y objetivo del dia, para el veredicto de la sustitucion. */
+  dayTotals?: MacroSet;
+  dayTargets?: MacroSet | null;
+}) {
   const [quantity, setQuantity] = useState(String(item.quantityG));
   const [pending, startTransition] = useTransition();
   const changed = Number(quantity) !== item.quantityG;
@@ -108,7 +118,13 @@ export function MealItemRow({ item }: { item: MealItemView }) {
             <Check className="size-4" />
           </Button>
         ) : null}
-        <FoodSwapSheet item={item} />
+        {item.foodId ? (
+          <FoodSwapSheet
+            item={item}
+            dayTotals={dayTotals}
+            dayTargets={dayTargets}
+          />
+        ) : null}
         <Button
           size="icon"
           variant="ghost"

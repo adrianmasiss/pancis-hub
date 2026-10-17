@@ -6,7 +6,10 @@
  * codigo de barras y, a falta de codigo, por nombre+marca normalizados.
  */
 import { normalizeText } from "@/lib/food-providers/classify";
-import type { NormalizedFood, ProviderSource } from "@/lib/food-providers/types";
+import type {
+  NormalizedFood,
+  ProviderSource,
+} from "@/lib/food-providers/types";
 
 /**
  * Prioridad al elegir el superviviente de un duplicado. USDA gana porque
@@ -15,6 +18,7 @@ import type { NormalizedFood, ProviderSource } from "@/lib/food-providers/types"
 const SOURCE_PRIORITY: Record<ProviderSource, number> = {
   usda: 0,
   openfoodfacts: 1,
+  dietly: 2,
 };
 
 function dedupeKey(food: NormalizedFood): string {

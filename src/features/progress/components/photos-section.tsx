@@ -140,7 +140,7 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-white hover:text-critical"
+                  className="hover:text-critical size-7 text-white"
                   disabled={pending}
                   aria-label={`${messages.common.delete} — ${t[photo.viewType]} ${formatDate(photo.capturedAt)}`}
                   onClick={() => setPendingDelete(photo)}

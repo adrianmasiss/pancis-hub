@@ -1,331 +1,221 @@
 ---
 name: Pancis Hub
-description: Marino profundo y el naranja del logotipo, en registro iOS. Un solo acento, que marca lo accionable y el avance del dia; tarjeta como agrupador y muelles como movimiento.
+description: Identidad Pancis: oscuro negro/carbón con naranja y turquesa; claro beige/blanco con morado profundo. Gilded queda como respaldo.
 colors:
-  background-dark: "#082032"
-  background-light: "#ecedee"
-  card-dark: "#2c394b"
-  card-light: "#ffffff"
-  card-raised-dark: "#334756"
-  card-raised-light: "#f6f7f8"
-  ink-dark: "#d2d2d2"
-  ink-light: "#082032"
-  primary: "#f05a27"
-  primary-strong: "#d94a1c"
-  primary-foreground: "#082032"
-  brand-from: "#e43030"
-  brand-to: "#fc841e"
-  muted-foreground-dark: "#9aa6b0"
-  muted-foreground-light: "#2c394b"
-  subtle-foreground-dark: "#6e7e8c"
-  subtle-foreground-light: "#6b7885"
-  rule-dark: "#334756"
-  rule-light: "#e0e2e4"
-  border-dark: "#41566a"
-  border-light: "#d8dbde"
-  positive-dark: "#46b98a"
-  positive-light: "#1f7a54"
-  caution-dark: "#f5a15c"
-  caution-light: "#8f4f14"
-  critical-dark: "#e5484d"
-  critical-light: "#c0392f"
+  background-dark: "#090909"
+  background-light: "#FFF3E6"
+  card-dark: "#1A1A1A"
+  card-light: "#FFFFFF"
+  ink-dark: "#FFFFFF"
+  ink-light: "#211D22"
+  primary: "#F0793F"
+  primary-light: "#300C2D"
+  primary-foreground: "#090909"
+  primary-foreground-light: "#FFFFFF"
+  primary-strong: "#FFAA68"
+  primary-strong-light: "#74366F"
+  muted-foreground-dark: "#B0B0B0"
+  muted-foreground-light: "#71666E"
+  accent-dark: "#3FF4E5"
+  accent-light: "#EADDE7"
+  chart-dark: "#3FF4E5"
+  chart-light: "#300C2D"
+  border-dark: "#707070"
+  border-light: "#91808B"
+  brand-from: "#F0793F"
+  brand-to: "#FFAA68"
 typography:
-  numDisplay:
-    fontFamily: "system-ui, Inter, sans-serif"
-    fontSize: "clamp(3.5rem, 17vw, 4.5rem)"
-    fontWeight: 800
-    lineHeight: 0.94
-    letterSpacing: "-0.038em"
-  displayTitle:
-    fontFamily: "system-ui, Inter, sans-serif"
-    fontSize: "1.375rem"
-    fontWeight: 700
-    lineHeight: 1.15
-    letterSpacing: "-0.022em"
-  numStrong:
-    fontFamily: "system-ui, Inter, sans-serif"
-    fontSize: "1.0625rem"
+  headline:
+    fontFamily: "Geist Sans, system-ui, sans-serif"
+    fontSize: "clamp(22px, 2.7cqw, 29px)"
     fontWeight: 600
-    lineHeight: 1.1
-    letterSpacing: "-0.014em"
+    lineHeight: 1.2
+    letterSpacing: "-0.028em"
+  title:
+    fontFamily: "Geist Sans, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
+    letterSpacing: "-0.01em"
+  number:
+    fontFamily: "Geist Sans, system-ui, sans-serif"
+    fontSize: "34px"
+    fontWeight: 600
+    lineHeight: 0.94
+    letterSpacing: "-0.035em"
   body:
-    fontFamily: "system-ui, Inter, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: "0"
-  labelMicro:
-    fontFamily: "system-ui, Inter, sans-serif"
-    fontSize: "0.75rem"
-    fontWeight: 400
-    lineHeight: 1.3
-    letterSpacing: "0.006em"
+    fontFamily: "Geist Sans, system-ui, sans-serif"
+    fontSize: "14px"
+    lineHeight: 1.55
+  label:
+    fontFamily: "Geist Mono, ui-monospace, monospace"
+    fontSize: "10px"
+    fontWeight: 500
+    letterSpacing: "0.11em"
 rounded:
-  sm: "10px"
-  md: "14px"
-  lg: "18px"
-  xl: "22px"
-  2xl: "26px"
-  3xl: "34px"
-  4xl: "40px"
-  full: "9999px"
+  card: "24px"
+  composer: "26px"
+  stage: "30px"
+  pill: "999px"
+spacing:
+  grid: "16px"
+  card: "22px"
+  section: "24px"
 components:
-  button-brand:
-    background: "linear-gradient(135deg, {colors.brand-from}, {colors.brand-to})"
-    textColor: "{colors.primary-foreground}"
-    rounded: "{rounded.full}"
-    padding: "0 1.25rem"
-    height: "3rem"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
-    rounded: "{rounded.full}"
-    padding: "0 1.25rem"
-    height: "3rem"
+    rounded: "{rounded.pill}"
+    padding: "0 19px"
   button-primary-hover:
     backgroundColor: "{colors.primary-strong}"
-  button-quiet:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink-dark}"
-    rounded: "{rounded.full}"
-    padding: "0 1.25rem"
-    height: "3rem"
+  button-secondary:
+    rounded: "{rounded.pill}"
+    padding: "0 19px"
   card:
-    backgroundColor: "{colors.card-dark}"
-    rounded: "{rounded.2xl}"
-    padding: "1.25rem"
-  magnitude-bar:
-    trackColor: "{colors.rule-dark}"
-    fillColor: "{colors.primary}"
-    rounded: "{rounded.full}"
-    height: "6px"
+    rounded: "{rounded.card}"
+    padding: "{spacing.card}"
+  chip:
+    rounded: "{rounded.pill}"
+    height: "30px"
+    padding: "0 12px"
+  composer:
+    rounded: "{rounded.composer}"
+    padding: "14px 16px"
 ---
 
 # Design System: Pancis Hub
 
 ## Overview
 
-**Norte creativo: marino profundo + el naranja del logotipo, en registro iOS.**
+**Creative North Star: "Pancis Hub v11 suministrado"**
 
-La maqueta de referencia son 27 pantallas en Figma, movil y escritorio, con los dos temas y con movimiento:
-<https://www.figma.com/design/zrDvYIcBmJPjlc20hyuXxA>
+La autoridad visual es el prototipo ejecutable Claude Design `Pancis Hub v11.dc.html` fijado por el usuario. Esta actualización documenta su implementación; no propone otro concepto ni sortea una dirección. La estructura del v11 se conserva; la identidad cromática vigente es la especificación del usuario del 22 de septiembre. Superficies sólidas, reflejos moderados y vidrio reservado a tarjetas destacadas o paneles flotantes.
 
-El sistema tiene **un solo acento**, y ese acento sale del logotipo real: `#f05a27` es el punto medio del degradado del PNG de marca. Por eso la interfaz y la marca por fin concuerdan, cosa que no pasaba con las paletas anteriores. El naranja no decora: marca **lo accionable** y **el avance del dia**, y nada mas.
+La evidencia local está en `src/app/layout.tsx` (contrato de dirección), las reglas v11 y sus ajustes finales en `src/app/globals.css`, `src/components/shared/v11-card.tsx` y `src/components/layout/app-shell.tsx`. El paquete histórico `desing-reference/design_handoff_pancis_hub/` conserva v8 y activos; sus comentarios y reglas antiguas no sustituyen la autoridad v11. `PRODUCT.md` conserva el contexto de producto.
 
-La escena que manda el diseno es concreta: de pie, con una mano, en una cocina, un gimnasio o la calle. De ahi salen el acento que se ve desde lejos, los objetivos grandes y la cifra a escala de rotulo.
+**Key Characteristics:**
 
-Los **dos temas son de primera clase**. El claro es este mismo sistema con los neutros invertidos; el acento y la tinta oscura sobre el no se invierten, porque `#082032` sobre naranja da 4.9:1 en ambos y asi el boton no cambia de caracter al cambiar de tema.
-
-**Caracteristicas clave:**
-- Un acento, el del logotipo. El degradado de marca se reserva a la accion prominente.
-- Tarjeta como agrupador: sobre un marino profundo, una superficie elevada agrupa mejor que un filete.
-- Registro iOS, no Material: capsulas, esquina continua, el activo marcado en el propio simbolo, muelles.
-- Tracking por tamano, nunca fijo.
-- Cifras tabulares en todo el sistema.
-
-## Las cinco reglas que no se rompen
-
-Estan tambien en la cabecera de `src/app/globals.css`, que es la fuente de verdad.
-
-1. **UNA accion prominente por pantalla**, con el degradado del logotipo. Las demas acciones reales van en naranja solido. Solo los descartes — cancelar, ahora no, reintentar — se quedan callados.
-2. **El color mira el PAPEL, no el pixel.** Un relleno naranja puede ser un boton o puede ser un dato, y se tratan distinto.
-3. **Registro iOS, no Material.** Esquina continua, capsula en botones y campos, el item activo marcado **en el propio simbolo** (Material marca con pastilla detras; Apple cambia el simbolo), y muelles en vez de curvas.
-4. **Tracking por tamano, nunca fijo.** Apretado en display (`-0.032em` en h1), abierto en cuerpos pequenos (`+0.006em`). Un solo valor esta mal en algun cuerpo.
-5. **Los dos temas son de primera clase.**
-
-### La trampa de la regla 2
-
-Merece su propio parrafo porque ya costo una regresion real.
-
-Al aplicar "quita el relleno naranja de los botones secundarios" sobre la maqueta, la regla se ejecuto mirando el **color** en vez del **papel**, y vacio la tira de adherencia de la semana: aquellos cuadros naranjas no eran botones, eran los dias cumplidos. Es decir, eran informacion, y desaparecio.
-
-Antes de aplicar cualquier regla de color a un conjunto de elementos, hay que responder por cada uno: **¿esto es una accion o es un dato?** Y despues hay que mirar el resultado, no darlo por bueno.
+- Pancis como identidad principal en dos modos; Gilded se conserva como respaldo seleccionable.
+- Columna contenida, riel flotante y tarjetas con borde especular.
+- Geist Sans en títulos, cuerpo y cifras; mono en pequeños datos y etiquetas.
+- Movimiento breve con alternativa reducida y estados de datos explícitos.
 
 ## Colors
 
-### Acento
+Los valores del frontmatter registran la identidad Pancis del 22 de septiembre; `src/lib/theme/palettes.ts` es la fuente de todas las variantes. El proveedor asigna variables `--pc-*`, mapeadas a roles semánticos en `globals.css`. Las paletas son Gilded, Pancis, Sunset, Ocean, Forest, Orquidea, Vanillia y Violet Dusk.
 
-- **`--primary` `#f05a27`** — el naranja del logotipo. Botones, foco, enlaces, la barra de magnitud. Igual en los dos temas.
-- **`--primary-strong` `#d94a1c`** — el estado hover/pressed.
-- **`--primary-foreground` `#082032`** — la tinta sobre naranja. No se invierte por tema (ver arriba).
-- **`--brand-from` `#e43030` → `--brand-to` `#fc841e`** — los dos extremos del degradado del logotipo. Solo la accion prominente de cada pantalla lo usa.
+### Primary
 
-### Neutros
+Naranja es el acento de acción en oscuro y morado #300C2D en claro. Las gráficas usan turquesa en oscuro y morado en claro. Lavanda es un fondo suave y lleva texto principal o morado: el gris secundario no alcanza 4.5:1 sobre ese fondo. Los componentes consumen los roles activos, no los valores oscuros del frontmatter directamente.
 
-| Papel | Oscuro | Claro |
-|---|---|---|
-| Suelo (`--background`) | `#082032` | `#ecedee` |
-| Tarjeta (`--card`) | `#2c394b` | `#ffffff` |
-| Sub-superficie (`--card-raised`) | `#334756` | `#f6f7f8` |
-| Tinta (`--foreground`) | `#d2d2d2` | `#082032` |
-| Tinta secundaria (`--muted-foreground`) | `#9aa6b0` | `#2c394b` |
-| Regla (`--rule`) | `#334756` | `#e0e2e4` |
-| Borde (`--border`) | `#41566a` | `#d8dbde` |
+### Neutral
 
-### Estado
+Carbón construye el lienzo y el riel. Pizarra tiñe tarjetas e interiores, con tinta crema en oscuro y tinta oscura en claro. Los filetes v11 derivan de foreground al 9%; las pistas, al 8%. El fondo ambiental incorpora un halo azul y los extremos del degradado de marca.
 
-- **Positivo** — `#46b98a` oscuro / `#1f7a54` claro.
-- **Precaucion** — `#f5a15c` oscuro / `#8f4f14` claro. **Es ambar, no amarillo**: la paleta tiene un tono, y un amarillo nuevo seria un segundo. El aviso se distingue del acento por claridad, no por matiz.
-- **Critico** — `#e5484d` oscuro / `#c0392f` claro. **El rojo es la unica segunda familia que se gana su sitio**, porque "te pasaste" no puede leerse como marca.
-
-### Fondos tenidos de estado
-
-`--tint-caution`, `--tint-critical`, `--tint-info` y sus `-border`. **No son neutros**, asi que un remapeo de tema que solo toque los grises no los cubre: si se olvidan, quedan oscuros con texto ilegible encima. Ya paso una vez con el aviso de objetivos.
+Positivo, precaución y crítico son roles de estado, acompañados de contexto textual. Nutrición se diseña exclusivamente en oscuro: carbón mate, texto claro, naranja en energía y acciones, turquesa en macros. Esta decisión no modifica el selector global de tema.
 
 ## Typography
 
-Una sola familia. `font-family: system-ui, var(--font-sans), sans-serif` — y **`system-ui` va primero a proposito**: en iPhone entrega SF Pro con su tamano optico y sus tablas de tracking reales. Inter es la red de seguridad para el resto de plataformas, no la primera opcion.
+Geist Sans local es la voz de las superficies v11. Los roles del frontmatter corresponden a la lectura del día, encabezados de tarjeta, cifra del anillo, texto explicativo y etiquetas pequeñas. Las cifras comparables llevan números tabulares; mono se reserva para etiquetas y algunos chips de datos, no para toda cifra grande.
 
-Sin monoespaciada en ningun sitio: `font-variant-numeric: tabular-nums` alinea las columnas igual, y sin disfrazar la interfaz de terminal.
-
-### Jerarquia
-
-- **`num-display`** — la cifra protagonista. `clamp(3.5rem, 17vw, 4.5rem)`, peso 800, tracking `-0.038em`. **Una por pantalla, nunca dos**: si aparece dos veces, ninguna manda. Responde "cuanto me falta" de un vistazo, con el telefono en una mano.
-- **`display-title`** — titulo de tarjeta o pantalla, `1.375rem`/700. Nunca compite con la cifra: es rotulo, no protagonista.
-- **`num-strong`** — cifra secundaria, `1.0625rem`/600. Manda dentro de su fila, no en la pantalla.
-- **`num`** — cifra en flujo, con tabulares y `-0.008em`.
-- **`label-micro`** — el nombre pequeno de una cifra, `0.75rem`, caja normal. **No es un antetitulo**: la version en versalitas con tracking se retiro porque llegó a repetirse diez veces en la misma pantalla.
-
-### Tracking por tamano
-
-En `@layer base`: h1 `-0.032em`, h2 `-0.024em`, h3/h4 `-0.018em`, `small`/`text-xs` `+0.006em`.
+Karrik sigue cargada localmente en `src/app/layout.tsx` y permanece en utilidades anteriores. Su presencia no obliga a usarla en los encabezados v11. No introducir fuentes remotas ni describir Inter como dependencia pendiente de este sistema.
 
 ## Layout
 
-- Movil primero, ancho de contenido con la barra inferior anclada.
-- En escritorio, barra lateral de navegacion y una columna de contenido centrada — no se reparte el contenido en columnas por rellenar el ancho.
-- **La rejilla de tarjetas esta prohibida para datos secuenciales.** Criterio explicito del usuario: una lista de dias, de comidas o de series es una lista, no una cuadricula. Alcanza tambien a las rutinas y a las secciones de lectura de Entrenamiento, que iban en `lg:grid-cols-2`: la segunda columna no aportaba comparacion, solo rellenaba ancho.
+La columna principal tiene un máximo de 1160px, relleno horizontal de 22px y separación vertical de 24px; en escritorio usa 64px arriba y 110px abajo. El escenario exterior y el riel flotante enmarcan el contenido. El riel mide 86px colapsado y 250px expandido; la selección de la persona controla su expansión. La barra superior aloja los controles de tema y Copilot.
+
+Hoy usa tres columnas con tarjetas alternas de dos y una columnas, separación de 16px y cierre a todo el ancho. La última regla de contenedor, hasta 900px de **ancho del contenido**, convierte toda la rejilla en una columna y conserva el orden de lectura. No aplicar el antiguo estado intermedio de dos columnas que todavía aparece antes en la cascada.
+
+Por debajo de 768px de viewport, el escenario tiene radio de tarjeta, el contenido usa 24px 14px 32px de relleno y el shell deja espacio al dock inferior y al área segura. Las rejillas de dominio se apilan a 760px de contenido; el historial de Nutrición, a 700px. Estas son reglas de superficies concretas, no un único breakpoint universal.
 
 ## Elevation & Depth
 
-- La tarjeta agrupa; la elevacion la hace el **salto de tono**, no una sombra.
-- Sombra **solo** en capas flotantes: `surface-overlay` (popovers, hojas) y `--shadow-lifted` (el boton del asistente). Esa es toda la lista. El boton flotante se gana la excepcion porque es lo unico que se mueve sobre contenido arbitrario: no hay un tono debajo al que saltar.
-- **`island`** — la barra inferior anclada. `backdrop-filter: blur(20px) saturate(160%)` sobre un fondo al **0.93** de opacidad, con un filete arriba que marca donde acaba el contenido. El desenfoque aqui si tiene proposito: separa la navegacion del contenido manteniendo el contexto de lo que hay debajo. A 0.86 el parrafo de debajo se seguia leyendo entre los rotulos de las pestanas; el filete solo no basta.
-- Nunca apilar una superficie translucida clara sobre otra: la legibilidad se cae.
+La tarjeta v11 combina un fondo de tarjeta al 58% sobre transparencia y una luz radial de primary al 8%, con desenfoque de 26px y saturación de 150%. Lleva filete fino, brillo interior y sombra larga. Su borde con máscara usa un degradado cónico de luz en esquinas opuestas; no es un borde uniforme ni una decoración prescindible del mundo elegido. La definición exacta vive en `globals.css` y el sidecar.
+
+En dispositivos con hover, la tarjeta sube 3px y aumenta la presencia de borde y sombra. La entrada dura 200ms con 50ms de escalonado por posición y usa el muelle `--pc-spring`. Las preferencias de movimiento reducido eliminan desplazamientos no esenciales; transparencia reducida vuelve sólidas tarjetas y escenario; contraste aumentado refuerza filetes y elimina el borde especular.
+
+Los controles marcados `data-glow` recortan una luz radial al borde de 1.5px; `SurfaceLighting` actualiza su centro desde el puntero una vez por frame, sin renders de React. Las esquinas opuestas de `.v11-card` pasan de 0° a 26° en 1.1s y vuelven al salir. Copilot conserva el anillo de 4.6s (velocidad equivalente a 1.8s en hover, mediante `updatePlaybackRate` para preservar la fase sin saltos); el compositor comparte el filo giratorio y el acceso flotante respira con sombra durante 3.6s. El escenario recorre su borde en 18s. Los bucles se pausan al ocultar la pestaña; movimiento reducido mantiene el acabado estático. La flecha de 13px tiene un área pulsable de 44px y vive en el borde derecho de la isla principal, entre los dos primeros destinos; gira al expandir el riel.
 
 ## Shapes
 
-Escala de radios en registro iOS. Lo decide el papel y el tamano de la pieza, no el gusto: una barra de 4px es una capsula, una tarjeta de 350px pide 26.
-
-`sm 10` miniaturas y casillas · `md 14` campos pequenos · `lg 18` botones y campos · `xl 22` paneles medianos · `2xl 26` paneles grandes · `3xl 34` la tarjeta de acceso · `4xl 40` hojas y canto superior.
-
-Botones y chips van en **capsula** (`rounded-full`). En Figma la maqueta usa `cornerSmoothing 0.6` (la esquina continua de iOS); en web se aproxima con el radio generoso de esta escala.
-
-## Motion
-
-Muelles, no curvas de duracion fija: un muelle es interrumpible y hereda velocidad.
-
-- **`--ease-spring`** — muelle criticamente amortiguado, expresado como `linear()`.
-- **`--dur-fast` 140ms** — respuesta al pulsar.
-- **`--dur-base` 240ms** — transicion de estado.
-- **`--dur-enter` 380ms** — entrada.
-- **`--stagger` 60ms** — separacion entre elementos que entran.
-
-La respuesta va en `pointerdown`, no al soltar: `:active { transform: scale(0.975) }` en las acciones. El rebote se reserva a lo que "llega" tras un gesto con impulso; una tarjeta que solo aparece no rebota.
+Tarjetas, compositor y escenario usan los radios del frontmatter; botones, chips y segmentos recurren a pastillas. Los componentes auxiliares existentes también usan radios menores: no imponer la antigua regla de cuatro radios sin excepciones. Las ilustraciones anatómicas conservan proporción y encuadre; no se estiran para llenar una tarjeta.
 
 ## Components
 
-### Buttons
+### Cards / Containers
 
-- **Prominente** — `variant="brand" size="lg"`: degradado de marca, mas alto que el resto. **Una por pantalla.**
-- **Primario** — `variant="default"`, `--primary` plano. Todas las demas acciones reales.
-- **Callado** — sin relleno. **Solo descartes**: cancelar, ahora no, reintentar.
+Usar `V11Card`, `V11CardHead` y `V11Chip` desde `src/components/shared/v11-card.tsx` para compartir material, encabezado y dato auxiliar. El relleno común es 22px. La lectura principal del día tiene su propio relleno y onda inferior. Las secuencias de macros y comidas conservan filas y separadores dentro de su grupo.
 
-Un boton secundario translucido sobre el marino da menos de 1.5:1 y se lee como fondo. Se probo y se revirtio: si es una accion, es naranja.
+### Buttons / Chips
 
-La variante `brand` no existia: la regla 1 no se podia expresar en codigo, todas las acciones salian iguales y ninguna mandaba. Cuidado con una trampa que ya costo un fallo: el degradado es una `background-image`, y el `disabled:bg-muted` de Tailwind cambia el `background-color`, asi que un boton apagado seguia viendose como la accion prominente. El estado deshabilitado se apaga en el CSS de `.bg-brand-button`, no en la utilidad.
+Los botones v11 tienen altura mínima de 44px, forma de pastilla y texto semibold. La acción primaria usa primary sobre primary-foreground; al pasar el puntero usa primary-strong. La secundaria refuerza el fondo de pista. La presión escala a 0.97 y el foco visible global tiene contorno de 2px con separación de 2px. Los chips informativos miden 30px de alto; no confundirlos con objetivos táctiles de acción principal.
 
-**Una pantalla puede no tener accion prominente, y esta bien.** Configuracion es una lista de formularios independientes: sus cuatro "Guardar" son acciones locales de su tarjeta y ninguna manda sobre las otras. La prominente aparece solo cuando el aviso de objetivos desajustados esta presente, porque entonces si hay algo que la pantalla esta pidiendo. Forzar una prominente donde no la hay es tan malo como tener cinco.
+### Inputs / Copilot
 
-**Cual es la prominente, cuando hay varias candidatas.** La que responde a lo que la pantalla ya declaro que importa. En Hoy convivian "Registrar comida" e "Ir a entrenar", las dos en naranja plano: dos primarias y cero prominentes. Gana registrar comida porque es la que contesta a la cifra troquelada que manda la vista; entrenar sigue siendo una accion real, y por eso se queda en naranja plano en vez de callarse.
-
-| Pantalla | Prominente |
-|---|---|
-| Hoy | Registrar comida |
-| Nutricion | Agregar comida |
-| Entrenamiento | Iniciar entrenamiento |
-| Progreso | Registrar medicion |
-| Recetas | Crear receta |
-| Una receta | Agregar al plan |
-| Importar dieta | Analizar con IA |
-| Acceso, registro, recuperar | El envio del formulario |
-| Alta (cada paso) | Continuar; "Atras" es descarte y va callado |
-| Configuracion | Actualizar mis objetivos, solo si hay aviso |
-
-### `MagnitudeBar` — la primitiva de dato del sistema
-
-`src/components/shared/magnitude.tsx`. El ancho **es** la cantidad. Pista en `--rule`, relleno en el acento, capsula, 6px.
-
-Tres estados y ninguno mas: normal (acento), excedido (critico, hasta el tope), y la muesca vertical del plan del dia. La muesca va **sobre la misma barra** en vez de en una columna aparte, porque la pregunta es "¿el plan me lleva ahi?" y eso se responde mirando, no comparando dos cifras.
-
-Sustituyo al "codigo de disco", que daba a cada macro un chip de color con su numeral de kilos. Aquel sistema pedia cinco colores; este tiene uno, y el naranja ya esta ocupado por lo accionable. La identidad del macro la lleva su rotulo, que se lee.
-
-### `MacroChip` — el macro en linea
-
-`src/components/shared/macro-chip.tsx`. La misma regla, aplicada a la fila densa: rotulo corto (`P`, `C`, `G`, `F`, `Cal`) y la cifra, sin color y sin icono.
-
-Llevaba un icono por macro —llama, carne, trigo, gota, hoja— pintado con los tokens `chart-1..5`. Era el codigo de disco sobreviviendo en las pantallas de Nutricion, y ademas `chart-1` **es** el naranja del acento: cada cifra de calorias se pintaba del color reservado a lo accionable. El nombre completo viaja en `sr-only`, porque fuera de contexto "G" no dice "Grasas".
-
-### `MetricCard` — la lectura secundaria
-
-`src/components/shared/metric-card.tsx`. **La cifra primero, el rotulo debajo**, igual que la cifra troquelada de Hoy. Nunca a escala `num-display`: esa esta reservada a una por pantalla y estas van en fila de tres.
-
-Iba al reves. Con el rotulo encima, uno largo —"vs semana pasada"— envolvia a dos lineas y empujaba su cifra medio renglon por debajo de las vecinas: tres lecturas que existen para compararse de un vistazo dejaban de compartir linea base. Poniendo la cifra arriba, arrancan todas a la misma altura y el rotulo envuelve donde no estorba.
-
-### Cards
-
-`surface-card` — fondo `--card`, radio `2xl`, sin borde. `Section` (`src/components/shared/section.tsx`) es el envoltorio con titulo; `variant="plain"` quita la superficie para bloques que ya traen su propia caja dentro.
-
-**`Card` de shadcn no es una alternativa.** Su superficie ya apunta a `surface-card`, pero `CardHeader` cierra con una regla divisoria y `CardTitle` es un `card-eyebrow` en versalitas: dos decisiones del handoff v2 que este sistema revirtio. Una tarjeta migrada lleva `display-title` y ninguna regla bajo la cabecera.
-
-Cuando la cabecera no cabe en el par titulo/accion —un titulo, una cifra, meta y tres disparadores— se usa `surface-card` directamente y se reparte en dos filas: arriba lo que identifica la pieza y su cifra, debajo la meta. En una sola linea flex, 390px parten el titulo.
-
-**Tarjeta dentro de tarjeta: `surface-raised`, nunca otra `surface-card`.** Apilar la misma superficie sobre si misma no crea jerarquia, crea una doble caja. El escalon de tono para un bloque dentro de otro es `--card-raised` (el resumen de objetivos del alta, por ejemplo).
-
-### La trampa del enlace naranja
-
-En `@layer base` toda `a` nace en `--primary`. Eso esta bien para un enlace en medio de un parrafo y **mal para todo lo demas**, y ya costo dos regresiones: el nombre de una rutina salia entero en el acento, y una tarjeta de receta envuelta en `<Link>` se pintaba naranja completa —titulo y cifras— hasta leerse como un boton gigante.
-
-La regla practica: **si el enlace es una pieza y no una palabra, se le pone la tinta a mano.** Un titulo que navega lleva `text-foreground hover:text-primary`; una tarjeta entera envuelta en `<Link>` lleva `text-foreground` en su raiz. El acento vuelve en el hover, que es donde comunica "esto lleva a algun lado".
+El compositor de Copilot es una superficie oscura propia con textarea transparente y botón circular. El borde se refuerza al recibir foco. `src/features/assistant/` conecta el envío a `askAssistant`; el cajón y la ruta completa comparten la conversación. El estado pendiente deshabilita el envío; la apariencia no debe prometer ejecución de acciones que la respuesta no haya realizado.
 
 ### Navigation
 
-`island` abajo en movil, barra lateral en escritorio. El item activo se marca **en el propio simbolo**: acento en el icono y en el rotulo, trazo mas grueso (1.75 → 2.25) y rotulo en semibold. **Nada de pastilla detras** — esa es la firma de Material 3, y fue lo primero que delato el diseno como Android. La utilidad `glow-ring`, que era esa pastilla, se retiro del CSS al quedarse sin usos.
+El shell usa riel flotante, control de expansión, segmento de tema superior y dock móvil. Conservar texto accesible, estados actuales y enlace para saltar al contenido. Nutrición usa enlaces Hoy, Mi plan y Comparar; Tendencias es un acceso secundario. Biblioteca y Comer fuera se mantienen en el panel de herramientas. Comparar también abre una hoja lateral desde cada comida, con la selección de origen preparada.
 
-**Por que peso y no relleno.** SF Symbols marcaria el activo con la variante rellena, y asi lo pide la regla 3. lucide es un juego de trazo **sin variantes rellenas**: rellenar sus glifos da resultados dispares — `Home` cierra silueta, pero `Utensils` y `TrendingUp` son trazos abiertos y se convierten en manchas. Se usa entonces el otro eje que Apple tambien usa para esto, el peso. Si algun dia se cambia el juego de iconos por uno con pareja trazo/relleno, esta es la decision a revisar.
+### Nutrition / Data surfaces
 
-Las cinco pestanas se reparten el ancho de una barra anclada al borde, no de una capsula flotante, y **con rotulo visible**. En la isla estrecha el rotulo solo existia como `aria-label`; a todo el ancho cabe, y un icono suelto obliga a adivinar el destino. Objetivo tactil: 56px de alto por un quinto del ancho (78px en 390px).
+`src/app/(app)/nutricion/page.tsx` separa un resumen compacto de consumo real, el plan del día y herramientas. **La sección «Registro del día» se retiró (28 sep 2026):** repetía la lista entera debajo de la del plan, así que la misma comida aparecía dos veces. Lo registrado vive ahora en la propia fila del plan («Registrada»), las comidas ajenas al plan cierran esa misma lista bajo el rótulo «Fuera del plan» y se despliegan para editarlas, «Agregar comida» es la fila de filete discontinuo que remata la lista, y el menú de acciones secundarias subió a la cabecera del panel. Mi plan muestra la plantilla habitual sin las sustituciones de una fecha. El resumen cuenta únicamente comidas completadas o completadas con cambios; las pendientes se muestran por separado. Los estilos propios viven en `nutrition-workspace.css`. El material de esta superficie es carbón mate, sin elevación al pasar el puntero. **Excepción de acento (28 sep 2026):** el filete cónico de esquinas encendidas del v11 vuelve en DOS tarjetas y solo dos — Calorías, la cifra que manda en el resumen, y Sustituto rápido, la única accionable de la columna — teñido del turquesa `--chart-1` que ya vive en la paleta. Las demás siguen mates. El turquesa aquí es señal de «mira esto», nunca un dato: la barra de calorías se queda naranja, porque naranja es energía y turquesa es macros. Extenderlo a las cuatro tarjetas del resumen daría un color por macro, que es el «código de disco» ya descartado. El punto de entrada es la primera comida pendiente según el orden del plan, con Registrar como acción principal y Comparar/Sustituir visibles. Al registrarla, la siguiente pendiente ocupa su lugar. La energía y los macros se sitúan al lado en escritorio y después en móvil. Las tarjetas recuperan la iluminación de superficie y los bordes sutiles de Hoy. Cada comida vive en una tarjeta independiente con horario, icono, calorías, macros y acciones de 44px. En escritorio amplio, la comida destacada y el resumen forman la composición principal; las demás comidas se distribuyen en dos columnas, conservando su orden. En móvil se apilan. Plan activo y herramientas forman tarjetas secundarias. El comparador alinea origen, alternativa y diferencia por nutriente. La sustitución mantiene una confirmación fija fuera del área desplazable, con alcance explícito al día o al plan. `src/features/nutrition/components/nutrition-history.tsx` ofrece ventanas de 7, 30 y 90 días desde snapshots reales de comidas completadas, en lectura: un día sin registros no equivale a cero calorías. Los estados vacíos, errores y tabla por fecha forman parte del componente.
+
+Entrenamiento y Progreso presentan registros del usuario. Entrenamiento usa carbón mate y ordena la preparación de la sesión y sus ejercicios junto al mapa muscular. Seleccionar un ejercicio filtra el resaltado; iniciar conserva el día seleccionado. Un único bloque muestra las series registradas por músculo de los últimos siete días. El modelo local `public/anatomy/muscle-body.glb` sustituye el maniquí procedural: 210.000 triángulos, unos 5,5 MB, carga diferida y render bajo demanda. Autor DB3D2534, CC BY 4.0; atribución en la interfaz y en `public/anatomy/ATTRIBUTION.md`. Sus regiones son orientativas, no segmentación anatómica exacta. La lista textual permanece disponible si falla WebGL o la descarga. `src/components/shared/body-regions.tsx` permite alternar `/anatomy/front.png` y `/anatomy/back.png`; son ilustraciones de referencia, no mapas calculados de recuperación. Los datos regionales provienen del plan o de medidas registradas y muestran ausencia cuando corresponda.
+
+**Límite de implementación:** Hoy aún mezcla datos consultados y cifras de maqueta; algunas tarjetas y valores de reserva no están conectados. Nutrición ya consulta comidas, objetivos y sustituciones reales. Registrar guarda snapshots mediante la operación transaccional existente; sustituir en Hoy cambia solo la fecha y sustituir desde Mi plan modifica la plantilla habitual. El comparador no ejecuta sustituciones por sí solo. Este documento captura la forma construida, no certifica persistencia de esos controles, cobertura completa del prototipo ni datos clínicos calculados.
 
 ## Do's and Don'ts
 
-### Do
+### Do:
 
-- Una accion prominente por pantalla, y que sea la que el usuario vino a hacer.
-- Preguntarse por cada elemento si es accion o dato, antes de aplicarle una regla de color.
-- Derivar el tema claro invirtiendo neutros, y comprobar aparte los fondos tenidos de estado.
-- Poner la respuesta en `pointerdown`.
-- Mirar el resultado en el navegador. Compilar no es verlo.
+- **Do** conservar la autoridad del v11 suministrado y comprobar la cascada final antes de reutilizar reglas antiguas.
+- **Do** reutilizar roles de tema, material de tarjeta y estados accesibles existentes.
+- **Do** mantener el material oscuro de Nutrición también en las hojas de comparar y sustituir.
+- **Do** distinguir ausencia de registros, datos reales y contenido de maqueta.
+- **Do** respetar las preferencias de movimiento, transparencia y contraste.
 
-### Don't
+### Don't:
 
-- No introducir un tercer color. Positivo y critico ya existen; cualquier otro matiz nuevo hay que justificarlo por papel, no por gusto.
-- No usar pastilla de fondo para el item activo de la navegacion.
-- No usar rejilla de tarjetas para datos secuenciales.
-- No poner dos `num-display` en la misma vista.
-- No apilar translucidos.
-- No dejar `letter-spacing` fijo para todos los tamanos.
+- **Don't** prohibir vidrio o degradados que forman parte explícita del v11.
+- **Don't** convertir Karrik o mono en la fuente dominante de las superficies v11.
+- **Don't** inventar puntuaciones regionales de recuperación ni presentar la anatomía como medición.
+- **Don't** describir switches locales o métricas de ejemplo como datos persistidos del usuario.
+- **Don't** sustituir la dirección elegida por otra estética o por reglas genéricas de diseño.
 
-## Estado de la construccion
+El card principal de Hoy añade luz radial al cursor en una capa independiente de sus esquinas. En el riel colapsado, el logotipo completo se disuelve durante los primeros 120px de scroll y deja el isotipo visible; al volver arriba se recupera. El riel expandido conserva la marca completa y muestra los nombres de Cambios del plan y Configuración.
 
-Al 2026-08-13, sobre `feat/sistema-visual-p7`:
+## Login — referencia de movimiento del 22 de septiembre
 
-- **Hecho:** capa de tokens (`globals.css`), `layout.tsx`, `Section`, `BrandLogo`, `MagnitudeBar`, `MacroChip`, `MetricCard`, la navegacion completa (barra inferior, barra lateral y boton flotante), y **todas las pantallas que un usuario pisa**: acceso, alta, Hoy, Nutricion, Entrenamiento, Progreso, Recetas y Configuracion, con sus sub-paginas.
-- **Pendiente, a proposito:** la **Academia** (`D-004`: pospuesta hasta la Fase 8 y suspendida de la navegacion — migrar lo que esta apagado es trabajo que se tira) y el **chat del asistente**, que es una superficie propia de burbujas y no una migracion mecanica. `@/components/ui/card` solo sigue vivo en esos tres archivos.
+Para `/login`, la referencia vigente es `v14044g50000d9h0h97og65vrguv66tg.MP4` proporcionada por el usuario (SOLE). `LoginStage` reemplaza en esta ruta la antigua entrada de hoja curva: isotipo PH con giro y flotación inicial, nombre que se revela, barra fina de introducción y hoja clara que sube bajo la cabecera. La secuencia dura aproximadamente 3.3s, se puede omitir y termina inmediatamente al enfocar el formulario. Movimiento reducido muestra directamente el estado final. La barra es decorativa, sin porcentaje ficticio ni vínculo con la autenticación.
 
-### Encabezado de pantalla
+Identidad: fondo marino `#08151d`, isotipo oficial, acento rojo/naranja, formulario claro y tipografía del proyecto. En móvil la hoja ocupa el ancho disponible; en escritorio se limita a 460px. Se conserva la lógica de acceso por correo, recuperación y creación de cuenta. Registro comparte `LoginStage` con el acceso: misma tarjeta, selector, campos, botón y orden de elementos. Recuperación mantiene su superficie existente.
 
-Las pantallas migradas no pasan `icon` a `PageHeader`: la barra superior y el riel ya dicen donde estas, y un glifo de 20px junto al titulo es decoracion. La `description` se queda solo cuando explica algo que la pantalla no dice sola — "Gestiona tus comidas del dia" bajo el titulo "Nutricion" no lo hacia.
+La cabecera de acceso y registro conserva el orden vertical: isotipo, Pancis Hub, Nutrición · Entrenamiento · Recuperación. El aviso educativo se centra bajo ambos formularios, con ancho máximo de 520px y líneas balanceadas.
 
-Lo que si sube a la cabecera es el **contexto**: en Nutricion el selector de fecha vive dentro de `PageHeader`, no como una fila suelta debajo, porque la fecha es parte de "donde estoy".
+## Implementación de la identidad vigente
 
-Este documento describe el sistema como la unica direccion valida para trabajo nuevo o tocado; las pantallas sin migrar no son una variante legitima.
+`palettes.ts` centraliza fondo, superficie, tinta, acción, acento, gráfica y estado. Los tokens se emiten en el HTML del servidor y se actualizan al cambiar tema. La clave de preferencia `pancis-palette-v2` adopta Pancis por defecto sin borrar las antiguas selecciones; Gilded permanece como respaldo explícito y persistente en Apariencia.
+
+Los logos se colorean mediante máscaras alfa de `public/logo-dark.png` y `public/icons/icon-192.png`: geometría y letras originales; se omite el eslogan rasterizado a tamaños pequeños. El nombre del login también usa la tipografía del archivo original, con el eslogan legible separado.
+
+El péndulo de Newton conserva cuatro bolas, 1.2s y giros ±70°. Los extremos usan acción y el centro el color de gráfica. Dentro de botones hereda la tinta del control. Reemplaza la barra introductoria y los spinners de espera; los esqueletos conservan la geometría mientras llegan los datos. Se detiene fuera de pantalla, en pestañas ocultas y con movimiento reducido.
+
+Verificación de contraste: texto normal >=4.5:1 y controles/foco/gráficas >=3:1 para los pares usados; se validan también extremos del degradado y estados semánticos.
+
+## Riel vigente — dos cápsulas separadas
+
+La captura confirmada por el usuario restaura el isotipo arriba, la cápsula central con Asistente, Hoy, Nutrición, Entrenamiento, Progreso y Evidencia, y otra cápsula inferior para Cambios del plan, Configuración y cuenta. La flecha vive entre los dos primeros destinos del menú principal. No hay panel continuo, segunda columna ni submenús. Arranca contraído; al expandir muestra los nombres en ambas cápsulas. `pancis-rail-capsules` conserva la nueva preferencia de apertura, independiente del panel descartado. Los colores siguen los tokens Pancis oscuro/claro.
+
+### Home: distribución de cinco tarjetas
+
+La referencia de distribución del usuario manda únicamente sobre la jerarquía: título «Hoy» y fecha arriba; Copilot y Actividad de la semana con Adherencia integrada en dos columnas iguales; Macros del día, Ingesta y Sueño en tres columnas iguales debajo. Se conservan materiales, colores y efectos existentes. Con contenedores de hasta 900 px, las cinco tarjetas siguen ese orden en una columna.
+
+En escritorio (desde 1024 px), Home ocupa el ancho de su panel exterior, con 16 px de margen interno lateral e inferior y 24 px arriba. En móvil y tablet se conservan los márgenes existentes. Adherencia usa dos filas de 14 días cuando su tarjeta tiene al menos 480 px de contenido; en tarjetas estrechas conserva cuatro filas de siete.
+
+### Formularios de acceso: referencia mate
+
+Login y registro comparten tarjeta negra opaca, campos carbón, etiquetas visibles y tipografía sans sobria. Sin bisel de vidrio ni selector superior duplicado; los enlaces inferiores permiten cambiar de formulario. Naranja reservado para acción principal, enlaces y foco. El fondo y los logos existentes se conservan. Los márgenes compactos de escritorio (24 px arriba y 16 px laterales/inferiores) aplican ahora a todas las pantallas del shell; móvil mantiene su espaciado.
+
+El modelo anatómico comparte acabado mineral cálido entre Entrenamiento y Progreso. Conserva normales originales y vértices de la cara; incorpora oclusión ambiental precalculada y microtextura procedural mate. Los resaltados usan un contorno pectoral y perfiles inclinados para extremidades, compartidos por el shader y la selección. Siguen siendo aproximaciones visuales; no segmentación anatómica exacta. Preparación reproducible: `node scripts/prepare-anatomy.mjs /ruta/muscle_body.glb`.

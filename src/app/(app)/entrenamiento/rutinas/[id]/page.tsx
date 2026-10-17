@@ -4,16 +4,13 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { AddDayButton } from "@/features/training/components/add-day-button";
 import { PlanDayCard } from "@/features/training/components/plan-day-card";
 import { PlanVersionsSection } from "@/features/training/components/plan-versions-section";
 import { RoutineAnalysisSection } from "@/features/training/components/routine-analysis-section";
 import { listPlanVersions } from "@/features/training/version-actions";
-import {
-  getPlanDetail,
-  getRoutineAnalysis,
-} from "@/features/training/queries";
+import { getPlanDetail, getRoutineAnalysis } from "@/features/training/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
@@ -42,7 +39,7 @@ export default async function PlanEditorPage({
 
   return (
     <>
-      <PageHeader
+      <ViewHeader
         title={plan.name}
         description={plan.objective ?? undefined}
         actions={

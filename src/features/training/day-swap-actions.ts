@@ -84,7 +84,10 @@ export async function swapPlanExerciseForDay(
       ? { ejercicio: planExercise.exercise_catalog.name }
       : null,
     newValues: substitute ? { ejercicio: substitute.name, fecha: date } : null,
-    reason: reason && reason.length > 0 ? reason : messages.training.daySwap.defaultReason,
+    reason:
+      reason && reason.length > 0
+        ? reason
+        : messages.training.daySwap.defaultReason,
     origin: source === "asistente" ? "ia" : "usuario",
   });
 

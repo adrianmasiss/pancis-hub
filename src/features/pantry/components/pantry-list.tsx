@@ -1,8 +1,9 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
@@ -79,7 +80,7 @@ export function PantryList({ items }: { items: PantryItemView[] }) {
               aria-label={`${t.remove} — ${item.name}`}
             >
               {pending && removingId === item.foodId ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                <NewtonsCradle size={24} />
               ) : (
                 <X className="size-4" aria-hidden="true" />
               )}

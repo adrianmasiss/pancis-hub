@@ -6,12 +6,12 @@ Construir confianza en calculos, permisos y flujos criticos del MVP.
 
 ## Herramientas
 
-- Vitest para pruebas unitarias (`npm run test`) — 108 tests.
+- Vitest para pruebas unitarias (`npm run test`) — 446 tests.
 - React Testing Library para componentes.
 - Playwright para end-to-end (`npm run test:e2e`).
 - TypeScript estricto como primera linea de verificacion (`npm run typecheck`).
 
-## End-to-end (e2e/flujo-minimo.spec.ts)
+## End-to-end
 
 Requiere `supabase start` (con seed aplicado); Playwright levanta la app
 en modo produccion automaticamente.
@@ -25,6 +25,18 @@ Cubre el flujo minimo completo del MVP: registrar cuenta → onboarding de
 entrenamiento con serie → registrar peso → completar diario → cambiar de
 objetivo y aceptar el recalculo → cambiar tema → cerrar sesion → iniciar
 sesion → verificar persistencia.
+
+La regresion se reparte entre:
+
+- `e2e/flujo-minimo.spec.ts`: recorrido integral del MVP.
+- `e2e/sustitucion-por-dia.spec.ts`: sustituciones temporales de ejercicios.
+- `e2e/registro-plan-nutricion.spec.ts`: registra una comida del plan con la
+  sustitucion visible para la fecha elegida, conserva su snapshot y evita
+  duplicados al recargar.
+
+Playwright vacia `GOOGLE_GENERATIVE_AI_API_KEY` al levantar la aplicacion. Las
+pruebas del asistente usan asi el respaldo determinista y no dependen de red,
+cuota ni credenciales personales.
 
 El caso del recalculo comprueba las dos mitades de la regla: que guardar
 el perfil NO reescribe los objetivos, y que aceptar la propuesta si lo
@@ -62,6 +74,9 @@ Cobertura inicial:
 - validaciones Zod;
 - permisos y ownership helpers;
 - calculo de macros de recetas desde ingredientes.
+- composicion del plan por fecha, incluidas sustituciones de biblioteca y
+  estimaciones externas;
+- registro idempotente de comidas del plan y su fecha exacta.
 
 ## Integracion
 

@@ -4,11 +4,15 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AtSign, Mail, User } from "lucide-react";
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { Button } from "@/components/ui/button";
-import { Section } from "@/components/shared/section";
+import { SocialAuthRow } from "@/features/auth/components/social-auth-row";
+import { IconField } from "@/features/auth/components/icon-field";
+import { PasswordField } from "@/features/auth/components/password-field";
 import { signUp } from "@/features/auth/actions";
-import { FormField } from "@/components/shared/form-field";
 import { registerSchema, type RegisterInput } from "@/features/auth/schemas";
+import { cn } from "@/lib/utils";
 import { messages } from "@/i18n/es-419";
 
 export function RegisterForm() {
@@ -18,6 +22,7 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       displayName: "",
+      username: "",
       email: "",
       password: "",
       passwordConfirm: "",
@@ -35,65 +40,134 @@ export function RegisterForm() {
   };
 
   return (
-    <Section
-      title={messages.auth.register.title}
-      description={messages.auth.register.description}
-    >
-      <div>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-          noValidate
-        >
-          <FormField
-            label={messages.auth.fields.displayName}
-            autoComplete="name"
-            error={form.formState.errors.displayName?.message}
-            {...form.register("displayName")}
-          />
-          <FormField
-            label={messages.auth.fields.email}
-            type="email"
-            autoComplete="email"
-            error={form.formState.errors.email?.message}
-            {...form.register("email")}
-          />
-          <FormField
-            label={messages.auth.fields.password}
-            type="password"
-            autoComplete="new-password"
-            error={form.formState.errors.password?.message}
-            {...form.register("password")}
-          />
-          <FormField
-            label={messages.auth.fields.passwordConfirm}
-            type="password"
-            autoComplete="new-password"
-            error={form.formState.errors.passwordConfirm?.message}
-            {...form.register("passwordConfirm")}
-          />
-          {serverError ? (
-            <p role="alert" className="text-destructive text-sm">
-              {serverError}
-            </p>
-          ) : null}
-          <Button
-            type="submit"
-            variant="brand"
-            size="lg"
-            className="w-full"
-            disabled={pending}
-          >
-            {pending ? messages.common.loading : messages.auth.register.submit}
-          </Button>
-        </form>
-        <p className="text-muted-foreground mt-4 text-center text-sm">
-          {messages.auth.register.hasAccount}{" "}
-          <Link href="/login" className="hover:text-foreground underline">
-            {messages.auth.register.loginLink}
-          </Link>
-        </p>
+    <div className="auth-reference-form flex flex-col items-center gap-6">
+      <div
+        className="auth-step w-full"
+        style={{ "--step": 0 } as React.CSSProperties}
+      >
+        <h1 className="page-display text-balance">
+          {messages.auth.register.title}
+        </h1>
       </div>
-    </Section>
+
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="auth-step flex w-full flex-col gap-4"
+        style={{ "--step": 1 } as React.CSSProperties}
+        noValidate
+      >
+        <IconField
+          icon={User}
+          label={messages.auth.fields.displayName}
+          autoComplete="name"
+          placeholder={messages.auth.fields.displayName}
+          error={form.formState.errors.displayName?.message}
+          {...form.register("displayName")}
+        />
+
+        {/* El usuario va DESPUES del nombre y antes del correo: primero como
+            te llamas, luego como te llamamos, luego donde te escribimos. La
+            arroba es suya —es el simbolo de un nombre de usuario— y el correo
+            se queda con el sobre. */}
+        <IconField
+          icon={AtSign}
+          label={messages.auth.fields.username}
+          autoComplete="username"
+          spellCheck={false}
+          autoCapitalize="none"
+          placeholder={messages.auth.fields.usernamePlaceholder}
+          error={form.formState.errors.username?.message}
+          hint={messages.auth.fields.usernameHint}
+          {...form.register("username")}
+        />
+
+        <IconField
+          icon={Mail}
+          label={messages.auth.fields.email}
+          type="email"
+          autoComplete="email"
+          placeholder={messages.auth.fields.emailPlaceholder}
+          error={form.formState.errors.email?.message}
+          {...form.register("email")}
+        />
+
+        <PasswordField
+          label={messages.auth.fields.password}
+          autoComplete="new-password"
+          placeholder={messages.auth.fields.passwordPlaceholder}
+          error={form.formState.errors.password?.message}
+          {...form.register("password")}
+        />
+
+        <PasswordField
+          label={messages.auth.fields.passwordConfirm}
+          autoComplete="new-password"
+          placeholder={messages.auth.fields.passwordConfirm}
+          error={form.formState.errors.passwordConfirm?.message}
+          {...form.register("passwordConfirm")}
+        />
+
+        {serverError ? (
+          <p role="alert" className="text-destructive text-sm">
+            {serverError}
+          </p>
+        ) : null}
+
+        <Button
+          type="submit"
+          variant="brand"
+          size="xl"
+          className={cn(
+            "relative overflow-hidden transition-[width,border-radius] duration-[var(--pc-dur-surface,260ms)] ease-[var(--pc-spring)]",
+            pending ? "mx-auto w-14 rounded-full" : "w-full",
+          )}
+          aria-label={pending ? messages.common.loading : undefined}
+          disabled={pending}
+          aria-busy={pending}
+        >
+          <span
+            aria-hidden={pending}
+            className={cn(
+              "transition-opacity duration-150",
+              pending && "opacity-0",
+            )}
+          >
+            {messages.auth.register.submit}
+          </span>
+          {pending && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 grid place-items-center"
+            >
+              <NewtonsCradle size={32} />
+            </span>
+          )}
+        </Button>
+      </form>
+
+      {/* Mismo orden que Iniciar sesion: pie, divisor y terceros al final. */}
+      <p
+        className="auth-step auth-account-link flex flex-wrap items-center justify-center gap-2 text-sm"
+        style={{ "--step": 2 } as React.CSSProperties}
+      >
+        <span className="text-muted-foreground">
+          {messages.auth.register.hasAccount}
+        </span>
+        <Link
+          href="/login"
+          transitionTypes={["auth-swap"]}
+          className="text-foreground hover:text-primary font-semibold transition-colors"
+        >
+          {messages.auth.register.loginLink}
+        </Link>
+      </p>
+
+      <div
+        className="auth-step flex w-full flex-col items-center gap-4"
+        style={{ "--step": 3 } as React.CSSProperties}
+      >
+        <SocialAuthRow />
+      </div>
+    </div>
   );
 }

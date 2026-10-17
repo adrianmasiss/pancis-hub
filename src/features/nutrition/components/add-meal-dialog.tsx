@@ -20,7 +20,13 @@ import { messages } from "@/i18n/es-419";
 
 const t = messages.nutrition;
 
-export function AddMealDialog({ date }: { date: string }) {
+export function AddMealDialog({
+  date,
+  trigger = "primary",
+}: {
+  date: string;
+  trigger?: "primary" | "plan-row";
+}) {
   const [open, setOpen] = useState(false);
   const [mealType, setMealType] = useState<string>("desayuno");
   const [name, setName] = useState("");
@@ -47,7 +53,15 @@ export function AddMealDialog({ date }: { date: string }) {
       <DialogTrigger asChild>
         {/* La accion prominente de Nutricion: es a lo que se entra. Lleva el
             degradado del logotipo, y es la unica de la pantalla que lo lleva. */}
-        <Button variant="brand" size="lg">
+        <Button
+          variant={trigger === "plan-row" ? "outline" : "brand"}
+          size="lg"
+          className={
+            trigger === "plan-row"
+              ? "border-hairline text-muted-foreground hover:border-primary/50 hover:text-foreground h-12 w-full rounded-sm border-dashed bg-transparent font-medium"
+              : "h-11 rounded-md px-5 text-[13px]"
+          }
+        >
           <Plus className="size-4" aria-hidden="true" />
           {t.addMeal}
         </Button>

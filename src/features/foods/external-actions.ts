@@ -48,7 +48,9 @@ async function requireUserId(): Promise<string | null> {
  * Es idempotente: si otro usuario ya lo importo, devuelve el existente
  * gracias al indice unico (external_source, external_id).
  */
-export async function importExternalFood(input: unknown): Promise<ImportResult> {
+export async function importExternalFood(
+  input: unknown,
+): Promise<ImportResult> {
   const parsed = importSchema.safeParse(input);
   const userId = await requireUserId();
   if (!parsed.success || !userId) return { error: t.errors.failed };
@@ -94,9 +96,10 @@ export async function importExternalFood(input: unknown): Promise<ImportResult> 
       fiber_g: food.per100g.fiberG,
       sugar_g: food.sugarG,
       sodium_mg: food.sodiumMg,
+      nutrition_basis: food.nutritionBasis ?? "100g",
       external_source: source,
       external_id: externalId,
-      source: provider.label,
+      source: food.provenance ?? provider.label,
       source_updated_at: food.sourceUpdatedAt,
       // Importado != verificado: el dato viene de una fuente externa y no
       // ha sido revisado. La UI lo muestra como tal.
@@ -128,6 +131,7 @@ export async function importExternalFood(input: unknown): Promise<ImportResult> 
         label: portion.label.slice(0, 60),
         grams: portion.grams,
         household_measure: portion.householdMeasure?.slice(0, 60) ?? null,
+        source: source === "usda" ? "usda" : "openfoodfacts",
       })),
     );
   }
@@ -153,7 +157,10 @@ export async function importExternalFood(input: unknown): Promise<ImportResult> 
       id: created.id,
     });
     if (imageUrl) {
-      await admin.from("foods").update({ image_url: imageUrl }).eq("id", created.id);
+      await admin
+        .from("foods")
+        .update({ image_url: imageUrl })
+        .eq("id", created.id);
     }
   }
 

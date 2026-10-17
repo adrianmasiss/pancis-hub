@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
-import { scaleMacros } from "@/features/nutrition/lib/macros";
 import {
   attachHouseholdEquivalence,
   buildPortionsMap,
@@ -30,7 +29,10 @@ async function requireUser() {
   return { supabase, user };
 }
 
-const logMealSchema = z.object({ templateMealId: z.uuid(), date: z.string() });
+const logMealSchema = z.object({
+  templateMealId: z.uuid(),
+  date: z.iso.date(),
+});
 
 /**
  * Registra una comida de la dieta activa como una comida REAL de hoy
@@ -39,64 +41,24 @@ const logMealSchema = z.object({ templateMealId: z.uuid(), date: z.string() });
  */
 export async function logDietTemplateMeal(
   input: unknown,
-): Promise<DashboardActionResult> {
+): Promise<DashboardActionResult & { alreadyLogged?: boolean }> {
   const parsed = logMealSchema.safeParse(input);
   const { supabase, user } = await requireUser();
-  if (!parsed.success || !user) return { error: t.uploadCta };
+  if (!parsed.success || !user) return { error: t.logFailed };
 
-  const { data: templateMeal } = await supabase
-    .from("diet_template_meals")
-    .select(
-      "id, name, meal_type, diet_template_items(quantity_g, foods(id, calories, protein_g, carbohydrate_g, fat_g, fiber_g))",
-    )
-    .eq("id", parsed.data.templateMealId)
-    .single();
-  if (!templateMeal || (templateMeal.diet_template_items ?? []).length === 0) {
-    return { error: messages.nutrition.actionFailed };
-  }
-
-  const { data: meal, error: mealError } = await supabase
-    .from("meals")
-    .insert({
-      user_id: user.id,
-      date: parsed.data.date,
-      meal_type: templateMeal.meal_type,
-      name: templateMeal.name,
-      status: "completada",
-    })
-    .select("id")
-    .single();
-  if (mealError || !meal) return { error: messages.nutrition.actionFailed };
-
-  const items = (templateMeal.diet_template_items ?? []).map((item) => {
-    const snapshot = scaleMacros(
-      {
-        calories: Number(item.foods?.calories ?? 0),
-        proteinG: Number(item.foods?.protein_g ?? 0),
-        carbohydrateG: Number(item.foods?.carbohydrate_g ?? 0),
-        fatG: Number(item.foods?.fat_g ?? 0),
-        fiberG: Number(item.foods?.fiber_g ?? 0),
-      },
-      Number(item.quantity_g),
-    );
-    return {
-      meal_id: meal.id,
-      food_id: item.foods?.id,
-      quantity_g: item.quantity_g,
-      calories_snapshot: snapshot.calories,
-      protein_snapshot: snapshot.proteinG,
-      carbohydrate_snapshot: snapshot.carbohydrateG,
-      fat_snapshot: snapshot.fatG,
-      fiber_snapshot: snapshot.fiberG,
-    };
+  // La funcion de base de datos hace una sola transaccion: autentica por RLS,
+  // evita duplicados y congela exactamente los sustitutos visibles ese dia.
+  const { data, error } = await supabase.rpc("log_diet_template_meal", {
+    p_template_meal_id: parsed.data.templateMealId,
+    p_date: parsed.data.date,
   });
+  if (error || !data) return { error: t.logFailed };
 
-  const { error: itemsError } = await supabase.from("meal_items").insert(items);
-  if (itemsError) return { error: messages.nutrition.actionFailed };
+  const result = data as { created?: boolean };
 
   revalidatePath("/");
   revalidatePath("/nutricion");
-  return { success: true };
+  return { success: true, alreadyLogged: result.created === false };
 }
 
 // ------------------------------------------------- intercambio por comida
@@ -104,6 +66,9 @@ export async function logDietTemplateMeal(
 const swapSuggestionsSchema = z.object({
   templateItemId: z.uuid(),
   filter: z.enum(SWAP_FILTERS).optional(),
+  query: z.string().trim().max(100).optional(),
+  sameGroupOnly: z.boolean().optional(),
+  date: z.iso.date().optional(),
 });
 const swapItemSchema = z.object({
   templateItemId: z.uuid(),
@@ -122,6 +87,7 @@ type DbFood = {
   name: string;
   food_group: string;
   cooked_state: string | null;
+  image_url?: string | null;
   calories: number;
   protein_g: number;
   carbohydrate_g: number;
@@ -134,6 +100,7 @@ function toEquivalenceFood(food: DbFood): EquivalenceFood {
     id: food.id,
     name: food.name,
     foodGroup: food.food_group as FoodGroup,
+    imageUrl: food.image_url,
     cookedState: food.cooked_state as "crudo" | "cocido" | null,
     per100g: {
       calories: Number(food.calories),
@@ -162,38 +129,77 @@ export async function getDietItemSwapSuggestions(
     .single();
   if (!item?.foods) return { error: swapT.failed };
 
-  const [candidatesResult, preferencesResult, favoriteIds, recentIds, pantryIds] =
-    await Promise.all([
-      supabase
-        .from("foods")
-        .select(
-          "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams)",
-        )
-        .is("deleted_at", null)
-        .limit(300),
-      supabase
-        .from("dietary_preferences")
-        .select("value")
-        .eq("user_id", user.id)
-        .in("preference_type", [
-          "alergia",
-          "restriccion",
-          "alimento_no_deseado",
-        ]),
-      getFavoriteFoodIds(user.id),
-      getRecentFoodIds(user.id),
-      getPantryFoodIds(user.id),
-    ]);
+  const [
+    candidatesResult,
+    preferencesResult,
+    favoriteIds,
+    recentIds,
+    pantryIds,
+  ] = await Promise.all([
+    supabase
+      .from("foods")
+      .select(
+        "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)",
+      )
+      .is("deleted_at", null)
+      .ilike("name", `%${(parsed.data.query ?? "").replace(/[%_]/g, "")}%`)
+      .order("name")
+      .limit(parsed.data.query ? 100 : 1000),
+    supabase
+      .from("dietary_preferences")
+      .select("value")
+      .eq("user_id", user.id)
+      .in("preference_type", ["alergia", "restriccion", "alimento_no_deseado"]),
+    getFavoriteFoodIds(user.id),
+    getRecentFoodIds(user.id),
+    getPantryFoodIds(user.id),
+  ]);
 
+  if (candidatesResult.error || preferencesResult.error)
+    return { error: "No pudimos cargar las alternativas. Inténtalo de nuevo." };
   const candidateRows = candidatesResult.data ?? [];
   const portionsByFoodId = buildPortionsMap(candidateRows);
 
-  const source = toEquivalenceFood(item.foods as DbFood);
+  let source = toEquivalenceFood(item.foods as DbFood);
+  let sourceQuantityG = Number(item.quantity_g);
+  if (parsed.data.date) {
+    const { data: swap, error } = await supabase
+      .from("diet_item_day_swaps")
+      .select(
+        "quantity_g, external_name, external_calories, external_protein_g, external_carbohydrate_g, external_fat_g, foods(id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g)",
+      )
+      .eq("user_id", user.id)
+      .eq("template_item_id", parsed.data.templateItemId)
+      .eq("date", parsed.data.date)
+      .maybeSingle();
+    if (error) return { error: swapT.failed };
+    if (swap) {
+      sourceQuantityG = Number(swap.quantity_g);
+      source = swap.foods
+        ? toEquivalenceFood(swap.foods as DbFood)
+        : {
+            ...source,
+            name: swap.external_name ?? source.name,
+            per100g: {
+              calories: Number(swap.external_calories),
+              proteinG: Number(swap.external_protein_g),
+              carbohydrateG: Number(swap.external_carbohydrate_g),
+              fatG: Number(swap.external_fat_g),
+              fiberG: 0,
+            },
+          };
+    }
+  }
   const alternatives = attachHouseholdEquivalence(
     rankAlternatives({
       source,
-      sourceQuantityG: Number(item.quantity_g),
-      candidates: candidateRows.map((food) => toEquivalenceFood(food as DbFood)),
+      sourceQuantityG,
+      candidates: candidateRows
+        .map((food) => toEquivalenceFood(food as DbFood))
+        .filter(
+          (food) =>
+            !parsed.data.sameGroupOnly || food.foodGroup === source.foodGroup,
+        ),
       favoriteIds,
       recentIds: new Set(recentIds),
       pantryIds,
@@ -205,7 +211,7 @@ export async function getDietItemSwapSuggestions(
 
   return {
     sourceName: source.name,
-    sourceQuantityG: Number(item.quantity_g),
+    sourceQuantityG,
     alternatives,
   };
 }
@@ -219,10 +225,15 @@ export async function swapDietTemplateItem(
 
   const { error } = await supabase
     .from("diet_template_items")
-    .update({ food_id: parsed.data.foodId, quantity_g: parsed.data.quantityG })
+    .update({
+      food_id: parsed.data.foodId,
+      quantity_g: parsed.data.quantityG,
+      serving_equivalence: null,
+    })
     .eq("id", parsed.data.templateItemId);
   if (error) return { error: swapT.failed };
 
   revalidatePath("/");
+  revalidatePath("/nutricion");
   return { success: true };
 }

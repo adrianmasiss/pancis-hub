@@ -1,0 +1,101 @@
+/* ---------------------------------------------------------------------------
+   Accion que se expande (Importar dieta, Crear alimento).
+
+   Capsula carbon con un circulo del degradado de marca; al pasar por encima
+   (o con foco de teclado) el circulo crece hasta llenarla y el rotulo se
+   retira hacia la derecha. Gesto de la referencia del usuario, con naranja
+   Pancis y Geist en vez de morado. Un solo sitio para las dos acciones.
+--------------------------------------------------------------------------- */
+.expand-action {
+  --expand-w: 176px;
+  --expand-h: 48px;
+  --expand-dot: 36px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: var(--expand-w);
+  height: var(--expand-h);
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background-color: rgb(12 12 12);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 14px 30px -18px rgb(0 0 0 / 0.8);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.expand-action-icon {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--expand-dot);
+  height: var(--expand-dot);
+  border-radius: 999px;
+  color: var(--primary-foreground, #090909);
+  background: linear-gradient(
+    to bottom,
+    var(--primary-strong, #ffaa68),
+    var(--pc-brand-from, var(--primary))
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+  transition: width 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.expand-action-text {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow: hidden;
+  padding-left: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  color: #fff;
+  transition:
+    opacity 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.expand-action:hover,
+.expand-action:focus-visible {
+  border-color: color-mix(in oklch, var(--primary) 55%, transparent);
+}
+.expand-action:hover .expand-action-icon,
+.expand-action:focus-visible .expand-action-icon {
+  width: calc(var(--expand-w) - 14px);
+}
+.expand-action:hover .expand-action-text,
+.expand-action:focus-visible .expand-action-text {
+  opacity: 0;
+  transform: translateX(14px);
+}
+.expand-action:active {
+  transform: scale(0.95);
+}
+.expand-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .expand-action-icon,
+  .expand-action-text {
+    transition-duration: 0.01s;
+  }
+}
+@media (max-width: 600px) {
+  .expand-action {
+    --expand-w: 160px;
+    --expand-h: 44px;
+    --expand-dot: 32px;
+  }
+  .expand-action-text {
+    font-size: 13.5px;
+  }
+}

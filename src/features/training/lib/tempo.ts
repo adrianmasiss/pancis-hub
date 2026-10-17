@@ -27,7 +27,9 @@ export type Tempo = {
 
 /** Duracion total por repeticion, en segundos. */
 export function tempoDurationSeconds(tempo: Tempo): number {
-  return tempo.eccentric + tempo.bottomPause + tempo.concentric + tempo.topPause;
+  return (
+    tempo.eccentric + tempo.bottomPause + tempo.concentric + tempo.topPause
+  );
 }
 
 /**

@@ -1,0 +1,123 @@
+/* La capsula flotante. Material de vidrio oscuro: separa sin tapar, y el
+   contenido se intuye pasando por debajo. Nunca vidrio claro sobre vidrio. */
+.dock {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 40;
+  transform: translateX(-50%);
+  padding: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--sidebar, #0e0e0e) 88%, transparent);
+  border: 1px solid color-mix(in oklab, #fff 9%, transparent);
+  box-shadow:
+    0 18px 40px -16px rgb(0 0 0 / 0.75),
+    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+@media (min-width: 768px) {
+  .dock {
+    display: none;
+  }
+}
+.dock ul {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dock-tab {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 52px;
+  height: 52px;
+  padding: 0 15px;
+  border-radius: 999px;
+  color: color-mix(in oklab, var(--foreground) 78%, transparent);
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    gap 320ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.dock-tab:active {
+  transform: scale(0.92);
+}
+.dock-tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .dock-tab:hover {
+    color: var(--foreground);
+  }
+}
+.dock-tab[data-active] {
+  gap: 7px;
+  color: #1b0e06;
+  background: transparent;
+}
+/* El disco naranja que se desliza entre pestañas. */
+.dock-active {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow:
+    0 8px 20px -8px color-mix(in oklch, var(--primary) 85%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.dock-icon {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+/* El rótulo crece de 0 a su ancho. Con `max-width` y no con una rejilla de
+   0fr a 1fr: dentro de una cápsula de ancho automático, 1fr no tiene de qué
+   ser fracción y se queda en cero. */
+.dock-label {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    max-width 320ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 160ms ease;
+}
+.dock-tab[data-active] .dock-label {
+  max-width: 7.5em;
+  opacity: 1;
+  transition:
+    max-width 320ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 200ms ease 120ms;
+}
+@media (max-width: 360px) {
+  .dock-tab {
+    min-width: 46px;
+    height: 46px;
+    padding: 0 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-tab,
+  .dock-label {
+    transition: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .dock {
+    background: var(--sidebar, #0e0e0e);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

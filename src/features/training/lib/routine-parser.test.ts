@@ -116,3 +116,69 @@ describe("summarizeRoutine", () => {
     });
   });
 });
+
+describe("rutina en PDF de entrenador", () => {
+  const routine = parseRoutineText(`Coach Leonardo González
+Rutina
+Notas
+Mantener la intensidad en la rutina descansos no mayores a 40 segundos
+Lunes
+Pecho abdomen
+Nota importante mantener presionado el pecho
+para buscar una buena congestión
+1. Press inclinado barra 4x12
+2. Press inclinado agarre neutro mancuerna 4x12 más press power 4x12
+5. Aperturas en polea 4x12 sostiene 2 segundos más
+push up al fallo con pies en banca
+abdomen
+1. Plancha 1 minuto 3 series
+2. 150 abdominales
+Jueves
+Hombros
+● Circuito todo junto 3 series de 12 repeticiones
+1 press militar barra de pie
+6. Tricep fondos con peso 4x12 tricep polea mecate 4x15`);
+  const [lunes, jueves] = routine.days;
+
+  it("el día toma su nombre de la línea siguiente y guarda su nota entera", () => {
+    expect(lunes!.name).toBe("Lunes - Pecho abdomen");
+    expect(lunes!.note).toBe(
+      "Importante mantener presionado el pecho para buscar una buena congestión",
+    );
+  });
+  it("el encabezado y las notas generales no son ejercicios", () => {
+    expect(routine.notes[0]).toBe("Coach Leonardo González");
+    expect(lunes!.exercises.map((e) => e.rawName)).not.toContain("Abdomen");
+  });
+  it("separa superseries, también partidas en dos renglones", () => {
+    const names = lunes!.exercises.map((e) => e.rawName);
+    expect(names).toContain("Press power");
+    expect(names).toContain("Push up");
+    const aperturas = lunes!.exercises.find(
+      (e) => e.rawName === "Aperturas en polea",
+    )!;
+    expect(aperturas.notes).toMatch(/Superserie con Push up/);
+    expect(aperturas.notes).toMatch(/sostiene 2 segundos/i);
+  });
+  it("lee «1 minuto 3 series» y «150 abdominales»", () => {
+    const plancha = lunes!.exercises.find((e) => e.rawName === "Plancha")!;
+    expect(plancha.sets).toBe(3);
+    expect(plancha.notes).toBe("1 minuto");
+    const abs = lunes!.exercises.find((e) => e.rawName === "Abdominales")!;
+    expect([abs.sets, abs.repsMin]).toEqual([1, 150]);
+  });
+  it("aplica el descanso de las notas y el circuito a lo que sigue", () => {
+    expect(lunes!.exercises.every((e) => e.restSeconds === 40)).toBe(true);
+    const militar = jueves!.exercises[0]!;
+    expect([militar.sets, militar.repsMin, militar.notes]).toEqual([
+      3,
+      12,
+      "En circuito",
+    ]);
+  });
+  it("separa dos ejercicios seguidos sin «más»", () => {
+    expect(jueves!.exercises.map((e) => [e.rawName, e.repsMin])).toContainEqual(
+      ["Tricep polea mecate", 15],
+    );
+  });
+});

@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Barcode, Loader2, Plus } from "lucide-react";
+import { Barcode, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,63 +29,11 @@ import {
   normalizeBarcode,
   toSearchableBarcode,
 } from "@/features/foods/lib/barcode";
+import { useBarcodeCamera } from "@/features/foods/lib/use-barcode-camera";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.foods.barcode;
 const n = messages.nutrition;
-
-/**
- * Formatos de producto. Se piden explicitamente para que el detector no
- * pierda tiempo buscando QR y codigos que aqui no sirven.
- */
-const BARCODE_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e"];
-
-type BarcodeDetectorLike = {
-  detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]>;
-};
-
-type BarcodeDetectorConstructor = new (options: {
-  formats: string[];
-}) => BarcodeDetectorLike;
-
-/** La disponibilidad de camara no cambia durante la vida de la pagina. */
-const subscribeNever = () => () => {};
-const hasCamera = () =>
-  typeof navigator !== "undefined" &&
-  typeof navigator.mediaDevices?.getUserMedia === "function";
-
-function getNativeDetector(): BarcodeDetectorConstructor | null {
-  if (typeof window === "undefined") return null;
-  const candidate = (window as unknown as Record<string, unknown>)
-    .BarcodeDetector;
-  return typeof candidate === "function"
-    ? (candidate as BarcodeDetectorConstructor)
-    : null;
-}
-
-/**
- * Detector para navegadores sin BarcodeDetector nativo, Safari y iPhone entre
- * ellos (defecto D-003). `barcode-detector` es un polyfill de esa misma API
- * sobre ZXing compilado a WebAssembly, asi que el resto del componente no
- * cambia: sea nativo o polyfill, se usa igual.
- *
- * Se carga con import dinamico y solo cuando hace falta. En Chrome y Android,
- * que traen la API nativa, no se descarga nada.
- */
-async function loadDetectorConstructor(): Promise<BarcodeDetectorConstructor | null> {
-  const native = getNativeDetector();
-  if (native) return native;
-  if (typeof window === "undefined") return null;
-
-  try {
-    const { BarcodeDetector } = await import("barcode-detector/ponyfill");
-    return BarcodeDetector as unknown as BarcodeDetectorConstructor;
-  } catch {
-    // Si el polyfill no carga (sin red, WebAssembly bloqueado), queda la
-    // entrada manual, que nunca se esconde.
-    return null;
-  }
-}
 
 /**
  * Escaneo de codigo de barras para agregar productos empacados
@@ -126,30 +69,6 @@ export function BarcodeScanner({
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<ExternalSearchResult | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const scanningRef = useRef(false);
-
-  /**
-   * Con el polyfill, el unico requisito real es que el navegador tenga
-   * camara. Se lee con useSyncExternalStore para que el servidor devuelva
-   * false y no haya desajuste de hidratacion: alli no existe `navigator`.
-   */
-  const supportsCamera = useSyncExternalStore(
-    subscribeNever,
-    hasCamera,
-    () => false,
-  );
-
-  /** Apaga la camara. Dejarla encendida al cerrar seria un fallo grave. */
-  const stopCamera = useCallback(() => {
-    scanningRef.current = false;
-    for (const track of streamRef.current?.getTracks() ?? []) track.stop();
-    streamRef.current = null;
-  }, []);
-
   const lookup = useCallback(async (rawCode: string) => {
     const code = normalizeBarcode(rawCode);
     if (!isValidBarcode(code)) {
@@ -170,53 +89,10 @@ export function BarcodeScanner({
     setResult(found);
   }, []);
 
-  const startCamera = useCallback(async () => {
-    // El polyfill se descarga aqui, no al montar el componente: solo paga el
-    // peso quien realmente abre el escaner en un navegador que lo necesita.
-    const DetectorConstructor = await loadDetectorConstructor();
-    if (!DetectorConstructor) {
-      setCameraError(t.noCameraSupport);
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        // La camara trasera es la util para escanear un envase.
-        video: { facingMode: "environment" },
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-
-      const detector = new DetectorConstructor({ formats: BARCODE_FORMATS });
-      scanningRef.current = true;
-
-      const scan = async () => {
-        if (!scanningRef.current || !videoRef.current) return;
-        try {
-          const codes = await detector.detect(videoRef.current);
-          const code = codes[0]?.rawValue;
-          if (code && isValidBarcode(code)) {
-            scanningRef.current = false;
-            stopCamera();
-            await lookup(code);
-            return;
-          }
-        } catch {
-          // Un fotograma ilegible no es un error: se intenta con el siguiente.
-        }
-        setTimeout(scan, 300);
-      };
-      void scan();
-    } catch {
-      setCameraError(t.cameraDenied);
-    }
-  }, [lookup, stopCamera]);
-
-  // La camara se apaga tambien si el componente desaparece sin cerrar.
-  useEffect(() => stopCamera, [stopCamera]);
+  const camera = useBarcodeCamera((code) => void lookup(code));
+  const { stop: stopCamera, start: startCamera, videoRef } = camera;
+  const supportsCamera = camera.supportsCamera;
+  const cameraError = camera.error;
 
   const importFood = () => {
     if (!result) return;
@@ -258,7 +134,6 @@ export function BarcodeScanner({
     setResult(null);
     setNotFound(false);
     setManualCode("");
-    setCameraError(null);
   };
 
   return (
@@ -326,10 +201,11 @@ export function BarcodeScanner({
                   placeholder="7501000111145"
                   onChange={(event) => setManualCode(event.target.value)}
                 />
-                <Button type="submit" disabled={searching || !manualCode.trim()}>
-                  {searching ? (
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                  ) : null}
+                <Button
+                  type="submit"
+                  disabled={searching || !manualCode.trim()}
+                >
+                  {searching ? <NewtonsCradle size={24} /> : null}
                   {t.search}
                 </Button>
               </div>
@@ -361,9 +237,15 @@ export function BarcodeScanner({
                     </Badge>
                   </p>
                   <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 text-xs">
-                    <MacroChip type="calories" value={result.per100g.calories} />
+                    <MacroChip
+                      type="calories"
+                      value={result.per100g.calories}
+                    />
                     <MacroChip type="protein" value={result.per100g.proteinG} />
-                    <MacroChip type="carbs" value={result.per100g.carbohydrateG} />
+                    <MacroChip
+                      type="carbs"
+                      value={result.per100g.carbohydrateG}
+                    />
                     <MacroChip type="fat" value={result.per100g.fatG} />
                     <span>{n.per100g}</span>
                   </p>
@@ -387,7 +269,7 @@ export function BarcodeScanner({
                     onClick={importFood}
                   >
                     {importing ? (
-                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                      <NewtonsCradle size={24} />
                     ) : (
                       <Plus className="size-4" aria-hidden="true" />
                     )}

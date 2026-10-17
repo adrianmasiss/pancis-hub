@@ -54,8 +54,14 @@ describe("rateExercise", () => {
 
   it("penaliza la inestabilidad a un principiante y la perdona a un avanzado", () => {
     const inestable = exercise({ stability: 3 });
-    const novato = rateExercise(inestable, context({ experience: "principiante" }));
-    const avanzado = rateExercise(inestable, context({ experience: "avanzado" }));
+    const novato = rateExercise(
+      inestable,
+      context({ experience: "principiante" }),
+    );
+    const avanzado = rateExercise(
+      inestable,
+      context({ experience: "avanzado" }),
+    );
 
     const novatoScore = novato.find((r) => r.dimension === "estabilidad")!;
     const avanzadoScore = avanzado.find((r) => r.dimension === "estabilidad")!;
@@ -93,7 +99,10 @@ describe("rateExercise", () => {
   });
 
   it("penaliza un ejercicio muy fatigante colocado al final de la sesion", () => {
-    const alInicio = rateExercise(exercise(), context({ positionInSession: 1 }));
+    const alInicio = rateExercise(
+      exercise(),
+      context({ positionInSession: 1 }),
+    );
     const alFinal = rateExercise(exercise(), context({ positionInSession: 5 }));
 
     const inicio = alInicio.find((r) => r.dimension === "fatiga")!;
@@ -138,15 +147,21 @@ describe("compareExercises", () => {
 
   it("reconoce musculo y patron compartidos", () => {
     const result = compareExercises(exercise(), prensa);
-    expect(result.similarities.some((s) => s.includes("cuadriceps"))).toBe(true);
-    expect(result.similarities.some((s) => s.includes("sentadilla"))).toBe(true);
+    expect(result.similarities.some((s) => s.includes("cuadriceps"))).toBe(
+      true,
+    );
+    expect(result.similarities.some((s) => s.includes("sentadilla"))).toBe(
+      true,
+    );
     expect(result.compatibility).toBeGreaterThan(6);
   });
 
   it("explica que se gana y que se pierde", () => {
     const result = compareExercises(exercise(), prensa);
     // La prensa es mas estable y mas facil de progresar.
-    expect(result.advantages.some((a) => a.startsWith("Estabilidad"))).toBe(true);
+    expect(result.advantages.some((a) => a.startsWith("Estabilidad"))).toBe(
+      true,
+    );
     // Pero recorta rango frente a la sentadilla.
     expect(result.limitations.some((l) => l.startsWith("Rango"))).toBe(true);
     expect(result.differences.some((d) => d.includes("equipo"))).toBe(true);
@@ -168,9 +183,9 @@ describe("compareExercises", () => {
     });
     const result = compareExercises(exercise(), curl);
     expect(result.recommendation).toContain("no sustituye");
-    expect(result.differences.some((d) => d.includes("musculo principal"))).toBe(
-      true,
-    );
+    expect(
+      result.differences.some((d) => d.includes("musculo principal")),
+    ).toBe(true);
   });
 
   it("distingue unilateral de bilateral", () => {

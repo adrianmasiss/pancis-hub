@@ -25,8 +25,7 @@ const planIdSchema = z.object({
 const versionIdSchema = z.object({ versionId: z.uuid() });
 
 export type PlanVersionActionResult =
-  | { error: string }
-  | { success: true; version?: number };
+  { error: string } | { success: true; version?: number };
 
 /** Foto de la rutina tal como esta ahora, con nombres del momento. */
 async function buildPlanSnapshot(

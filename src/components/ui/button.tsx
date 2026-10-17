@@ -15,26 +15,24 @@ const buttonVariants = cva(
   // texto apagado, que se lee y ademas comunica mejor "aqui todavia no".
   // El paso a :active baja a 75ms para que la pulsacion se sienta inmediata;
   // los 200ms se reservan al hover, donde el cambio debe leerse suave.
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap [letter-spacing:0] transition-colors duration-200 active:duration-75 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:border-transparent disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap [letter-spacing:-0.01em] transition-[background-color,color,border-color,transform,box-shadow] duration-200 active:translate-y-px active:duration-75 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:border-transparent disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       // --btn-glow define el tono del halo que sigue al cursor en cada variante:
       // luz sobre superficies llenas, bronce sobre superficies claras.
       variant: {
-        // La accion prominente de la pantalla, y solo una por pantalla
-        // (regla 1). Es lo unico que lleva el degradado del logotipo; el resto
-        // de las acciones reales van con `default`, que es --primary plano.
-        // Sin esta variante la regla no se podia expresar en codigo: todas las
-        // acciones salian identicas y ninguna mandaba.
-        brand: "bg-brand-button",
+        // La accion dominante usa el naranja solido. `default` usa tinta para
+        // que las acciones locales no compitan con ella.
+        brand:
+          "bg-brand-button shadow-[0_8px_22px_-14px_color-mix(in_oklch,var(--primary)_70%,transparent)]",
         default:
-          "btn-spotlight bg-primary text-primary-foreground [--btn-glow:color-mix(in_oklch,white_26%,transparent)] hover:bg-primary/92 active:bg-primary/84",
+          "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
         outline:
-          "btn-spotlight border-hairline bg-card hover:border-primary/35 hover:text-foreground active:bg-muted [--btn-glow:color-mix(in_oklch,var(--primary)_14%,transparent)] aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-border-strong bg-card/80 text-foreground hover:border-foreground/20 hover:bg-card active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
-          "btn-spotlight bg-secondary text-secondary-foreground active:bg-secondary/75 [--btn-glow:color-mix(in_oklch,var(--foreground)_8%,transparent)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/75 active:bg-secondary/60 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "btn-spotlight hover:text-foreground active:bg-muted [--btn-glow:color-mix(in_oklch,var(--foreground)_7%,transparent)] aria-expanded:bg-muted aria-expanded:text-foreground",
+          "text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 active:bg-destructive/30 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:active:bg-destructive/40 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline active:text-primary/75 disabled:bg-transparent",
@@ -46,11 +44,9 @@ const buttonVariants = cva(
           "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
         xs: "h-7 gap-1 rounded-sm px-2.5 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-8 gap-1.5 rounded-sm px-3 text-[0.8125rem] in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
-        // La accion prominente a ancho completo, como la dibuja la maqueta:
-        // 54px de alto y capsula. Es el objetivo tactil del pulgar en la
-        // pantalla que mas se usa de pie.
-        xl: "h-[3.375rem] gap-2 rounded-full px-6 text-[0.9375rem] font-bold",
+        lg: "h-11 gap-2 rounded-xl px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+        // La accion prominente gana escala, no una forma distinta al sistema.
+        xl: "h-[3.375rem] gap-2 rounded-[14px] px-6 text-[0.9375rem] font-bold",
         icon: "size-10",
         "icon-xs":
           "size-7 rounded-sm in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",
@@ -70,7 +66,6 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
-  onPointerMove,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -83,24 +78,12 @@ function Button({
    * useState a proposito: mover el raton sobre un boton no debe provocar
    * renders de React.
    */
-  const handlePointerMove = React.useCallback(
-    (event: React.PointerEvent<HTMLButtonElement>) => {
-      onPointerMove?.(event);
-      const el = event.currentTarget;
-      const rect = el.getBoundingClientRect();
-      el.style.setProperty("--btn-x", `${event.clientX - rect.left}px`);
-      el.style.setProperty("--btn-y", `${event.clientY - rect.top}px`);
-    },
-    [onPointerMove],
-  );
-
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
-      onPointerMove={handlePointerMove}
       {...props}
     />
   );

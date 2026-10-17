@@ -1,0 +1,700 @@
+/* ---------------------------------------------------------------------------
+   Agregar alimento (oct 2026)
+
+   The same family as the comparison: a tray with inserts set into it. The
+   three ways in share one segmented control; the active way opens a single
+   insert (the photo, the viewfinder); every way lands in the same form,
+   whose nutrients read like the comparison cards, one coloured line each.
+
+   Theme-safe through tokens: inserts are black in dark and a quiet raised
+   surface in light.
+--------------------------------------------------------------------------- */
+.focus-card.add-food-focus {
+  width: min(640px, calc(100vw - 32px));
+  --afs-insert: color-mix(in oklab, var(--foreground) 4%, var(--card));
+  --afs-field: color-mix(in oklab, var(--foreground) 5%, var(--card));
+  --afs-line: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --afs-top: color-mix(in oklab, var(--foreground) 6%, transparent);
+  --afs-muted: var(--muted-foreground);
+  --afs-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+.dark .focus-card.add-food-focus {
+  --afs-insert: #000;
+  --afs-field: #0f0f11;
+  --afs-line: rgb(255 255 255 / 7%);
+  --afs-top: rgb(255 255 255 / 9%);
+  --afs-muted: #8e8e94;
+}
+/* The tray: graphite lit from above, like the comparison dialog. */
+.dark .focus-card.add-food-focus.v11-card {
+  border-radius: 36px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 5%), transparent 70%),
+    linear-gradient(180deg, #17171a 0%, #0e0e10 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 9%),
+    inset 0 0 0 1px rgb(255 255 255 / 6%),
+    0 40px 100px -30px rgb(0 0 0 / 80%),
+    0 12px 32px -16px rgb(0 0 0 / 60%);
+}
+.focus-card.add-food-focus[data-layout="card"] .focus-card-scroll {
+  padding: 0;
+}
+
+/* Header, top left: icon, title, and the promise under the title text. */
+.add-food-focus .focus-card-header {
+  justify-items: start;
+  gap: 4px;
+  padding: 30px 72px 18px 32px;
+  text-align: left;
+}
+.add-food-focus .focus-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.add-food-focus .focus-card-description {
+  margin-left: 42px;
+  font-size: 14px;
+  color: var(--afs-muted);
+}
+.afs-title-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
+.afs-body {
+  display: grid;
+  gap: 18px;
+  padding: 2px 32px 32px;
+}
+.afs-methods.cmp-segmented {
+  --cmp-ctl: 46px;
+  display: flex;
+  width: 100%;
+}
+.afs-methods .cmp-segment {
+  flex: 1;
+}
+
+/* ── The insert that holds the active way in ───────────────────────────── */
+.afs-stage {
+  border-radius: 28px;
+  background: var(--afs-insert);
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1px var(--afs-line);
+}
+.afs-pane {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 26px 24px 24px;
+  text-align: center;
+}
+.afs-pane-glyph {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: var(--foreground);
+  background: var(--afs-field);
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1px var(--afs-line);
+}
+.afs-pane-copy {
+  display: grid;
+  gap: 4px;
+  max-width: 40ch;
+}
+.afs-pane-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.afs-pane-sub {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--afs-muted);
+  text-wrap: pretty;
+}
+.afs-pane-error {
+  font-weight: 500;
+  color: color-mix(in oklab, var(--destructive) 80%, var(--foreground));
+}
+.afs-pane-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.afs-drop-hint {
+  display: none;
+  font-size: 12px;
+  color: var(--afs-muted);
+}
+.afs-label-pane[data-dragging] {
+  outline: 1.5px dashed color-mix(in oklab, var(--primary) 70%, transparent);
+  outline-offset: -8px;
+  border-radius: 28px;
+}
+
+/* The photo, and the light that sweeps it while it is being read. */
+.afs-preview {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--afs-field);
+  box-shadow: inset 0 0 0 1px var(--afs-line);
+}
+.afs-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.afs-preview[aria-busy="true"] img {
+  filter: saturate(0.6) brightness(0.75);
+  transition: filter 300ms var(--afs-ease);
+}
+.afs-sweep {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 34%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 26%, transparent) 70%,
+    color-mix(in oklab, var(--primary) 85%, white) 98%,
+    transparent
+  );
+  animation: afs-sweep 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
+}
+@keyframes afs-sweep {
+  from {
+    transform: translateY(-40%);
+  }
+  to {
+    transform: translateY(230%);
+  }
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.afs-primary,
+.afs-secondary,
+.afs-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    scale 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 200ms,
+    box-shadow 200ms;
+}
+.afs-primary,
+.afs-save {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 10px 24px -12px
+    color-mix(in oklab, var(--primary) 80%, transparent);
+}
+.afs-secondary {
+  color: var(--foreground);
+  background: var(--afs-field);
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1px var(--afs-line);
+}
+.afs-secondary:disabled,
+.afs-save:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.afs-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.afs-primary:active,
+.afs-secondary:active:not(:disabled),
+.afs-save:active:not(:disabled) {
+  scale: 0.97;
+}
+@media (hover: hover) and (pointer: fine) {
+  /* A desk has no rear camera: the photo comes from a file or a drop. */
+  .afs-camera-only {
+    display: none;
+  }
+  .afs-drop-hint {
+    display: block;
+  }
+  .afs-secondary:hover:not(:disabled) {
+    box-shadow:
+      inset 0 1px 0 var(--afs-top),
+      inset 0 0 0 1px color-mix(in oklab, var(--foreground) 22%, transparent);
+  }
+  .afs-link:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Barcode ───────────────────────────────────────────────────────────── */
+.afs-viewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #000;
+  box-shadow: inset 0 0 0 1px var(--afs-line);
+}
+.afs-viewfinder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Four corners and a slow line: where to put the code, and that it's live. */
+.afs-reticle {
+  position: absolute;
+  inset: 26% 14%;
+  border-radius: 14px;
+  background:
+    linear-gradient(#fff, #fff) top left / 22px 2px,
+    linear-gradient(#fff, #fff) top left / 2px 22px,
+    linear-gradient(#fff, #fff) top right / 22px 2px,
+    linear-gradient(#fff, #fff) top right / 2px 22px,
+    linear-gradient(#fff, #fff) bottom left / 22px 2px,
+    linear-gradient(#fff, #fff) bottom left / 2px 22px,
+    linear-gradient(#fff, #fff) bottom right / 22px 2px,
+    linear-gradient(#fff, #fff) bottom right / 2px 22px;
+  background-repeat: no-repeat;
+  opacity: 0.9;
+}
+.afs-reticle::after {
+  content: "";
+  position: absolute;
+  inset-inline: 10px;
+  top: 50%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 12px var(--primary);
+  animation: afs-scanline 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
+}
+@keyframes afs-scanline {
+  from {
+    transform: translateY(-34px);
+  }
+  to {
+    transform: translateY(34px);
+  }
+}
+.afs-code-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.afs-code-row .afs-input {
+  flex: 1;
+  min-width: 0;
+}
+.afs-notfound {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--afs-muted);
+}
+.afs-notfound span {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+.afs-product {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+}
+.afs-product-img {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--afs-field);
+  box-shadow: inset 0 0 0 1px var(--afs-line);
+}
+.afs-product-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.afs-product-text strong {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.afs-product-text small {
+  font-size: 13px;
+  color: var(--afs-muted);
+}
+
+/* ── The form ──────────────────────────────────────────────────────────── */
+.afs-form {
+  display: grid;
+  gap: 16px;
+}
+.afs-origin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--afs-muted);
+}
+.afs-origin::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+}
+.afs-origin[data-kind="barcode"]::before {
+  background: #3fd9cf;
+  box-shadow: 0 0 8px #3fd9cf;
+}
+.afs-identity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.afs-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.afs-field-wide {
+  grid-column: 1 / -1;
+}
+.afs-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--afs-muted);
+}
+.afs-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 15px;
+  color: var(--foreground);
+  background: var(--afs-insert);
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1px var(--afs-line);
+  outline: none;
+  transition: box-shadow 200ms;
+}
+.afs-input::placeholder {
+  color: color-mix(in oklab, var(--afs-muted) 70%, transparent);
+}
+.afs-input:focus-visible {
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1.5px color-mix(in oklab, var(--foreground) 34%, transparent);
+}
+.afs-input-name {
+  height: 52px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.afs-select {
+  appearance: none;
+  padding-right: 40px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238e8e94' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")
+      right 16px center / 14px no-repeat,
+    var(--afs-insert);
+}
+.afs-field[data-invalid] .afs-input {
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1.5px color-mix(in oklab, var(--destructive) 70%, transparent);
+}
+.afs-field-error,
+.afs-error {
+  font-size: 12px;
+  color: color-mix(in oklab, var(--destructive) 80%, var(--foreground));
+}
+.afs-state.cmp-segmented {
+  --cmp-ctl: 40px;
+  justify-self: start;
+}
+.afs-state .cmp-segment-label {
+  font-size: 14px;
+}
+
+/* Nutrients: one insert, one line each, coloured like the comparison bars. */
+.afs-nutrients {
+  display: grid;
+  margin: 0;
+  padding: 6px 20px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--afs-insert);
+  box-shadow:
+    inset 0 1px 0 var(--afs-top),
+    inset 0 0 0 1px var(--afs-line);
+}
+.afs-nutrients legend {
+  float: left;
+  width: 100%;
+  padding: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--afs-muted);
+}
+.afs-nutrient {
+  --tone: var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  margin-inline: -20px;
+  padding-inline: 20px;
+  box-shadow: inset 0 1px 0 var(--afs-line);
+  cursor: text;
+}
+.afs-nutrient[data-tone="energy"] {
+  --tone: var(--primary);
+}
+.afs-nutrient[data-tone="protein"] {
+  --tone: #ffc75a;
+}
+.afs-nutrient[data-tone="carbs"] {
+  --tone: #a996ff;
+}
+.afs-nutrient[data-tone="fat"] {
+  --tone: #3fd9cf;
+}
+.afs-nutrient[data-tone="fiber"] {
+  --tone: #7ddc8f;
+}
+.afs-nutrient[data-tone="sugar"] {
+  --tone: #ff9ec4;
+}
+.afs-nutrient[data-tone="sodium"] {
+  --tone: #9ecbff;
+}
+.afs-nutrient-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.afs-nutrient-name::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+.afs-optional {
+  font-size: 12px;
+  color: var(--afs-muted);
+}
+.afs-nutrient-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.afs-nutrient-value input {
+  width: 96px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--tone);
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  outline: none;
+  appearance: textfield;
+}
+.afs-nutrient-value input::-webkit-inner-spin-button,
+.afs-nutrient-value input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.afs-nutrient-value input::placeholder {
+  color: var(--afs-muted);
+  font-weight: 400;
+}
+.afs-nutrient-value small {
+  width: 28px;
+  font-size: 13px;
+  color: var(--afs-muted);
+}
+.afs-nutrient:focus-within {
+  background: color-mix(in oklab, var(--tone) 7%, transparent);
+}
+.afs-nutrient[data-invalid] .afs-nutrient-name {
+  color: color-mix(in oklab, var(--destructive) 80%, var(--foreground));
+}
+
+/* What a scan filled flashes once in its own colour, then settles: the
+   person sees which numbers came from the label and checks those. */
+.afs-nutrient[data-filled] {
+  animation: afs-fill 1.2s var(--afs-ease) both;
+}
+.afs-nutrients .afs-nutrient[data-filled]:nth-of-type(2) {
+  animation-delay: 40ms;
+}
+.afs-nutrients .afs-nutrient[data-filled]:nth-of-type(3) {
+  animation-delay: 80ms;
+}
+.afs-nutrients .afs-nutrient[data-filled]:nth-of-type(4) {
+  animation-delay: 120ms;
+}
+.afs-nutrients .afs-nutrient[data-filled]:nth-of-type(n + 5) {
+  animation-delay: 160ms;
+}
+@keyframes afs-fill {
+  from {
+    background: color-mix(in oklab, var(--tone) 22%, transparent);
+  }
+}
+.afs-field[data-filled] .afs-input {
+  animation: afs-fill-field 1.2s var(--afs-ease) both;
+}
+@keyframes afs-fill-field {
+  from {
+    background: color-mix(in oklab, var(--primary) 16%, var(--afs-insert));
+  }
+}
+
+.afs-actions {
+  padding-top: 4px;
+}
+.afs-save {
+  width: 100%;
+  height: 52px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afs-sweep,
+  .afs-reticle::after {
+    animation: none;
+  }
+  .afs-sweep {
+    top: 33%;
+  }
+  .afs-nutrient[data-filled],
+  .afs-field[data-filled] .afs-input {
+    animation-duration: 0.6s;
+  }
+  .afs-primary:active,
+  .afs-secondary:active,
+  .afs-save:active {
+    scale: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .focus-card.add-food-focus {
+    width: calc(100vw - 20px);
+  }
+  .dark .focus-card.add-food-focus.v11-card {
+    border-radius: 28px;
+  }
+  .add-food-focus .focus-card-header {
+    padding: 22px 58px 14px 18px;
+  }
+  .add-food-focus .focus-card-description {
+    margin-left: 0;
+  }
+  .afs-body {
+    gap: 14px;
+    padding: 0 14px 18px;
+  }
+  .afs-methods.cmp-segmented {
+    --cmp-ctl: 42px;
+  }
+  .afs-methods .cmp-segment {
+    padding: 0 8px;
+  }
+  .afs-methods .cmp-segment-label {
+    font-size: 13px;
+    gap: 5px;
+  }
+  .afs-pane {
+    padding: 20px 16px 18px;
+  }
+  .afs-identity {
+    grid-template-columns: 1fr;
+  }
+  .afs-nutrients {
+    padding-inline: 16px;
+  }
+  .afs-nutrient {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+}
+
+/* Once read, the photo steps aside into a compact row so the form, which is
+   now what matters, rises to meet the eye. */
+.afs-label-pane[data-state="done"] {
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  justify-items: start;
+  gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+}
+.afs-label-pane[data-state="done"] .afs-preview {
+  width: 56px;
+  aspect-ratio: 1;
+  border-radius: 14px;
+}
+.afs-label-pane[data-state="done"] .afs-pane-title {
+  font-size: 15px;
+}
+.afs-label-pane[data-state="done"] .afs-pane-actions .afs-secondary {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+}

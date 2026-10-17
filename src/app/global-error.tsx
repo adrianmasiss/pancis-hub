@@ -1,13 +1,9 @@
 "use client"; // Los limites de error deben ser componentes de cliente.
 
 import { useEffect } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ErrorState } from "@/components/shared/error-state";
 import { messages } from "@/i18n/es-419";
 import "./globals.css";
-
-const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 /**
  * Ultimo recurso: solo entra si falla el layout raiz.
@@ -15,12 +11,12 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
  * Sustituye al layout raiz por completo, asi que repite html, body, fuentes y
  * hoja de estilos. ThemeProvider tampoco corre aqui, de modo que la clase
  * .dark se aplica con un script minimo que lee la misma llave de
- * localStorage ("theme") que usa el proveedor: sin el, la pagina de fallo
+ * localStorage ("pancis-theme") que usa el proveedor: sin el, la pagina de fallo
  * apareceria siempre en claro sobre una app en oscuro.
  *
  * metadata no esta soportado en este archivo; el titulo va como <title>.
  */
-const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");var d=t==="dark"||((!t||t==="system")&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light"}catch(e){}`;
+const THEME_SCRIPT = `try{var t=localStorage.getItem("pancis-theme");var d=t!=="light";document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light"}catch(e){document.documentElement.classList.add("dark")}`;
 
 export default function GlobalError({
   error,
@@ -37,7 +33,7 @@ export default function GlobalError({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="dark h-full antialiased"
     >
       <body className="flex min-h-full flex-col">
         <title>{`${messages.errorState.title} | ${messages.app.name}`}</title>

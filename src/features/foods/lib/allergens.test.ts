@@ -66,7 +66,9 @@ describe("matchesRestriction: grupos", () => {
   it('declarar "lácteos" no excluye pollo ni arroz', () => {
     const restricciones = ["lácteos"];
     expect(matchesRestriction("Pechuga de pollo", restricciones)).toBe(false);
-    expect(matchesRestriction("Arroz blanco cocido", restricciones)).toBe(false);
+    expect(matchesRestriction("Arroz blanco cocido", restricciones)).toBe(
+      false,
+    );
   });
 
   it('"gluten" excluye pan y pasta', () => {
@@ -76,7 +78,9 @@ describe("matchesRestriction: grupos", () => {
 
   it('"mariscos" excluye camarones pero no pescado blanco', () => {
     expect(matchesRestriction("Camarones cocidos", ["mariscos"])).toBe(true);
-    expect(matchesRestriction("Tilapia a la plancha", ["mariscos"])).toBe(false);
+    expect(matchesRestriction("Tilapia a la plancha", ["mariscos"])).toBe(
+      false,
+    );
   });
 
   // EQ-004: el sesamo es alergeno mayor declarable y faltaba en la lista.

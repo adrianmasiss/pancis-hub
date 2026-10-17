@@ -5,13 +5,13 @@ import { ChefHat } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  FocusCard,
+  FocusCardContent,
+  FocusCardDescription,
+  FocusCardHeader,
+  FocusCardTitle,
+  FocusCardTrigger,
+} from "@/components/ui/focus-card";
 import { CompatibilityScore } from "@/components/shared/compatibility-score";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
 import {
@@ -77,7 +77,11 @@ export function RecipeSwapSheet({
 
   const confirm = (recipeId: string, servings: number) => {
     startTransition(async () => {
-      const result = await replaceMealWithRecipe({ mealId, recipeId, servings });
+      const result = await replaceMealWithRecipe({
+        mealId,
+        recipeId,
+        servings,
+      });
       if ("error" in result) toast.error(result.error);
       else {
         toast.success(t.replaced);
@@ -88,7 +92,7 @@ export function RecipeSwapSheet({
   };
 
   return (
-    <Sheet
+    <FocusCard
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
@@ -97,11 +101,11 @@ export function RecipeSwapSheet({
       }}
     >
       {/*
-        El disparador va dentro de SheetTrigger: llamar setOpen(true) por
+        El disparador va dentro de FocusCardTrigger: llamar setOpen(true) por
         fuera abre la hoja sin pasar por onOpenChange, y las sugerencias
         nunca se cargarian.
       */}
-      <SheetTrigger asChild>
+      <FocusCardTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
@@ -110,13 +114,13 @@ export function RecipeSwapSheet({
         >
           <ChefHat className="size-4" />
         </Button>
-      </SheetTrigger>
+      </FocusCardTrigger>
 
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{t.title}</SheetTitle>
-          <SheetDescription>{t.description}</SheetDescription>
-        </SheetHeader>
+      <FocusCardContent>
+        <FocusCardHeader>
+          <FocusCardTitle>{t.title}</FocusCardTitle>
+          <FocusCardDescription>{t.description}</FocusCardDescription>
+        </FocusCardHeader>
 
         <div className="space-y-3 overflow-y-auto px-4 pb-6">
           {!hasItems ? (
@@ -200,7 +204,7 @@ export function RecipeSwapSheet({
             </>
           ) : null}
         </div>
-      </SheetContent>
-    </Sheet>
+      </FocusCardContent>
+    </FocusCard>
   );
 }

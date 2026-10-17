@@ -68,11 +68,7 @@ export function FoodRow({ food }: { food: LibraryFood }) {
           )}
         />
       </Button>
-      <FoodThumbnail
-        src={food.imageUrl}
-        alt={food.name}
-        className="size-10"
-      />
+      <FoodThumbnail src={food.imageUrl} alt={food.name} className="size-10" />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-1.5 text-sm">
           <span className="truncate font-medium">{food.name}</span>

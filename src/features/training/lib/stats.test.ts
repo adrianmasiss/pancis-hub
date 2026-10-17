@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   effectiveSetCount,
+  estimatedMinutes,
+  exerciseHistory,
+  latestRecord,
   muscleFrequency,
   personalRecords,
   sessionVolume,
@@ -89,5 +92,71 @@ describe("muscleFrequency", () => {
       ["cuadriceps", 2],
       ["pecho", 1],
     ]);
+  });
+});
+
+describe("exerciseHistory", () => {
+  const set = (
+    day: string,
+    weightKg: number,
+    repetitions = 8,
+    isWarmup = false,
+  ) => ({
+    exerciseId: "banca",
+    isWarmup,
+    weightKg,
+    repetitions,
+    createdAt: `${day}T10:00:00Z`,
+  });
+  it("toma la serie más pesada de cada día y separa la última de la anterior", () => {
+    const h = exerciseHistory([
+      set("2026-10-01", 75),
+      set("2026-10-01", 77.5),
+      set("2026-10-08", 80, 6),
+      set("2026-10-08", 60, 10, true),
+    ]).get("banca")!;
+    expect(h.last).toEqual({
+      weightKg: 80,
+      repetitions: 6,
+      date: "2026-10-08",
+    });
+    expect(h.previous).toEqual({
+      weightKg: 77.5,
+      repetitions: 8,
+      date: "2026-10-01",
+    });
+  });
+});
+
+describe("latestRecord", () => {
+  it("la primera vez no es marca; la siguiente que supera sí", () => {
+    const base = {
+      exerciseName: "Press banca",
+      isWarmup: false,
+      repetitions: 8,
+    };
+    expect(
+      latestRecord([
+        { ...base, exerciseId: "b", weightKg: 80, createdAt: "2026-10-01" },
+      ]),
+    ).toBeNull();
+    const r = latestRecord([
+      { ...base, exerciseId: "b", weightKg: 80, createdAt: "2026-10-01" },
+      { ...base, exerciseId: "b", weightKg: 82.5, createdAt: "2026-10-08" },
+      { ...base, exerciseId: "b", weightKg: 82.5, createdAt: "2026-10-10" },
+    ]);
+    expect(r).toMatchObject({
+      weightKg: 82.5,
+      deltaKg: 2.5,
+      date: "2026-10-08",
+    });
+  });
+});
+
+describe("estimatedMinutes", () => {
+  it("cuenta trabajo, descansos entre series y el cambio de ejercicio", () => {
+    // 4 series × 45 s + 3 descansos × 120 s + 60 s = 600 s
+    expect(estimatedMinutes([{ sets: 4, restSeconds: 120 }])).toBe(10);
+    expect(estimatedMinutes([{ sets: null, restSeconds: null }])).toBe(0);
   });
 });

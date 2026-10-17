@@ -11,12 +11,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  FocusCard,
+  FocusCardContent,
+  FocusCardDescription,
+  FocusCardHeader,
+  FocusCardTitle,
+} from "@/components/ui/focus-card";
 import { FormField } from "@/components/shared/form-field";
 import {
   getExerciseAlternatives,
@@ -283,18 +283,20 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
         </DialogContent>
       </Dialog>
 
-      <Sheet
+      <FocusCard
         open={swapOpen}
         onOpenChange={(next) => {
           setSwapOpen(next);
           if (!next) setAlternatives(null);
         }}
       >
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>{t.substituteTitle}</SheetTitle>
-            <SheetDescription>{t.substituteDescription}</SheetDescription>
-          </SheetHeader>
+        <FocusCardContent>
+          <FocusCardHeader>
+            <FocusCardTitle>{t.substituteTitle}</FocusCardTitle>
+            <FocusCardDescription>
+              {t.substituteDescription}
+            </FocusCardDescription>
+          </FocusCardHeader>
           <div className="space-y-2 overflow-y-auto px-4 pb-6">
             {/*
               El motivo se pide antes de elegir: una sustitucion sin motivo no
@@ -425,8 +427,8 @@ export function PlanExerciseRow({ exercise }: { exercise: PlanExerciseView }) {
               </ul>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </FocusCardContent>
+      </FocusCard>
     </li>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { SessionView } from "@/features/training/components/session-view";
 import { getSessionDetail } from "@/features/training/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -32,7 +32,7 @@ export default async function SessionPage({
 
   return (
     <>
-      <PageHeader title={title} description={t.sessionTitle} />
+      <ViewHeader title={title} description={t.sessionTitle} />
       <SessionView session={session} />
     </>
   );

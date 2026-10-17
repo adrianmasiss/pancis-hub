@@ -81,6 +81,70 @@ export async function seedActiveDiet(userId: string): Promise<string> {
   return template!.id;
 }
 
+/** Identidades de la unica comida/item de `seedActiveDiet`. */
+export async function readSeededDietIds(templateId: string): Promise<{
+  templateMealId: string;
+  templateItemId: string;
+}> {
+  const admin = adminClient();
+  const { data: meals, error } = await admin
+    .from("diet_template_meals")
+    .select("id, diet_template_items(id)")
+    .eq("template_id", templateId)
+    .limit(1);
+  const meal = meals?.[0];
+  const item = meal?.diet_template_items?.[0];
+  if (error || !meal || !item) {
+    throw new Error(
+      `No se pudo leer la dieta sembrada: ${error?.message ?? "sin filas"}`,
+    );
+  }
+  return { templateMealId: meal.id, templateItemId: item.id };
+}
+
+/** Sustituto externo reproducible para probar el registro sin depender de IA. */
+export async function seedExternalDietSwap(input: {
+  userId: string;
+  templateItemId: string;
+  date: string;
+}): Promise<void> {
+  const admin = adminClient();
+  const { error } = await admin.from("diet_item_day_swaps").insert({
+    user_id: input.userId,
+    template_item_id: input.templateItemId,
+    date: input.date,
+    food_id: null,
+    quantity_g: 120,
+    external_name: "Pancakes caseros",
+    external_calories: 230,
+    external_protein_g: 7,
+    external_carbohydrate_g: 35,
+    external_fat_g: 7,
+    source: "asistente",
+  });
+  if (error) throw new Error(`diet_item_day_swaps: ${error.message}`);
+}
+
+/** Registro real creado desde una comida del plan, incluidos sus snapshots. */
+export async function readLoggedPlanMeals(input: {
+  userId: string;
+  templateMealId: string;
+  date: string;
+}) {
+  const admin = adminClient();
+  const { data, error } = await admin
+    .from("meals")
+    .select(
+      "id, status, source_template_meal_id, meal_items(food_id, external_name, quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot)",
+    )
+    .eq("user_id", input.userId)
+    .eq("source_template_meal_id", input.templateMealId)
+    .eq("date", input.date)
+    .is("deleted_at", null);
+  if (error) throw new Error(`meals: ${error.message}`);
+  return data ?? [];
+}
+
 /** Cambia la cantidad del unico alimento de la dieta sembrada. */
 export async function changeSeededQuantity(
   templateId: string,
@@ -206,4 +270,25 @@ export async function completeOnboarding(userId: string): Promise<void> {
     })
     .eq("id", userId);
   if (error) throw new Error(`profiles: ${error.message}`);
+}
+
+/** Objetivo activo minimo para que las pantallas nutricionales sean reales. */
+export async function seedNutritionTarget(
+  userId: string,
+  effectiveFrom: string,
+): Promise<void> {
+  const admin = adminClient();
+  const { error } = await admin.from("nutrition_targets").insert({
+    user_id: userId,
+    effective_from: effectiveFrom,
+    calories: 2000,
+    protein_g: 150,
+    carbohydrate_g: 220,
+    fat_g: 60,
+    fiber_g: 30,
+    water_ml: 2400,
+    source: "estimacion_inicial",
+    status: "active",
+  });
+  if (error) throw new Error(`nutrition_targets: ${error.message}`);
 }

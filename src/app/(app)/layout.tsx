@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
-import { UserMenu } from "@/features/auth/components/user-menu";
 import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
@@ -39,19 +38,11 @@ export default async function AppLayout({
   return (
     <AppShell
       displayName={displayName}
+      email={user.email}
       avatarUrl={avatarUrl}
-      topBarActions={
-        <UserMenu
-          displayName={displayName}
-          email={user.email ?? ""}
-          avatarUrl={avatarUrl}
-        />
-      }
     >
       {children}
-      <footer className="text-muted-foreground border-t pt-4 text-xs text-balance">
-        {messages.legal.disclaimer}
-      </footer>
+      <footer className="sr-only">{messages.legal.disclaimer}</footer>
     </AppShell>
   );
 }

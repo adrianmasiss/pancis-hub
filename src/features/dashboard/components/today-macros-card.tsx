@@ -28,23 +28,23 @@ export function TodayMacrosCard({ today }: { today: TodayNutrition }) {
   const macros = today.rows.filter((row) => row.macro !== "calories");
 
   return (
-    <section className="surface-card px-5 py-1.5">
-      <ul>
+    <section className="border-hairline min-h-[244px] border-b px-0 lg:min-h-[330px] lg:border-y-0 lg:border-b-0 lg:border-l lg:px-10 lg:py-7">
+      <ul className="grid h-full grid-rows-4">
         {macros.map((row, index) => {
           const unit = UNITS[row.macro];
           const over = row.remaining < 0;
           return (
             <li
               key={row.macro}
-              className={index > 0 ? "border-rule border-t" : undefined}
+              className={index > 0 ? "border-hairline border-t" : undefined}
             >
-              <div className="flex flex-col gap-2 py-3.5">
+              <div className="flex h-full flex-col justify-center gap-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium capitalize">
+                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium capitalize lg:text-[15px]">
                     {t.macroNames[row.macro]}
                   </span>
                   <span
-                    className={`num shrink-0 text-sm font-semibold ${over ? "text-critical" : ""}`}
+                    className={`num shrink-0 text-sm font-medium ${over ? "text-critical" : ""}`}
                   >
                     {over ? "+" : ""}
                     {Math.abs(row.remaining)} {unit}

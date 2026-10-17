@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * que sustituye: mismas alturas, mismas columnas, mismo filete. Si no, la
  * llegada de los datos empuja el layout (CLS) y el usuario percibe un
  * parpadeo en vez de una espera. Por eso estas piezas copian las medidas de
- * PageHeader, Card y MetricCard en lugar de apilar rectangulos genericos.
+ * ViewHeader, Card y MetricCard en lugar de apilar rectangulos genericos.
  */
 
 /** Envoltorio accesible comun. Anuncia la espera una sola vez por region. */
@@ -26,6 +26,12 @@ export function LoadingShell({
       aria-label={messages.common.loading}
       className={cn("space-y-6", className)}
     >
+      {/* Sin puntos arriba. Quien cuenta la espera al cambiar de seccion es la
+          cortina de marca (`NavLoadingScreen`); repetirla aqui daba dos avisos
+          de lo mismo, uno encima del otro. Lo que queda es el esqueleto, que
+          no anuncia la espera: reserva la geometria de lo que va a llegar.
+          El aviso para un lector de pantalla sigue siendo `role="status"` con
+          el texto de abajo. */}
       {children}
       <span className="sr-only">{messages.common.loading}</span>
     </div>
@@ -33,35 +39,30 @@ export function LoadingShell({
 }
 
 /**
- * Reserva de PageHeader.
+ * Reserva de ViewHeader.
  *
- * `icon` y `description` siguen en true por defecto porque las pantallas sin
- * migrar los pasan; las que ya estan en el sistema P7 los apagan, y si el
- * esqueleto no lo hiciera reservaria dos lineas que nunca llegan.
+ * Sigue al encabezado nuevo: titulo de 30px, linea de contexto en versalitas
+ * y entradilla opcional, sin icono y sin filete. El icono salio del
+ * encabezado, asi que tampoco se reserva.
  */
-export function SkeletonPageHeader({
+export function SkeletonViewHeader({
   actions = 2,
-  icon = true,
-  description = true,
+  meta = true,
+  description = false,
   /** Fila extra bajo el titulo (el selector de fecha de Nutricion). */
   subline = false,
 }: {
   actions?: number;
-  icon?: boolean;
+  meta?: boolean;
   description?: boolean;
   subline?: boolean;
 }) {
   return (
-    <div className="border-hairline flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-6">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-2">
       <div className="flex min-w-0 flex-col gap-2">
-        <div className="flex items-center gap-2.5">
-          {icon ? <Skeleton className="size-5 shrink-0 rounded-sm" /> : null}
-          <Skeleton className="h-6 w-44 sm:h-7" />
-        </div>
-        {description ? (
-          <Skeleton className="h-4 w-full max-w-[42ch]" />
-        ) : null}
-        {subline ? <Skeleton className="h-9 w-64 rounded-full" /> : null}
+        <Skeleton className="h-9 w-44" />
+        {meta ? <Skeleton className="h-3 w-32" /> : null}
+        {description ? <Skeleton className="h-4 w-full max-w-[42ch]" /> : null}
       </div>
       {actions > 0 ? (
         <div className="flex shrink-0 items-center gap-2">
@@ -69,6 +70,9 @@ export function SkeletonPageHeader({
             <Skeleton key={index} className="h-10 w-32 rounded-lg" />
           ))}
         </div>
+      ) : null}
+      {subline ? (
+        <Skeleton className="col-span-2 h-9 w-64 rounded-full" />
       ) : null}
     </div>
   );
@@ -130,7 +134,10 @@ export function SkeletonRows({ rows = 4 }: { rows?: number }) {
   return (
     <div className="border-hairline divide-hairline divide-y rounded-xl border">
       {Array.from({ length: rows }, (_, index) => (
-        <div key={index} className="flex items-center justify-between gap-4 p-4">
+        <div
+          key={index}
+          className="flex items-center justify-between gap-4 p-4"
+        >
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-2/5" />
             <Skeleton className="h-3 w-1/4" />
@@ -156,7 +163,7 @@ type LoadingSectionProps = {
 export function LoadingSection({ rows = 3, className }: LoadingSectionProps) {
   return (
     <LoadingShell className={className}>
-      <SkeletonPageHeader />
+      <SkeletonViewHeader />
       {Array.from({ length: rows }, (_, index) => (
         <SkeletonCard key={index} />
       ))}

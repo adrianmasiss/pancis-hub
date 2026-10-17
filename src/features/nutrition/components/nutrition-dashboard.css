@@ -1,0 +1,965 @@
+/* Estructura del dashboard de Figma; superficies y bordes de Pancis. */
+.nutrition-dashboard-header,
+.nutrition-dashboard-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nutrition-dashboard-header {
+  justify-content: space-between;
+  min-height: 56px;
+}
+.nutrition-dashboard-brand h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.nutrition-dashboard-brand p {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin-top: 2px;
+}
+.nutrition-workspace .nutrition-navigation {
+  display: block;
+  min-width: 0;
+}
+.nutrition-workspace .nutrition-workspace-tabs {
+  background: transparent;
+  padding: 0;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.nutrition-workspace .nutrition-workspace-tabs a {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-inline: 20px;
+  border-radius: 999px;
+}
+.nutrition-workspace .nutrition-workspace-tabs a[aria-current] {
+  background: color-mix(in srgb, var(--primary) 16%, var(--card));
+  color: var(--primary);
+}
+.nutrition-workspace .nutrition-date-row {
+  margin-bottom: -10px;
+}
+.nutrition-dashboard-summary {
+  min-width: 0;
+}
+.nutrition-summary-grid {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+/* Rejilla interna compartida: rotulo / cifra / barra / nota. La fila `1fr`
+   absorbe la holgura, asi que la barra y la nota caen a la misma altura en
+   las cuatro tarjetas aunque la cifra ocupe una linea mas. */
+.nutrition-workspace .nutrition-stat {
+  min-width: 0;
+  min-height: 164px;
+  padding: 22px;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  align-content: start;
+}
+.nutrition-stat h3 {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.nutrition-stat-value {
+  margin: 12px 0 0;
+  align-self: start;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.nutrition-stat-value strong {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.nutrition-stat-value span {
+  font-size: 19px;
+  font-weight: 500;
+}
+.nutrition-workspace .nutrition-stat .nutrition-energy-value {
+  display: block;
+}
+.nutrition-workspace .nutrition-stat .nutrition-energy-value strong {
+  font-size: 30px;
+}
+.nutrition-workspace .nutrition-stat .nutrition-energy-value span {
+  font-size: 22px;
+  color: var(--foreground);
+}
+.nutrition-stat-note {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+.nutrition-stat-track {
+  height: 6px;
+  width: 100%;
+  border-radius: 99px;
+  background: var(--v11-track);
+  overflow: hidden;
+  margin-top: 14px;
+}
+.nutrition-stat-track[data-inert] {
+  opacity: 0.45;
+}
+.nutrition-stat-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+/* El pie era una linea suelta pegada a la rejilla. Con filete y aire propio
+   se lee como cierre del resumen y no como resto de la fila anterior. */
+/* Sin puntos separadores: al envolver en movil el punto quedaba huerfano al
+   principio de la linea siguiente. El hueco separa igual y nunca se rompe. */
+.nutrition-summary-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 22px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--v11-line);
+  font-variant-numeric: tabular-nums;
+}
+.nutrition-workspace .nutrition-workspace-grid {
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  gap: 20px;
+}
+.nutrition-workspace .nutrition-table-panel {
+  padding: 24px;
+  border-radius: 24px;
+}
+.nutrition-workspace .nutrition-table-panel .nutrition-panel-heading h2 {
+  font-size: 20px;
+}
+.nutrition-workspace .nutrition-table-panel .nutrition-panel-description {
+  margin: 6px 0 20px;
+  font-size: 12px;
+}
+.nutrition-workspace .nutrition-meal-table {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.nutrition-table-label {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.nutrition-table-label h3 {
+  font-size: inherit;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.nutrition-table-row {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  gap: 8px;
+  padding-right: 10px;
+  border: 1px solid var(--v11-line);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--card) 85%, var(--background));
+}
+.nutrition-table-row[data-selected="true"] {
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  background: color-mix(in srgb, var(--primary) 5%, var(--card));
+}
+.nutrition-table-select {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 14px;
+  padding: 13px 16px;
+  min-height: 72px;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.nutrition-table-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.nutrition-table-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nutrition-table-copy strong {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.nutrition-table-copy > span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.nutrition-table-copy small {
+  font-size: 11px;
+  color: var(--primary);
+}
+.nutrition-table-check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  color: var(--primary);
+  border-radius: 10px;
+}
+.nutrition-table-row[data-done="true"] .nutrition-table-check svg {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border-radius: 7px;
+}
+.nutrition-table-check:disabled {
+  cursor: default;
+}
+.nutrition-table-check[aria-busy="true"] {
+  opacity: 0.5;
+}
+.nutrition-edit-plan {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  align-self: flex-start;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  min-height: 44px;
+  margin-top: -16px;
+}
+.nutrition-workspace .nutrition-side-column {
+  gap: 16px;
+  display: flex;
+}
+.nutrition-workspace .nutrition-substitute {
+  min-height: 220px;
+}
+@container (max-width: 850px) {
+  .nutrition-summary-grid {
+    gap: 12px;
+  }
+  .nutrition-workspace .nutrition-stat {
+    padding: 16px;
+    min-height: 150px;
+  }
+  .nutrition-stat-value strong {
+    font-size: 24px;
+  }
+  .nutrition-stat-value span {
+    font-size: 14px;
+  }
+  .nutrition-workspace .nutrition-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .nutrition-workspace .nutrition-side-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 600px) {
+  .nutrition-dashboard-header {
+    min-height: 42px;
+    gap: 8px;
+  }
+  .nutrition-dashboard-brand {
+    gap: 8px;
+  }
+  .nutrition-dashboard-brand h1 {
+    font-size: 15px;
+  }
+  .nutrition-dashboard-brand p {
+    display: none;
+  }
+  /* El ultimo destino quedaba cortado a media palabra contra el borde, sin
+     nada que dijera que la fila sigue. El degradado lo declara y el relleno
+     final deja que "Historial" llegue entero al hacer scroll. */
+  .nutrition-workspace .nutrition-workspace-tabs {
+    gap: 2px;
+    padding-right: 28px;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  }
+  .nutrition-workspace .nutrition-workspace-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .nutrition-workspace .nutrition-workspace-tabs a {
+    padding-inline: 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .nutrition-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 8px;
+  }
+  .nutrition-workspace .nutrition-stat[data-metric="calories"] {
+    grid-column: 1 / -1;
+    min-height: 145px;
+    padding: 20px;
+  }
+  .nutrition-workspace .nutrition-stat:not([data-metric="calories"]) {
+    padding: 12px 10px;
+    min-height: 78px;
+    border-radius: 14px;
+  }
+  .nutrition-stat:not([data-metric="calories"]) h3 {
+    font-size: 10px;
+  }
+  .nutrition-stat:not([data-metric="calories"]) .nutrition-stat-value {
+    margin: 6px 0;
+  }
+  .nutrition-stat:not([data-metric="calories"]) .nutrition-stat-value strong {
+    font-size: 20px;
+  }
+  .nutrition-stat:not([data-metric="calories"]) .nutrition-stat-value span {
+    font-size: 10px;
+  }
+  .nutrition-stat:not([data-metric="calories"])
+    :is(.nutrition-stat-note, .nutrition-stat-track) {
+    display: none;
+  }
+  .nutrition-summary-caption {
+    font-size: 10px;
+  }
+  .nutrition-workspace .nutrition-table-panel {
+    padding: 18px;
+  }
+  .nutrition-workspace .nutrition-table-panel .nutrition-panel-heading h2 {
+    font-size: 18px;
+  }
+  .nutrition-workspace .nutrition-table-panel .nutrition-panel-description {
+    margin-bottom: 16px;
+  }
+  .nutrition-workspace .nutrition-meal-table {
+    gap: 14px;
+  }
+  .nutrition-table-select {
+    padding: 12px 8px 12px 12px;
+    gap: 10px;
+  }
+  .nutrition-table-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .nutrition-table-copy strong {
+    font-size: 13px;
+  }
+  .nutrition-table-copy > span {
+    font-size: 11px;
+  }
+  .nutrition-table-row {
+    padding-right: 4px;
+    gap: 0;
+  }
+  .nutrition-workspace .nutrition-side-column {
+    display: flex;
+    align-items: stretch;
+  }
+  .nutrition-substitute {
+    order: -1;
+  }
+}
+
+.nutrition-summary-heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+@media (max-width: 600px) {
+  .nutrition-summary-heading-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .nutrition-stat:not([data-metric="calories"]) .nutrition-stat-target {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Acento: el filete de esquinas encendidas, en turquesa.
+
+   Nutrición apaga el borde cónico del v11 en TODAS sus tarjetas (el material
+   de esta superficie es carbón mate). Aquí se reenciende en dos, y solo dos:
+
+     · Calorías — la cifra que manda en el resumen.
+     · Sustituto rápido — la única tarjeta de la columna accionable.
+
+   Dos y no ocho a propósito. Si las cuatro del resumen lo llevaran, el color
+   dejaría de decir «mira esto» para decir «esto es un macro», que es el
+   código por categoría ya descartado. El turquesa no es una paleta nueva:
+   es `--chart-1`, el mismo que ya pinta Carbohidratos en la columna.
+--------------------------------------------------------------------------- */
+.nutrition-workspace .nutrition-stat[data-metric="calories"],
+.nutrition-workspace .nutrition-substitute {
+  position: relative;
+  --nutrition-edge: var(--chart-1);
+}
+.nutrition-workspace .nutrition-stat[data-metric="calories"]::before,
+.nutrition-workspace .nutrition-substitute::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 1.6px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.55;
+  /* Mismo reparto angular que el v11: dos arcos en esquinas opuestas. Cambia
+     la tinta —turquesa en vez de blanco— y nada más, para que se lea como el
+     mismo gesto del sistema y no como otro efecto. */
+  background: conic-gradient(
+    from var(--card-edge),
+    transparent 0deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 8deg,
+    var(--nutrition-edge) 26deg,
+    var(--nutrition-edge) 44deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 62deg,
+    transparent 74deg,
+    transparent 180deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 188deg,
+    var(--nutrition-edge) 206deg,
+    var(--nutrition-edge) 224deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 242deg,
+    transparent 254deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  --card-edge: 0deg;
+  transition:
+    opacity 320ms ease,
+    --card-edge 1.1s cubic-bezier(0.33, 0, 0.15, 1);
+}
+/* Un tinte bajísimo del mismo turquesa en el cuerpo: sin él la tarjeta es
+   carbón con un filete pegado encima, y con él el color parece venir de
+   dentro. Medido para no bajar el contraste del texto. */
+.nutrition-workspace .nutrition-stat[data-metric="calories"],
+.nutrition-workspace .nutrition-substitute {
+  background:
+    radial-gradient(
+      120% 100% at 100% 0%,
+      color-mix(in oklch, var(--chart-1) 7%, transparent),
+      transparent 60%
+    ),
+    var(--card);
+}
+/* La barra se queda NARANJA. El turquesa aquí es la señal de «mira esto»,
+   no un dato: DESIGN.md reserva naranja para energía y turquesa para macros,
+   así que teñir de turquesa la barra de calorías invertía justo eso. El
+   acento vive en el filete, que no significa ninguna magnitud. */
+@media (hover: hover) and (pointer: fine) {
+  .nutrition-workspace .nutrition-stat[data-metric="calories"]:hover::before,
+  .nutrition-workspace .nutrition-substitute:hover::before {
+    opacity: 1;
+    --card-edge: 26deg;
+  }
+}
+.nutrition-workspace
+  .nutrition-stat[data-metric="calories"]:focus-within::before,
+.nutrition-workspace .nutrition-substitute:focus-within::before {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nutrition-workspace .nutrition-stat[data-metric="calories"]::before,
+  .nutrition-workspace .nutrition-substitute::before {
+    transition: none;
+  }
+  .nutrition-workspace .nutrition-stat[data-metric="calories"]:hover::before,
+  .nutrition-workspace .nutrition-substitute:hover::before {
+    --card-edge: 0deg;
+  }
+}
+/* Transparencia reducida: el tinte radial se va y queda la tarjeta sólida.
+   El filete se queda, porque ahí es donde vive el acento. */
+@media (prefers-reduced-transparency: reduce) {
+  .nutrition-workspace .nutrition-stat[data-metric="calories"],
+  .nutrition-workspace .nutrition-substitute {
+    background: var(--card);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Variantes del acento, para mirarlas en la pantalla real.
+
+   `data-acento-tarjeta` en <html> las intercambia. Sin atributo manda lo de
+   arriba (filete). Las dos de aquí abajo apagan el filete cónico: si no, el
+   perímetro compite con el relleno y no se está juzgando ninguna de las dos.
+--------------------------------------------------------------------------- */
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat::before,
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .v11-card.nutrition-substitute::before,
+html[data-acento-tarjeta="vidrio"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat[data-metric="calories"]::before,
+html[data-acento-tarjeta="vidrio"]
+  .nutrition-workspace
+  .v11-card.nutrition-substitute::before {
+  display: none;
+}
+
+/* SÓLIDO — las CUATRO del resumen rellenas de NARANJA; las dos de la
+   derecha, mates.
+
+   El relleno es el naranja de marca y la tinta la misma que ya usa el botón
+   primario encima de ese naranja: es un par que el sistema ya tenía validado,
+   no uno nuevo. Medido, da 6,4:1.
+
+   `--primary` se reasigna a esa tinta oscura porque dentro de la tarjeta la
+   barra de progreso se pintaba también de naranja, y naranja sobre naranja no
+   se ve.
+
+   El borde vive en los dos estados para que al pasar el cursor no se mueva
+   nada: transparente en reposo, negro al entrar. En las mates es turquesa,
+   que es donde el color hace falta para señalar que la tarjeta responde. */
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat {
+  --foreground: #2a0f04;
+  /* Valor fijo, no una mezcla transparente: al 72% sobre el naranja la nota
+     caia a 2,97:1. `#4a1e0c` da 5,07:1 y conserva la jerarquia frente a la
+     tinta principal. Medido, no estimado. */
+  --muted-foreground: #4a1e0c;
+  --subtle-foreground: #4a1e0c;
+  --primary: #2a0f04;
+  --v11-track: color-mix(in oklch, #2a0f04 22%, transparent);
+  --v11-line: color-mix(in oklch, #2a0f04 24%, transparent);
+  --card: color-mix(in oklch, #f0793f 82%, #ffffff);
+  --border: color-mix(in oklch, #2a0f04 32%, transparent);
+  /* `background-image: none` no es redundante: algunas de estas tarjetas
+     llevan `enter-card`, que pinta un degradado radial. Una capa de imagen no
+     la tapa un color de fondo, así que sin esto el fondo se quedaba oscuro
+     con la tinta ya invertida — texto negro sobre carbón, ilegible. */
+  background-color: #f0793f;
+  background-image: none;
+  color: var(--foreground);
+  /* Anillo POR DENTRO, no borde por fuera. Un trazo negro por fuera de una
+     tarjeta turquesa sobre lienzo casi negro no se ve: se funde con el fondo
+     y solo parece que la tarjeta encogió. Por dentro cae sobre el turquesa,
+     que es contra lo que tiene que contrastar. Y al ser sombra no ocupa
+     espacio, así que nada se mueve al entrar el cursor. */
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 200ms ease-out;
+}
+
+/* Las dos de la derecha se quedan como estaban: sin relleno y sin el filete
+   cónico. Solo ganan el borde al pasar el cursor.
+
+   El `background` vuelve al de la tarjeta a secas: la variante por omisión le
+   pone a Sustituto un tinte radial turquesa, y aquí «original» quiere decir
+   sin eso. */
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .v11-card.nutrition-substitute {
+  background-color: var(--card);
+  background-image: none;
+}
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .nutrition-side-column
+  .v11-card {
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Negro sobre el turquesa: es el contraste más alto que admite ese relleno
+     y no mete ningún tono nuevo en la pantalla. */
+  html[data-acento-tarjeta="solido"]
+    .nutrition-workspace
+    .v11-card.nutrition-stat:hover {
+    box-shadow: inset 0 0 0 2.5px #04090a;
+  }
+  html[data-acento-tarjeta="solido"]
+    .nutrition-workspace
+    .nutrition-side-column
+    .v11-card:hover {
+    box-shadow: inset 0 0 0 2px #f0793f;
+  }
+}
+
+/* Sin puntero fino no hay hover que valga, y el borde no debe ser la única
+   señal de que algo responde: el foco de teclado lo muestra igual. */
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat:focus-within {
+  box-shadow: inset 0 0 0 2.5px #04090a;
+}
+html[data-acento-tarjeta="solido"]
+  .nutrition-workspace
+  .nutrition-side-column
+  .v11-card:focus-within {
+  box-shadow: inset 0 0 0 2px #f0793f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-acento-tarjeta="solido"] .nutrition-workspace .v11-card {
+    transition: none;
+  }
+}
+
+/* VIDRIO — turquesa translúcido con el fondo desenfocado detrás.
+
+   Una sola capa de vidrio, y sobre superficie opaca: apilar vidrio sobre
+   vidrio es donde se cae la legibilidad. La tinta se queda clara porque el
+   tinte es oscuro, no claro. El filo superior claro es lo que hace que se lea
+   como material y no como un rectángulo pintado. */
+html[data-acento-tarjeta="vidrio"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat[data-metric="calories"],
+html[data-acento-tarjeta="vidrio"]
+  .nutrition-workspace
+  .v11-card.nutrition-substitute {
+  background-color: color-mix(
+    in oklch,
+    var(--chart-1) 17%,
+    rgb(16 17 18 / 62%)
+  );
+  background-image: none;
+  backdrop-filter: blur(22px) saturate(165%);
+  border: 1px solid color-mix(in oklch, var(--chart-1) 34%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--chart-1) 45%, transparent),
+    0 20px 44px -30px rgb(0 0 0 / 85%);
+}
+html[data-acento-tarjeta="vidrio"]
+  .nutrition-workspace
+  .v11-card.nutrition-stat[data-metric="calories"] {
+  --v11-track: color-mix(in oklch, #ffffff 14%, transparent);
+}
+/* Sin transparencia el vidrio no es vidrio: se vuelve sólido y conserva el
+   filo, que es lo único que seguía significando algo. */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-acento-tarjeta="vidrio"]
+    .nutrition-workspace
+    .nutrition-stat[data-metric="calories"],
+  html[data-acento-tarjeta="vidrio"]
+    .nutrition-workspace
+    .nutrition-substitute {
+    background-color: color-mix(in oklch, var(--chart-1) 17%, var(--card));
+    background-image: none;
+    backdrop-filter: none;
+  }
+}
+
+/* La cabecera del panel lleva el contador y el menú que vivían en «Registro
+   del día». `flex: 0 0 auto` para que no lo estruje el título largo. */
+.nutrition-panel-tools {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+/* «Agregar comida» cierra la lista con el mismo ancho que las filas. */
+.nutrition-add-row {
+  margin-top: 4px;
+}
+.nutrition-row-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--muted-foreground);
+  transition: transform 200ms var(--pc-spring, ease-out);
+}
+.nutrition-row-chevron.is-open {
+  transform: rotate(180deg);
+}
+.nutrition-table-row[data-logged-row] {
+  border-style: dashed;
+}
+.nutrition-logged-detail {
+  padding: 14px 4px 4px;
+}
+.nutrition-day-hint {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--v11-line);
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Primer uso: la superficie es la pantalla entera, no una tarjeta dentro
+   del tablero. Se sostiene sola, asi que respira. */
+.nutrition-start-datebar {
+  display: flex;
+  justify-content: flex-end;
+}
+.nutrition-workspace .nutrition-start-surface {
+  min-height: min(52vh, 460px);
+  justify-content: center;
+}
+.nutrition-workspace .nutrition-start-surface .v11-button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  min-height: 44px;
+  padding-inline: 24px;
+}
+/* AddMealDialog llega con su propio boton; aqui es la accion secundaria y
+   no debe competir con la naranja. */
+.nutrition-workspace .nutrition-start-surface button:not([class*="v11"]) {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  min-height: 44px;
+}
+.nutrition-table-select:active,
+.nutrition-table-check:active,
+.nutrition-workspace .nutrition-start-surface :is(a, button):active {
+  opacity: 0.75;
+}
+
+/* El registro del dia flotaba sin superficie y se caia de la pagina.
+   Ahora es una tarjeta como las de arriba. */
+.nutrition-workspace .nutrition-records {
+  padding: 24px;
+  border-radius: 24px;
+}
+.nutrition-workspace .nutrition-records .nutrition-panel-heading h2 {
+  font-size: 20px;
+}
+@media (max-width: 600px) {
+  .nutrition-workspace .nutrition-records {
+    padding: 18px;
+  }
+  .nutrition-workspace .nutrition-start-surface {
+    min-height: 0;
+    padding-block: 40px;
+  }
+  /* Solo la fila de acciones se estira. Antes la regla alcanzaba tambien a
+     los enlaces alternativos y los centraba uno a uno, sin eje comun. */
+  .nutrition-workspace .nutrition-start-surface [data-empty-actions] {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .nutrition-workspace
+    .nutrition-start-surface
+    [data-empty-actions]
+    :is(a, button) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   NARANJA — vidrio naranja, y SOLO en las cuatro del resumen.
+
+   Corrección de alcance: la primera versión se llevaba la superficie entera
+   —lienzo, filas, botones— y eso no era lo pedido. El lienzo vuelve a ser el
+   carbón mate de siempre; lo único que cambia son las cuatro tarjetas.
+
+   Al apoyarse otra vez sobre carbón y no sobre naranja, el tinte tiene que
+   subir: sobre un fondo ya naranja bastaba un 26%, sobre carbón hace falta
+   más para que se lea como vidrio naranja y no como una tarjeta gris con un
+   matiz. La tinta se queda clara, porque el vidrio es oscuro.
+--------------------------------------------------------------------------- */
+html[data-acento-tarjeta="naranja"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat {
+  /* Secundario tirando a crema, no gris: sobre superficie de color un gris
+     neutro se lee sucio. Medido contra este vidrio, 5,9:1. */
+  --muted-foreground: #ffe0cc;
+  --subtle-foreground: #ffd4bb;
+  --v11-track: color-mix(in oklch, #200a02 52%, transparent);
+  --v11-line: color-mix(in oklch, #ffd5b8 22%, transparent);
+  background-color: color-mix(in oklch, #f0793f 34%, rgb(34 14 6 / 78%));
+  background-image: linear-gradient(
+    145deg,
+    color-mix(in oklch, #ffab6b 18%, transparent),
+    transparent 60%
+  );
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid color-mix(in oklch, #ffc9a6 30%, transparent);
+  /* El filo claro arriba da el canto del material; la sombra lo despega. */
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, #ffe4cf 42%, transparent),
+    0 22px 48px -30px rgb(30 9 2 / 90%);
+}
+html[data-acento-tarjeta="naranja"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat::before {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-acento-tarjeta="naranja"][data-pc]
+    .nutrition-workspace
+    .nutrition-home-card.v11-card.nutrition-stat:hover {
+    border-color: color-mix(in oklch, #ffe4cf 58%, transparent);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-acento-tarjeta="naranja"][data-pc]
+    .nutrition-workspace
+    .nutrition-home-card.v11-card.nutrition-stat {
+    background-color: #6d2a0d;
+    backdrop-filter: none;
+  }
+}
+
+/* La variante base pone filete turquesa a Calorías y a Sustituto. Aquí
+   Calorías ya va en naranja, así que el turquesa que quedaba en Sustituto
+   dejaba dos acentos conviviendo. Se retira: el único color es el naranja de
+   las cuatro. */
+html[data-acento-tarjeta="naranja"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-substitute {
+  background-color: var(--card);
+  background-image: none;
+}
+html[data-acento-tarjeta="naranja"]
+  .nutrition-workspace
+  .v11-card.nutrition-substitute::before {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   DEGRADADO — el ámbar→carmín aportado por el usuario (#FF940B → #95122C).
+
+   En bruto no se puede usar como fondo de texto: el extremo claro tiene
+   luminancia 0,425 y el oscuro 0,070. Con blanco encima el ámbar da 2,21:1;
+   con tinta oscura, el carmín da 2,06:1. No hay un solo color de texto que
+   pase en los dos extremos, y partir la tinta a media tarjeta no es opción.
+
+   Se aplica al 58% sobre la base oscura. La transición de tono —que es lo que
+   hace reconocible el degradado— se conserva entera, y la luminancia baja al
+   rango donde el texto claro aguanta en los dos extremos.
+--------------------------------------------------------------------------- */
+html[data-acento-tarjeta="degradado"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat {
+  --muted-foreground: #ffe3d2;
+  --subtle-foreground: #ffd8c2;
+  --v11-track: color-mix(in oklch, #1a0508 55%, transparent);
+  --v11-line: color-mix(in oklch, #ffd5b8 22%, transparent);
+  background-color: #1a1a1a;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, #ff940b 58%, transparent),
+    color-mix(in srgb, #95122c 58%, transparent)
+  );
+  border: 1px solid color-mix(in oklch, #ffb060 30%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, #ffd9a8 38%, transparent),
+    0 22px 48px -30px rgb(30 6 10 / 90%);
+}
+html[data-acento-tarjeta="degradado"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat::before {
+  display: none;
+}
+/* La barra sobre el degradado va crema: el naranja de marca cae justo encima
+   del extremo ámbar y desaparece. */
+html[data-acento-tarjeta="degradado"]
+  .nutrition-workspace
+  .nutrition-stat
+  .nutrition-stat-track
+  i {
+  background: #fff1e0;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-acento-tarjeta="degradado"][data-pc]
+    .nutrition-workspace
+    .nutrition-home-card.v11-card.nutrition-stat:hover {
+    border-color: color-mix(in oklch, #ffd9a8 58%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   BLANCO — tarjeta blanca, filete negro, esquinas encendidas en naranja.
+
+   Aquí el filete cónico del v11 SÍ vuelve, que es lo que pide «bordes
+   iluminados», pero teñido de naranja y por encima del filete negro: el negro
+   da el recorte contra el lienzo oscuro y el naranja el encendido.
+--------------------------------------------------------------------------- */
+html[data-acento-tarjeta="blanco"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat {
+  --foreground: #101010;
+  /* Sobre blanco el secundario SÍ puede ser un tono medio: el fondo no es de
+     color. Este gris da 7:1. */
+  --muted-foreground: #5c5c5c;
+  --subtle-foreground: #6b6b6b;
+  /* La barra en naranja de marca sobre blanco da 2,8:1 y no llega al 3:1 que
+     pide un elemento gráfico. Este naranja más profundo da 3,87:1. */
+  --primary: #c8580c;
+  --v11-track: #e4e2de;
+  --v11-line: #dedcd8;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1.5px solid #0b0b0b;
+  box-shadow: 0 18px 40px -28px rgb(0 0 0 / 70%);
+}
+html[data-acento-tarjeta="blanco"][data-pc]
+  .nutrition-workspace
+  .nutrition-home-card.v11-card.nutrition-stat::before {
+  display: block;
+  opacity: 0.9;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--card-edge),
+    transparent 0deg,
+    color-mix(in oklch, #f0793f 40%, transparent) 8deg,
+    #ff9a53 26deg,
+    #ff9a53 44deg,
+    color-mix(in oklch, #f0793f 40%, transparent) 62deg,
+    transparent 74deg,
+    transparent 180deg,
+    color-mix(in oklch, #f0793f 40%, transparent) 188deg,
+    #ff9a53 206deg,
+    #ff9a53 224deg,
+    color-mix(in oklch, #f0793f 40%, transparent) 242deg,
+    transparent 254deg
+  );
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-acento-tarjeta="blanco"][data-pc]
+    .nutrition-workspace
+    .nutrition-home-card.v11-card.nutrition-stat:hover::before {
+    opacity: 1;
+    --card-edge: 26deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-acento-tarjeta="blanco"][data-pc]
+    .nutrition-workspace
+    .nutrition-home-card.v11-card.nutrition-stat:hover::before {
+    --card-edge: 0deg;
+  }
+}

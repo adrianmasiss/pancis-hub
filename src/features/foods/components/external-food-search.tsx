@@ -1,8 +1,9 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Loader2, Plus, Search } from "lucide-react";
+import { Globe, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,9 +27,14 @@ const MIN_QUERY_LENGTH = 3;
 const SOURCE_LABELS = {
   usda: "USDA",
   openfoodfacts: "Open Food Facts",
+  dietly: "Dietly",
 } as const;
 
-export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) {
+export function ExternalFoodSearch({
+  initialQuery,
+}: {
+  initialQuery?: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery ?? "");
   const [results, setResults] = useState<ExternalSearchResult[] | null>(null);
@@ -108,10 +114,13 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
           />
         </div>
         <BarcodeScanner />
-        <Button type="button" variant="outline" onClick={search} disabled={searching}>
-          {searching ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={search}
+          disabled={searching}
+        >
+          {searching ? <NewtonsCradle size={24} /> : null}
           {e.searchButton}
         </Button>
       </div>
@@ -127,7 +136,9 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
           <p className="text-muted-foreground text-xs">{e.noResults}</p>
         ) : (
           <>
-            <p className="text-muted-foreground text-xs">{e.unverifiedNotice}</p>
+            <p className="text-muted-foreground text-xs">
+              {e.unverifiedNotice}
+            </p>
             <ul className="divide-y">
               {results.map((food) => (
                 <li
@@ -157,9 +168,15 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
                       </Badge>
                     </p>
                     <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
-                      <MacroChip type="calories" value={food.per100g.calories} />
+                      <MacroChip
+                        type="calories"
+                        value={food.per100g.calories}
+                      />
                       <MacroChip type="protein" value={food.per100g.proteinG} />
-                      <MacroChip type="carbs" value={food.per100g.carbohydrateG} />
+                      <MacroChip
+                        type="carbs"
+                        value={food.per100g.carbohydrateG}
+                      />
                       <MacroChip type="fat" value={food.per100g.fatG} />
                       <MacroChip type="fiber" value={food.per100g.fiberG} />
                       <span>{n.per100g}</span>
@@ -180,7 +197,7 @@ export function ExternalFoodSearch({ initialQuery }: { initialQuery?: string }) 
                       aria-label={`${e.importButton} — ${food.name}`}
                     >
                       {importing && importingId === food.externalId ? (
-                        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                        <NewtonsCradle size={24} />
                       ) : (
                         <Plus className="size-4" aria-hidden="true" />
                       )}

@@ -59,9 +59,7 @@ function MetricRow({ comparison }: { comparison: MetricComparison }) {
           )}
         >
           <Icon className="size-3.5" aria-hidden="true" />
-          {deltaPrevious !== null
-            ? formatDelta(deltaPrevious, unit)
-            : t.stable}
+          {deltaPrevious !== null ? formatDelta(deltaPrevious, unit) : t.stable}
           <span className="text-muted-foreground text-xs font-normal">
             {t.vsPrevious}
           </span>
@@ -113,9 +111,7 @@ export function CompositionSection({ report }: { report: CompositionReport }) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            {t.noCompositionData}
-          </p>
+          <p className="text-muted-foreground text-sm">{t.noCompositionData}</p>
         )}
 
         <p className="text-muted-foreground text-xs">

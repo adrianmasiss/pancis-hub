@@ -1,7 +1,8 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState, useTransition } from "react";
-import { Loader2, Sparkles, TriangleAlert } from "lucide-react";
+import { Sparkles, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,7 +154,9 @@ export function SwapQuestionPanel({
   };
 
   return (
-    <section className={cn("surface-raised flex flex-col gap-3 p-3.5", className)}>
+    <section
+      className={cn("surface-raised flex flex-col gap-3 p-3.5", className)}
+    >
       <div className="flex flex-col gap-1">
         <p className="flex items-center gap-2 text-[13px] font-semibold">
           <Sparkles className="text-primary size-4" aria-hidden="true" />
@@ -190,9 +193,7 @@ export function SwapQuestionPanel({
           />
         </label>
         <Button type="button" onClick={ask} disabled={pending || !query.trim()}>
-          {pending ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : null}
+          {pending ? <NewtonsCradle size={24} /> : null}
           {pending ? t.calculating : t.submit}
         </Button>
       </div>
@@ -276,9 +277,7 @@ export function SwapQuestionPanel({
               disabled={applying}
               className="self-start"
             >
-              {applying ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              ) : null}
+              {applying ? <NewtonsCradle size={24} /> : null}
               {t.applyForToday}
             </Button>
           ) : null}

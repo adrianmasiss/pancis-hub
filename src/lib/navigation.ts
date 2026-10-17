@@ -6,6 +6,7 @@ import {
   History as HistoryIcon,
   Home,
   Refrigerator,
+  BookOpen,
   Settings,
   Sparkles,
   TrendingUp,
@@ -43,16 +44,27 @@ export type NavItem = {
 /**
  * Unica fuente de verdad de la navegacion (docs/05_INFORMATION_ARCHITECTURE.md).
  *
- * El producto se repliega a cuatro pantallas: Inicio, Nutricion, Entrenamiento
- * y Progreso, con Configuracion anclada en el pie. Cada una agrupa su dominio
- * completo mediante un segmentado interno con la seccion en la URL.
+ * Cinco destinos: Copilot, Hoy, Nutricion, Entrenamiento y Progreso, con
+ * Configuracion anclada en el pie. Cada uno agrupa su dominio completo
+ * mediante un segmentado interno con la seccion en la URL.
  *
- * Recetas, Despensa, Academia, Historial y Asistente quedan suspendidas: su
- * ruta responde y su codigo se mantiene, pero no se enlazan desde ninguna
- * navegacion. El Asistente ademas sigue disponible en toda la app a traves de
- * su boton flotante, asi que no pierde acceso.
+ * El Copiloto abre la lista porque es el primer destino del prototipo del
+ * handoff: la puerta de entrada al producto. Estuvo suspendido, y con el riel
+ * y la barra superior sin montar eso lo dejo sin NINGUN acceso desde la
+ * interfaz durante un tiempo.
+ *
+ * Recetas, Despensa, Academia e Historial siguen suspendidas: su ruta responde
+ * y su codigo se mantiene, pero no se enlazan desde ninguna navegacion.
  */
 export const navItems: readonly NavItem[] = [
+  {
+    href: "/asistente",
+    labelKey: "assistant",
+    icon: Sparkles,
+    showInSidebar: true,
+    showInBottomNav: false,
+    section: "principal",
+  },
   {
     href: "/",
     labelKey: "home",
@@ -122,14 +134,16 @@ export const navItems: readonly NavItem[] = [
     section: "aprender",
     suspended: true,
   },
+
   {
-    href: "/asistente",
-    labelKey: "assistant",
-    icon: Sparkles,
+    // Sexto y ultimo destino del prototipo. Sus tres capas salen de datos
+    // reales: 20 estudios, 21 constantes y los objetivos del usuario.
+    href: "/evidencia",
+    labelKey: "evidence",
+    icon: BookOpen,
     showInSidebar: true,
     showInBottomNav: false,
     section: "aprender",
-    suspended: true,
   },
   {
     href: "/configuracion",
@@ -151,7 +165,9 @@ export const SETTINGS_HREF = "/configuracion";
 const activeItems = navItems.filter((item) => !item.suspended);
 
 export const sidebarItems = activeItems.filter((item) => item.showInSidebar);
-export const bottomNavItems = activeItems.filter((item) => item.showInBottomNav);
+export const bottomNavItems = activeItems.filter(
+  (item) => item.showInBottomNav,
+);
 export const moreSheetItems = activeItems.filter(
   (item) => !item.showInBottomNav,
 );

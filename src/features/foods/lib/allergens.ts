@@ -52,32 +52,88 @@ export type AllergenGroup =
  */
 const GROUP_TERMS: Record<AllergenGroup, string[]> = {
   lacteos: [
-    "lacteo", "leche", "queso", "yogur", "yogurt", "mantequilla", "natilla",
-    "crema", "nata", "requeson", "cuajada", "suero", "caseina", "lactosa",
-    "kefir", "ricotta", "mozzarella", "parmesano", "cheddar", "ghee",
+    "lacteo",
+    "leche",
+    "queso",
+    "yogur",
+    "yogurt",
+    "mantequilla",
+    "natilla",
+    "crema",
+    "nata",
+    "requeson",
+    "cuajada",
+    "suero",
+    "caseina",
+    "lactosa",
+    "kefir",
+    "ricotta",
+    "mozzarella",
+    "parmesano",
+    "cheddar",
+    "ghee",
   ],
   huevo: ["huevo", "clara", "yema", "ovoalbumina", "mayonesa"],
   gluten: [
-    "gluten", "trigo", "cebada", "centeno", "espelta", "malta", "harina",
-    "pan", "pasta", "galleta", "semola", "cuscus", "avena",
+    "gluten",
+    "trigo",
+    "cebada",
+    "centeno",
+    "espelta",
+    "malta",
+    "harina",
+    "pan",
+    "pasta",
+    "galleta",
+    "semola",
+    "cuscus",
+    "avena",
   ],
   frutos_secos: [
-    "nuez", "almendra", "avellana", "pistacho", "macadamia", "pecana",
-    "castana", "anacardo", "maranon",
+    "nuez",
+    "almendra",
+    "avellana",
+    "pistacho",
+    "macadamia",
+    "pecana",
+    "castana",
+    "anacardo",
+    "maranon",
   ],
   mani: ["mani", "cacahuate", "cacahuete"],
   soja: ["soja", "soya", "tofu", "edamame", "tempeh", "miso"],
   sesamo: ["sesamo", "ajonjoli", "tahini", "tahina"],
   crustaceos: [
-    "crustaceo", "camaron", "langostino", "langosta", "cangrejo", "jaiba",
-    "cigala", "krill",
+    "crustaceo",
+    "camaron",
+    "langostino",
+    "langosta",
+    "cangrejo",
+    "jaiba",
+    "cigala",
+    "krill",
   ],
   moluscos: [
-    "molusco", "almeja", "mejillon", "ostra", "calamar", "chipiron", "sepia",
-    "pulpo", "vieira", "berberecho", "caracol",
+    "molusco",
+    "almeja",
+    "mejillon",
+    "ostra",
+    "calamar",
+    "chipiron",
+    "sepia",
+    "pulpo",
+    "vieira",
+    "berberecho",
+    "caracol",
   ],
   pescado: [
-    "pescado", "atun", "salmon", "tilapia", "sardina", "bacalao", "trucha",
+    "pescado",
+    "atun",
+    "salmon",
+    "tilapia",
+    "sardina",
+    "bacalao",
+    "trucha",
     "anchoa",
   ],
   sulfitos: ["sulfito", "metabisulfito", "bisulfito"],
@@ -115,10 +171,7 @@ const GROUP_ALIASES: Record<AllergenGroup, string[]> = {
 
 /** Quita tildes y pasa a minusculas. */
 function stripAccents(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+  return value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
 /**
@@ -138,7 +191,18 @@ export function singularize(word: string): string {
 
 /** Palabras sin carga semantica que no deben participar de la comparacion. */
 const STOP_WORDS = new Set([
-  "de", "del", "la", "el", "los", "las", "con", "sin", "en", "y", "a", "al",
+  "de",
+  "del",
+  "la",
+  "el",
+  "los",
+  "las",
+  "con",
+  "sin",
+  "en",
+  "y",
+  "a",
+  "al",
 ]);
 
 /** Descompone un texto en palabras normalizadas y singularizadas. */

@@ -1,8 +1,9 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,9 +75,7 @@ export function PantryAdd() {
         toast.error(result.error);
         return;
       }
-      toast.success(
-        result.alreadyInPantry ? t.alreadyInPantry : t.added,
-      );
+      toast.success(result.alreadyInPantry ? t.alreadyInPantry : t.added);
       router.refresh();
     });
   };
@@ -173,7 +172,7 @@ export function PantryAdd() {
                   aria-label={`${t.addButton} — ${food.name}`}
                 >
                   {pending && addingId === food.id ? (
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    <NewtonsCradle size={24} />
                   ) : (
                     <Plus className="size-4" aria-hidden="true" />
                   )}

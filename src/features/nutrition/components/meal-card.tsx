@@ -46,12 +46,23 @@ import {
 import { RecipeSwapSheet } from "@/features/nutrition/components/recipe-swap-sheet";
 import type { MealView } from "@/features/nutrition/queries";
 import { formatTime } from "@/features/nutrition/lib/meal-schedule";
+import type { MacroSet } from "@/features/nutrition/lib/macros";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
 const t = messages.nutrition;
 
-export function MealCard({ meal }: { meal: MealView }) {
+export function MealCard({
+  meal,
+  dayTotals,
+  dayTargets,
+}: {
+  meal: MealView;
+  /** Totales y objetivo del dia: el veredicto de una sustitucion los usa
+      para decir si el cambio te acerca o te aleja de tu plan. */
+  dayTotals?: MacroSet;
+  dayTargets?: MacroSet | null;
+}) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notes, setNotes] = useState(meal.notes ?? "");
@@ -225,11 +236,50 @@ export function MealCard({ meal }: { meal: MealView }) {
         </div>
       </div>
 
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={meal.status === "planificada" ? "default" : "outline"}
+          disabled={pending || meal.items.length === 0}
+          onClick={() =>
+            run(
+              () =>
+                updateMealStatus({
+                  mealId: meal.id,
+                  status:
+                    meal.status === "completada" ||
+                    meal.status === "completada_con_cambios"
+                      ? "planificada"
+                      : "completada",
+                }),
+              t.statusUpdated,
+            )
+          }
+        >
+          {meal.status === "completada" ||
+          meal.status === "completada_con_cambios" ? (
+            <>
+              <Undo2 className="size-4" />
+              Deshacer registro
+            </>
+          ) : (
+            <>
+              <Check className="size-4" />
+              Registrar como comida
+            </>
+          )}
+        </Button>
+      </div>
       <div className="space-y-3">
         {meal.items.length > 0 ? (
           <ul className="divide-rule divide-y">
             {meal.items.map((item) => (
-              <MealItemRow key={item.id} item={item} />
+              <MealItemRow
+                key={item.id}
+                item={item}
+                dayTotals={dayTotals}
+                dayTargets={dayTargets}
+              />
             ))}
           </ul>
         ) : (

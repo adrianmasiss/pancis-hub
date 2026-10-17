@@ -3,7 +3,7 @@ import {
   SkeletonCard,
   SkeletonChart,
   SkeletonMetricRow,
-  SkeletonPageHeader,
+  SkeletonViewHeader,
   SkeletonRows,
 } from "@/components/shared/loading-section";
 
@@ -15,7 +15,7 @@ import {
 export default function Loading() {
   return (
     <LoadingShell>
-      <SkeletonPageHeader actions={1} icon={false} description={false} />
+      <SkeletonViewHeader actions={1} />
 
       <SkeletonCard>
         <div className="space-y-4">

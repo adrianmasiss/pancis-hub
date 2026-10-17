@@ -1,0 +1,1208 @@
+/* ---------------------------------------------------------------------------
+   Mi plan de comidas: la ruta del dia, el interruptor de registro, los
+   alimentos con foto y su sustitucion en la fila.
+
+   Un color por macro, pedido por el usuario para leerlos de un vistazo:
+   oro (proteina), violeta (carbohidratos) y turquesa (grasas, el --chart-1
+   de la marca); la energia sigue en el naranja de la marca. Los cuatro son
+   claros sobre carbon y cada uno va siempre con su rotulo o su letra: el
+   color ayuda a encontrar la columna, no es lo unico que la nombra.
+--------------------------------------------------------------------------- */
+.nutrition-workspace,
+.plan-food-dialog {
+  --macro-p: #ffc75a;
+  --macro-c: #a996ff;
+  --macro-f: var(--chart-1, #3ff4e5);
+  --meal-line: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+[data-macro="proteinG"] {
+  --macro: var(--macro-p);
+}
+[data-macro="carbohydrateG"] {
+  --macro: var(--macro-c);
+}
+[data-macro="fatG"] {
+  --macro: var(--macro-f);
+}
+/* Fibra: el mismo verde hoja de su tarjeta del resumen. */
+[data-macro="fiberG"] {
+  --macro: #7ddc8f;
+}
+[data-macro="calories"] {
+  --macro: var(--primary);
+}
+
+/* El resumen ya no lleva titulo: la fila sube el pulso del dia junto a la
+   fecha, sin el filete que la separaba de las tarjetas. */
+.nutrition-workspace .nutrition-summary-heading-row .nutrition-summary-caption {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 12px;
+}
+
+/* --- Resumen: seis tarjetas en una fila -------------------------------
+   Calorias y agua van primero y juntas, y son un poco mas anchas: las dos
+   llevan algo mas que una cifra (lo pendiente del plan, los botones); proteina, carbos, grasas y
+   fibra comparten el resto. Cada tarjeta lleva el color de su nutriente en
+   la barra, en el punto del rotulo y en el filo del borde: el mismo codigo
+   que la lista de comidas. */
+.nutrition-workspace .nutrition-summary-grid {
+  grid-template-columns: 1.65fr 1.25fr repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+/* `.v11-card[data-metric]` sube la especificidad por encima de la regla
+   antigua que teñia de turquesa solo la de calorias. */
+.nutrition-workspace .nutrition-stat.v11-card[data-metric] {
+  --nutrition-edge: var(--stat-color);
+  position: relative;
+  border-color: color-mix(in oklch, var(--stat-color) 26%, transparent);
+  background:
+    radial-gradient(
+      120% 100% at 100% 0%,
+      color-mix(in oklch, var(--stat-color) 8%, transparent),
+      transparent 60%
+    ),
+    var(--card);
+}
+.nutrition-workspace .nutrition-stat {
+  --stat-color: var(--primary);
+}
+.nutrition-workspace .nutrition-stat:not([data-metric="calories"]) {
+  padding: 20px 16px;
+}
+.nutrition-workspace
+  .nutrition-stat:not([data-metric="calories"])
+  .nutrition-stat-value
+  strong {
+  font-size: 23px;
+}
+.nutrition-workspace
+  .nutrition-stat:not([data-metric="calories"])
+  .nutrition-stat-value
+  span {
+  font-size: 15px;
+}
+.nutrition-workspace
+  .nutrition-stat:is([data-metric="calories"], [data-metric="water"]) {
+  grid-template-rows: auto 1fr auto auto auto;
+}
+.nutrition-workspace .nutrition-stat[data-metric="proteinG"] {
+  --stat-color: var(--macro-p);
+}
+.nutrition-workspace .nutrition-stat[data-metric="carbohydrateG"] {
+  --stat-color: var(--macro-c);
+}
+.nutrition-workspace .nutrition-stat[data-metric="fatG"] {
+  --stat-color: var(--macro-f);
+}
+/* Fibra: verde hoja. Agua: celeste. */
+.nutrition-workspace .nutrition-stat[data-metric="fiberG"] {
+  --stat-color: #7ddc8f;
+}
+.nutrition-workspace .nutrition-stat[data-metric="water"] {
+  --stat-color: #5cc8ff;
+}
+
+/* El filo de esquinas del v11 (dos arcos opuestos que giran al pasar el
+   puntero), en el color de cada tarjeta. Nutricion lo apagaba en todas
+   salvo calorias; ahora es el borde de las seis. */
+.nutrition-workspace .nutrition-stat.v11-card[data-metric]::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 1.6px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.85;
+  background: conic-gradient(
+    from var(--card-edge),
+    transparent 0deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 8deg,
+    var(--nutrition-edge) 26deg,
+    var(--nutrition-edge) 44deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 62deg,
+    transparent 74deg,
+    transparent 180deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 188deg,
+    var(--nutrition-edge) 206deg,
+    var(--nutrition-edge) 224deg,
+    color-mix(in oklch, var(--nutrition-edge) 45%, transparent) 242deg,
+    transparent 254deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.nutrition-workspace .nutrition-stat .nutrition-stat-track {
+  height: 5px;
+  background: color-mix(in oklch, var(--stat-color) 16%, transparent);
+}
+.nutrition-workspace .nutrition-stat .nutrition-stat-track i {
+  background: var(--stat-color);
+}
+.nutrition-workspace .nutrition-stat h3::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--stat-color);
+  vertical-align: 1px;
+}
+.nutrition-stat-pending {
+  margin-top: 10px;
+  justify-self: start;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: color-mix(in oklch, var(--foreground) 82%, transparent);
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+.nutrition-stat-pending strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Agua: tres toques compactos que caben en la columna. */
+.nutrition-water-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+.nutrition-water-add,
+.nutrition-water-undo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.nutrition-water-add {
+  flex: 1;
+  padding: 0 8px;
+  background: color-mix(in oklch, #5cc8ff 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, #5cc8ff 40%, transparent);
+}
+.nutrition-water-add[data-tone="soft"] {
+  background: color-mix(in oklch, #5cc8ff 10%, transparent);
+}
+.nutrition-water-add:hover {
+  background: color-mix(in oklch, #5cc8ff 32%, transparent);
+}
+.nutrition-water-undo {
+  width: 34px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+  box-shadow: inset 0 0 0 1px var(--meal-line);
+}
+.nutrition-water-undo:hover:not(:disabled) {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+:is(.nutrition-water-add, .nutrition-water-undo):active {
+  transform: scale(0.95);
+}
+:is(.nutrition-water-add, .nutrition-water-undo):disabled {
+  opacity: 0.45;
+}
+:is(.nutrition-water-add, .nutrition-water-undo):focus-visible {
+  outline: 2px solid #5cc8ff;
+  outline-offset: 2px;
+}
+
+/* Contenedor estrecho: dos filas de tres. */
+@container (max-width: 1080px) {
+  .nutrition-workspace .nutrition-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+/* Movil: calorias y agua a todo el ancho; las cuatro de en medio, dos por
+   dos, con meta, barra y nota visibles. */
+@media (max-width: 600px) {
+  .nutrition-workspace .nutrition-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .nutrition-workspace
+    .nutrition-stat:is([data-metric="calories"], [data-metric="water"]) {
+    grid-column: 1 / -1;
+  }
+  .nutrition-workspace .nutrition-stat:not([data-metric="calories"]) {
+    padding: 14px 14px 12px;
+    min-height: 0;
+  }
+  .nutrition-workspace
+    .nutrition-stat:not([data-metric="calories"])
+    :is(.nutrition-stat-note, .nutrition-stat-track) {
+    display: block;
+  }
+  .nutrition-workspace
+    .nutrition-stat:not([data-metric="calories"])
+    .nutrition-stat-target {
+    display: inline;
+  }
+  .nutrition-workspace
+    .nutrition-stat:not([data-metric="calories"])
+    .nutrition-stat-track {
+    margin-top: 10px;
+  }
+  .nutrition-workspace
+    .nutrition-stat:not([data-metric="calories"])
+    .nutrition-stat-note {
+    margin-top: 7px;
+    font-size: 11.5px;
+  }
+  .nutrition-water-add {
+    flex: 0 1 auto;
+    padding: 0 14px;
+  }
+}
+
+/* Sodio y azucar por alimento, solo cuando el catalogo los trae. */
+.meal-food-copy .meal-food-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+}
+.meal-food-copy .meal-food-extras > span {
+  font-size: inherit;
+}
+.meal-food-extras > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.meal-food-extras > span::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.meal-food-extras [data-extra="sodium"]::before {
+  background: #ff9580;
+}
+.meal-food-extras [data-extra="sugar"]::before {
+  background: #ff82c0;
+}
+
+/* --- Foto del alimento ---------------------------------------------------- */
+.food-avatar {
+  --avatar: 44px;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--avatar);
+  height: var(--avatar);
+  border-radius: 50%;
+  /* Un plato: centro un punto mas claro, borde que recoge la luz. */
+  background: radial-gradient(
+    circle at 50% 38%,
+    color-mix(in oklch, var(--foreground) 11%, var(--card)),
+    color-mix(in oklch, var(--foreground) 3%, var(--card)) 72%
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--foreground) 7%, transparent),
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 9%, transparent),
+    0 6px 14px -8px rgb(0 0 0 / 0.55);
+  color: color-mix(in oklch, var(--foreground) 52%, transparent);
+}
+.food-avatar[data-size="sm"] {
+  --avatar: 24px;
+}
+.food-avatar[data-size="lg"] {
+  --avatar: 64px;
+}
+.food-avatar img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.35));
+}
+.food-avatar svg {
+  width: 44%;
+  height: 44%;
+}
+
+/* --- Interruptor de registro --------------------------------------------- */
+.log-switch {
+  --switch-width: 46px;
+  --switch-height: 24px;
+  --switch-bg: rgb(131, 131, 131);
+  --switch-checked-bg: rgb(0, 218, 80);
+  --switch-offset: calc((var(--switch-height) - var(--circle-diameter)) / 2);
+  --switch-transition: all 0.2s cubic-bezier(0.27, 0.2, 0.25, 1.51);
+  --circle-diameter: 18px;
+  --circle-bg: #fff;
+  --circle-shadow: 1px 1px 2px rgba(146, 146, 146, 0.45);
+  --circle-checked-shadow: -1px 1px 2px rgba(163, 163, 163, 0.45);
+  --circle-transition: var(--switch-transition);
+  --icon-transition: all 0.2s cubic-bezier(0.27, 0.2, 0.25, 1.51);
+  --icon-cross-color: var(--switch-bg);
+  --icon-cross-size: 6px;
+  --icon-checkmark-color: var(--switch-checked-bg);
+  --icon-checkmark-size: 10px;
+  --effect-width: calc(var(--circle-diameter) / 2);
+  --effect-height: calc(var(--effect-width) / 2 - 1px);
+  --effect-bg: var(--circle-bg);
+  --effect-border-radius: 1px;
+  --effect-transition: all 0.2s ease-in-out;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  /* Area pulsable de 44px alrededor de una pista de 24. */
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+/* El input sigue en el arbol de accesibilidad (no `display: none`): cubre la
+   etiqueta, recibe el foco y el lector anuncia «interruptor, activado». */
+.log-switch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.log-switch svg {
+  position: absolute;
+  height: auto;
+  transition: var(--icon-transition);
+}
+.log-switch-check {
+  width: var(--icon-checkmark-size);
+  color: var(--icon-checkmark-color);
+  transform: scale(0);
+}
+.log-switch-cross {
+  width: var(--icon-cross-size);
+  color: var(--icon-cross-color);
+}
+.log-switch-slider {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: var(--switch-width);
+  height: var(--switch-height);
+  border-radius: 999px;
+  background: var(--switch-bg);
+  transition: var(--switch-transition);
+  pointer-events: none;
+}
+.log-switch-circle {
+  position: absolute;
+  left: var(--switch-offset);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--circle-diameter);
+  height: var(--circle-diameter);
+  border-radius: inherit;
+  background: var(--circle-bg);
+  box-shadow: var(--circle-shadow);
+  transition: var(--circle-transition);
+}
+.log-switch-slider::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--switch-offset) + (var(--effect-width) / 2));
+  width: var(--effect-width);
+  height: var(--effect-height);
+  border-radius: var(--effect-border-radius);
+  background: var(--effect-bg);
+  transition: var(--effect-transition);
+}
+.log-switch input:checked + .log-switch-slider {
+  background: var(--switch-checked-bg);
+}
+.log-switch input:checked + .log-switch-slider .log-switch-check {
+  transform: scale(1);
+}
+.log-switch input:checked + .log-switch-slider .log-switch-cross {
+  transform: scale(0);
+}
+.log-switch input:checked + .log-switch-slider::before {
+  left: calc(
+    100% - var(--effect-width) - (var(--effect-width) / 2) -
+      var(--switch-offset)
+  );
+}
+.log-switch input:checked + .log-switch-slider .log-switch-circle {
+  left: calc(100% - var(--circle-diameter) - var(--switch-offset));
+  box-shadow: var(--circle-checked-shadow);
+}
+.log-switch input:focus-visible + .log-switch-slider {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 3px;
+}
+.log-switch input:disabled {
+  cursor: default;
+}
+.log-switch:has(input:disabled:not(:checked)) .log-switch-slider {
+  opacity: 0.45;
+}
+.log-switch[data-busy] .log-switch-circle {
+  animation: log-switch-busy 0.9s ease-in-out infinite alternate;
+}
+@keyframes log-switch-busy {
+  to {
+    transform: scale(0.82);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .log-switch,
+  .log-switch * {
+    --switch-transition: none;
+    --icon-transition: none;
+    --effect-transition: none;
+    animation: none !important;
+  }
+}
+
+/* --- La ruta del dia -----------------------------------------------------
+
+   Toda la anchura es del plan. Cada comida es una tarjeta en un riel de
+   horas; dentro, cabecera y alimentos comparten UNA rejilla de columnas
+   (nombre · P · C · G · kcal · acciones), de modo que las cifras caen en
+   columna en toda la lista y se leen como una tabla tranquila.
+--------------------------------------------------------------------------- */
+.nutrition-workspace .nutrition-workspace-grid[data-layout="full"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.nutrition-workspace {
+  --meal-cols: minmax(0, 1fr) repeat(4, 74px) 90px 124px;
+  --meal-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --meal-pad-x: 20px;
+  --meal-rail: 56px;
+}
+.nutrition-workspace .nutrition-meal-table {
+  gap: 0;
+}
+.meal-row {
+  display: grid;
+  grid-template-columns: var(--meal-cols);
+  align-items: center;
+  column-gap: 12px;
+}
+.meal-row-title {
+  min-width: 0;
+}
+.meal-row-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Rotulos de columna: una vez, arriba, alineados con las tarjetas (riel +
+   borde + relleno). */
+.meal-legend {
+  padding: 0 calc(var(--meal-pad-x) + 1px) 10px
+    calc(var(--meal-rail) + var(--meal-pad-x) + 1px);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in oklch, var(--foreground) 78%, transparent);
+}
+.meal-legend .meal-cell[data-macro="calories"] {
+  --macro: var(--primary);
+}
+.meal-legend .meal-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 7px;
+}
+/* El rotulo de cada columna lleva su color: es la leyenda de las barras. */
+.meal-legend .meal-cell::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--macro, transparent);
+}
+/* Reglas genericas del panel dan relleno y filete a sus <div>; aqui no. */
+.nutrition-workspace .meal-legend,
+.nutrition-workspace .meal-legend .meal-row {
+  margin: 0;
+  border: 0;
+  min-height: 0;
+  background: none;
+}
+.nutrition-workspace .meal-legend .meal-row {
+  padding: 0;
+}
+
+.meal-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--meal-rail) minmax(0, 1fr);
+  padding-bottom: 14px;
+}
+.meal-stop:not(:nth-last-child(1 of .meal-stop))::before {
+  content: "";
+  position: absolute;
+  left: 27.5px;
+  top: 54px;
+  bottom: -24px;
+  width: 1px;
+  background: var(--meal-line);
+}
+.meal-stop[data-done="true"]::before {
+  background: color-mix(in oklch, rgb(0 218 80) 38%, transparent);
+}
+.meal-stop-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 22px;
+}
+.meal-stop-time {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: color-mix(in oklch, var(--foreground) 82%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+.meal-stop-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklch, var(--foreground) 30%, transparent);
+  background: var(--card);
+  transition:
+    background-color 240ms var(--meal-ease),
+    border-color 240ms var(--meal-ease);
+}
+.meal-stop[data-done="true"] .meal-stop-dot {
+  border-color: rgb(0 218 80);
+  background: rgb(0 218 80);
+}
+
+.meal-card {
+  min-width: 0;
+  padding: 0 var(--meal-pad-x);
+  border: 1px solid var(--meal-line);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--foreground) 3%, transparent),
+      transparent 50%
+    ),
+    color-mix(in oklch, var(--card) 88%, var(--background));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent),
+    0 18px 40px -32px rgb(0 0 0 / 0.7);
+}
+.meal-row-head {
+  padding: 18px 0 16px;
+}
+.meal-row-head h3 {
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.meal-card-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.meal-card-eyebrow svg {
+  color: var(--primary);
+}
+.meal-card-eyebrow-time {
+  display: none;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.meal-card-tag {
+  margin-left: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: 600;
+  color: rgb(0 218 80);
+  background: color-mix(in oklch, rgb(0 218 80) 13%, transparent);
+}
+.meal-card-tag[data-tone="swap"] {
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 13%, transparent);
+}
+
+/* Celdas de macros. A la derecha y con cifras tabulares: se comparan en
+   vertical. La barra es la parte de la meta diaria (solo en la cabecera). */
+.meal-cell {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.meal-cell-value {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: color-mix(in oklch, var(--foreground) 90%, transparent);
+  white-space: nowrap;
+}
+.meal-cell-unit {
+  margin-left: 2px;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.meal-cell-short {
+  display: none;
+}
+.meal-cell[data-strong] .meal-cell-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.01em;
+}
+.meal-cell[data-strong] .meal-cell-unit {
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.meal-cell-kcal .meal-cell-value {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.meal-cell-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(
+    in oklch,
+    var(--macro, var(--foreground)) 16%,
+    transparent
+  );
+}
+.meal-cell-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--macro);
+  box-shadow: 0 0 10px color-mix(in oklch, var(--macro) 45%, transparent);
+  transform-origin: left;
+  animation: meal-bar-in 900ms var(--meal-ease) both;
+}
+@keyframes meal-bar-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.meal-foods {
+  border-top: 1px solid var(--meal-line);
+}
+.meal-food + .meal-food {
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+.meal-row-food {
+  padding: 11px 0;
+}
+.meal-row-food .meal-row-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.meal-food-copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.meal-food-copy strong {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.meal-food-copy span {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.meal-food-copy small {
+  font-size: 11px;
+  color: var(--primary);
+}
+.plan-food-action {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--meal-line);
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 3%, transparent);
+  transition:
+    color 180ms var(--meal-ease),
+    background-color 180ms var(--meal-ease),
+    border-color 180ms var(--meal-ease),
+    transform 120ms var(--meal-ease);
+}
+.plan-food-action:hover {
+  color: var(--foreground);
+  border-color: color-mix(in oklch, var(--foreground) 22%, transparent);
+  background: color-mix(in oklch, var(--foreground) 9%, transparent);
+}
+.plan-food-action:active {
+  transform: scale(0.94);
+}
+.plan-food-action:focus-visible {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 2px;
+}
+.meal-stop[data-done="true"] .meal-foods {
+  opacity: 0.62;
+}
+.meal-foods-empty {
+  padding: 12px 0 16px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.meal-card-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0 14px;
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+
+/* --- No lo comi hoy ----------------------------------------------------
+   La papelera del usuario, al tamano de sus vecinas (34px en vez de 50) para
+   que la fila no salte: carbon, y al pasar por encima rojo con la tapa que
+   se abre girando desde su bisagra. */
+.omit-button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--meal-line);
+  background-color: rgb(20, 20, 20);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.164);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background-color 0.3s var(--meal-ease),
+    border-color 0.3s var(--meal-ease),
+    gap 0.3s var(--meal-ease),
+    transform 120ms var(--meal-ease);
+}
+.omit-button-icon {
+  width: 10px;
+  transition: transform 0.3s var(--meal-ease);
+}
+.omit-button-icon path {
+  fill: #fff;
+}
+.omit-button-lid {
+  transform-origin: bottom right;
+}
+.omit-button:hover,
+.omit-button:focus-visible {
+  background-color: rgb(255, 69, 69);
+  border-color: rgb(255, 69, 69);
+  gap: 0;
+}
+.omit-button:hover .omit-button-lid,
+.omit-button:focus-visible .omit-button-lid {
+  transform: rotate(160deg);
+  transition-duration: 0.5s;
+}
+.omit-button:active {
+  transform: scale(0.94);
+}
+.omit-button:focus-visible {
+  outline: 2px solid rgb(255, 69, 69);
+  outline-offset: 2px;
+}
+.omit-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .omit-button:hover .omit-button-lid,
+  .omit-button:focus-visible .omit-button-lid {
+    transform: none;
+  }
+}
+
+/* Se atenua lo que ya no cuenta, no el aviso que lo explica. */
+.meal-food[data-omitted] .food-avatar,
+.meal-food[data-omitted] .meal-food-copy strong,
+.meal-food[data-omitted] .meal-food-copy > span,
+.meal-food[data-omitted] .meal-cell {
+  opacity: 0.45;
+}
+.meal-food[data-omitted] .meal-food-copy strong {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--foreground) 55%,
+    transparent
+  );
+}
+.meal-food[data-omitted] .meal-food-copy small[data-tone="omitted"] {
+  color: rgb(255, 120, 120);
+}
+.meal-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--meal-line);
+  transition: background-color 160ms var(--meal-ease);
+}
+.meal-restore:hover {
+  background: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+.meal-restore:focus-visible {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 2px;
+}
+
+/* Escritorio estrecho: las columnas se aprietan antes de romperse. */
+@container (max-width: 860px) {
+  .nutrition-workspace {
+    --meal-cols: minmax(0, 1fr) repeat(4, 58px) 76px 118px;
+    --meal-pad-x: 16px;
+    --meal-rail: 48px;
+  }
+  .meal-stop:not(:nth-last-child(1 of .meal-stop))::before {
+    left: 23.5px;
+  }
+}
+
+/* Movil: sin riel ni rotulos de columna. La cabecera pone los cuatro macros
+   en su propia fila bajo el titulo; cada alimento, sus cifras bajo el
+   nombre, con la letra del macro delante porque ya no hay columna que la
+   nombre. */
+@media (max-width: 600px) {
+  .meal-legend,
+  .meal-stop-rail,
+  .meal-stop::before {
+    display: none;
+  }
+  .meal-stop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .meal-card-eyebrow-time {
+    display: inline;
+  }
+  .nutrition-workspace {
+    --meal-pad-x: 14px;
+  }
+  .meal-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+    column-gap: 8px;
+    row-gap: 10px;
+  }
+  .meal-row > .meal-row-title {
+    grid-column: 1 / 6;
+    grid-row: 1;
+  }
+  .meal-row > .meal-row-end {
+    grid-column: 6;
+    grid-row: 1;
+  }
+  .meal-row > .meal-cell {
+    grid-row: 2;
+    justify-items: start;
+  }
+  .meal-row-head {
+    padding: 14px 0 14px;
+  }
+  .meal-cell-short {
+    display: inline;
+    margin-right: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--macro);
+  }
+  /* El alimento: nombre y acciones arriba; sus cifras debajo, alineadas
+     con el nombre y cada una a su ancho. Flex y no rejilla: una rejilla de
+     columnas a contenido ensanchaba la fila y sacaba los botones de la
+     tarjeta. */
+  .meal-row.meal-row-food {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+  }
+  .meal-row-food > .meal-row-title {
+    order: 1;
+    flex: 1 1 0;
+  }
+  .meal-row-food > .meal-row-end {
+    order: 2;
+  }
+  .meal-row-food > .meal-cell {
+    order: 3;
+  }
+  /* Cinco cifras bajo el nombre: mas juntas para caber en una linea. */
+  .meal-row.meal-row-food {
+    column-gap: 9px;
+  }
+  .meal-row-food > .meal-cell:nth-child(2) {
+    margin-left: 50px;
+  }
+  .meal-row-food > .meal-row-end:empty {
+    display: none;
+  }
+  .meal-row-food > .meal-row-title {
+    min-width: calc(100% - 132px);
+  }
+  .meal-row-food > .meal-cell .meal-cell-value {
+    font-size: 13px;
+  }
+  .meal-row-food .food-avatar {
+    --avatar: 38px;
+  }
+}
+
+/* Comida suelta: sin acciones por alimento; se editan en su desplegable. */
+.meal-card-head-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--muted-foreground);
+  transition:
+    transform 240ms var(--meal-ease),
+    background-color 160ms var(--meal-ease);
+}
+.meal-card-head-toggle:hover {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.meal-card-head-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.meal-card-head-toggle svg {
+  transition: transform 240ms var(--meal-ease);
+}
+.meal-card .nutrition-logged-detail {
+  padding: 4px 0 14px;
+}
+
+/* --- Dialogo de edicion (vive en un portal, fuera del workspace) -------- */
+.plan-food-dialog .plan-food-dialog-head {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+.plan-food-dialog-body {
+  display: grid;
+  gap: 14px;
+}
+.plan-food-stepper {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 9%, transparent);
+}
+.plan-food-stepper > button {
+  display: grid;
+  place-items: center;
+  height: 48px;
+  border-radius: 15px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 9%, transparent);
+  transition: transform 120ms ease;
+}
+.plan-food-stepper > button:active {
+  transform: scale(0.95);
+}
+.plan-food-stepper label {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+.plan-food-stepper input {
+  width: 5ch;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.plan-food-stepper input::-webkit-inner-spin-button,
+.plan-food-stepper input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.plan-food-stepper input:focus-visible {
+  outline: none;
+}
+.plan-food-stepper:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--ring, var(--primary));
+}
+.plan-food-stepper label span {
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.plan-food-portions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.plan-food-portions button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+.plan-food-portions button span {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.plan-food-portions button[data-active] {
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.plan-food-preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.plan-food-preview > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+.plan-food-preview dt {
+  font-size: 10.5px;
+  color: var(--muted-foreground);
+}
+.plan-food-preview dt::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--macro);
+  vertical-align: 1px;
+}
+.plan-food-preview dd {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.plan-food-preview dd span {
+  margin-left: 2px;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.plan-food-dialog-note {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.plan-food-dialog .plan-food-dialog-foot {
+  gap: 8px;
+}
+.plan-food-dialog .plan-food-remove {
+  margin-right: auto;
+  color: var(--destructive);
+}
+@media (max-width: 420px) {
+  .plan-food-preview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Movil: la columna del nombre es estrecha por los tres botones. El nombre
+   puede bajar de linea en vez de cortarse, y sodio/azucar van mas juntos
+   para caber en una. */
+@media (max-width: 600px) {
+  .meal-food-copy strong {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.25;
+  }
+  .meal-food-copy .meal-food-extras {
+    gap: 2px 8px;
+    font-size: 10.5px;
+  }
+  .meal-food-extras > span {
+    gap: 4px;
+    white-space: nowrap;
+  }
+}

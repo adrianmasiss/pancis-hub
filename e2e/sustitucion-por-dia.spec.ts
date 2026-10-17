@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { esperarAcceso } from "./helpers/auth";
 import {
   completeOnboarding,
   findUserId,
@@ -17,6 +18,7 @@ import {
  */
 
 const email = `e2e-swap-${Date.now()}@pancis.local`;
+const usuario = `e2eswap${Date.now()}`.slice(0, 20);
 const password = "password-e2e-12345";
 
 test.describe.configure({ mode: "serial" });
@@ -45,9 +47,10 @@ function hoyLocal(): string {
 /** Login y espera a que la sesion este lista antes de navegar. */
 async function login(page: Page) {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   // Navegar antes de que termine el login cancela la peticion.
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 }
@@ -55,9 +58,11 @@ async function login(page: Page) {
 test("registro y rutina sembrada", async ({ page }) => {
   await page.goto("/registro");
   await page.getByLabel("Nombre").fill("Usuaria Swap");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByLabel("Confirmar contrasena").fill(password);
+  await esperarAcceso(page);
+  await page.getByLabel("Usuario", { exact: true }).fill(usuario);
+  await page.getByLabel("Correo electrónico").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByLabel("Confirmar contraseña").fill(password);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
@@ -94,9 +99,7 @@ test("sustituir solo por hoy no modifica el plan guardado", async ({
   // Acotado al panel: la pagina tiene otro campo "Motivo (opcional)", el de
   // versionar la rutina, con la misma etiqueta.
   const panel = page.getByRole("dialog");
-  await panel
-    .getByLabel("Motivo (opcional)")
-    .fill("La maquina estaba ocupada");
+  await panel.getByLabel("Motivo (opcional)").fill("La máquina estaba ocupada");
 
   // La accion primaria es la que NO destruye la rutina.
   const soloHoy = panel.getByRole("button", { name: "Solo por hoy" }).first();
@@ -116,7 +119,7 @@ test("sustituir solo por hoy no modifica el plan guardado", async ({
   expect(swaps).toHaveLength(1);
   expect(swaps[0]!.date).toBe(hoyLocal());
   expect(swaps[0]!.substitute_exercise_id).not.toBe(originalExerciseId);
-  expect(swaps[0]!.reason).toBe("La maquina estaba ocupada");
+  expect(swaps[0]!.reason).toBe("La máquina estaba ocupada");
   expect(swaps[0]!.source).toBe("usuario");
 });
 
@@ -124,7 +127,10 @@ test("deshacer devuelve el ejercicio original", async ({ page }) => {
   await login(page);
 
   await page.goto(`/entrenamiento/rutinas/${planId}`);
-  await page.getByRole("button", { name: "Volver al original" }).first().click();
+  await page
+    .getByRole("button", { name: "Volver al original" })
+    .first()
+    .click();
 
   await expect(page.getByText(originalExerciseName).first()).toBeVisible({
     timeout: 20_000,

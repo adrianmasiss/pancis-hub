@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Sparkles } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { AssistantChat } from "@/features/assistant/components/assistant-chat";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -28,10 +26,5 @@ export default async function AssistantPage({
   // Los accesos contextuales llegan con la pregunta ya redactada.
   const { q } = await searchParams;
 
-  return (
-    <>
-      <PageHeader icon={Sparkles} title={t.title} description={t.subtitle} />
-      <AssistantChat initialMessage={q?.slice(0, 500)} />
-    </>
-  );
+  return <AssistantChat initialMessage={q?.slice(0, 500)} />;
 }

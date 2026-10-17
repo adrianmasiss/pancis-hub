@@ -524,11 +524,29 @@ describe("EQ-002 · pesos segun el papel del alimento", () => {
    * que ese alimento cumple en la comida.
    */
   it("al sustituir un carbohidrato pesan mas los carbohidratos", () => {
-    const source = { calories: 130, proteinG: 2.7, carbohydrateG: 28, fatG: 0.3, fiberG: 0.4 };
+    const source = {
+      calories: 130,
+      proteinG: 2.7,
+      carbohydrateG: 28,
+      fatG: 0.3,
+      fiberG: 0.4,
+    };
     // Candidato que clava los carbohidratos pero falla la proteina.
-    const cuadraCarbos = { calories: 130, proteinG: 8, carbohydrateG: 28, fatG: 0.3, fiberG: 0.4 };
+    const cuadraCarbos = {
+      calories: 130,
+      proteinG: 8,
+      carbohydrateG: 28,
+      fatG: 0.3,
+      fiberG: 0.4,
+    };
     // Candidato que clava la proteina pero falla los carbohidratos.
-    const cuadraProteina = { calories: 130, proteinG: 2.7, carbohydrateG: 14, fatG: 0.3, fiberG: 0.4 };
+    const cuadraProteina = {
+      calories: 130,
+      proteinG: 2.7,
+      carbohydrateG: 14,
+      fatG: 0.3,
+      fiberG: 0.4,
+    };
 
     const conPerfilCarbo = compatibilityScore(source, cuadraCarbos, {
       profile: "carbohidrato",

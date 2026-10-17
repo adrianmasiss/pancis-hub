@@ -114,20 +114,26 @@ export function compareExercises(
 
   // --- Similitudes ---
   if (candidate.primaryMuscle === source.primaryMuscle) {
-    similarities.push(`Entrena el mismo musculo principal: ${source.primaryMuscle}.`);
+    similarities.push(
+      `Entrena el mismo musculo principal: ${source.primaryMuscle}.`,
+    );
   }
   if (
     source.movementPattern !== null &&
     candidate.movementPattern === source.movementPattern
   ) {
-    similarities.push(`Comparte el patron de movimiento (${source.movementPattern}).`);
+    similarities.push(
+      `Comparte el patron de movimiento (${source.movementPattern}).`,
+    );
   }
 
   const sharedJoints = candidate.joints.filter((joint) =>
     source.joints.includes(joint),
   );
   if (sharedJoints.length > 0) {
-    similarities.push(`Involucra las mismas articulaciones: ${sharedJoints.join(", ")}.`);
+    similarities.push(
+      `Involucra las mismas articulaciones: ${sharedJoints.join(", ")}.`,
+    );
   }
 
   const sharedSecondary = candidate.secondaryMuscles.filter((muscle) =>
@@ -192,8 +198,7 @@ export function compareExercises(
     "exige mas control corporal, asi que parte del esfuerzo se va en estabilizar.",
   );
   if (stabilityNote) {
-    const isMoreStable =
-      (candidate.stability ?? 0) > (source.stability ?? 0);
+    const isMoreStable = (candidate.stability ?? 0) > (source.stability ?? 0);
     (isMoreStable ? advantages : limitations).push(stabilityNote);
   }
 

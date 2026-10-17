@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChefHat, Clock, Search } from "lucide-react";
+import { Clock, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
 import { MacroChip } from "@/components/shared/macro-chip";
 import { RecipeFormDialog } from "@/features/recipes/components/recipe-form-dialog";
@@ -60,7 +60,7 @@ export default async function RecipesPage({
     <>
       {/* Sin icono identitario: la barra superior y el riel ya dicen donde
           estas. La descripcion se queda porque explica que hay dentro. */}
-      <PageHeader
+      <ViewHeader
         title={t.title}
         description={t.subtitle}
         actions={<RecipeFormDialog />}
@@ -138,39 +138,45 @@ export default async function RecipesPage({
                     ) : null}
                   </div>
                   <div className="space-y-2">
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium">
-                    <MacroChip type="calories" value={recipe.perServing.calories} />
-                    <MacroChip type="protein" value={recipe.perServing.proteinG} />
-                    <span className="text-muted-foreground font-normal">
-                      {t.perServing}
-                    </span>
-                  </p>
-                  <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-                    {recipe.preparationMinutes ? (
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3.5" aria-hidden="true" />
-                        {recipe.preparationMinutes} min
+                    <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium">
+                      <MacroChip
+                        type="calories"
+                        value={recipe.perServing.calories}
+                      />
+                      <MacroChip
+                        type="protein"
+                        value={recipe.perServing.proteinG}
+                      />
+                      <span className="text-muted-foreground font-normal">
+                        {t.perServing}
                       </span>
-                    ) : null}
-                    {recipe.difficulty ? (
-                      <span>
-                        {
-                          t.difficulties[
-                            recipe.difficulty as keyof typeof t.difficulties
-                          ]
-                        }
-                      </span>
-                    ) : null}
-                    {recipe.tags.slice(0, 3).map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="font-normal"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                    </p>
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+                      {recipe.preparationMinutes ? (
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3.5" aria-hidden="true" />
+                          {recipe.preparationMinutes} min
+                        </span>
+                      ) : null}
+                      {recipe.difficulty ? (
+                        <span>
+                          {
+                            t.difficulties[
+                              recipe.difficulty as keyof typeof t.difficulties
+                            ]
+                          }
+                        </span>
+                      ) : null}
+                      {recipe.tags.slice(0, 3).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="font-normal"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </article>
@@ -178,11 +184,7 @@ export default async function RecipesPage({
           ))}
         </div>
       ) : (
-        <EmptyState
-          title={t.noRecipes}
-          description={t.noRecipesDescription}
-          icon={ChefHat}
-        />
+        <EmptyState title={t.noRecipes} description={t.noRecipesDescription} />
       )}
     </>
   );

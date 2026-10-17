@@ -1,103 +1,108 @@
+import "@/features/nutrition/components/nutrition-workspace.css";
+import "@/features/nutrition/components/meal-plan.css";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Utensils } from "lucide-react";
 import Link from "next/link";
+import { FileUp } from "lucide-react";
+import {
+  ExpandActionInner,
+  expandActionClass,
+} from "@/components/ui/expand-action";
+import { ViewHeader } from "@/components/shared/view-header";
 import { DateSelector } from "@/components/shared/date-selector";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Section } from "@/components/shared/section";
-import { AddMealDialog } from "@/features/nutrition/components/add-meal-dialog";
-import { DaySummary } from "@/features/nutrition/components/day-summary";
-import { SwapQuestionPanel } from "@/features/nutrition/components/swap-question-panel";
-import { NutritionActionsMenu } from "@/features/nutrition/components/nutrition-actions-menu";
-import { MealCard } from "@/features/nutrition/components/meal-card";
-import { getDayPlan } from "@/features/nutrition/queries";
-import { todayInTimezone } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
-import { messages } from "@/i18n/es-419";
+import { todayInTimezone } from "@/lib/dates";
+import { NutritionHistory } from "@/features/nutrition/components/nutrition-history";
+import { NutritionNav } from "@/features/nutrition/components/nutrition-nav";
+import { NutritionWorkspace } from "@/features/nutrition/components/nutrition-workspace";
+import { BrandLogo } from "@/components/shared/brand-logo";
+import { getDayPlan, getDietPlanForDate } from "@/features/nutrition/queries";
+import { resolveNutritionDate } from "@/features/nutrition/lib/day-overview";
 
-export const metadata: Metadata = { title: messages.nav.nutrition };
+export const metadata: Metadata = { title: "Nutrición" };
 
 export default async function NutritionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fecha?: string }>;
+  searchParams: Promise<{ vista?: string; periodo?: string; fecha?: string }>;
 }) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
   const { data: profile } = await supabase
     .from("profiles")
     .select("timezone")
     .eq("id", user.id)
-    .single();
-  const today = todayInTimezone(profile?.timezone ?? "UTC");
+    .maybeSingle();
+  const today = todayInTimezone(profile?.timezone ?? "America/Costa_Rica");
+  const date = resolveNutritionDate(params.fecha, today);
+  const active =
+    params.vista === "historial"
+      ? "history"
+      : params.vista === "plan"
+        ? "plan"
+        : "day";
+  const period =
+    params.periodo === "30" ? 30 : params.periodo === "90" ? 90 : 7;
 
-  const { fecha } = await searchParams;
-  const date = fecha && /^\d{4}-\d{2}-\d{2}$/.test(fecha) ? fecha : today;
+  if (active === "history")
+    return (
+      <div className="nutrition-workspace" data-view={active}>
+        <ViewHeader
+          title="Nutrición"
+          description="Tendencias de tus registros. Los días sin registrar no se cuentan como cero."
+        />
+        <NutritionNav active="history" date={date} />
+        <h2 className="text-xl font-semibold">Tu alimentación en el tiempo</h2>
+        <NutritionHistory userId={user.id} period={period} />
+      </div>
+    );
 
-  const plan = await getDayPlan(user.id, date);
-
+  const [day, diet] = await Promise.all([
+    getDayPlan(user.id, date),
+    getDietPlanForDate(user.id, date, active),
+  ]);
   return (
-    <>
-      {/*
-        Sin icono identitario ni frase de presentacion: la barra superior y el
-        riel ya dicen donde estas, y "Gestiona tus comidas del dia" no le decia
-        al usuario nada que la pantalla no dijera sola. Lo que si es contexto
-        aqui es LA FECHA, asi que el selector sube a la cabecera en vez de
-        quedarse como una fila suelta debajo.
-      */}
-      <PageHeader
-        title={messages.nav.nutrition}
-        actions={
-          <>
-            <NutritionActionsMenu date={date} />
-            {/* La accion prominente de esta pantalla: es a lo que se viene. */}
-            <AddMealDialog date={date} />
-          </>
-        }
-      >
-        <DateSelector
-          date={date}
-          today={today}
-          basePath="/nutricion"
-          className="-ml-2"
-        />
-      </PageHeader>
-
-      <DaySummary plan={plan} />
-
-      {/* Consulta libre, sin alimento de partida: informa el impacto pero no
-          ofrece aplicar, porque aqui no hay un item del plan al que aplicarlo.
-          Para eso esta el mismo panel colgado de cada alimento en Hoy. */}
-      <SwapQuestionPanel />
-
-      {plan.meals.length > 0 ? (
-        <Section variant="plain" title={messages.nutrition.todaysMealsTitle}>
-          <p className="text-muted-foreground mb-4 text-sm text-pretty">
-            {messages.nutrition.todaysMealsNote}{" "}
-            <Link href="/" className="underline underline-offset-4">
-              {messages.nutrition.todaysMealsNoteLink}
-            </Link>
-            .
-          </p>
-          {/* Lista, no rejilla: las comidas del dia son una secuencia. */}
-          <div className="flex flex-col gap-4">
-            {plan.meals.map((meal) => (
-              <MealCard key={meal.id} meal={meal} />
-            ))}
+    <div className="nutrition-workspace" data-view={active}>
+      <header className="nutrition-dashboard-header">
+        <div className="nutrition-dashboard-brand">
+          <BrandLogo variant="mark" height={34} />
+          <div>
+            <h1>Mi Nutrición</h1>
+            <p>Tu plan diario, claro y medible</p>
           </div>
-        </Section>
-      ) : (
-        <EmptyState
-          title={messages.nutrition.noMealsTitle}
-          description={messages.nutrition.noMealsDescription}
-          icon={Utensils}
-        />
+        </div>
+        {/* El circulo naranja crece y se come el rotulo al pasar por
+            encima; el nombre accesible no depende de que se vea. */}
+        <Link
+          className={expandActionClass}
+          href="/nutricion/dieta"
+          aria-label="Importar dieta"
+        >
+          <ExpandActionInner
+            icon={<FileUp size={17} strokeWidth={2.2} />}
+            label="Importar dieta"
+          />
+        </Link>
+      </header>
+      <NutritionNav active={active} date={date} />
+      {active === "day" && diet && date !== today && (
+        <p className="text-muted-foreground text-xs">
+          El plan mostrado es el activo. El registro conserva lo que comiste en
+          esta fecha.
+        </p>
       )}
-    </>
+      <NutritionWorkspace
+        day={day}
+        diet={diet}
+        mode={active}
+        dateControl={
+          <DateSelector date={date} today={today} basePath="/nutricion" />
+        }
+      />
+    </div>
   );
 }

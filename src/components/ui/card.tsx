@@ -12,10 +12,9 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        // [handoff, regla 1] Toda tarjeta usa surface-card: degradado vertical
-        // sutil, filete de 1px, radio 16px y sombra baja. El respiro interior
-        // sube en pantallas grandes para que la densidad se mantenga constante.
-        "surface-card group/card text-card-foreground flex flex-col gap-(--card-gap) overflow-hidden py-(--card-spacing) text-sm [--card-gap:--spacing(4)] [--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 sm:data-[size=sm]:[--card-spacing:--spacing(5)] *:[img:first-child]:rounded-t-[var(--radius-card)] *:[img:last-child]:rounded-b-[var(--radius-card)]",
+        // La superficie compartida mantiene borde, radio y sombra coherentes.
+        // El respiro sube en pantallas grandes sin forzar alturas iguales.
+        "surface-card group/card text-card-foreground flex flex-col gap-(--card-gap) overflow-hidden py-(--card-spacing) text-sm [--card-gap:--spacing(4)] [--card-spacing:--spacing(5)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 sm:[--card-spacing:--spacing(6)] sm:data-[size=sm]:[--card-spacing:--spacing(5)] *:[img:first-child]:rounded-t-[var(--radius-card)] *:[img:last-child]:rounded-b-[var(--radius-card)]",
         className,
       )}
       {...props}
@@ -51,7 +50,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
         // dentro del titulo una cifra o un enlace ("0 de 2091 kcal", "Ver plan
         // del dia"), y text-transform se hereda: sin esto salian tambien en
         // mayusculas, que ni corresponde a un dato ni a una accion.
-        "card-eyebrow leading-snug [&_*]:normal-case [&_*]:tracking-normal",
+        "card-eyebrow leading-snug [&_*]:tracking-normal [&_*]:normal-case",
         className,
       )}
       {...props}

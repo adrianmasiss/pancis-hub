@@ -332,61 +332,97 @@ export type Database = {
         Row: {
           arm_cm: number | null
           attachment_storage_path: string | null
+          basal_metabolic_rate_kcal: number | null
+          bmi: number | null
           body_fat_percentage: number | null
           body_water_percentage: number | null
           chest_cm: number | null
           created_at: string
+          fat_control_kg: number | null
           hip_cm: number | null
           id: string
+          ideal_weight_kg: number | null
+          inbody_score: number | null
           measured_at: string
+          mineral_kg: number | null
+          muscle_control_kg: number | null
           notes: string | null
+          protein_kg: number | null
+          reference_ranges: Json | null
           skeletal_muscle_kg: number | null
           source: string
           thigh_cm: number | null
+          total_body_water_l: number | null
           updated_at: string
           user_id: string
           visceral_fat_level: number | null
           waist_cm: number | null
+          waist_hip_ratio: number | null
+          weight_control_kg: number | null
           weight_kg: number | null
         }
         Insert: {
           arm_cm?: number | null
           attachment_storage_path?: string | null
+          basal_metabolic_rate_kcal?: number | null
+          bmi?: number | null
           body_fat_percentage?: number | null
           body_water_percentage?: number | null
           chest_cm?: number | null
           created_at?: string
+          fat_control_kg?: number | null
           hip_cm?: number | null
           id?: string
+          ideal_weight_kg?: number | null
+          inbody_score?: number | null
           measured_at?: string
+          mineral_kg?: number | null
+          muscle_control_kg?: number | null
           notes?: string | null
+          protein_kg?: number | null
+          reference_ranges?: Json | null
           skeletal_muscle_kg?: number | null
           source?: string
           thigh_cm?: number | null
+          total_body_water_l?: number | null
           updated_at?: string
           user_id: string
           visceral_fat_level?: number | null
           waist_cm?: number | null
+          waist_hip_ratio?: number | null
+          weight_control_kg?: number | null
           weight_kg?: number | null
         }
         Update: {
           arm_cm?: number | null
           attachment_storage_path?: string | null
+          basal_metabolic_rate_kcal?: number | null
+          bmi?: number | null
           body_fat_percentage?: number | null
           body_water_percentage?: number | null
           chest_cm?: number | null
           created_at?: string
+          fat_control_kg?: number | null
           hip_cm?: number | null
           id?: string
+          ideal_weight_kg?: number | null
+          inbody_score?: number | null
           measured_at?: string
+          mineral_kg?: number | null
+          muscle_control_kg?: number | null
           notes?: string | null
+          protein_kg?: number | null
+          reference_ranges?: Json | null
           skeletal_muscle_kg?: number | null
           source?: string
           thigh_cm?: number | null
+          total_body_water_l?: number | null
           updated_at?: string
           user_id?: string
           visceral_fat_level?: number | null
           waist_cm?: number | null
+          waist_hip_ratio?: number | null
+          weight_control_kg?: number | null
           weight_kg?: number | null
         }
         Relationships: []
@@ -456,6 +492,7 @@ export type Database = {
           external_protein_g: number | null
           food_id: string | null
           id: string
+          omitted: boolean
           quantity_g: number
           source: string
           template_item_id: string
@@ -472,6 +509,7 @@ export type Database = {
           external_protein_g?: number | null
           food_id?: string | null
           id?: string
+          omitted?: boolean
           quantity_g: number
           source?: string
           template_item_id: string
@@ -488,6 +526,7 @@ export type Database = {
           external_protein_g?: number | null
           food_id?: string | null
           id?: string
+          omitted?: boolean
           quantity_g?: number
           source?: string
           template_item_id?: string
@@ -718,6 +757,7 @@ export type Database = {
           difficulty: string | null
           equipment: string | null
           execution_notes: string | null
+          external_id: string | null
           hardest_point: string | null
           id: string
           image_end_url: string | null
@@ -733,6 +773,7 @@ export type Database = {
           resistance_profile: string | null
           secondary_muscles: string[]
           setup_notes: string | null
+          source: string
           stability: number | null
           systemic_fatigue: number | null
           technical_demand: number | null
@@ -747,6 +788,7 @@ export type Database = {
           difficulty?: string | null
           equipment?: string | null
           execution_notes?: string | null
+          external_id?: string | null
           hardest_point?: string | null
           id?: string
           image_end_url?: string | null
@@ -762,6 +804,7 @@ export type Database = {
           resistance_profile?: string | null
           secondary_muscles?: string[]
           setup_notes?: string | null
+          source?: string
           stability?: number | null
           systemic_fatigue?: number | null
           technical_demand?: number | null
@@ -776,6 +819,7 @@ export type Database = {
           difficulty?: string | null
           equipment?: string | null
           execution_notes?: string | null
+          external_id?: string | null
           hardest_point?: string | null
           id?: string
           image_end_url?: string | null
@@ -791,6 +835,7 @@ export type Database = {
           resistance_profile?: string | null
           secondary_muscles?: string[]
           setup_notes?: string | null
+          source?: string
           stability?: number | null
           systemic_fatigue?: number | null
           technical_demand?: number | null
@@ -939,6 +984,8 @@ export type Database = {
           household_measure: string | null
           id: string
           label: string
+          owner_user_id: string | null
+          source: string
           updated_at: string
         }
         Insert: {
@@ -948,6 +995,8 @@ export type Database = {
           household_measure?: string | null
           id?: string
           label: string
+          owner_user_id?: string | null
+          source?: string
           updated_at?: string
         }
         Update: {
@@ -957,11 +1006,63 @@ export type Database = {
           household_measure?: string | null
           id?: string
           label?: string
+          owner_user_id?: string | null
+          source?: string
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "food_portions_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_source_values: {
+        Row: {
+          calories: number | null
+          carbohydrate_g: number | null
+          external_id: string
+          external_name: string | null
+          fat_g: number | null
+          fetched_at: string
+          fiber_g: number | null
+          food_id: string
+          id: string
+          protein_g: number | null
+          source: string
+        }
+        Insert: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          external_id: string
+          external_name?: string | null
+          fat_g?: number | null
+          fetched_at?: string
+          fiber_g?: number | null
+          food_id: string
+          id?: string
+          protein_g?: number | null
+          source: string
+        }
+        Update: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          external_id?: string
+          external_name?: string | null
+          fat_g?: number | null
+          fetched_at?: string
+          fiber_g?: number | null
+          food_id?: string
+          id?: string
+          protein_g?: number | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_source_values_food_id_fkey"
             columns: ["food_id"]
             isOneToOne: false
             referencedRelation: "foods"
@@ -1034,6 +1135,7 @@ export type Database = {
           cooked_state: string | null
           created_at: string
           deleted_at: string | null
+          density_g_per_ml: number | null
           external_id: string | null
           external_name: string | null
           external_source: string | null
@@ -1043,7 +1145,9 @@ export type Database = {
           grams_per_serving: number
           id: string
           image_url: string | null
+          max_divergence_pct: number | null
           name: string
+          nutrition_basis: string
           owner_user_id: string | null
           protein_g: number
           serving_amount: number
@@ -1063,6 +1167,7 @@ export type Database = {
           cooked_state?: string | null
           created_at?: string
           deleted_at?: string | null
+          density_g_per_ml?: number | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -1072,7 +1177,9 @@ export type Database = {
           grams_per_serving?: number
           id?: string
           image_url?: string | null
+          max_divergence_pct?: number | null
           name: string
+          nutrition_basis?: string
           owner_user_id?: string | null
           protein_g: number
           serving_amount?: number
@@ -1092,6 +1199,7 @@ export type Database = {
           cooked_state?: string | null
           created_at?: string
           deleted_at?: string | null
+          density_g_per_ml?: number | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -1101,7 +1209,9 @@ export type Database = {
           grams_per_serving?: number
           id?: string
           image_url?: string | null
+          max_divergence_pct?: number | null
           name?: string
+          nutrition_basis?: string
           owner_user_id?: string | null
           protein_g?: number
           serving_amount?: number
@@ -1213,42 +1323,51 @@ export type Database = {
           calories_snapshot: number
           carbohydrate_snapshot: number
           created_at: string
+          external_name: string | null
           fat_snapshot: number
           fiber_snapshot: number
-          food_id: string
+          food_id: string | null
           id: string
           meal_id: string
           protein_snapshot: number
           quantity_g: number
           serving_equivalence: string | null
+          sodium_snapshot_mg: number | null
+          sugar_snapshot_g: number | null
           updated_at: string
         }
         Insert: {
           calories_snapshot: number
           carbohydrate_snapshot: number
           created_at?: string
+          external_name?: string | null
           fat_snapshot: number
           fiber_snapshot?: number
-          food_id: string
+          food_id?: string | null
           id?: string
           meal_id: string
           protein_snapshot: number
           quantity_g: number
           serving_equivalence?: string | null
+          sodium_snapshot_mg?: number | null
+          sugar_snapshot_g?: number | null
           updated_at?: string
         }
         Update: {
           calories_snapshot?: number
           carbohydrate_snapshot?: number
           created_at?: string
+          external_name?: string | null
           fat_snapshot?: number
           fiber_snapshot?: number
-          food_id?: string
+          food_id?: string | null
           id?: string
           meal_id?: string
           protein_snapshot?: number
           quantity_g?: number
           serving_equivalence?: string | null
+          sodium_snapshot_mg?: number | null
+          sugar_snapshot_g?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -1279,6 +1398,7 @@ export type Database = {
           name: string | null
           notes: string | null
           scheduled_time: string | null
+          source_template_meal_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1293,6 +1413,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           scheduled_time?: string | null
+          source_template_meal_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1307,11 +1428,70 @@ export type Database = {
           name?: string | null
           notes?: string | null
           scheduled_time?: string | null
+          source_template_meal_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meals_source_template_meal_id_fkey"
+            columns: ["source_template_meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_template_meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurement_segments: {
+        Row: {
+          created_at: string
+          evaluation: string | null
+          fat_mass_kg: number | null
+          fat_percent: number | null
+          id: string
+          lean_mass_kg: number | null
+          lean_percent: number | null
+          measurement_id: string
+          segment: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evaluation?: string | null
+          fat_mass_kg?: number | null
+          fat_percent?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          lean_percent?: number | null
+          measurement_id: string
+          segment: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evaluation?: string | null
+          fat_mass_kg?: number | null
+          fat_percent?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          lean_percent?: number | null
+          measurement_id?: string
+          segment?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_segments_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "body_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nutrition_targets: {
         Row: {
@@ -1425,6 +1605,7 @@ export type Database = {
           training_type: string | null
           unit_system: string
           updated_at: string
+          username: string | null
           usual_training_time: string | null
         }
         Insert: {
@@ -1452,6 +1633,7 @@ export type Database = {
           training_type?: string | null
           unit_system?: string
           updated_at?: string
+          username?: string | null
           usual_training_time?: string | null
         }
         Update: {
@@ -1479,6 +1661,7 @@ export type Database = {
           training_type?: string | null
           unit_system?: string
           updated_at?: string
+          username?: string | null
           usual_training_time?: string | null
         }
         Relationships: []
@@ -1488,6 +1671,7 @@ export type Database = {
           captured_at: string
           created_at: string
           id: string
+          measurement_id: string | null
           notes: string | null
           private_storage_path: string
           updated_at: string
@@ -1498,6 +1682,7 @@ export type Database = {
           captured_at?: string
           created_at?: string
           id?: string
+          measurement_id?: string | null
           notes?: string | null
           private_storage_path: string
           updated_at?: string
@@ -1508,13 +1693,22 @@ export type Database = {
           captured_at?: string
           created_at?: string
           id?: string
+          measurement_id?: string | null
           notes?: string | null
           private_storage_path?: string
           updated_at?: string
           user_id?: string
           view_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "progress_photos_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "body_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recipe_ingredients: {
         Row: {
@@ -1766,6 +1960,30 @@ export type Database = {
           url?: string | null
           verified_at?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      water_logs: {
+        Row: {
+          amount_ml: number
+          created_at: string
+          date: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount_ml: number
+          created_at?: string
+          date: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string
+          date?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2070,6 +2288,10 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      log_diet_template_meal: {
+        Args: { p_date: string; p_template_meal_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

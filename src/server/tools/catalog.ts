@@ -186,7 +186,11 @@ export async function findFoodAlternatives(
 
   const [candidatesResult, preferencesResult, favoriteIds, recentIds] =
     await Promise.all([
-      supabase.from("foods").select(FOOD_SELECT).is("deleted_at", null).limit(300),
+      supabase
+        .from("foods")
+        .select(FOOD_SELECT)
+        .is("deleted_at", null)
+        .limit(300),
       supabase
         .from("dietary_preferences")
         .select("value")
@@ -229,10 +233,14 @@ export async function findExerciseAlternatives(
   const source = await findCatalogExercise(exerciseName);
   if (!source) return [];
 
+  /* Mismo criterio que en la comparacion de la interfaz: solo se proponen
+     ejercicios con biomecanica escrita. Ver `training/actions.ts`. */
   const { data: candidates } = await supabase
     .from("exercise_catalog")
     .select(BIOMECHANICS_SELECT)
     .is("deleted_at", null)
+    .not("resistance_profile", "is", null)
+    .order("name")
     .limit(200);
 
   return rankComparisons(

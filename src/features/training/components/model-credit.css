@@ -1,0 +1,73 @@
+/* El crédito del maniquí: un botón redondo pequeño en la esquina inferior
+   derecha del modelo, que despliega el texto hacia arriba. Va sobre el
+   lienzo, así que no ocupa sitio en la página. */
+.model-credit {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  z-index: 3;
+}
+.model-credit > summary {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--card) 80%, transparent);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  list-style: none;
+  transition: color 160ms ease;
+}
+.model-credit > summary::-webkit-details-marker {
+  display: none;
+}
+/* Área táctil de 44px aunque el botón se vea de 32. */
+.model-credit > summary::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.model-credit[open] > summary,
+.model-credit > summary:hover {
+  color: var(--foreground);
+}
+.model-credit > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.model-credit-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  display: grid;
+  gap: 8px;
+  width: min(280px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  text-wrap: pretty;
+  color: var(--muted-foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 32px -18px rgb(0 0 0 / 0.7);
+  animation: model-credit-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.model-credit-panel a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@keyframes model-credit-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .model-credit-panel {
+    animation: none;
+  }
+}

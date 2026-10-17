@@ -16,7 +16,13 @@
     "test:e2e": "playwright test",
     "backfill:images": "node --env-file=.env.local scripts/backfill-food-images.mjs",
     "import:exercise-images": "node --env-file=.env.local scripts/import-exercise-images.mjs",
-    "eval:copiloto": "node scripts/evaluar-copiloto.mjs"
+    "fondos": "node scripts/fondos-acceso.mjs",
+    "eval:copiloto": "node scripts/evaluar-copiloto.mjs",
+    "ejercicios": "node --env-file=.env.local scripts/importar-ejercicios.mjs",
+    "alimentos": "node --env-file=.env.local scripts/sembrar-alimentos.mjs",
+    "traducir": "node --env-file=.env.local scripts/traducir-alimentos.mjs",
+    "unidades": "node --env-file=.env.local scripts/unidades-alimentos.mjs",
+    "verificar": "node --env-file=.env.local scripts/verificar-nutricion.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.18",
@@ -24,11 +30,13 @@
     "@hookform/resolvers": "^5.4.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "@types/three": "^0.186.0",
     "ai": "^7.0.31",
     "barcode-detector": "^3.2.1",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "geist": "^1.7.2",
     "lucide-react": "^1.25.0",
     "motion": "^12.42.2",
     "next": "16.2.10",
@@ -42,6 +50,7 @@
     "shadcn": "^4.13.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
+    "three": "^0.186.1",
     "tw-animate-css": "^1.4.0",
     "zod": "^4.4.3"
   },

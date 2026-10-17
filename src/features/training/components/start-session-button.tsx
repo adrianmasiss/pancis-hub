@@ -15,6 +15,8 @@ type StartSessionButtonProps = {
   label?: string;
   /** `brand` cuando es la accion prominente de su pantalla (regla 1). */
   variant?: "default" | "outline" | "brand";
+  /** Para la pastilla oscura de la tarjeta de «Hoy». */
+  className?: string;
 };
 
 export function StartSessionButton({
@@ -22,12 +24,14 @@ export function StartSessionButton({
   planDayId,
   label,
   variant = "default",
+  className,
 }: StartSessionButtonProps) {
   const [pending, startTransition] = useTransition();
 
   return (
     <Button
       variant={variant}
+      className={className}
       // La prominente va mas alta: la jerarquia no la hace solo el degradado.
       size={variant === "brand" ? "lg" : "sm"}
       disabled={pending}

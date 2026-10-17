@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type MetricCardProps = {
   label: string;
-  value: string;
+  value: ReactNode;
   hint?: string;
   /**
    * Delta opcional. `tone` comunica si el cambio es favorable; el signo y el

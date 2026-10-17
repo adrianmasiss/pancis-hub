@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { History as HistoryIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { getChangeHistory, type ChangeEntry } from "@/features/history/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -71,7 +71,7 @@ export default async function HistoryPage() {
 
   return (
     <>
-      <PageHeader icon={HistoryIcon} title={t.title} description={t.description} />
+      <ViewHeader title={t.title} description={t.description} />
 
       {entries.length > 0 ? (
         <>

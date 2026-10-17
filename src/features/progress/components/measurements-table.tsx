@@ -63,7 +63,13 @@ export function MeasurementsTable({
        horizontal si se queda — la tabla tiene siete columnas y en 390px no
        cabe de ninguna manera, asi que rueda dentro de su contenedor en vez de
        empujar la pagina entera. */
-    <div className="-mx-1 overflow-x-auto px-1">
+    /* `relative` no es decoracion: sin el, un descendiente `position:absolute`
+       —cualquier `sr-only`, que Tailwind posiciona asi— tiene como bloque
+       contenedor el lienzo inicial, no este contenedor, de modo que ESCAPA del
+       recorte y aterriza en su posicion estatica dentro de la tabla de 520px.
+       Resultado: la pagina entera rodaba 90px de lado en telefono aunque la
+       tabla si estuviera contenida. */
+    <div className="relative -mx-1 overflow-x-auto px-1">
       <table className="w-full min-w-130 text-sm">
         <thead>
           <tr className="text-muted-foreground border-rule border-b text-left text-xs">

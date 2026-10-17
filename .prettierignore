@@ -4,3 +4,6 @@ out/
 coverage/
 package-lock.json
 supabase/.temp/
+# Generado por `supabase gen types`: Prettier le metia punto y coma a 3712
+# lineas y la siguiente regeneracion lo deshacia.
+src/types/database.ts

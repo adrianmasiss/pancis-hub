@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 
 type ModulePlaceholderProps = {
   title: string;
@@ -21,11 +21,11 @@ export function ModulePlaceholder({
 }: ModulePlaceholderProps) {
   return (
     <>
-      <PageHeader title={title} />
+      <ViewHeader title={title} />
       <EmptyState
+        icon={icon}
         title={emptyTitle}
         description={emptyDescription}
-        icon={icon}
       />
     </>
   );

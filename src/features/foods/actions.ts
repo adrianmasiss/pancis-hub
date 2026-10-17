@@ -44,6 +44,8 @@ export async function createCustomFood(
       carbohydrate_g: parsed.data.carbohydrateG,
       fat_g: parsed.data.fatG,
       fiber_g: parsed.data.fiberG,
+      sugar_g: parsed.data.sugarG ?? null,
+      sodium_mg: parsed.data.sodiumMg ?? null,
       source: "personalizado",
       verified: false,
     })
@@ -86,6 +88,8 @@ export async function updateCustomFood(
       carbohydrate_g: parsed.data.carbohydrateG,
       fat_g: parsed.data.fatG,
       fiber_g: parsed.data.fiberG,
+      sugar_g: parsed.data.sugarG ?? null,
+      sodium_mg: parsed.data.sodiumMg ?? null,
     })
     .eq("id", parsed.data.foodId)
     .eq("owner_user_id", user.id);

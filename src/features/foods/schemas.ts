@@ -31,6 +31,10 @@ export const foodFormSchema = z.object({
   carbohydrateG: macro(100),
   fatG: macro(100),
   fiberG: macro(100),
+  /** Optional: most labels print them, generic foods often don't. Absent
+   *  is stored as NULL ("no data"), never as zero. */
+  sugarG: macro(100).optional(),
+  sodiumMg: macro(40000).optional(),
 });
 
 export const updateFoodSchema = foodFormSchema.extend({

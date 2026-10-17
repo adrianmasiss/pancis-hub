@@ -764,3 +764,97 @@ consumido/objetivo de cada macro, que es exactamente lo que dicen dos
 columnas de la tabla. En telefono, ademas, la columna del plan se esconde:
 "faltan" es la razon de ser de la vista y no puede quedar tras el scroll,
 y lo que el plan aporta sigue dicho en el aviso de texto.
+
+## 2026-08-18 - Registrar una comida del plan copia exactamente el dia visible
+
+La pantalla de Nutricion permitia marcar una comida, pero la accion no recibia
+la fecha seleccionada y copiaba siempre los alimentos base de la plantilla.
+Una sustitucion valida para ese dia podia verse en pantalla y desaparecer al
+registrarla. Ademas, un reintento creaba otra comida y un fallo entre inserts
+podia dejar una fila parcial.
+
+**La base de datos hace la operacion completa.**
+`log_diet_template_meal(template_meal_id, date)` comprueba por RLS que la
+comida pertenece al plan activo, aplica la sustitucion vigente para esa fecha
+y crea comida e items en una sola transaccion. Una restriccion unica parcial
+por usuario, comida de plantilla y fecha hace que los reintentos devuelvan la
+fila existente en vez de duplicarla.
+
+**La identidad no se deduce del nombre.** `meals.source_template_meal_id`
+vincula el registro con su comida de origen. Dos comidas llamadas igual ya no
+se marcan juntas por accidente.
+
+**Una estimacion externa tambien se puede reproducir.** `meal_items.food_id`
+puede ser nulo solo cuando existe `external_name`; al registrar se guardan ese
+nombre y los macros que la persona vio. El historial conserva asi el estado
+real del plan aunque el alimento no exista en la biblioteca.
+
+**El plan no depende de tener un objetivo activo.** Si hay dieta pero faltan
+objetivos nutricionales, la pantalla muestra el plan y avisa que no puede
+calcular el restante. Ocultar la dieta confundia dos estados independientes.
+
+## 2026-08-19 - La interfaz adopta la direccion nocturna aprobada en Figma
+
+La informacion de las pantallas era correcta, pero la capa visual se sentia
+como una suma de decisiones aisladas: fondo gris, tarjetas blancas muy
+redondeadas, campos en capsula, degradados de marca y el mismo naranja para
+demasiadas acciones. En escritorio, ademas, muchas vistas seguian siendo una
+columna movil estirada.
+
+**No se cambia el producto para arreglar su apariencia.** La jerarquia de
+contenido y los flujos se conservan. El rediseño empieza en los tokens, la
+tipografia y el shell para que cada pantalla mejore desde una base compartida;
+despues se ajusta la composicion solo cuando existe una relacion real entre
+bloques.
+
+**La nueva direccion es performance nocturno y se clona, no se interpreta.**
+El Figma premium pasa a ser la autoridad visual. Sus colores se midieron de las
+exportaciones: lienzo `#082032`, tarjeta `#2c394b`, rail `#061826` y acento
+`#f05a27`. Hoy y Nutricion se comparan a 390×844 y 1440×900 hasta reproducir
+sus posiciones, alturas, radios y columnas.
+
+**El tema oscuro abre el producto.** El claro sigue disponible, pero ya no
+define la primera impresion. Hoy integra restante y macros en un solo panel en
+escritorio; Nutricion agrupa las comidas y lleva sus totales a una columna
+lateral, tal como pide la relacion entre ambos datos.
+
+**El build no depende de Google Fonts.** La pila sans nativa conserva el tono
+compacto de la referencia y permite compilar y probar sin red.
+
+**La marca se simplifica a escalas pequeñas.** El PNG completo contiene un
+subtitulo que se vuelve ruido en la barra movil. El shell usa el isotipo y
+reconstruye “Pancis Hub” con texto vivo; el wordmark completo queda reservado
+para tamaños donde todos sus elementos se leen.
+
+**La navegacion se convierte en el ancla visual.** En escritorio el riel es
+oscuro en ambos temas. En movil, los cinco destinos viven en una barra oscura
+anclada. El asistente pasa a la barra superior en movil porque su FAB tapaba
+campos y controles; en escritorio conserva el acceso flotante donde hay espacio.
+
+El archivo `M6WQr6jEpGSv6BpKUAsuom` y `DESIGN.md` documentan la direccion
+vigente; el primero es referencia visual y el segundo su contrato implementable.
+
+## 2026-08-19 - La interfaz deja la copia literal y adopta una direccion propia
+
+La reconstruccion del Figma consiguio cercania geometrica, pero no produjo el
+caracter profesional que se buscaba. La causa no era el contenido ni la logica:
+era un lenguaje visual basado en tarjetas grandes, azul pizarra y demasiado
+radio que seguia sintiendose generico.
+
+**El Figma deja de ser la autoridad final.** Se conserva como antecedente de
+estructura, pero la interfaz se dirige como un instrumento editorial de salud:
+carbon calido, marfil, terracota, filetes de medicion y fotografia gastronomica
+propia. Las referencias visuales se generan primero y el codigo se compara en
+los mismos cuatro breakpoints antes de cerrar la etapa.
+
+**Geist Sans se empaqueta localmente.** La dependencia `geist` aporta una sans
+suiza consistente sin solicitar archivos remotos durante el build.
+
+**Hoy responde con un medidor; Nutricion, con una cronologia.** La portada usa
+un anillo de energia y macros abiertos sobre el lienzo. Nutricion organiza el
+plan por hora, estado y alimento, con un resumen lateral. No se replica la misma
+composicion en ambas pantallas.
+
+**La fotografia tiene una funcion.** El recurso generado
+`public/images/nutrition-editorial.png` da contexto a la comida y se recorta de
+forma distinta según la vista; no reemplaza datos ni crea una hero de marketing.

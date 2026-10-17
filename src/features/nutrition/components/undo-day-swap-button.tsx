@@ -1,7 +1,8 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useTransition } from "react";
-import { Loader2, Undo2 } from "lucide-react";
+import { Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { messages } from "@/i18n/es-419";
@@ -28,7 +29,7 @@ export function UndoDaySwapButton({
     <Button
       type="button"
       variant="ghost"
-      size="icon-xs"
+      size="icon"
       aria-label={t.undo}
       title={t.undo}
       disabled={pending}
@@ -44,7 +45,7 @@ export function UndoDaySwapButton({
       }
     >
       {pending ? (
-        <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+        <NewtonsCradle size={24} />
       ) : (
         <Undo2 className="size-3" aria-hidden="true" />
       )}
