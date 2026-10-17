@@ -1,0 +1,194 @@
+/* El contador redondo (cápsula con − / + y la cifra en un disco). Vive en su
+   propio archivo porque lo usan la ficha de alimento y el registro de series
+   de Entrenamiento: el mismo control en toda la app. El acento sale de
+   `--tone-energy` si el contexto lo define, y si no del primario. */
+
+/* Contador de cantidad (referencia del usuario, oct 2026): capsula hundida,
+   disco elevado en el centro con «100g» en una linea, y − / + de trazo fino.
+   Medida contenida (oct 9, a peticion del usuario: «se ven muy grandes»,
+   «todavia mas pequeño», «un poquito mas pequeño»): 42px de alto, cifra y
+   «g» a 12.5px, en la misma
+   linea y centradas. */
+.qty-stepper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 42px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in oklab, #000 28%, var(--card));
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.45),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04);
+}
+.qty-stepper-step {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 36px;
+  border-radius: 999px;
+  color: color-mix(in oklab, var(--foreground) 62%, transparent);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 140ms ease,
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.qty-stepper-step svg {
+  width: 14px;
+  height: 14px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .qty-stepper-step:hover {
+    color: var(--foreground);
+  }
+}
+.qty-stepper-step:active {
+  transform: scale(0.86);
+  color: var(--tone-energy, var(--primary));
+}
+.qty-stepper-step:focus-visible {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: -2px;
+}
+/* Circulo con tres digitos; con cuatro se alarga a pildora, y el cambio de
+   ancho se anima con la misma curva que la cifra. */
+.qty-stepper-disc {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 999px;
+  cursor: text;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #fff 14%, var(--card)),
+    color-mix(in oklab, #fff 8%, var(--card))
+  );
+  box-shadow:
+    0 4px 10px -4px rgb(0 0 0 / 0.55),
+    0 1px 0 rgb(255 255 255 / 0.07) inset;
+  transition: box-shadow 160ms ease;
+}
+.qty-stepper-disc:focus-within {
+  box-shadow:
+    0 0 0 2px var(--tone-energy, var(--primary)),
+    0 5px 16px -4px
+      color-mix(in oklch, var(--tone-energy, var(--primary)) 45%, transparent);
+}
+.qty-stepper-cell {
+  display: grid;
+  align-items: center;
+  width: calc(var(--digits, 3) * 1ch);
+  transition: width 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* El campo y la cifra que rueda ocupan la misma celda. Fuera de edicion el
+   campo es transparente (sigue ahi para tocarlo y para el lector); al
+   editar, la cifra rodante se aparta. */
+/* Cifra y unidad con el mismo cuerpo y la misma linea: quedan a la misma
+   altura y el conjunto se centra en el disco. */
+.qty-stepper-cell,
+.qty-stepper-disc input,
+.qty-stepper-roll,
+.qty-stepper-unit {
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.qty-stepper-disc input,
+.qty-stepper-roll {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: center;
+  color: var(--foreground);
+}
+.qty-stepper-disc input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--tone-energy, var(--primary));
+}
+.qty-stepper .qty-stepper-disc input:focus-visible {
+  outline: none;
+}
+.qty-stepper-disc[data-editing] input {
+  color: var(--foreground);
+}
+.qty-stepper-roll {
+  position: relative;
+  display: grid;
+  height: 14px;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+.qty-stepper-roll > span {
+  grid-area: 1 / 1;
+  display: block;
+}
+.qty-stepper-disc[data-editing] .qty-stepper-roll {
+  visibility: hidden;
+}
+/* La unidad es el selector: la forma corta junto a la cifra, una flecha
+   mínima que dice que se puede cambiar, y el selector nativo transparente
+   encima (abre la lista del sistema, con lo que pesa cada medida). */
+.qty-stepper-unit {
+  position: relative;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  max-width: 13ch;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 140ms ease;
+}
+.qty-stepper-unit[data-word] {
+  margin-left: 3px;
+}
+.qty-stepper-unit > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.qty-stepper-unit svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.qty-stepper-unit select {
+  position: absolute;
+  inset: -11px -4px;
+  width: calc(100% + 8px);
+  opacity: 0;
+  cursor: pointer;
+  /* 16px evita que iOS acerque la página al abrirlo. */
+  font-size: 16px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .qty-stepper-unit:hover {
+    color: var(--foreground);
+  }
+}
+.qty-stepper-unit:has(select:focus-visible) {
+  color: var(--foreground);
+  outline: 2px solid var(--tone-energy, var(--primary));
+  outline-offset: 3px;
+}
+.food-detail-equivalence {
+  font-weight: 450;
+  opacity: 0.8;
+  white-space: nowrap;
+}

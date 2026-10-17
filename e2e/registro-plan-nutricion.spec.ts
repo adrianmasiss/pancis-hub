@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { esperarAcceso } from "./helpers/auth";
 import {
   completeOnboarding,
   findUserId,
@@ -15,16 +16,19 @@ import {
  * puede conservarse mediante su nombre y sus snapshots.
  */
 const email = `e2e-plan-nutrition-${Date.now()}@pancis.local`;
+const usuario = `e2eplan${Date.now()}`.slice(0, 20);
 const password = "password-e2e-12345";
 
-test("registra una comida del plan con la sustitucion visible, una sola vez", async ({
+test("registra una comida del plan con la sustitución visible, una sola vez", async ({
   page,
 }) => {
   await page.goto("/registro");
-  await page.getByLabel("Nombre").fill("Usuaria Plan Nutricion");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByLabel("Confirmar contrasena").fill(password);
+  await page.getByLabel("Nombre").fill("Usuaria Plan Nutrición");
+  await esperarAcceso(page);
+  await page.getByLabel("Usuario", { exact: true }).fill(usuario);
+  await page.getByLabel("Correo electrónico").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByLabel("Confirmar contraseña").fill(password);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
 
@@ -39,21 +43,26 @@ test("registra una comida del plan con la sustitucion visible, una sola vez", as
   await seedExternalDietSwap({ userId, templateItemId, date });
 
   await page.goto("/nutricion");
+  await page
+    .getByRole("button", { name: "Sustituir alimentos — Desayuno" })
+    .click();
   // La sustitucion del dia se afirma sobre la FILA del alimento, no sobre
   // cualquier texto: desde que la comida plegada resume sus alimentos, el
   // nombre aparece tambien en ese resumen y `getByText` daba dos nodos.
   await expect(
-    page.getByRole("paragraph").filter({ hasText: "Pancakes caseros" }),
+    page
+      .locator(".nutrition-meal-detail")
+      .getByText("Pancakes caseros", { exact: true }),
   ).toBeVisible();
 
   if (process.env.VISUAL_QA === "1") {
     await page.screenshot({
-      path: test.info().outputPath("nutricion-desktop.png"),
+      path: test.info().outputPath("nutrición-desktop.png"),
       fullPage: true,
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({
-      path: test.info().outputPath("nutricion-mobile.png"),
+      path: test.info().outputPath("nutrición-mobile.png"),
       fullPage: true,
     });
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -64,7 +73,7 @@ test("registra una comida del plan con la sustitucion visible, una sola vez", as
     .click();
   await expect(
     page.getByText("Comida registrada en tu diario de hoy."),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 });
 
   const logged = await readLoggedPlanMeals({ userId, templateMealId, date });
   expect(logged).toHaveLength(1);
@@ -88,7 +97,11 @@ test("registra una comida del plan con la sustitucion visible, una sola vez", as
   // El estado se resuelve por source_template_meal_id y ya no ofrece volver a
   // registrar la misma comida. La base conserva exactamente una fila.
   await page.reload();
-  await expect(page.getByLabel("Registrada hoy")).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Resumen del día" })
+      .getByText(/1 comida registrada/),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Marcar como comida — Desayuno" }),
   ).toHaveCount(0);

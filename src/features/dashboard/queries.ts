@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/dates";
+import { isMealConsumed } from "@/features/nutrition/lib/day-overview";
 import {
   mapDietTemplate,
   plannedTotalsOf,
@@ -29,6 +30,14 @@ export type DietTemplateItemView = {
   foodId: string;
   foodName: string;
   isCustom: boolean;
+  /** Omitido SOLO en la fecha consultada: se muestra, pero no suma. */
+  omitted: boolean;
+  /** Grupo del catalogo; da la ilustracion cuando no hay foto. */
+  foodGroup: string | null;
+  imageUrl: string | null;
+  /** Para la cantidad del plan; null = el alimento no trae el dato. */
+  sodiumMg: number | null;
+  sugarG: number | null;
   quantityG: number;
   servingEquivalence: string | null;
   foodPortions: { label: string; grams: number }[];
@@ -227,7 +236,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     supabase
       .from("diet_templates")
       .select(
-        "id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, scheduled_time, diet_template_items(id, quantity_g, serving_equivalence, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))))",
+        "id, name, target_calories, target_protein, target_carbs, target_fat, diet_template_meals(id, name, meal_type, order_index, scheduled_time, diet_template_items(id, quantity_g, serving_equivalence, foods(id, name, owner_user_id, food_group, image_url, sodium_mg, sugar_g, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))))",
       )
       .eq("user_id", userId)
       .eq("is_active", true)
@@ -243,7 +252,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     supabase
       .from("diet_item_day_swaps")
       .select(
-        "template_item_id, quantity_g, source, external_name, external_calories, external_protein_g, external_carbohydrate_g, external_fat_g, foods(id, name, owner_user_id, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))",
+        "template_item_id, quantity_g, source, omitted, external_name, external_calories, external_protein_g, external_carbohydrate_g, external_fat_g, foods(id, name, owner_user_id, food_group, image_url, sodium_mg, sugar_g, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams))",
       )
       .eq("user_id", userId)
       .eq("date", today),
@@ -259,7 +268,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
   };
   let mealsLoggedToday = 0;
   for (const meal of mealsResult.data ?? []) {
-    if (meal.status === "omitida") continue;
+    if (!isMealConsumed(meal.status)) continue;
     if ((meal.meal_items ?? []).length > 0) mealsLoggedToday += 1;
     for (const item of meal.meal_items ?? []) {
       consumed.calories += item.calories_snapshot ?? 0;

@@ -16,6 +16,25 @@ import {
   type PrimaryGoal,
 } from "@/features/progress/lib/composition";
 
+export const SEGMENTOS = [
+  "brazo_izquierdo",
+  "brazo_derecho",
+  "tronco",
+  "pierna_izquierda",
+  "pierna_derecha",
+] as const;
+export type SegmentKey = (typeof SEGMENTOS)[number];
+
+/** Una fila del análisis segmental, tal cual la imprime el InBody. */
+export type SegmentView = {
+  segment: SegmentKey;
+  leanMassKg: number | null;
+  leanPercent: number | null;
+  fatMassKg: number | null;
+  fatPercent: number | null;
+  evaluation: "bajo" | "normal" | "alto" | null;
+};
+
 export type MeasurementView = {
   id: string;
   measuredAt: string;
@@ -32,10 +51,29 @@ export type MeasurementView = {
   bodyWaterPercentage: number | null;
   notes: string | null;
   hasAttachment: boolean;
+  /** Totales que sólo da el InBody. */
+  proteinKg: number | null;
+  mineralKg: number | null;
+  totalBodyWaterL: number | null;
+  basalMetabolicRateKcal: number | null;
+  inbodyScore: number | null;
+  /** Análisis segmental; vacío si la medición no lo trae. */
+  segments: SegmentView[];
+  /** Obesidad y control de peso, tal como los da el informe. */
+  bmi: number | null;
+  idealWeightKg: number | null;
+  weightControlKg: number | null;
+  fatControlKg: number | null;
+  muscleControlKg: number | null;
+  waistHipRatio: number | null;
+  /** Rangos normales impresos por el aparato: [min, max] por métrica. */
+  referenceRanges: Record<string, [number, number]> | null;
 };
 
 export type PhotoViewItem = {
   id: string;
+  /** Medicion a la que acompana; null si se subio suelta. */
+  measurementId: string | null;
   capturedAt: string;
   viewType: PhotoView;
   notes: string | null;
@@ -79,8 +117,15 @@ const numberOrNull = (value: unknown): number | null =>
 export async function getProgressData(userId: string): Promise<ProgressData> {
   const supabase = await createClient();
 
-  const [measurementsResult, photosResult, profileResult, checkinsResult] =
-    await Promise.all([
+  const [
+    measurementsResult,
+    photosResult,
+    profileResult,
+    /* El orden sigue al del array: los segmentos se piden ANTES que los
+       check-ins, así que aquí van antes. */
+    segmentsResult,
+    checkinsResult,
+  ] = await Promise.all([
     supabase
       .from("body_measurements")
       .select("*")
@@ -89,7 +134,9 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
       .limit(200),
     supabase
       .from("progress_photos")
-      .select("id, captured_at, view_type, notes, private_storage_path")
+      .select(
+        "id, captured_at, view_type, notes, private_storage_path, measurement_id",
+      )
       .eq("user_id", userId)
       .order("captured_at", { ascending: false })
       .limit(60),
@@ -100,8 +147,16 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
       .eq("id", userId)
       .maybeSingle(),
     supabase
+      .from("measurement_segments")
+      .select(
+        "measurement_id, segment, lean_mass_kg, lean_percent, fat_mass_kg, fat_percent, evaluation",
+      )
+      .eq("user_id", userId),
+    supabase
       .from("daily_checkins")
-      .select("date, sleep_hours, sleep_quality, energy, stress, soreness, mood, notes")
+      .select(
+        "date, sleep_hours, sleep_quality, energy, stress, soreness, mood, notes",
+      )
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(14),
@@ -138,6 +193,36 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
       bodyWaterPercentage: numberOrNull(row.body_water_percentage),
       notes: row.notes,
       hasAttachment: row.attachment_storage_path !== null,
+      proteinKg: numberOrNull(row.protein_kg),
+      mineralKg: numberOrNull(row.mineral_kg),
+      totalBodyWaterL: numberOrNull(row.total_body_water_l),
+      basalMetabolicRateKcal: numberOrNull(row.basal_metabolic_rate_kcal),
+      inbodyScore: numberOrNull(row.inbody_score),
+      bmi: numberOrNull(row.bmi),
+      idealWeightKg: numberOrNull(row.ideal_weight_kg),
+      weightControlKg: numberOrNull(row.weight_control_kg),
+      fatControlKg: numberOrNull(row.fat_control_kg),
+      muscleControlKg: numberOrNull(row.muscle_control_kg),
+      waistHipRatio: numberOrNull(row.waist_hip_ratio),
+      referenceRanges:
+        (row.reference_ranges as Record<string, [number, number]> | null) ??
+        null,
+      /* El orden lo fija `SEGMENTOS`, no la base: el muñeco se lee de brazos
+         a piernas y una fila que llegue en otro orden lo desordenaría. */
+      segments: SEGMENTOS.map((clave) =>
+        (segmentsResult.data ?? []).find(
+          (seg) => seg.measurement_id === row.id && seg.segment === clave,
+        ),
+      )
+        .filter((seg) => seg !== undefined)
+        .map((seg) => ({
+          segment: seg.segment as SegmentKey,
+          leanMassKg: numberOrNull(seg.lean_mass_kg),
+          leanPercent: numberOrNull(seg.lean_percent),
+          fatMassKg: numberOrNull(seg.fat_mass_kg),
+          fatPercent: numberOrNull(seg.fat_percent),
+          evaluation: seg.evaluation as SegmentView["evaluation"],
+        })),
     }),
   );
 
@@ -157,6 +242,7 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
         .createSignedUrl(photo.private_storage_path, 600);
       return {
         id: photo.id,
+        measurementId: photo.measurement_id,
         capturedAt: photo.captured_at,
         viewType: photo.view_type as PhotoView,
         notes: photo.notes,
@@ -186,7 +272,8 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
     ),
     fatMassSeries: compositionSeries(snapshots, "fatMassKg"),
     leanMassSeries: compositionSeries(snapshots, "leanMassKg"),
-    wellbeingToday: wellbeingRecent.find((entry) => entry.date === today) ?? null,
+    wellbeingToday:
+      wellbeingRecent.find((entry) => entry.date === today) ?? null,
     wellbeingRecent,
     lastWeight:
       weightSeries.length > 0

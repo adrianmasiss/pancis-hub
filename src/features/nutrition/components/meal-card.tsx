@@ -236,6 +236,40 @@ export function MealCard({
         </div>
       </div>
 
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={meal.status === "planificada" ? "default" : "outline"}
+          disabled={pending || meal.items.length === 0}
+          onClick={() =>
+            run(
+              () =>
+                updateMealStatus({
+                  mealId: meal.id,
+                  status:
+                    meal.status === "completada" ||
+                    meal.status === "completada_con_cambios"
+                      ? "planificada"
+                      : "completada",
+                }),
+              t.statusUpdated,
+            )
+          }
+        >
+          {meal.status === "completada" ||
+          meal.status === "completada_con_cambios" ? (
+            <>
+              <Undo2 className="size-4" />
+              Deshacer registro
+            </>
+          ) : (
+            <>
+              <Check className="size-4" />
+              Registrar como comida
+            </>
+          )}
+        </Button>
+      </div>
       <div className="space-y-3">
         {meal.items.length > 0 ? (
           <ul className="divide-rule divide-y">

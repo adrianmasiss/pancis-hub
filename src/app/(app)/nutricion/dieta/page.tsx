@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { DietVersionsSection } from "@/features/nutrition/components/diet-versions-section";
 import { UploadDietForm } from "@/features/nutrition/components/upload-diet-form";
 import { listDietVersions } from "@/features/nutrition/version-actions";
@@ -37,7 +38,15 @@ export default async function UploadDietPage() {
 
   return (
     <>
-      <PageHeader title={t.pageTitle} description={t.pageDescription} />
+      <ViewHeader
+        title={t.pageTitle}
+        description={t.pageDescription}
+        actions={
+          <Link href="/nutricion?vista=plan" className="v11-button">
+            Volver a mi plan
+          </Link>
+        }
+      />
       <div className="max-w-3xl space-y-6 py-6">
         <UploadDietForm />
         {activeTemplate && versions ? (

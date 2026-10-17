@@ -56,7 +56,10 @@ describe("snapshotTotalSets", () => {
     const sinSeries: PlanSnapshot = {
       ...base,
       days: [
-        { ...base.days[0]!, exercises: [exercise("sq", "Sentadilla", { sets: null })] },
+        {
+          ...base.days[0]!,
+          exercises: [exercise("sq", "Sentadilla", { sets: null })],
+        },
       ],
     };
     expect(snapshotTotalSets(sinSeries)).toBe(0);
@@ -181,7 +184,9 @@ describe("isIdenticalPlanSnapshot", () => {
   });
 
   it("detecta el cambio de nombre o de objetivo", () => {
-    expect(isIdenticalPlanSnapshot(base, { ...base, name: "Otra" })).toBe(false);
+    expect(isIdenticalPlanSnapshot(base, { ...base, name: "Otra" })).toBe(
+      false,
+    );
     expect(
       isIdenticalPlanSnapshot(base, { ...base, objective: "fuerza" }),
     ).toBe(false);

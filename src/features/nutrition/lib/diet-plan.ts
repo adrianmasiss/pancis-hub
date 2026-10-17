@@ -14,6 +14,7 @@
  * alimento original sin haber escrito nada en la plantilla.
  */
 
+import { scaleExtra } from "./extras";
 import type {
   DietTemplateItemView,
   DietTemplateView,
@@ -35,6 +36,11 @@ type FoodRow = {
   id: string;
   name: string;
   owner_user_id: string | null;
+  food_group?: string | null;
+  image_url?: string | null;
+  /** Por 100 g; null cuando el catalogo no lo trae. */
+  sodium_mg?: number | string | null;
+  sugar_g?: number | string | null;
   calories: number | string | null;
   protein_g: number | string | null;
   carbohydrate_g: number | string | null;
@@ -47,6 +53,8 @@ export type DaySwapRow = {
   template_item_id: string;
   quantity_g: number | string;
   source: string;
+  /** «Hoy no me lo comi»: no suma en el dia. Ver migracion 20261003. */
+  omitted?: boolean | null;
   external_name: string | null;
   external_calories: number | string | null;
   external_protein_g: number | string | null;
@@ -119,8 +127,12 @@ export function mapDietTemplate({
       .map((meal) => {
         const items: DietTemplateItemView[] = meal.diet_template_items.map(
           (item) => {
-            const swap = swapByItemId.get(item.id);
+            const found = swapByItemId.get(item.id);
             const planFood = item.foods;
+            /* Una omision no es una sustitucion: el alimento que se ve es el
+               del plan, tal cual, solo que marcado y fuera de los totales. */
+            const omitted = Boolean(found?.omitted);
+            const swap = omitted ? undefined : found;
 
             // Con sustitucion vigente manda el sustituto: puede ser un
             // alimento de la biblioteca o la instantanea que guardo el
@@ -152,6 +164,13 @@ export function mapDietTemplate({
               foodName:
                 (swap && !swap.foods ? swap.external_name : food?.name) ?? "",
               isCustom: Boolean(food?.owner_user_id),
+              omitted,
+              foodGroup: food?.food_group ?? null,
+              imageUrl: food?.image_url ?? null,
+              // Un sustituto del asistente no trae sodio ni azucar: null, y
+              // la fila simplemente no los muestra.
+              sodiumMg: scaleExtra(food?.sodium_mg, quantityG),
+              sugarG: scaleExtra(food?.sugar_g, quantityG),
               quantityG,
               daySwap: swap
                 ? {
@@ -185,7 +204,7 @@ export function mapDietTemplate({
           orderIndex: meal.order_index,
           scheduledTime: meal.scheduled_time,
           items,
-          totals: sumMacros(items),
+          totals: sumMacros(items.filter((item) => !item.omitted)),
           loggedToday: loggedTemplateMealIds.has(meal.id),
         };
       }),

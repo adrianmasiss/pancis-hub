@@ -1,478 +1,124 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-17T18:36:47.000Z",
+  "generatedAt": "2026-09-22T22:43:37.296554+00:00",
   "title": "Design System: Pancis Hub",
   "extensions": {
-    "colorMeta": {
-      "background-dark": {
-        "role": "neutral-background",
-        "displayName": "Carbón (lienzo, oscuro)",
-        "canonical": "oklch(19% 0.009 169.2)",
-        "tonalRamp": [
-          "oklch(15% 0.009 169.2)",
-          "oklch(26.4% 0.009 169.2)",
-          "oklch(37.9% 0.009 169.2)",
-          "oklch(49.3% 0.009 169.2)",
-          "oklch(60.7% 0.009 169.2)",
-          "oklch(72.1% 0.009 169.2)",
-          "oklch(83.6% 0.009 169.2)",
-          "oklch(95% 0.009 169.2)"
-        ]
-      },
-      "background-light": {
-        "role": "neutral-background",
-        "displayName": "Piedra cálida (lienzo, claro)",
-        "canonical": "oklch(96.1% 0.005 95.1)",
-        "tonalRamp": [
-          "oklch(15% 0.005 95.1)",
-          "oklch(26.4% 0.005 95.1)",
-          "oklch(37.9% 0.005 95.1)",
-          "oklch(49.3% 0.005 95.1)",
-          "oklch(60.7% 0.005 95.1)",
-          "oklch(72.1% 0.005 95.1)",
-          "oklch(83.6% 0.005 95.1)",
-          "oklch(95% 0.005 95.1)"
-        ]
-      },
-      "card-dark": {
-        "role": "neutral-surface",
-        "displayName": "Carbón elevado (superficie, oscuro)",
-        "canonical": "oklch(21.5% 0.011 163.8)",
-        "tonalRamp": [
-          "oklch(15% 0.011 163.8)",
-          "oklch(26.4% 0.011 163.8)",
-          "oklch(37.9% 0.011 163.8)",
-          "oklch(49.3% 0.011 163.8)",
-          "oklch(60.7% 0.011 163.8)",
-          "oklch(72.1% 0.011 163.8)",
-          "oklch(83.6% 0.011 163.8)",
-          "oklch(95% 0.011 163.8)"
-        ]
-      },
-      "card-light": {
-        "role": "neutral-surface",
-        "displayName": "Marfil (superficie, claro)",
-        "canonical": "oklch(99.1% 0.003 106.4)",
-        "tonalRamp": [
-          "oklch(15% 0.003 106.4)",
-          "oklch(26.4% 0.003 106.4)",
-          "oklch(37.9% 0.003 106.4)",
-          "oklch(49.3% 0.003 106.4)",
-          "oklch(60.7% 0.003 106.4)",
-          "oklch(72.1% 0.003 106.4)",
-          "oklch(83.6% 0.003 106.4)",
-          "oklch(95% 0.003 106.4)"
-        ]
-      },
-      "card-raised-dark": {
-        "role": "neutral-surface-raised",
-        "displayName": "Carbón, sub-superficie (oscuro)",
-        "canonical": "oklch(24.8% 0.013 160.3)",
-        "tonalRamp": [
-          "oklch(15% 0.013 160.3)",
-          "oklch(26.4% 0.013 160.3)",
-          "oklch(37.9% 0.013 160.3)",
-          "oklch(49.3% 0.013 160.3)",
-          "oklch(60.7% 0.013 160.3)",
-          "oklch(72.1% 0.013 160.3)",
-          "oklch(83.6% 0.013 160.3)",
-          "oklch(95% 0.013 160.3)"
-        ]
-      },
-      "card-raised-light": {
-        "role": "neutral-surface-raised",
-        "displayName": "Marfil, sub-superficie (claro)",
-        "canonical": "oklch(94.2% 0.007 106.5)",
-        "tonalRamp": [
-          "oklch(15% 0.007 106.5)",
-          "oklch(26.4% 0.007 106.5)",
-          "oklch(37.9% 0.007 106.5)",
-          "oklch(49.3% 0.007 106.5)",
-          "oklch(60.7% 0.007 106.5)",
-          "oklch(72.1% 0.007 106.5)",
-          "oklch(83.6% 0.007 106.5)",
-          "oklch(95% 0.007 106.5)"
-        ]
-      },
-      "ink-dark": {
-        "role": "neutral-ink",
-        "displayName": "Tinta marfil (texto, oscuro)",
-        "canonical": "oklch(95% 0.01 87.5)",
-        "tonalRamp": [
-          "oklch(15% 0.01 87.5)",
-          "oklch(26.4% 0.01 87.5)",
-          "oklch(37.9% 0.01 87.5)",
-          "oklch(49.3% 0.01 87.5)",
-          "oklch(60.7% 0.01 87.5)",
-          "oklch(72.1% 0.01 87.5)",
-          "oklch(83.6% 0.01 87.5)",
-          "oklch(95% 0.01 87.5)"
-        ]
-      },
-      "ink-light": {
-        "role": "neutral-ink",
-        "displayName": "Tinta carbón (texto, claro)",
-        "canonical": "oklch(24.1% 0.024 241.4)",
-        "tonalRamp": [
-          "oklch(15% 0.024 241.4)",
-          "oklch(26.4% 0.024 241.4)",
-          "oklch(37.9% 0.024 241.4)",
-          "oklch(49.3% 0.024 241.4)",
-          "oklch(60.7% 0.024 241.4)",
-          "oklch(72.1% 0.024 241.4)",
-          "oklch(83.6% 0.024 241.4)",
-          "oklch(95% 0.024 241.4)"
-        ]
-      },
-      "primary": {
-        "role": "primary",
-        "displayName": "Terracota (acento, oscuro — canónico)",
-        "canonical": "oklch(66.4% 0.172 38.4)",
-        "tonalRamp": [
-          "oklch(15% 0.172 38.4)",
-          "oklch(26.4% 0.172 38.4)",
-          "oklch(37.9% 0.172 38.4)",
-          "oklch(49.3% 0.172 38.4)",
-          "oklch(60.7% 0.172 38.4)",
-          "oklch(72.1% 0.172 38.4)",
-          "oklch(83.6% 0.172 38.4)",
-          "oklch(95% 0.172 38.4)"
-        ]
-      },
-      "primary-strong": {
-        "role": "primary",
-        "displayName": "Terracota, hover/presión (oscuro)",
-        "canonical": "oklch(70.8% 0.157 39.7)",
-        "tonalRamp": [
-          "oklch(15% 0.157 39.7)",
-          "oklch(26.4% 0.157 39.7)",
-          "oklch(37.9% 0.157 39.7)",
-          "oklch(49.3% 0.157 39.7)",
-          "oklch(60.7% 0.157 39.7)",
-          "oklch(72.1% 0.157 39.7)",
-          "oklch(83.6% 0.157 39.7)",
-          "oklch(95% 0.157 39.7)"
-        ]
-      },
-      "primary-foreground": {
-        "role": "on-primary",
-        "displayName": "Tinta sobre terracota",
-        "canonical": "oklch(18.5% 0.008 67.3)",
-        "tonalRamp": [
-          "oklch(15% 0.008 67.3)",
-          "oklch(26.4% 0.008 67.3)",
-          "oklch(37.9% 0.008 67.3)",
-          "oklch(49.3% 0.008 67.3)",
-          "oklch(60.7% 0.008 67.3)",
-          "oklch(72.1% 0.008 67.3)",
-          "oklch(83.6% 0.008 67.3)",
-          "oklch(95% 0.008 67.3)"
-        ]
-      },
-      "muted-foreground-dark": {
-        "role": "neutral-muted",
-        "displayName": "Tinta secundaria (oscuro)",
-        "canonical": "oklch(69.4% 0.012 123.5)",
-        "tonalRamp": [
-          "oklch(15% 0.012 123.5)",
-          "oklch(26.4% 0.012 123.5)",
-          "oklch(37.9% 0.012 123.5)",
-          "oklch(49.3% 0.012 123.5)",
-          "oklch(60.7% 0.012 123.5)",
-          "oklch(72.1% 0.012 123.5)",
-          "oklch(83.6% 0.012 123.5)",
-          "oklch(95% 0.012 123.5)"
-        ]
-      },
-      "muted-foreground-light": {
-        "role": "neutral-muted",
-        "displayName": "Tinta secundaria (claro)",
-        "canonical": "oklch(48.4% 0.023 236.2)",
-        "tonalRamp": [
-          "oklch(15% 0.023 236.2)",
-          "oklch(26.4% 0.023 236.2)",
-          "oklch(37.9% 0.023 236.2)",
-          "oklch(49.3% 0.023 236.2)",
-          "oklch(60.7% 0.023 236.2)",
-          "oklch(72.1% 0.023 236.2)",
-          "oklch(83.6% 0.023 236.2)",
-          "oklch(95% 0.023 236.2)"
-        ]
-      },
-      "border-dark": {
-        "role": "neutral-border",
-        "displayName": "Filete verde-gris (oscuro)",
-        "canonical": "oklch(32% 0.014 158.1)",
-        "tonalRamp": [
-          "oklch(15% 0.014 158.1)",
-          "oklch(26.4% 0.014 158.1)",
-          "oklch(37.9% 0.014 158.1)",
-          "oklch(49.3% 0.014 158.1)",
-          "oklch(60.7% 0.014 158.1)",
-          "oklch(72.1% 0.014 158.1)",
-          "oklch(83.6% 0.014 158.1)",
-          "oklch(95% 0.014 158.1)"
-        ]
-      },
-      "border-light": {
-        "role": "neutral-border",
-        "displayName": "Filete (claro)",
-        "canonical": "oklch(89.6% 0.009 106.6)",
-        "tonalRamp": [
-          "oklch(15% 0.009 106.6)",
-          "oklch(26.4% 0.009 106.6)",
-          "oklch(37.9% 0.009 106.6)",
-          "oklch(49.3% 0.009 106.6)",
-          "oklch(60.7% 0.009 106.6)",
-          "oklch(72.1% 0.009 106.6)",
-          "oklch(83.6% 0.009 106.6)",
-          "oklch(95% 0.009 106.6)"
-        ]
-      },
-      "positive-dark": {
-        "role": "state-positive",
-        "displayName": "Positivo — según plan (oscuro)",
-        "canonical": "oklch(70.8% 0.126 162.9)",
-        "tonalRamp": [
-          "oklch(15% 0.126 162.9)",
-          "oklch(26.4% 0.126 162.9)",
-          "oklch(37.9% 0.126 162.9)",
-          "oklch(49.3% 0.126 162.9)",
-          "oklch(60.7% 0.126 162.9)",
-          "oklch(72.1% 0.126 162.9)",
-          "oklch(83.6% 0.126 162.9)",
-          "oklch(95% 0.126 162.9)"
-        ]
-      },
-      "positive-light": {
-        "role": "state-positive",
-        "displayName": "Positivo — según plan (claro)",
-        "canonical": "oklch(51.7% 0.103 160.8)",
-        "tonalRamp": [
-          "oklch(15% 0.103 160.8)",
-          "oklch(26.4% 0.103 160.8)",
-          "oklch(37.9% 0.103 160.8)",
-          "oklch(49.3% 0.103 160.8)",
-          "oklch(60.7% 0.103 160.8)",
-          "oklch(72.1% 0.103 160.8)",
-          "oklch(83.6% 0.103 160.8)",
-          "oklch(95% 0.103 160.8)"
-        ]
-      },
-      "caution-dark": {
-        "role": "state-caution",
-        "displayName": "Precaución — desvío leve (oscuro)",
-        "canonical": "oklch(77.9% 0.131 58.5)",
-        "tonalRamp": [
-          "oklch(15% 0.131 58.5)",
-          "oklch(26.4% 0.131 58.5)",
-          "oklch(37.9% 0.131 58.5)",
-          "oklch(49.3% 0.131 58.5)",
-          "oklch(60.7% 0.131 58.5)",
-          "oklch(72.1% 0.131 58.5)",
-          "oklch(83.6% 0.131 58.5)",
-          "oklch(95% 0.131 58.5)"
-        ]
-      },
-      "caution-light": {
-        "role": "state-caution",
-        "displayName": "Precaución — desvío leve (claro)",
-        "canonical": "oklch(49.4% 0.11 57.3)",
-        "tonalRamp": [
-          "oklch(15% 0.11 57.3)",
-          "oklch(26.4% 0.11 57.3)",
-          "oklch(37.9% 0.11 57.3)",
-          "oklch(49.3% 0.11 57.3)",
-          "oklch(60.7% 0.11 57.3)",
-          "oklch(72.1% 0.11 57.3)",
-          "oklch(83.6% 0.11 57.3)",
-          "oklch(95% 0.11 57.3)"
-        ]
-      },
-      "critical-dark": {
-        "role": "state-critical",
-        "displayName": "Crítico — requiere atención (oscuro)",
-        "canonical": "oklch(62.6% 0.193 23)",
-        "tonalRamp": [
-          "oklch(15% 0.193 23)",
-          "oklch(26.4% 0.193 23)",
-          "oklch(37.9% 0.193 23)",
-          "oklch(49.3% 0.193 23)",
-          "oklch(60.7% 0.193 23)",
-          "oklch(72.1% 0.193 23)",
-          "oklch(83.6% 0.193 23)",
-          "oklch(95% 0.193 23)"
-        ]
-      },
-      "critical-light": {
-        "role": "state-critical",
-        "displayName": "Crítico — requiere atención (claro)",
-        "canonical": "oklch(54.4% 0.173 28.4)",
-        "tonalRamp": [
-          "oklch(15% 0.173 28.4)",
-          "oklch(26.4% 0.173 28.4)",
-          "oklch(37.9% 0.173 28.4)",
-          "oklch(49.3% 0.173 28.4)",
-          "oklch(60.7% 0.173 28.4)",
-          "oklch(72.1% 0.173 28.4)",
-          "oklch(83.6% 0.173 28.4)",
-          "oklch(95% 0.173 28.4)"
-        ]
-      }
-    },
-    "typographyMeta": {
-      "numDisplay": {
-        "displayName": "Cifra protagonista",
-        "purpose": "Una sola por pantalla dentro de un medidor. Responde 'cuánto llevas/falta' a distancia de brazo; nunca compite consigo misma en la misma vista."
-      },
-      "pageTitle": {
-        "displayName": "Título de página",
-        "purpose": "Rótulo de pantalla; nunca compite en peso con la cifra protagonista."
-      },
-      "body": {
-        "displayName": "Cuerpo",
-        "purpose": "Texto de lectura y ficha. Párrafos de explicación no superan ~60 caracteres de medida."
-      }
-    },
     "shadows": [
       {
-        "name": "shadow-card-light",
-        "value": "0 1px 1px rgb(21 33 42 / 0.03), 0 14px 34px -28px rgb(21 33 42 / 0.28)",
-        "purpose": "Elevación de tarjeta en modo claro. En oscuro (Regla 6, 'El oscuro es la experiencia principal') surface-card no lleva sombra: el salto de tono carbón/carbón-elevado hace ese trabajo solo."
-      },
-      {
-        "name": "shadow-island",
-        "value": "0 18px 48px -22px rgb(0 0 0 / 0.9)",
-        "purpose": "Barra fija translúcida (navegación inferior, barra superior) y capas flotantes. Único lugar del sistema, junto con shadow-lifted, donde una sombra real acompaña la elevación en oscuro."
-      },
-      {
-        "name": "shadow-lifted",
-        "value": "0 8px 24px -8px rgb(0 0 0 / 0.45)",
-        "purpose": "Pieza que flota sobre el contenido y se mueve con él (botón del copiloto/asistente). Excepción declarada a 'la elevación es salto de tono': aquí no hay tono fijo debajo al que saltar."
+        "name": "v11-card",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 7%), 0 24px 56px -34px rgb(0 0 0 / 60%)",
+        "purpose": "Brillo interior y profundidad de tarjeta."
       }
     ],
     "motion": [
       {
-        "name": "ease-spring",
-        "value": "linear(0, 0.0039 1.24%, 0.0157, 0.0352, 0.0625 4.96%, 0.1379 7.44%, 0.2417 10.1%, 0.5199 16.6%, 0.6415 19.8%, 0.7442, 0.8298 26.5%, 0.8994 30%, 0.9541 33.9%, 0.9938 38.4%, 1.0169 43.1%, 1.0263 48.3%, 1.0221 55.6%, 1.0106 66.2%, 1.0004 81.1%, 1)",
-        "purpose": "Muelle único del sistema, no una curva de duración fija: es interrumpible y hereda velocidad. Todo movimiento de estado, entrada o segmentado lo usa."
+        "name": "card-entry",
+        "value": "200ms var(--pc-spring), delay calc(var(--i, 0) * 50ms)",
+        "purpose": "Entrada escalonada en orden de lectura."
       },
       {
-        "name": "dur-fast",
-        "value": "140ms",
-        "purpose": "Respuesta táctil inmediata (pulsación de botón)."
+        "name": "card-hover",
+        "value": "transform 260ms var(--pc-spring), border-color 260ms, box-shadow 300ms",
+        "purpose": "Respuesta del material al puntero; anulada con movimiento reducido."
       },
       {
-        "name": "dur-base",
-        "value": "240ms",
-        "purpose": "Transición de estado (activo/inactivo, segmentado, checkbox)."
+        "name": "newtons-cradle",
+        "value": "1.2s; ±70deg; four dots",
+        "purpose": "Espera consistente, con pausa fuera de pantalla y alternativa de movimiento reducido."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "dashboard-content-max",
+        "value": "900px"
       },
       {
-        "name": "dur-enter",
-        "value": "380ms",
-        "purpose": "Entrada de página o de bloque nuevo en pantalla."
+        "name": "domain-content-max",
+        "value": "760px"
       },
       {
-        "name": "stagger",
-        "value": "60ms",
-        "purpose": "Separación entre elementos que entran en secuencia (stagger-item)."
+        "name": "history-content-max",
+        "value": "700px"
+      },
+      {
+        "name": "mobile-viewport-max",
+        "value": "767px"
       }
     ]
   },
   "components": [
     {
-      "name": "Botón — brand",
+      "name": "Acción primaria",
       "kind": "button",
-      "refersTo": "button-brand",
-      "description": "Terracota sólido, sin degradado de interfaz (Regla 3). Es la única acción dominante por pantalla.",
-      "html": "<button class=\"ds-btn-brand\">Confirmar</button>",
-      "css": ".ds-btn-brand { background-color: #e8663b; color: #15120f; border: none; border-radius: 14px; height: 3.375rem; padding: 0 1.5rem; font-weight: 700; font-size: 0.9375rem; letter-spacing: -0.01em; cursor: pointer; box-shadow: 0 8px 22px -14px rgb(232 102 59 / 0.7); transition: filter 140ms ease-out, transform 140ms ease-out, box-shadow 140ms ease-out; } .ds-btn-brand:hover { filter: brightness(1.06); } .ds-btn-brand:active { transform: translateY(1px); } .ds-btn-brand:focus-visible { outline: none; box-shadow: 0 0 0 2px #101513, 0 0 0 4px rgb(232 102 59 / 0.35); } .ds-btn-brand:disabled { background-color: #202722; color: #9b9e96; box-shadow: none; filter: none; cursor: not-allowed; }"
+      "refersTo": "button-primary",
+      "description": "Acción principal v11.",
+      "html": "<button class=\"ds-button ds-primary\">Continuar</button>",
+      "css": ".ds-button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 44px;\n  padding: 0 19px;\n  border: 1px solid color-mix(in oklch, var(--foreground) 12%, transparent);\n  border-radius: 999px;\n  font-size: 14px;\n  font-weight: 600;\n  transition:\n    background-color 160ms,\n    transform 140ms;\n}.ds-primary {\n  background: var(--primary);\n  color: var(--primary-foreground);\n  border-color: transparent;\n}.ds-primary:hover {\n  background: var(--primary-strong);\n}.ds-button:active {\n  transform: scale(0.97);\n}.ds-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }"
     },
     {
-      "name": "Botón — default",
+      "name": "Acción secundaria",
       "kind": "button",
-      "refersTo": "button-default",
-      "description": "Tinta sólida invertida: acción local importante que no debe competir con el terracota de la acción dominante.",
-      "html": "<button class=\"ds-btn-default\">Ver detalle</button>",
-      "css": ".ds-btn-default { background-color: #15212a; color: #f3f2ee; border: none; border-radius: 12px; height: 2.5rem; padding: 0 1rem; font-weight: 600; font-size: 0.875rem; letter-spacing: -0.01em; cursor: pointer; transition: filter 200ms ease-out, transform 75ms ease-out; } .ds-btn-default:hover { filter: brightness(1.12); } .ds-btn-default:active { filter: brightness(0.92); transform: translateY(1px); } .ds-btn-default:focus-visible { outline: none; box-shadow: 0 0 0 2px #f3f2ee, 0 0 0 4px rgb(21 33 42 / 0.3); }"
+      "refersTo": "button-secondary",
+      "description": "Acción secundaria v11.",
+      "html": "<button class=\"ds-button\">Ver registros</button>",
+      "css": ".ds-button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 44px;\n  padding: 0 19px;\n  border: 1px solid color-mix(in oklch, var(--foreground) 12%, transparent);\n  border-radius: 999px;\n  font-size: 14px;\n  font-weight: 600;\n  transition:\n    background-color 160ms,\n    transform 140ms;\n}.ds-button:hover {\n  background: var(--v11-track);\n}.ds-button:active {\n  transform: scale(0.97);\n}.ds-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }"
     },
     {
-      "name": "Botón — outline",
-      "kind": "button",
-      "refersTo": "button-outline",
-      "description": "Fondo de superficie y borde preciso; acción secundaria que necesita presencia sin pesar como la dominante.",
-      "html": "<button class=\"ds-btn-outline\">Cancelar</button>",
-      "css": ".ds-btn-outline { background-color: rgb(21 27 24 / 0.8); color: #f1eee7; border: 1px solid #424b45; border-radius: 12px; height: 2.5rem; padding: 0 1rem; font-weight: 600; font-size: 0.875rem; letter-spacing: -0.01em; cursor: pointer; transition: border-color 200ms ease-out, background-color 200ms ease-out; } .ds-btn-outline:hover { border-color: rgb(241 238 231 / 0.2); background-color: #151b18; } .ds-btn-outline:active { background-color: #202722; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px #101513, 0 0 0 4px rgb(232 102 59 / 0.3); }"
-    },
-    {
-      "name": "Tarjeta (surface-card)",
+      "name": "Tarjeta v11",
       "kind": "card",
       "refersTo": "card",
-      "description": "Superficie con borde fino y radio contenido. Agrupa unidades reales de contenido (Regla 5); las secuencias usan filas y divisores, no una tarjeta por fragmento.",
-      "html": "<div class=\"ds-card\"><p class=\"ds-card-eyebrow\">Proteína</p><p class=\"ds-card-value\">128 g</p></div>",
-      "css": ".ds-card { background-color: #151b18; border: 1px solid #29312c; border-radius: 18px; padding: 20px; box-shadow: none; } .ds-card-eyebrow { margin: 0 0 4px; font-size: 0.8125rem; color: #9b9e96; } .ds-card-value { margin: 0; font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.014em; color: #f1eee7; font-variant-numeric: tabular-nums; }"
+      "description": "Superficie translúcida con borde especular.",
+      "html": "<section class=\"ds-card\"><h3>Registros</h3><p>Sin registros</p></section>",
+      "css": ".ds-card {\n  position: relative;\n  min-width: 0;\n  overflow: hidden;\n  border-radius: 24px;\n  border: 1px solid var(--v11-line);\n  background:\n    radial-gradient(\n      130% 110% at 100% 0%,\n      color-mix(in oklch, var(--primary) 8%, transparent),\n      transparent 62%\n    ),\n    color-mix(in oklch, var(--card) 58%, transparent);\n  backdrop-filter: blur(26px) saturate(150%);\n  box-shadow: var(--v11-shadow);\n  transition:\n    transform 260ms var(--pc-spring),\n    border-color 260ms,\n    box-shadow 300ms;\n}.ds-card::before {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  z-index: 2;\n  padding: 1.6px;\n  border-radius: inherit;\n  pointer-events: none;\n  opacity: 0.5;\n  background: conic-gradient(\n    from 0deg,\n    transparent 0deg,\n    color-mix(in oklch, var(--foreground) 60%, transparent) 8deg,\n    white 26deg,\n    white 44deg,\n    color-mix(in oklch, var(--foreground) 60%, transparent) 62deg,\n    transparent 74deg,\n    transparent 180deg,\n    color-mix(in oklch, var(--foreground) 60%, transparent) 188deg,\n    white 206deg,\n    white 224deg,\n    color-mix(in oklch, var(--foreground) 60%, transparent) 242deg,\n    transparent 254deg\n  );\n  mask:\n    linear-gradient(#000 0 0) content-box,\n    linear-gradient(#000 0 0);\n  mask-composite: exclude;\n}.ds-card {padding:22px;color:var(--foreground);font-family:var(--font-app)} .ds-card h3 {font-size:15px;font-weight:600} @media(hover:hover){.ds-card:hover {\n    transform: translateY(-3px);\n    border-color: color-mix(in oklch, var(--foreground) 17%, transparent);\n    box-shadow:\n      inset 0 1px 0 rgb(255 255 255 / 10%),\n      0 34px 72px -34px rgb(0 0 0 / 72%);\n  }\n}} @media(prefers-reduced-motion:reduce){.ds-card {transition:none}.ds-card:hover {transform:none}}"
     },
     {
-      "name": "Campo de texto",
+      "name": "Chip de dato",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Dato auxiliar del encabezado.",
+      "html": "<span class=\"ds-chip\">7 días</span>",
+      "css": ".ds-chip {display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--v11-line);background:color-mix(in oklab,var(--foreground) 6%,transparent);color:var(--muted-foreground);font-size:12px}"
+    },
+    {
+      "name": "Compositor",
       "kind": "input",
-      "refersTo": "input",
-      "description": "Superficie ligeramente teñida, foco por cambio de borde más halo suave — nunca solo color de texto. Radio real implementado: 22px (var(--radius-xl)); la prosa de DESIGN.md documenta 12px para campos y aún no se reconcilió con el componente Input construido — mencionar antes de tratar uno de los dos como autoritativo.",
-      "html": "<input class=\"ds-input\" placeholder=\"Buscar alimento\">",
-      "css": ".ds-input { background-color: rgb(28 35 31 / 0.6); color: #f1eee7; border: 1px solid #3a433d; border-radius: 22px; height: 2.75rem; padding: 0 14px; font-size: 1rem; transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease; } .ds-input::placeholder { color: #727a72; } .ds-input:focus-visible { outline: none; border-color: #e8663b; background-color: #151b18; box-shadow: 0 0 0 3px rgb(232 102 59 / 0.2); }"
+      "refersTo": "composer",
+      "description": "Entrada de texto de Copilot con foco en la superficie.",
+      "html": "<div class=\"ds-composer\"><textarea aria-label=\"Mensaje\" placeholder=\"Escribe a Copilot\"></textarea></div>",
+      "css": ".ds-composer {\n  position: relative;\n  width: 100%;\n  border-radius: 26px;\n  padding: 14px 16px;\n  border: 1px solid var(--v11-line);\n  background: color-mix(in oklab, var(--sidebar) 94%, black);\n  box-shadow:\n    inset 0 1px 0 rgb(255 255 255 / 6%),\n    0 20px 44px -28px rgb(0 0 0 / 60%);\n}.ds-composer:focus-within {\n  border-color: color-mix(in oklab, var(--primary) 50%, transparent);\n}.ds-composer textarea {width:100%;min-height:40px;background:transparent;color:var(--foreground);border:0;padding:10px 6px;font:16px/1.4 var(--font-app)} .ds-composer textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }"
     },
     {
-      "name": "Barra de magnitud",
-      "kind": "custom",
-      "refersTo": "magnitude-bar",
-      "description": "Componente firma: el relleno terracota sobre una pista propia (no el filete) es la unidad visual mínima de progreso en todo el sistema — macros, adherencia, series.",
-      "html": "<span class=\"ds-magbar\" aria-hidden=\"true\"><span class=\"ds-magbar-fill\" style=\"width:64%\"></span></span>",
-      "css": ".ds-magbar { display: block; position: relative; height: 6px; width: 100%; border-radius: 9999px; background-color: #303833; overflow: hidden; } .ds-magbar-fill { position: absolute; inset-block: 0; left: 0; background-color: #e8663b; border-radius: 9999px; transition: width 240ms ease-out; }"
-    },
-    {
-      "name": "Navegación — ítem activo/inactivo",
+      "name": "Periodo del historial",
       "kind": "nav",
-      "refersTo": "nav-item",
-      "description": "En escritorio el activo lleva una regla terracota e icono naranja; en móvil el dock usa iconos y rótulos y el activo toma el naranja sin pastilla adicional.",
-      "html": "<a class=\"ds-navitem ds-navitem-active\" aria-current=\"page\">Hoy</a><a class=\"ds-navitem\">Nutrición</a>",
-      "css": ".ds-navitem { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; color: #9b9e96; font-size: 0.875rem; font-weight: 500; text-decoration: none; border-left: 2px solid transparent; transition: color 200ms ease, border-color 200ms ease; } .ds-navitem:hover { color: #f1eee7; } .ds-navitem-active { color: #e8663b; border-left-color: #e8663b; }"
+      "refersTo": "chip",
+      "description": "Selección de ventana temporal.",
+      "html": "<nav class=\"ds-period\" aria-label=\"Periodo\"><a href=\"#7\" aria-current=\"page\">7 días</a><a href=\"#30\">30 días</a><a href=\"#90\">Trimestre</a></nav>",
+      "css": ".ds-period {\n  display: flex;\n  gap: 3px;\n  padding: 3px;\n  background: var(--v11-track);\n  border-radius: 999px;\n}.ds-period a {\n  display: flex;\n  align-items: center;\n  min-height: 30px;\n  padding: 0 12px;\n  font-size: 11px;\n  color: var(--muted-foreground);\n  border-radius: 999px;\n}.ds-period a[aria-current=\"page\"] {\n  background: var(--primary);\n  color: var(--primary-foreground);\n}.ds-period a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }"
     }
   ],
   "narrative": {
-    "northStar": "El instrumento editorial de salud",
-    "overview": "Pancis Hub combina la contundencia de una marca de entrenamiento con la precisión de un producto de datos. Carbón cálido, tinta marfil, filetes finos y una densidad controlada construyen una interfaz propia, sobria y táctil. La escena sigue siendo móvil, de pie y con una mano. En escritorio no se estira una pantalla móvil: se aprovecha el ancho para relacionar datos que se leen juntos. El Figma anterior se conserva como antecedente de estructura, no como límite creativo ni como una captura que deba copiarse.",
+    "northStar": "Pancis Hub v11 suministrado",
+    "overview": "La autoridad visual es el prototipo ejecutable Claude Design `Pancis Hub v11.dc.html` fijado por el usuario. Esta actualización documenta su implementación; no propone otro concepto ni sortea una dirección. Carbón, pizarra translúcida, crema, luz en las esquinas y datos de lectura rápida definen el mundo elegido. El material incluye degradados y vidrio dentro del flujo.\n\nLa evidencia local está en `src/app/layout.tsx` (contrato de dirección), las reglas v11 y sus ajustes finales en `src/app/globals.css`, `src/components/shared/v11-card.tsx` y `src/components/layout/app-shell.tsx`. El paquete histórico `desing-reference/design_handoff_pancis_hub/` conserva v8 y activos; sus comentarios y reglas antiguas no sustituyen la autoridad v11. `PRODUCT.md` conserva el contexto de producto.",
     "keyCharacteristics": [
-      "Una respuesta visual por pantalla: una cifra, decisión o estado manda; el resto construye contexto.",
-      "El terracota decide y mide — marca la acción principal, el foco y el avance; no colorea títulos, tarjetas completas ni controles secundarios.",
-      "Sin degradados de interfaz: el degradado pertenece al logotipo, los botones son sólidos y seguros.",
-      "Las cápsulas son excepciones reservadas a estados compactos, cantidades o filtros; el resto usa radios contenidos.",
-      "No todo vive en una tarjeta: las secuencias usan filas y divisores, los bloques secundarios pueden vivir directamente sobre el lienzo.",
-      "El oscuro es la experiencia principal; el claro se conserva como alternativa, pero el producto se diseña y verifica primero en nocturno."
+      "Pancis principal: #090909/#1A1A1A con #F0793F y #3FF4E5 en oscuro; #FFF3E6/#FFFFFF con #300C2D y #EADDE7 en claro. Gilded como respaldo.",
+      "Columna contenida, riel flotante y tarjetas con borde especular.",
+      "Geist Sans en títulos, cuerpo y cifras; mono en pequeños datos y etiquetas.",
+      "Movimiento breve con alternativa reducida y estados de datos explícitos."
     ],
-    "rules": [
-      { "name": "La Regla de Una Respuesta Visual", "body": "Una cifra, decisión o estado manda por pantalla; el resto construye contexto.", "section": "layout" },
-      { "name": "La Regla del Terracota que Decide y Mide", "body": "El acento marca la acción principal, el foco y el avance. No colorea títulos, tarjetas completas ni controles secundarios.", "section": "colors" },
-      { "name": "La Regla de Sin Degradados de Interfaz", "body": "El degradado pertenece al logotipo; los botones son sólidos y seguros.", "section": "colors" },
-      { "name": "La Regla de las Cápsulas como Excepción", "body": "Se reservan para estados compactos, cantidades o filtros. Botones, campos y tarjetas usan radios contenidos.", "section": "shapes" },
-      { "name": "La Regla de No Todo Vive en una Tarjeta", "body": "Las tarjetas agrupan unidades reales. Las secuencias usan filas y divisores; los bloques secundarios pueden vivir directamente sobre el lienzo.", "section": "components" },
-      { "name": "La Regla del Oscuro Principal", "body": "El producto se diseña y verifica primero en nocturno; el claro es la alternativa, no el punto de partida.", "section": "colors" },
-      { "name": "La Regla de Compilar no es Verificar", "body": "Todo cambio visual se revisa a 390px y 1440px, en ambos temas cuando toca tokens compartidos.", "section": "layout" }
-    ],
+    "rules": [],
     "dos": [
-      "Do usar el terracota únicamente para la acción dominante, el foco y el estado de avance.",
-      "Do redondear a uno de los cuatro radios contenidos del sistema (control 12px, acción 14px, tarjeta 18px, pastilla 9999px).",
-      "Do agrupar contenido real en surface-card y resolver secuencias con filas y filetes.",
-      "Do verificar cada cambio visual a 390px y 1440px, en claro y oscuro cuando el token es compartido.",
-      "Do usar Geist Sans local para evitar que el build dependa de una petición remota."
+      "**Do** conservar la autoridad del v11 suministrado y comprobar la cascada final antes de reutilizar reglas antiguas.",
+      "**Do** reutilizar roles de tema, material de tarjeta y estados accesibles existentes.",
+      "**Do** distinguir ausencia de registros, datos reales y contenido de maqueta.",
+      "**Do** respetar las preferencias de movimiento, transparencia y contraste.",
+      "Usar texto principal o morado sobre lavanda; reservar colores semánticos para estados."
     ],
     "donts": [
-      "Don't introducir fuentes remotas que hagan depender el build de internet.",
-      "Don't usar degradados rojo–naranja en botones.",
-      "Don't redondear todo a 9999px.",
-      "Don't apilar tarjetas para cada párrafo o fila.",
-      "Don't convertir datos secuenciales en una cuadrícula.",
-      "Don't usar terracota para enlaces estructurales o títulos completos.",
-      "Don't añadir un segundo color de marca.",
-      "Don't depender de sombras negras genéricas."
+      "**Don't** prohibir vidrio o degradados que forman parte explícita del v11.",
+      "**Don't** convertir Karrik o mono en la fuente dominante de las superficies v11.",
+      "**Don't** inventar puntuaciones regionales de recuperación ni presentar la anatomía como medición.",
+      "**Don't** describir switches locales o métricas de ejemplo como datos persistidos del usuario.",
+      "**Don't** sustituir la dirección elegida por otra estética o por reglas genéricas de diseño."
     ]
   }
 }

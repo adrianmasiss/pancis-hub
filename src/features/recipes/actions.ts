@@ -7,6 +7,7 @@ import { messages } from "@/i18n/es-419";
 import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
 import { parseCommaList } from "@/features/onboarding/schemas";
+import { scaleExtra } from "@/features/nutrition/lib/extras";
 import {
   addIngredientSchema,
   addRecipeToPlanSchema,
@@ -246,7 +247,7 @@ export async function addRecipeToPlan(
   const { data: recipe } = await supabase
     .from("recipes")
     .select(
-      "name, servings, recipe_ingredients(food_id, quantity_g, foods(calories, protein_g, carbohydrate_g, fat_g, fiber_g))",
+      "name, servings, recipe_ingredients(food_id, quantity_g, foods(calories, protein_g, carbohydrate_g, fat_g, fiber_g, sodium_mg, sugar_g))",
     )
     .eq("id", parsed.data.recipeId)
     .is("deleted_at", null)
@@ -288,6 +289,8 @@ export async function addRecipeToPlan(
       carbohydrate_snapshot: snapshot.carbohydrateG,
       fat_snapshot: snapshot.fatG,
       fiber_snapshot: snapshot.fiberG,
+      sodium_snapshot_mg: scaleExtra(ingredient.foods?.sodium_mg, quantity),
+      sugar_snapshot_g: scaleExtra(ingredient.foods?.sugar_g, quantity),
     };
   });
 

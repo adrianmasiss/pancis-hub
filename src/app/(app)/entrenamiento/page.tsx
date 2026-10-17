@@ -2,16 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Dumbbell } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import "@/features/training/components/training-workspace.css";
+import "@/features/training/components/training-today.css";
+import "@/features/nutrition/components/nutrition-workspace.css";
+import "@/features/foods/components/food-library.css";
+import "@/features/training/components/exercise-library.css";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { TrainingToday } from "@/features/training/components/training-today";
+import { TrainingHistory } from "@/features/training/components/training-history";
 import { Section } from "@/components/shared/section";
 import { CreatePlanDialog } from "@/features/training/components/create-plan-dialog";
 import { ImportRoutineDialog } from "@/features/training/components/import-routine-dialog";
 import { PlanCard } from "@/features/training/components/plan-card";
-import { StartSessionButton } from "@/features/training/components/start-session-button";
-import { getTrainingOverview } from "@/features/training/queries";
+import { ExerciseLibrary } from "@/features/training/components/exercise-library";
+import {
+  COLECCIONES,
+  grupoDe,
+  type Coleccion,
+} from "@/features/training/lib/library-groups";
+import { BrandLogo } from "@/components/shared/brand-logo";
+import {
+  getExerciseLibrary,
+  getTrainingLog,
+  getTrainingOverview,
+} from "@/features/training/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
@@ -19,21 +33,69 @@ const t = messages.training;
 
 export const metadata: Metadata = { title: t.title };
 
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("es-419", {
-    day: "numeric",
-    month: "short",
-  }).format(new Date(iso));
-}
+/* Cuatro pestañas, en la URL para que se puedan enlazar y para que «atrás»
+   vuelva a la anterior. El historial va aparte porque es otra pregunta:
+   «Hoy» es qué voy a hacer; «Historial», qué hice y con cuánto peso. La
+   biblioteca es el catálogo entero, para explorar o aprender un ejercicio. */
+const VISTAS = [
+  { id: "hoy", label: "Hoy" },
+  { id: "historial", label: "Historial" },
+  { id: "rutinas", label: "Rutinas" },
+  { id: "biblioteca", label: "Biblioteca" },
+] as const;
+type Vista = (typeof VISTAS)[number]["id"];
 
-export default async function TrainingPage() {
+export default async function TrainingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    vista?: string;
+    q?: string;
+    grupo?: string;
+    equipo?: string;
+    coleccion?: string;
+    pagina?: string;
+  }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const overview = await getTrainingOverview(user.id);
+  const params = await searchParams;
+  const pedida = params.vista;
+  const vista: Vista = VISTAS.some((v) => v.id === pedida)
+    ? (pedida as Vista)
+    : "hoy";
+
+  const grupo = grupoDe(params.grupo);
+  const coleccion: Coleccion = COLECCIONES.some(
+    (c) => c.id === params.coleccion,
+  )
+    ? (params.coleccion as Coleccion)
+    : "todos";
+  const biblioteca = {
+    q: params.q?.trim().slice(0, 80) || undefined,
+    grupo: grupo?.id,
+    equipo: params.equipo || undefined,
+    coleccion,
+    pagina: Math.max(1, Number(params.pagina) || 1),
+  };
+
+  const [overview, log, library] = await Promise.all([
+    getTrainingOverview(user.id),
+    vista === "historial" ? getTrainingLog(user.id) : Promise.resolve(null),
+    vista === "biblioteca"
+      ? getExerciseLibrary(user.id, {
+          query: biblioteca.q,
+          muscles: grupo?.catalogo,
+          equipment: biblioteca.equipo,
+          collection: coleccion,
+          page: biblioteca.pagina,
+        })
+      : Promise.resolve(null),
+  ]);
 
   // Proximo dia del plan activo: el siguiente al de la ultima sesion.
   const activeDays = overview.activePlan?.days ?? [];
@@ -47,143 +109,73 @@ export default async function TrainingPage() {
   }
 
   return (
-    <>
-      {/*
-        UNA accion prominente (regla 1): entrenar. La cabecera tenia tres
-        botones del mismo tamano y dos de ellos en naranja solido —empezar,
-        importar y crear—, asi que ninguno mandaba y el gesto del dia se leia
-        igual que una tarea de mantenimiento. Crear e importar rutina no
-        desaparecen ni dejan de ser naranjas: bajan a la seccion de Rutinas,
-        que es de lo que tratan.
-      */}
-      <PageHeader
-        title={t.title}
-        actions={
-          overview.sessionInProgress ? (
-            <Button asChild variant="brand" size="lg">
-              <Link
-                href={`/entrenamiento/sesion/${overview.sessionInProgress.id}`}
-              >
-                {t.continueSession}
-              </Link>
-            </Button>
-          ) : overview.activePlan && nextDay ? (
-            <StartSessionButton
-              planId={overview.activePlan.id}
-              planDayId={nextDay.id}
-              variant="brand"
-            />
-          ) : (
-            <StartSessionButton label={t.freeSession} variant="brand" />
-          )
-        }
-      />
-
-      <Section
-        variant="plain"
-        title={t.plansSection}
-        action={
-          <span className="flex flex-wrap items-center gap-2">
-            <ImportRoutineDialog />
-            <CreatePlanDialog />
-          </span>
-        }
-      >
-        {overview.plans.length > 0 ? (
-          /* Lista, no rejilla: las rutinas son una secuencia, y la de dos
-             columnas dejaba la activa compitiendo con una vecina. */
-          <div className="flex flex-col gap-4">
-            {overview.plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
+    <div className="training-workspace">
+      <header className="training-header">
+        <div className="training-brand">
+          <BrandLogo variant="mark" height={38} />
+          <div>
+            <h1>Entrenamiento</h1>
+            <p>Tu rutina. Tu ritmo. Tu progreso.</p>
           </div>
-        ) : (
-          <EmptyState
-            title={t.noPlans}
-            description={t.noPlansDescription}
-            icon={Dumbbell}
-          />
-        )}
-      </Section>
+        </div>
+      </header>
+      <nav className="training-tabs" aria-label="Secciones de entrenamiento">
+        {VISTAS.map((v) => (
+          <Link
+            key={v.id}
+            href={
+              v.id === "hoy" ? "/entrenamiento" : `/entrenamiento?vista=${v.id}`
+            }
+            aria-current={vista === v.id ? "page" : undefined}
+            scroll={false}
+          >
+            {v.label}
+          </Link>
+        ))}
+      </nav>
 
-      {/*
-        Una sola columna, tambien en escritorio: las tres secciones iban en una
-        rejilla de dos columnas que dejaba "Historial" alto y solo a la
-        izquierda. El sistema pide columna centrada, no repartir por rellenar
-        el ancho.
-      */}
-      {/*
-        Tres resumenes independientes. Apilados a ancho completo, en escritorio
-        cada uno era una franja de 1100px con una lista corta dentro y mucho
-        vacio a la derecha. Emparejados, el ojo los compara en vez de
-        recorrerlos.
-      */}
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <Section title={t.historySection}>
-          {overview.recentSessions.length > 0 ? (
-            <ul className="border-rule border-t">
-              {overview.recentSessions.map((session) => (
-                <li
-                  key={session.id}
-                  className="border-rule flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b py-3 text-sm"
-                >
-                  <span className="text-muted-foreground num w-12 shrink-0 text-xs">
-                    {formatDate(session.startedAt)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">
-                    {session.planName ?? t.freeSession}
-                  </span>
-                  <span className="text-muted-foreground num shrink-0 text-xs">
-                    {session.setsCount} {t.setsLabel} · {session.volume}{" "}
-                    {t.kgUnit}
-                    {session.durationMinutes
-                      ? ` · ${session.durationMinutes} ${t.minutesShort}`
-                      : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-          )}
-        </Section>
+      {vista === "hoy" && (
+        <TrainingToday overview={overview} initialDayId={nextDay?.id} />
+      )}
 
-        <Section title={t.prsTitle}>
-          {overview.records.length > 0 ? (
-            <ul className="border-rule border-t">
-              {overview.records.map((record) => (
-                <li
-                  key={record.exerciseId}
-                  className="border-rule flex items-baseline justify-between gap-3 border-b py-3 text-sm"
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {record.exerciseName}
-                  </span>
-                  <span className="num-strong shrink-0">
-                    {record.weightKg} {t.kgUnit} × {record.repetitions}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
-          )}
-        </Section>
+      {vista === "historial" && log && (
+        <TrainingHistory sessions={log} muscleSets7d={overview.muscleSets7d} />
+      )}
 
-        <Section title={t.muscleFrequencyTitle}>
-          {overview.muscleSets7d.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {overview.muscleSets7d.map(([muscle, count]) => (
-                <Badge key={muscle} variant="secondary" className="font-normal">
-                  {muscle}: {count}
-                </Badge>
-              ))}
+      {vista === "biblioteca" && library && (
+        <ExerciseLibrary params={biblioteca} {...library} />
+      )}
+
+      {vista === "rutinas" && (
+        <Section
+          variant="plain"
+          title={t.plansSection}
+          action={
+            <span className="flex flex-wrap items-center gap-2">
+              <ImportRoutineDialog />
+              <CreatePlanDialog />
+            </span>
+          }
+        >
+          {overview.plans.length > 0 ? (
+            /* Lista, no rejilla: las rutinas son una secuencia, y la de dos
+             columnas dejaba la activa compitiendo con una vecina. */
+            <div className="training-routine-grid">
+              {[...overview.plans]
+                .sort((a, b) => Number(b.active) - Number(a.active))
+                .map((plan) => (
+                  <PlanCard key={plan.id} plan={plan} />
+                ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">{t.noHistory}</p>
+            <EmptyState
+              title={t.noPlans}
+              description="Tus rutinas guardadas aparecerán aquí."
+              icon={Dumbbell}
+            />
           )}
         </Section>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

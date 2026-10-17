@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, User } from "lucide-react";
+import { AtSign, Mail, User } from "lucide-react";
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { Button } from "@/components/ui/button";
-import { AuthVariantToggle } from "@/features/auth/components/auth-variant-toggle";
-import { AuthFormHeader } from "@/features/auth/components/auth-form-header";
 import { SocialAuthRow } from "@/features/auth/components/social-auth-row";
 import { IconField } from "@/features/auth/components/icon-field";
 import { PasswordField } from "@/features/auth/components/password-field";
 import { signUp } from "@/features/auth/actions";
 import { registerSchema, type RegisterInput } from "@/features/auth/schemas";
+import { cn } from "@/lib/utils";
 import { messages } from "@/i18n/es-419";
 
 export function RegisterForm() {
@@ -22,6 +22,7 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       displayName: "",
+      username: "",
       email: "",
       password: "",
       passwordConfirm: "",
@@ -39,27 +40,20 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <AuthFormHeader
-        title={messages.auth.register.title}
-        description={messages.auth.register.description}
-      />
-
-      <AuthVariantToggle variant="register" className="w-full lg:hidden" />
-
-      <SocialAuthRow />
-
-      <div className="flex w-full items-center gap-3.5">
-        <span className="bg-divider h-px flex-1" />
-        <span className="text-muted-foreground text-sm">
-          {messages.auth.common.or}
-        </span>
-        <span className="bg-divider h-px flex-1" />
+    <div className="auth-reference-form flex flex-col items-center gap-6">
+      <div
+        className="auth-step w-full"
+        style={{ "--step": 0 } as React.CSSProperties}
+      >
+        <h1 className="page-display text-balance">
+          {messages.auth.register.title}
+        </h1>
       </div>
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-4"
+        className="auth-step flex w-full flex-col gap-4"
+        style={{ "--step": 1 } as React.CSSProperties}
         noValidate
       >
         <IconField
@@ -69,6 +63,22 @@ export function RegisterForm() {
           placeholder={messages.auth.fields.displayName}
           error={form.formState.errors.displayName?.message}
           {...form.register("displayName")}
+        />
+
+        {/* El usuario va DESPUES del nombre y antes del correo: primero como
+            te llamas, luego como te llamamos, luego donde te escribimos. La
+            arroba es suya —es el simbolo de un nombre de usuario— y el correo
+            se queda con el sobre. */}
+        <IconField
+          icon={AtSign}
+          label={messages.auth.fields.username}
+          autoComplete="username"
+          spellCheck={false}
+          autoCapitalize="none"
+          placeholder={messages.auth.fields.usernamePlaceholder}
+          error={form.formState.errors.username?.message}
+          hint={messages.auth.fields.usernameHint}
+          {...form.register("username")}
         />
 
         <IconField
@@ -107,14 +117,39 @@ export function RegisterForm() {
           type="submit"
           variant="brand"
           size="xl"
-          className="w-full"
+          className={cn(
+            "relative overflow-hidden transition-[width,border-radius] duration-[var(--pc-dur-surface,260ms)] ease-[var(--pc-spring)]",
+            pending ? "mx-auto w-14 rounded-full" : "w-full",
+          )}
+          aria-label={pending ? messages.common.loading : undefined}
           disabled={pending}
+          aria-busy={pending}
         >
-          {pending ? messages.common.loading : messages.auth.register.submit}
+          <span
+            aria-hidden={pending}
+            className={cn(
+              "transition-opacity duration-150",
+              pending && "opacity-0",
+            )}
+          >
+            {messages.auth.register.submit}
+          </span>
+          {pending && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 grid place-items-center"
+            >
+              <NewtonsCradle size={32} />
+            </span>
+          )}
         </Button>
       </form>
 
-      <p className="flex items-center gap-2 text-sm lg:hidden">
+      {/* Mismo orden que Iniciar sesion: pie, divisor y terceros al final. */}
+      <p
+        className="auth-step auth-account-link flex flex-wrap items-center justify-center gap-2 text-sm"
+        style={{ "--step": 2 } as React.CSSProperties}
+      >
         <span className="text-muted-foreground">
           {messages.auth.register.hasAccount}
         </span>
@@ -126,6 +161,13 @@ export function RegisterForm() {
           {messages.auth.register.loginLink}
         </Link>
       </p>
+
+      <div
+        className="auth-step flex w-full flex-col items-center gap-4"
+        style={{ "--step": 3 } as React.CSSProperties}
+      >
+        <SocialAuthRow />
+      </div>
     </div>
   );
 }

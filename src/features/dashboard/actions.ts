@@ -66,6 +66,9 @@ export async function logDietTemplateMeal(
 const swapSuggestionsSchema = z.object({
   templateItemId: z.uuid(),
   filter: z.enum(SWAP_FILTERS).optional(),
+  query: z.string().trim().max(100).optional(),
+  sameGroupOnly: z.boolean().optional(),
+  date: z.iso.date().optional(),
 });
 const swapItemSchema = z.object({
   templateItemId: z.uuid(),
@@ -84,6 +87,7 @@ type DbFood = {
   name: string;
   food_group: string;
   cooked_state: string | null;
+  image_url?: string | null;
   calories: number;
   protein_g: number;
   carbohydrate_g: number;
@@ -96,6 +100,7 @@ function toEquivalenceFood(food: DbFood): EquivalenceFood {
     id: food.id,
     name: food.name,
     foodGroup: food.food_group as FoodGroup,
+    imageUrl: food.image_url,
     cookedState: food.cooked_state as "crudo" | "cocido" | null,
     per100g: {
       calories: Number(food.calories),
@@ -134,10 +139,12 @@ export async function getDietItemSwapSuggestions(
     supabase
       .from("foods")
       .select(
-        "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams)",
+        "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)",
       )
       .is("deleted_at", null)
-      .limit(300),
+      .ilike("name", `%${(parsed.data.query ?? "").replace(/[%_]/g, "")}%`)
+      .order("name")
+      .limit(parsed.data.query ? 100 : 1000),
     supabase
       .from("dietary_preferences")
       .select("value")
@@ -148,17 +155,51 @@ export async function getDietItemSwapSuggestions(
     getPantryFoodIds(user.id),
   ]);
 
+  if (candidatesResult.error || preferencesResult.error)
+    return { error: "No pudimos cargar las alternativas. Inténtalo de nuevo." };
   const candidateRows = candidatesResult.data ?? [];
   const portionsByFoodId = buildPortionsMap(candidateRows);
 
-  const source = toEquivalenceFood(item.foods as DbFood);
+  let source = toEquivalenceFood(item.foods as DbFood);
+  let sourceQuantityG = Number(item.quantity_g);
+  if (parsed.data.date) {
+    const { data: swap, error } = await supabase
+      .from("diet_item_day_swaps")
+      .select(
+        "quantity_g, external_name, external_calories, external_protein_g, external_carbohydrate_g, external_fat_g, foods(id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g)",
+      )
+      .eq("user_id", user.id)
+      .eq("template_item_id", parsed.data.templateItemId)
+      .eq("date", parsed.data.date)
+      .maybeSingle();
+    if (error) return { error: swapT.failed };
+    if (swap) {
+      sourceQuantityG = Number(swap.quantity_g);
+      source = swap.foods
+        ? toEquivalenceFood(swap.foods as DbFood)
+        : {
+            ...source,
+            name: swap.external_name ?? source.name,
+            per100g: {
+              calories: Number(swap.external_calories),
+              proteinG: Number(swap.external_protein_g),
+              carbohydrateG: Number(swap.external_carbohydrate_g),
+              fatG: Number(swap.external_fat_g),
+              fiberG: 0,
+            },
+          };
+    }
+  }
   const alternatives = attachHouseholdEquivalence(
     rankAlternatives({
       source,
-      sourceQuantityG: Number(item.quantity_g),
-      candidates: candidateRows.map((food) =>
-        toEquivalenceFood(food as DbFood),
-      ),
+      sourceQuantityG,
+      candidates: candidateRows
+        .map((food) => toEquivalenceFood(food as DbFood))
+        .filter(
+          (food) =>
+            !parsed.data.sameGroupOnly || food.foodGroup === source.foodGroup,
+        ),
       favoriteIds,
       recentIds: new Set(recentIds),
       pantryIds,
@@ -170,7 +211,7 @@ export async function getDietItemSwapSuggestions(
 
   return {
     sourceName: source.name,
-    sourceQuantityG: Number(item.quantity_g),
+    sourceQuantityG,
     alternatives,
   };
 }
@@ -184,10 +225,15 @@ export async function swapDietTemplateItem(
 
   const { error } = await supabase
     .from("diet_template_items")
-    .update({ food_id: parsed.data.foodId, quantity_g: parsed.data.quantityG })
+    .update({
+      food_id: parsed.data.foodId,
+      quantity_g: parsed.data.quantityG,
+      serving_equivalence: null,
+    })
     .eq("id", parsed.data.templateItemId);
   if (error) return { error: swapT.failed };
 
   revalidatePath("/");
+  revalidatePath("/nutricion");
   return { success: true };
 }

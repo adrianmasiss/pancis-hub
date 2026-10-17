@@ -25,10 +25,7 @@ export type CompositionMetric =
   | "waistCm";
 
 export type PrimaryGoal =
-  | "recomposicion"
-  | "perdida_grasa"
-  | "ganancia_muscular"
-  | "mantenimiento";
+  "recomposicion" | "perdida_grasa" | "ganancia_muscular" | "mantenimiento";
 
 /** Medicion con lo necesario para el analisis de composicion. */
 export type CompositionSnapshot = {
@@ -104,7 +101,10 @@ const LOWER_IS_BETTER: CompositionMetric[] = [
 ];
 
 /** Metricas donde subir es mejor, sin importar el objetivo. */
-const HIGHER_IS_BETTER: CompositionMetric[] = ["skeletalMuscleKg", "leanMassKg"];
+const HIGHER_IS_BETTER: CompositionMetric[] = [
+  "skeletalMuscleKg",
+  "leanMassKg",
+];
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
 
@@ -283,7 +283,7 @@ export function compositionSeries(
     .sort((a, b) => a.measuredAt.localeCompare(b.measuredAt))
     .map(deriveSnapshot)
     .map((snapshot) => ({ date: snapshot.measuredAt, value: snapshot[metric] }))
-    .filter((point): point is { date: string; value: number } =>
-      point.value !== null,
+    .filter(
+      (point): point is { date: string; value: number } => point.value !== null,
     );
 }

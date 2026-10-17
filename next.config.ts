@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // view transition. Se permite el loopback por IP para poder verificar la
   // animacion cuando :3000 en "localhost" lo ocupa otro proyecto.
   allowedDevOrigins: ["127.0.0.1", "192.168.50.107"],
+  // pdf.js carga su «worker» desde un archivo hermano en node_modules; si
+  // Next lo empaqueta, ese archivo no viaja y leer un PDF de rutina falla
+  // con «Setting up fake worker failed». Se deja fuera del paquete.
+  serverExternalPackages: ["pdfjs-dist"],
   experimental: {
     // Integracion de Next con <ViewTransition> de React: sin esto el
     // componente renderiza, pero la navegacion entre /login y /registro no

@@ -1,6 +1,6 @@
 /**
  * USDA FoodData Central. API gratuita, requiere una clave sin costo
- * (https://fdc.nal.usda.gov/api-key-signup.html).
+ * (https://fdc.nal.usda.gov/api-key-signup/).
  *
  * Es la mejor fuente para alimentos genericos (pollo, arroz, huevo) porque
  * sus datos de laboratorio ya vienen por 100 g, que es justo la unidad del

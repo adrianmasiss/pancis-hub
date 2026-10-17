@@ -1,0 +1,244 @@
+/* ---------------------------------------------------------------------------
+   Tarjeta de foco (sustituir / comparar).
+
+   El fondo no se oscurece a negro: se difumina, para que la persona siga
+   sabiendo donde estaba (la lista sigue ahi, desenfocada) sin poder leerla.
+   La tarjeta llega como material: opacidad, escala y desenfoque juntos, con
+   la curva de la casa. Se va por el mismo camino, mas rapido.
+--------------------------------------------------------------------------- */
+.focus-card-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: color-mix(in oklch, #05060a 46%, transparent);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+.focus-card-overlay[data-state="open"] {
+  animation: focus-overlay-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.focus-card-overlay[data-state="closed"] {
+  animation: focus-overlay-out 200ms ease-in forwards;
+}
+@keyframes focus-overlay-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0) saturate(100%);
+  }
+}
+@keyframes focus-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.focus-card {
+  position: fixed;
+  z-index: 51;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(880px, calc(100dvh - 48px));
+  outline: none;
+}
+/* Mas especifico que las reglas de las hojas antiguas (fondo solido) y que
+   el hover del v11, que subiria la tarjeta 3px fuera de su centro. */
+.focus-card.v11-card {
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      130% 90% at 100% 0%,
+      color-mix(in oklch, var(--primary) 9%, transparent),
+      transparent 60%
+    ),
+    color-mix(in oklch, var(--card) 86%, transparent);
+  box-shadow:
+    0 50px 120px -40px rgb(0 0 0 / 0.75),
+    var(--v11-shadow);
+}
+.focus-card.v11-card:hover {
+  transform: none;
+}
+.focus-card[data-state="open"] {
+  animation: focus-card-in 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.focus-card[data-state="closed"] {
+  animation: focus-card-out 200ms ease-in forwards;
+}
+@keyframes focus-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    filter: blur(6px);
+  }
+}
+@keyframes focus-card-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    filter: blur(3px);
+  }
+}
+
+.focus-card-scroll {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* El contenido de las hojas trae su propio `px-4`; 12 + 16 = 28px, el mismo
+   margen que el encabezado. */
+.focus-card[data-layout="card"] .focus-card-scroll {
+  padding: 0 12px 6px;
+}
+
+.focus-card-header {
+  display: grid;
+  gap: 6px;
+  padding: 28px 60px 18px 16px;
+}
+.focus-card-title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.026em;
+  text-wrap: balance;
+}
+.focus-card-description {
+  max-width: 58ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.focus-card-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.focus-card-close:hover {
+  background: color-mix(in oklch, var(--foreground) 15%, transparent);
+}
+.focus-card-close:active {
+  transform: scale(0.94);
+}
+.focus-card-close:focus-visible {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 2px;
+}
+
+/* Escenario: el contenido trae sus tarjetas (comparar trae dos). Sin
+   superficie propia; el encabezado flota centrado sobre el difuminado. */
+.focus-card[data-layout="stage"] {
+  width: min(1120px, calc(100vw - 32px));
+}
+.focus-card[data-layout="stage"] .focus-card-scroll {
+  padding: 4px 4px 12px;
+}
+/* El encabezado del escenario va en su propia placa negra: sobre el
+   difuminado el texto blanco perdia contraste donde el fondo era claro. */
+.focus-card[data-layout="stage"] .focus-card-header {
+  justify-items: center;
+  justify-self: center;
+  width: min(100%, 760px);
+  margin: 0 auto 18px;
+  padding: 22px 32px 24px;
+  text-align: center;
+  border-radius: 24px;
+  background: rgb(9 9 10 / 0.94);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 30px 70px -30px rgb(0 0 0 / 0.85);
+}
+.focus-card[data-layout="stage"] .focus-card-title {
+  font-size: 26px;
+  color: #fff;
+}
+.focus-card[data-layout="stage"] .focus-card-description {
+  color: rgb(255 255 255 / 0.8);
+}
+.focus-card[data-layout="stage"] .focus-card-close {
+  top: 4px;
+  right: 4px;
+  color: #fff;
+  background: rgb(255 255 255 / 0.1);
+}
+
+@media (max-width: 600px) {
+  .focus-card {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 24px);
+  }
+  .focus-card.v11-card {
+    border-radius: 24px;
+  }
+  .focus-card-header {
+    padding: 22px 56px 14px 16px;
+  }
+  .focus-card-title {
+    font-size: 20px;
+  }
+  .focus-card[data-layout="stage"] .focus-card-title {
+    font-size: 22px;
+  }
+  .focus-card[data-layout="stage"] .focus-card-header {
+    padding: 18px 56px 20px 20px;
+    text-align: left;
+    justify-items: start;
+  }
+  /* Dentro de la placa, en su esquina, en vez de pisar el borde. */
+  .focus-card[data-layout="stage"] .focus-card-close {
+    top: 16px;
+    right: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-card[data-state="open"],
+  .focus-card[data-state="closed"] {
+    animation-name: focus-overlay-in;
+    animation-duration: 160ms;
+  }
+  .focus-card[data-state="closed"] {
+    animation-name: focus-overlay-out;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .focus-card-overlay {
+    backdrop-filter: none;
+    background: rgb(5 6 10 / 0.86);
+  }
+  .focus-card.v11-card {
+    background: var(--card);
+  }
+}
+
+/* Las hojas antiguas fijaban su pie con fondo solido; en la tarjeta va
+   transparente y a todo el ancho, con su filete. */
+.focus-card .nutrition-swap-footer {
+  margin: 0 -12px -6px;
+  padding-inline: 28px;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  border-color: var(--v11-line);
+}

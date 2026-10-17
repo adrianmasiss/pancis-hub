@@ -99,7 +99,11 @@ export function AppearanceCard() {
                   </span>
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate text-[12px] font-medium">
-                      {name}
+                      {name === "Gilded"
+                        ? "Gilded · respaldo"
+                        : name === "Pancis"
+                          ? "Pancis · principal"
+                          : name}
                     </span>
                     {active ? (
                       <Check

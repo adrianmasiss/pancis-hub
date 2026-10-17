@@ -175,9 +175,9 @@ describe("analyzeRoutine", () => {
         exercises: [exercise({ name: "Prensa", sets: 8 })],
       },
     ]);
-    expect(
-      result.findings.some((f) => f.title.includes("Volumen alto")),
-    ).toBe(true);
+    expect(result.findings.some((f) => f.title.includes("Volumen alto"))).toBe(
+      true,
+    );
   });
 
   it("senala redundancia cuando se repite un patron el mismo dia", () => {

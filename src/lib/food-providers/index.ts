@@ -1,11 +1,12 @@
 /**
- * Registro de proveedores externos. Solo servicios gratuitos: USDA
- * FoodData Central (clave gratuita) y Open Food Facts (sin clave).
+ * Registro de proveedores externos: USDA, Open Food Facts y Dietly.
+ * Dietly permite lecturas públicas y una clave opcional según el plan.
  *
  * SERVER-ONLY: toda llamada externa ocurre en el servidor y las claves
  * nunca llegan al cliente. No importar desde componentes de cliente
  * (docs/SECURITY.md).
  */
+import { dietlyProvider } from "@/lib/food-providers/dietly";
 import { openFoodFactsProvider } from "@/lib/food-providers/open-food-facts";
 import { usdaFoodProvider } from "@/lib/food-providers/usda";
 import type { FoodProvider, ProviderSource } from "@/lib/food-providers/types";
@@ -13,6 +14,7 @@ import type { FoodProvider, ProviderSource } from "@/lib/food-providers/types";
 const ALL_PROVIDERS: readonly FoodProvider[] = [
   usdaFoodProvider,
   openFoodFactsProvider,
+  dietlyProvider,
 ];
 
 /** Proveedores con configuracion suficiente para operar ahora mismo. */

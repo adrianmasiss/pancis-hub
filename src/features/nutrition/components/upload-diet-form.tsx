@@ -1,7 +1,8 @@
 "use client";
 
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState } from "react";
-import { Brain, Loader2 } from "lucide-react";
+import { Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
 import { Input } from "@/components/ui/input";
@@ -129,7 +130,7 @@ export function UploadDietForm() {
           disabled={!file || isLoading}
         >
           {isLoading ? (
-            <Loader2 className="size-4 animate-spin" />
+            <NewtonsCradle size={24} />
           ) : (
             <Brain className="size-4" />
           )}

@@ -1,0 +1,163 @@
+/* ---------------------------------------------------------------------------
+   Pill controls shared across the app: the segmented track with its sliding
+   thumb (SegmentedControl) and the round add button (AddFoodButton). Black
+   insert material, same as the comparison cards. Size with --cmp-ctl.
+--------------------------------------------------------------------------- */
+/* Colours by theme: a recessed track and a raised thumb in light, the black
+   insert and graphite thumb in dark. */
+:root {
+  --seg-track: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --seg-track-line: color-mix(in oklab, var(--foreground) 6%, transparent);
+  --seg-ink: color-mix(in oklab, var(--foreground) 58%, transparent);
+  --seg-ink-hover: color-mix(in oklab, var(--foreground) 80%, transparent);
+  --seg-ink-active: var(--foreground);
+  --seg-thumb: var(--card);
+  --seg-thumb-shadow:
+    0 1px 2px rgb(0 0 0 / 12%), 0 4px 12px -4px rgb(0 0 0 / 18%);
+}
+.dark {
+  --seg-track: #000;
+  --seg-track-line: rgb(255 255 255 / 7%);
+  --seg-ink: #8e8e94;
+  --seg-ink-hover: #d4d4d8;
+  --seg-ink-active: #f5f5f7;
+  --seg-thumb: linear-gradient(180deg, #2c2c30, #1e1e21);
+  --seg-thumb-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 12%), 0 1px 2px rgb(0 0 0 / 60%),
+    0 6px 14px -6px rgb(0 0 0 / 80%);
+}
+.cmp-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--cmp-ctl, 44px);
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--seg-track);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--seg-track-line) 130%, transparent),
+    inset 0 0 0 1px var(--seg-track-line);
+}
+.cmp-segment {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-width: 0;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: var(--seg-ink);
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.cmp-segment[data-icon] {
+  width: calc(var(--cmp-ctl, 44px) - 8px);
+  padding: 0;
+}
+.cmp-segment-label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.cmp-segment[aria-pressed="true"] {
+  color: var(--seg-ink-active);
+}
+.cmp-segment-thumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--seg-thumb);
+  box-shadow: var(--seg-thumb-shadow);
+}
+/* The active mode carries the brand as a fine underline of light, not as a
+   tinted fill: orange stays the colour of committing. */
+.cmp-segment[aria-pressed="true"]:not([data-icon]) .cmp-segment-thumb::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 8px color-mix(in oklab, var(--primary) 70%, transparent);
+}
+.cmp-segment:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.cmp-segment:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.cmp-add {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--cmp-ctl, 44px);
+  width: var(--cmp-ctl, 44px);
+  height: var(--cmp-ctl, 44px);
+  border-radius: 50%;
+  background: #000;
+  color: #f5f5f7;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 9%),
+    inset 0 0 0 1px rgb(255 255 255 / 7%);
+  cursor: pointer;
+  outline: none;
+  transition:
+    scale 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 200ms;
+}
+.cmp-add svg {
+  transition: transform 360ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.cmp-add:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.cmp-add:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Press: instant, on pointer-down. */
+.cmp-segment:active:not(:disabled),
+.cmp-add:active:not(:disabled) {
+  scale: 0.95;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmp-segment:not([aria-pressed="true"]):hover {
+    color: var(--seg-ink-hover);
+  }
+  .cmp-add:hover {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 14%),
+      inset 0 0 0 1px rgb(255 255 255 / 16%);
+  }
+  .cmp-add:hover svg {
+    transform: rotate(90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-segment,
+  .cmp-add,
+  .cmp-add svg {
+    transition: none;
+  }
+  .cmp-segment:active:not(:disabled),
+  .cmp-add:active:not(:disabled) {
+    scale: none;
+  }
+  .cmp-add:hover svg {
+    transform: none;
+  }
+}

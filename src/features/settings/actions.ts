@@ -8,9 +8,11 @@ import {
   goalSettingsSchema,
   profileSettingsSchema,
   toleranceSettingsSchema,
+  usernameSettingsSchema,
   type GoalSettingsInput,
   type ProfileSettingsInput,
   type ToleranceSettingsInput,
+  type UsernameSettingsInput,
 } from "@/features/settings/schemas";
 
 export type SettingsActionResult = { error: string } | { success: true };
@@ -61,6 +63,54 @@ export async function updateProfileSettings(
  * de perfil en una reescritura silenciosa del plan: el aviso de recalculo
  * aparece despues, con las dos cifras a la vista, y se acepta aparte.
  */
+/**
+ * Cambia el nombre de usuario.
+ *
+ * Va con la sesion del propio usuario, no con la llave de servicio: la policy
+ * de `profiles` ya deja escribir la fila propia y nada mas, asi que no hace
+ * falta evadir RLS para esto —y no evadirla es la diferencia entre "solo
+ * puedes cambiar el tuyo" garantizado por la base y garantizado por que el
+ * codigo no se equivoque—.
+ *
+ * Quien decide si el usuario esta libre es el indice unico: comprobarlo antes
+ * y escribir despues seria una carrera. Se escribe, y si la base dice 23505
+ * —violacion de unicidad— se traduce a un mensaje que se entiende.
+ */
+export async function updateUsername(
+  input: UsernameSettingsInput,
+): Promise<SettingsActionResult> {
+  const parsed = usernameSettingsSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? messages.settings.saveFailed,
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: messages.settings.saveFailed };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ username: parsed.data.username })
+    .eq("id", user.id);
+
+  if (error) {
+    if (error.code === "23505") {
+      return { error: messages.auth.errors.usernameTaken };
+    }
+    console.error("[Settings] Fallo al cambiar el usuario", error);
+    return { error: messages.settings.saveFailed };
+  }
+
+  revalidatePath("/configuracion");
+  return { success: true };
+}
+
 export async function updateGoalSettings(
   input: GoalSettingsInput,
 ): Promise<SettingsActionResult> {

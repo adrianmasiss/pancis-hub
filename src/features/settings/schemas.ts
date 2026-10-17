@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { messages } from "@/i18n/es-419";
+import { esUsuarioValido, normalizarUsuario } from "@/features/auth/username";
 
 const t = messages.onboarding.errors;
 
@@ -53,3 +54,19 @@ export const toleranceSettingsSchema = z.object({
 });
 
 export type ToleranceSettingsInput = z.infer<typeof toleranceSettingsSchema>;
+
+/**
+ * El usuario, cambiable despues del alta.
+ *
+ * Misma regla que en el registro y en la base —se importa, no se copia—, para
+ * que no haya dos ideas de que es un usuario valido segun por donde entres.
+ */
+export const usernameSettingsSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .transform(normalizarUsuario)
+    .refine(esUsuarioValido, messages.auth.errors.usernameInvalid),
+});
+
+export type UsernameSettingsInput = z.infer<typeof usernameSettingsSchema>;

@@ -14,6 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  getCatalogExerciseDetail,
   getExerciseDetail,
   type ExerciseDetail,
 } from "@/features/training/actions";
@@ -86,18 +87,38 @@ function BulletList({ items }: { items: string[] }) {
  * ejecutarlo y como se valora en el contexto del usuario
  * (docs/02_PRODUCT_REQUIREMENTS.md 10-11).
  */
+/**
+ * Se abre desde dos sitios y por dos caminos:
+ *
+ *  - Desde una rutina, con `planExerciseId`: ahi se sabe en que puesto de la
+ *    sesion va, y la prescripcion lo tiene en cuenta.
+ *  - Desde el catalogo, con `exerciseId`: sin sesion de por medio, asi que lo
+ *    que se lee es el ejercicio en abstracto.
+ *
+ * Es el mismo panel a proposito. Una segunda ficha "de catalogo" habria sido
+ * la misma informacion con otro aspecto, y la que se quedaria sin actualizar.
+ */
 export function ExerciseDetailSheet({
   planExerciseId,
+  exerciseId,
   exerciseName,
+  triggerLabel,
+  triggerClassName,
 }: {
-  planExerciseId: string;
+  planExerciseId?: string;
+  exerciseId?: string;
   exerciseName: string;
+  triggerLabel?: string;
+  /** Para que el disparador tome el aspecto de quien lo usa (la biblioteca). */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<ExerciseDetail | null>(null);
 
   const load = async () => {
-    const result = await getExerciseDetail({ planExerciseId });
+    const result = planExerciseId
+      ? await getExerciseDetail({ planExerciseId })
+      : await getCatalogExerciseDetail({ exerciseId });
     if ("error" in result) toast.error(result.error);
     else setDetail(result);
   };
@@ -114,11 +135,15 @@ export function ExerciseDetailSheet({
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="text-muted-foreground size-8"
-          aria-label={`${t.detailTitle} — ${exerciseName}`}
+          size={triggerLabel ? "sm" : "icon"}
+          className={
+            triggerClassName ??
+            (triggerLabel ? "text-primary" : "text-muted-foreground size-8")
+          }
+          aria-label={`${triggerLabel ?? t.detailTitle} — ${exerciseName}`}
         >
-          <Info className="size-4" />
+          <Info className="size-4" aria-hidden="true" />
+          {triggerLabel}
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md">
@@ -231,47 +256,60 @@ export function ExerciseDetailSheet({
                 Requisito 13: la recomendacion se muestra APARTE y nunca
                 modifica la rutina por su cuenta.
               */}
-              <Section title={t.prescriptionTitle}>
-                <p className="text-lg font-semibold tabular-nums">
-                  {formatPrescription(detail.prescription)}
+              {detail.prescription === null || detail.ratings === null ? (
+                <p className="text-muted-foreground border-hairline rounded-lg border p-3 text-xs">
+                  {t.withoutBiomechanics}
                 </p>
-                <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
-                  {detail.prescription.reasons.map((reason) => (
-                    <li key={reason}>{reason}</li>
-                  ))}
-                </ul>
-                <p className="text-muted-foreground text-xs">
-                  <span className="font-medium">{t.progressionLabel}:</span>{" "}
-                  {detail.prescription.progression}
-                </p>
-                <p className="text-muted-foreground text-xs italic">
-                  {t.prescriptionNote}
-                </p>
-              </Section>
+              ) : null}
 
-              <Section title={t.ratingsTitle}>
-                <ul className="space-y-2">
-                  {detail.ratings.map((rating) => (
-                    <li key={rating.dimension} className="rounded-lg border p-2.5">
-                      <p className="flex items-baseline justify-between gap-2 text-sm">
-                        <span>{t.dimensions[rating.dimension]}</span>
-                        <span
-                          className={cn(
-                            "font-semibold tabular-nums",
-                            scoreTone(rating.score),
-                          )}
-                        >
-                          {rating.score}/10
-                        </span>
-                      </p>
-                      {/* Nunca se muestra la nota sin explicar de donde sale. */}
-                      <p className="text-muted-foreground text-xs">
-                        {rating.reason}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </Section>
+              {detail.prescription ? (
+                <Section title={t.prescriptionTitle}>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {formatPrescription(detail.prescription)}
+                  </p>
+                  <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
+                    {detail.prescription.reasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                  <p className="text-muted-foreground text-xs">
+                    <span className="font-medium">{t.progressionLabel}:</span>{" "}
+                    {detail.prescription.progression}
+                  </p>
+                  <p className="text-muted-foreground text-xs italic">
+                    {t.prescriptionNote}
+                  </p>
+                </Section>
+              ) : null}
+
+              {detail.ratings ? (
+                <Section title={t.ratingsTitle}>
+                  <ul className="space-y-2">
+                    {detail.ratings.map((rating) => (
+                      <li
+                        key={rating.dimension}
+                        className="rounded-lg border p-2.5"
+                      >
+                        <p className="flex items-baseline justify-between gap-2 text-sm">
+                          <span>{t.dimensions[rating.dimension]}</span>
+                          <span
+                            className={cn(
+                              "font-semibold tabular-nums",
+                              scoreTone(rating.score),
+                            )}
+                          >
+                            {rating.score}/10
+                          </span>
+                        </p>
+                        {/* Nunca se muestra la nota sin explicar de donde sale. */}
+                        <p className="text-muted-foreground text-xs">
+                          {rating.reason}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
+              ) : null}
 
               {detail.exercise.techniqueCues.length > 0 ? (
                 <Section title={t.cues}>

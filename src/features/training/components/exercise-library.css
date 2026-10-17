@@ -1,0 +1,163 @@
+/* Biblioteca de ejercicios. Viste las mismas piezas que la de alimentos
+   (`food-library.css`: categorías, colecciones, rejilla de fichas, páginas);
+   aquí sólo va lo que un ejercicio tiene y un alimento no: la figura con el
+   músculo, el equipo y la marca de «en tu rutina». */
+
+/* La figura: cuerpo en gris tenue y el músculo en el rojo del maniquí. */
+.muscle-figure {
+  width: 30px;
+  height: 58px;
+}
+/* Opaco y no translúcido: con transparencia, donde brazo y torso se cruzan
+   se ve una costura más oscura. */
+.muscle-figure-body {
+  fill: color-mix(in oklab, currentColor 30%, var(--card));
+}
+/* Brazos y piernas son trazos; el grosor va en cada uno, en unidades del
+   dibujo. Sin él, el trazo por defecto (1) tapa la figura entera. */
+.muscle-figure-limb {
+  fill: none;
+  stroke: color-mix(in oklab, currentColor 30%, var(--card));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Sobre la caja clara de la foto, un gris cálido fijo: el del tema es para
+   fondos oscuros. */
+.exercise-card .muscle-figure-body {
+  fill: #cfc8bd;
+}
+.exercise-card .muscle-figure-limb {
+  stroke: #cfc8bd;
+}
+.muscle-figure-zone {
+  fill: #e04a22;
+}
+/* En alimentos el icono de categoría va en naranja; aquí el naranja ya es el
+   músculo, así que el cuerpo va en gris. */
+.exercise-library .library-categories .muscle-figure {
+  color: var(--muted-foreground);
+}
+.exercise-library .library-categories a > span {
+  color: var(--foreground);
+}
+
+/* El buscador, a la derecha de las colecciones, con el aspecto del de
+   alimentos pero sin el despliegue: aquí no hay sugerencias que mostrar. */
+.exercise-library-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 300px);
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--card) 92%, var(--foreground));
+  box-shadow: inset 0 0 0 1px var(--v11-line);
+  transition: box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.exercise-library-search:focus-within {
+  box-shadow: inset 0 0 0 1.5px
+    color-mix(in oklch, var(--primary) 70%, transparent);
+}
+.exercise-library-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  color: var(--foreground);
+}
+.exercise-library-search input::placeholder {
+  color: var(--muted-foreground);
+}
+
+/* El equipo: una fila de pastillas pequeñas que se desliza si no cabe. */
+.exercise-library-equipment {
+  display: flex;
+  gap: 6px;
+  margin: -4px 0 18px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.exercise-library-equipment::-webkit-scrollbar {
+  display: none;
+}
+.exercise-library-equipment a {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--v11-line, var(--border));
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted-foreground);
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+.exercise-library-equipment a[aria-current="true"] {
+  border-color: var(--primary);
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .exercise-library-equipment a:not([aria-current]):hover {
+    color: var(--foreground);
+  }
+}
+
+/* La ficha. Las fotos del catálogo traen fondo blanco: sobre la caja clara
+   de la biblioteca se ven enteras, como los alimentos. */
+.exercise-card .library-food-photo {
+  display: grid;
+  place-items: center;
+}
+.exercise-card .library-food-photo img {
+  object-fit: contain;
+  padding: 10px;
+  mix-blend-mode: multiply;
+}
+.exercise-card-figure {
+  width: 46%;
+  height: 82%;
+  color: #3a332c;
+}
+.exercise-card-routine {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 650;
+  border-radius: 7px;
+  padding: 4px 8px;
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+.exercise-card-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin-top: 10px;
+}
+.exercise-card-muscles strong {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.exercise-card-muscles span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.exercise-card .library-food-actions {
+  margin-top: auto;
+  padding-top: 12px;
+}
+.exercise-card .exercise-card-how {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}

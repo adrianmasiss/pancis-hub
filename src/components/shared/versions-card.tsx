@@ -97,7 +97,7 @@ export function VersionsCard({
     <Section title={labels.title} description={labels.description}>
       <div className="space-y-4">
         {pendingLines.length > 0 ? (
-          <section className="space-y-1 rounded-xl border border-caution/40 bg-caution/8 p-3">
+          <section className="border-caution/40 bg-caution/8 space-y-1 rounded-xl border p-3">
             <h3 className="text-sm font-medium">{labels.pendingTitle}</h3>
             <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
               {pendingLines.slice(0, 8).map((line) => (

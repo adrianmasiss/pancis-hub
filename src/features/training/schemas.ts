@@ -36,6 +36,9 @@ export const updatePlanExerciseSchema = z.object({
 
 export const planExerciseIdSchema = z.object({ planExerciseId: z.uuid() });
 
+/** La ficha tambien se abre desde el catalogo, donde no hay plan de por medio. */
+export const catalogExerciseIdSchema = z.object({ exerciseId: z.uuid() });
+
 /**
  * Sustitucion PERMANENTE del ejercicio en el plan.
  *

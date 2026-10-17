@@ -3,6 +3,7 @@ import { Section } from "@/components/shared/section";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/features/auth/actions";
 import { messages } from "@/i18n/es-419";
+import { PasskeySettings } from "@/features/settings/components/passkey-settings";
 
 /**
  * Cierre de sesion en Configuracion.
@@ -39,6 +40,7 @@ export function AccountCard({ email }: { email?: string }) {
           </Button>
         </form>
       </div>
+      <PasskeySettings />
     </Section>
   );
 }

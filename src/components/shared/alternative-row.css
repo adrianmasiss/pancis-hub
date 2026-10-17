@@ -1,0 +1,261 @@
+/* ---------------------------------------------------------------------------
+   Alternative row (oct 2026). A list row inside the picker, Apple-list
+   style: no card of its own, a hairline between rows, and a soft surface
+   that appears under the finger. Doubled class (button.alt-row.alt-row) to win over
+   the older `.alternative-option` rules without !important.
+--------------------------------------------------------------------------- */
+button.alt-row.alt-row {
+  --alt-ink: var(--foreground);
+  --alt-muted: var(--muted-foreground);
+  --alt-hover: color-mix(in oklab, var(--foreground) 5%, transparent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--alt-ink);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+button.alt-row.alt-row::before {
+  display: none;
+}
+/* Hairline between rows, straight and inset to start under the text, like
+   iOS lists; it hides next to a highlighted row so it never cuts a surface. */
+button.alt-row.alt-row::after {
+  content: "";
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 72px;
+  right: 12px;
+  height: 1px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  pointer-events: none;
+}
+li + li > button.alt-row.alt-row:not([data-featured], [aria-pressed="true"])::after {
+  display: block;
+}
+button.alt-row.alt-row[data-featured] {
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--primary) 9%, transparent),
+    transparent 70%
+  );
+}
+button.alt-row.alt-row[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+button.alt-row.alt-row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+button.alt-row.alt-row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+button.alt-row.alt-row:active:not(:disabled) {
+  scale: 0.985;
+}
+
+/* The portrait: the comparison card's round frame, small. */
+.alt-row-media {
+  flex: none;
+}
+.alt-row-media .swap-card-media {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 12%, transparent);
+  overflow: hidden;
+}
+.alt-row-media .swap-food-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.alt-row-media .swap-food-illustration {
+  width: 44px;
+  height: 44px;
+}
+.alt-row-media .swap-food-placeholder {
+  width: 18px;
+  height: 18px;
+  color: var(--alt-muted);
+}
+
+.alt-row-text {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+.alt-row-text strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alt-row-text small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--alt-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.alt-row-tag {
+  flex: none;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+/* The one number: calories this option moves, in the energy colour. */
+.alt-row-delta {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.alt-row-delta small {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.alt-row-delta[data-zero] {
+  color: var(--alt-muted);
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
+}
+
+.alt-row-go {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--alt-muted);
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
+  transition:
+    transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 200ms,
+    background-color 200ms;
+}
+button.alt-row.alt-row[aria-pressed="true"] .alt-row-go {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+@media (hover: hover) and (pointer: fine) {
+  button.alt-row.alt-row:hover:not(:disabled) {
+    background: var(--alt-hover);
+  }
+  button.alt-row.alt-row[data-featured]:hover:not(:disabled) {
+    background: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--primary) 13%, transparent),
+      var(--alt-hover) 70%
+    );
+  }
+  button.alt-row.alt-row:hover:not(:disabled) .alt-row-go {
+    color: var(--alt-ink);
+    transform: translateX(2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button.alt-row.alt-row,
+  .alt-row-go {
+    transition: none;
+  }
+  button.alt-row.alt-row:active:not(:disabled) {
+    scale: none;
+  }
+}
+
+/* Phones: the picker is ~140px wide. Portrait and name only; the number
+   lives in the meta line and the chevron goes. */
+@media (max-width: 600px) {
+  button.alt-row.alt-row {
+    gap: 8px;
+    min-height: 0;
+    padding: 8px 6px;
+    border-radius: 12px;
+  }
+  .alt-row-media .swap-card-media {
+    width: 30px;
+    height: 30px;
+  }
+  .alt-row-media .swap-food-illustration {
+    width: 28px;
+    height: 28px;
+  }
+  .alt-row-text strong {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 11px;
+    white-space: normal;
+  }
+  .alt-row-text small {
+    font-size: 9px;
+  }
+  .alt-row-tag {
+    display: none;
+  }
+  .alt-row-delta,
+  .alt-row-go {
+    display: none;
+  }
+}
+
+.alt-row-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  button.alt-row.alt-row::after {
+    left: 44px;
+    right: 6px;
+  }
+}
+
+/* Narrow lists (the compare page's ~350px card): the name and the portion
+   come first. The chevron steps aside (the whole row is the button) and the
+   "closest" tag leaves its words to the highlight that already says it. */
+li:has(> button.alt-row.alt-row) {
+  container-type: inline-size;
+}
+@container (max-width: 380px) {
+  button.alt-row.alt-row {
+    gap: 12px;
+  }
+  .alt-row-go,
+  .alt-row-tag {
+    display: none;
+  }
+}

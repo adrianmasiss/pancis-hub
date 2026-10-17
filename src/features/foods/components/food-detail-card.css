@@ -1,0 +1,411 @@
+/* ---------------------------------------------------------------------------
+   Ficha de alimento (oct 2026, a peticion del usuario: «mas colores,
+   animaciones, barras para ver que tiene cada uno, un card con imagen»).
+
+   Va en la tarjeta de foco de la casa. Los colores no son nuevos: son los
+   de los macros de Mi plan (proteina oro, carbos violeta, grasas turquesa) y
+   el naranja de la energia. La fibra queda en neutro: darle un cuarto color
+   seria el «codigo de disco» que ya se descarto.
+
+   Movimiento: la tarjeta entra con la curva del FocusCard; dentro, el reparto
+   de energia se dibuja de izquierda a derecha y cada barra crece con 60ms de
+   escalonado. Todo es transform/clip-path, y con movimiento reducido no hay
+   crecimiento: las barras aparecen ya en su sitio.
+--------------------------------------------------------------------------- */
+.food-detail {
+  --tone-protein: #ffc75a;
+  --tone-carbs: #a996ff;
+  --tone-fat: var(--chart-1, #3ff4e5);
+  --tone-fiber: color-mix(in oklch, var(--foreground) 55%, transparent);
+  --tone-energy: var(--primary);
+  --detail-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.food-detail [data-tone="protein"] {
+  --tone: var(--tone-protein);
+}
+.food-detail [data-tone="carbs"] {
+  --tone: var(--tone-carbs);
+}
+.food-detail [data-tone="fat"] {
+  --tone: var(--tone-fat);
+}
+.food-detail [data-tone="fiber"] {
+  --tone: var(--tone-fiber);
+}
+
+/* La foto, grande y arriba. Misma caja de papel que la tarjeta de la lista,
+   asi que la ilustracion sigue cuadrada y la foto del producto sin deformar. */
+/* El scroll de la tarjeta de foco es una columna flex con alto maximo: sin
+   esto, el navegador encoge la foto para que quepa todo y la aplasta. */
+.food-detail .focus-card-scroll > * {
+  flex-shrink: 0;
+}
+.food-detail .food-detail-hero {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin-top: 12px;
+  border-radius: 20px;
+}
+.food-detail .food-detail-hero img {
+  padding: 20px;
+}
+.food-detail .food-detail-hero .library-food-category {
+  bottom: 12px;
+  left: 12px;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.food-detail .food-detail-hero .library-food-illustrative {
+  right: 14px;
+  bottom: 12px;
+  font-size: 10px;
+}
+/* La foto entra un instante despues que la tarjeta, con un leve zoom: se
+   lee como una imagen que se asienta, no como un bloque que aparece. */
+.food-detail .food-detail-hero > :is(img, .library-food-illustration) {
+  animation: food-detail-photo 620ms var(--detail-ease) both;
+}
+@keyframes food-detail-photo {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+/* La X cae sobre el papel claro: necesita el mismo disco claro que el
+   corazon de la tarjeta, o desaparece. */
+.food-detail .focus-card-close {
+  top: 22px;
+  right: 22px;
+  color: #45382c;
+  background: #fffdf5ed;
+  box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.35);
+}
+.food-detail .focus-card-close:hover {
+  background: #fff;
+}
+
+.food-detail .food-detail-header {
+  padding: 18px 16px 4px;
+  gap: 4px;
+}
+.food-detail-subtitle {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.food-detail .focus-card-description {
+  font-size: 12.5px;
+}
+
+.food-detail-sections {
+  display: grid;
+  gap: 12px;
+  padding: 14px 4px 4px;
+}
+.food-detail-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.food-detail-block {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--v11-line, var(--border));
+  background: color-mix(in oklab, var(--foreground) 3.5%, transparent);
+}
+.food-detail-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+/* Energia: sin caja. La llama naranja grande y la cifra mandan solas; el
+   control de gramos va justo debajo, porque es lo que la cambia. */
+.food-detail-energy {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 12px 4px;
+}
+.food-detail-flame {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  color: var(--tone-energy);
+  filter: drop-shadow(
+    0 0 16px color-mix(in oklch, var(--tone-energy) 45%, transparent)
+  );
+  animation: food-detail-flame 620ms var(--detail-ease) 80ms both;
+}
+@keyframes food-detail-flame {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(-8deg);
+  }
+}
+.food-detail-energy-text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.food-detail-kcal {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.food-detail-kcal small {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--muted-foreground);
+}
+.food-detail-energy-share {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* En la ficha, el contador va a la derecha de la cifra de energía. */
+.food-detail-energy .qty-stepper {
+  margin-left: auto;
+}
+
+/* Reparto de energia: una barra apilada que se dibuja de izquierda a
+   derecha. Los segmentos llevan un hueco de 3px para leerse como partes. */
+.food-detail-split {
+  display: flex;
+  gap: 3px;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  animation: food-detail-wipe 900ms var(--detail-ease) 120ms both;
+}
+.food-detail-split > span {
+  flex-basis: 0;
+  min-width: 6px;
+  background: var(--tone);
+}
+@keyframes food-detail-wipe {
+  from {
+    clip-path: inset(0 100% 0 0 round 999px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 999px);
+  }
+}
+.food-detail-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.food-detail-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.food-detail-legend li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+.food-detail-legend strong {
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Composicion: una fila por nutriente, nombre y cifra arriba, pista debajo. */
+.food-detail-bars {
+  display: grid;
+  gap: 14px;
+}
+.food-detail-bars > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  row-gap: 7px;
+}
+.food-detail-bars dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.food-detail-bars dt::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+.food-detail-bars dd {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.food-detail-bars dd small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.food-detail-track {
+  grid-column: 1 / -1;
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  overflow: hidden;
+  /* El contorno de «te pasaste» llega con la barra, no de golpe: se parte de
+     un contorno transparente para que haya algo que interpolar. */
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.food-detail-track > span {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--tone) 70%, transparent),
+    var(--tone)
+  );
+  box-shadow: 0 0 14px -2px color-mix(in oklch, var(--tone) 55%, transparent);
+  transform-origin: left center;
+  /* Al abrir crece desde cero (transform); al cambiar los gramos, se
+     estira o encoge hasta su nuevo ancho (width). Son propiedades distintas
+     para que la animacion de entrada no bloquee la transicion. */
+  transition: width 520ms var(--detail-ease);
+  animation: food-detail-grow 760ms var(--detail-ease) both;
+  animation-delay: calc(220ms + var(--i, 0) * 60ms);
+}
+/* Pasarse del objetivo del dia: la pista entera se enciende del color. */
+.food-detail-bars > [data-over] .food-detail-track {
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--tone) 60%, transparent);
+}
+@keyframes food-detail-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* «Favoritos y ajustes»: se abre deslizando en vez de saltar, y el chevron
+   gira para decir abierto/cerrado. Donde el navegador no anima
+   `::details-content`, se abre como antes: nada se rompe. */
+.food-detail-more {
+  interpolate-size: allow-keywords;
+}
+.food-detail-more summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 2px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.food-detail-more summary::-webkit-details-marker {
+  display: none;
+}
+.food-detail-more summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.food-detail-more[open] summary::before {
+  transform: rotate(45deg);
+}
+.food-detail-more::details-content {
+  block-size: 0;
+  opacity: 0;
+  overflow: clip;
+  transition:
+    block-size 250ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 200ms ease,
+    content-visibility 250ms allow-discrete;
+}
+.food-detail-more[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+.food-detail-more summary:hover {
+  color: var(--foreground);
+}
+
+/* `bottom: -6px` compensa el relleno inferior del scroll: con 0 el pie se
+   quedaba 6px por encima del borde y el contenido asomaba debajo. */
+.food-detail-footer {
+  position: sticky;
+  bottom: -6px;
+  display: grid;
+  gap: 8px;
+  margin: 12px -12px -6px;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--v11-line, var(--border));
+  background: color-mix(in oklch, var(--card) 96%, transparent);
+  backdrop-filter: blur(20px);
+}
+
+@media (max-width: 600px) {
+  .food-detail .food-detail-hero {
+    aspect-ratio: 16 / 11;
+    margin-top: 10px;
+  }
+  .food-detail-energy {
+    flex-wrap: wrap;
+    padding-inline: 4px;
+    gap: 12px;
+  }
+  /* En movil baja a su propia fila, centrado. */
+  .food-detail-energy .qty-stepper {
+    margin-inline: auto;
+  }
+  .food-detail-flame {
+    width: 40px;
+    height: 40px;
+  }
+  .food-detail-kcal {
+    font-size: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .food-detail .food-detail-hero > :is(img, .library-food-illustration),
+  .food-detail-split,
+  .food-detail-flame,
+  .food-detail-track > span,
+  .food-detail-track,
+  .food-detail .qty-stepper-cell {
+    animation: none;
+    transition: none;
+  }
+  /* Sin deslizar: el desplegable sólo funde. */
+  .food-detail-more::details-content {
+    transition:
+      opacity 160ms ease,
+      content-visibility 160ms allow-discrete;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .food-detail-footer {
+    backdrop-filter: none;
+    background: var(--card);
+  }
+}

@@ -5,7 +5,7 @@ import { ArrowLeft, Clock, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { getArticleBySlug } from "@/features/academy/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -39,7 +39,7 @@ export default async function ArticlePage({
 
   return (
     <>
-      <PageHeader
+      <ViewHeader
         title={article.title}
         description={article.summary}
         actions={

@@ -45,6 +45,37 @@ const template: DietTemplateRow = {
 };
 
 describe("mapDietTemplate", () => {
+  it("un alimento omitido hoy se ve tal cual, pero no suma", () => {
+    const omission: DaySwapRow = {
+      template_item_id: "item-oats",
+      quantity_g: 80,
+      source: "biblioteca",
+      omitted: true,
+      external_name: null,
+      external_calories: null,
+      external_protein_g: null,
+      external_carbohydrate_g: null,
+      external_fat_g: null,
+      foods: SHARED_FOOD,
+    };
+    const view = mapDietTemplate({
+      template,
+      daySwaps: [omission],
+      loggedTemplateMealIds: new Set(),
+    });
+    const meal = view?.meals[0];
+
+    // Ni sustitucion ni porcion retirada: es el alimento del plan, marcado.
+    expect(meal?.items[0]).toMatchObject({
+      omitted: true,
+      daySwap: null,
+      quantityG: 80,
+      servingEquivalence: "1 taza",
+    });
+    expect(meal?.totals.calories).toBe(0);
+    expect(plannedTotalsOf(view)?.calories).toBe(0);
+  });
+
   it("mapea el plan base sin mutarlo", () => {
     const view = mapDietTemplate({
       template,

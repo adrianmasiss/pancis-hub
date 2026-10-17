@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Refrigerator } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { PantryAdd } from "@/features/pantry/components/pantry-add";
 import { PantryList } from "@/features/pantry/components/pantry-list";
 import { getPantryItems } from "@/features/pantry/queries";
@@ -23,7 +22,7 @@ export default async function PantryPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Refrigerator} title={t.title} description={t.description} />
+      <ViewHeader title={t.title} description={t.description} />
       <PantryAdd />
       <PantryList items={items} />
     </div>

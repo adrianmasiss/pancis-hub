@@ -15,18 +15,12 @@
  */
 
 export type ResistanceProfile =
-  | "ascendente"
-  | "descendente"
-  | "constante"
-  | "en_campana";
+  "ascendente" | "descendente" | "constante" | "en_campana";
 
 export type ExperienceLevel = "principiante" | "intermedio" | "avanzado";
 
 export type TrainingGoal =
-  | "hipertrofia"
-  | "fuerza"
-  | "resistencia"
-  | "recomposicion";
+  "hipertrofia" | "fuerza" | "resistencia" | "recomposicion";
 
 /** Atributos intrinsecos del ejercicio, tal como los guarda el catalogo. */
 export type BiomechanicalExercise = {
@@ -179,9 +173,7 @@ function rateStability(
   };
 }
 
-function rateRangeOfMotion(
-  exercise: BiomechanicalExercise,
-): ExerciseRating {
+function rateRangeOfMotion(exercise: BiomechanicalExercise): ExerciseRating {
   const rom = exercise.rangeOfMotion ?? DEFAULT_SCORE;
   return {
     dimension: "rango",
@@ -195,9 +187,7 @@ function rateRangeOfMotion(
   };
 }
 
-function rateProgression(
-  exercise: BiomechanicalExercise,
-): ExerciseRating {
+function rateProgression(exercise: BiomechanicalExercise): ExerciseRating {
   const progression = exercise.progressionEase ?? DEFAULT_SCORE;
   return {
     dimension: "progresion",
@@ -310,8 +300,7 @@ export const RESISTANCE_PROFILE_DESCRIPTIONS: Record<
     "La resistencia se siente mas dificil conforme avanzas hacia el final del recorrido.",
   descendente:
     "Lo mas dificil esta al principio del recorrido y se aligera hacia el final.",
-  constante:
-    "La resistencia se mantiene pareja durante todo el recorrido.",
+  constante: "La resistencia se mantiene pareja durante todo el recorrido.",
   en_campana:
     "Lo mas dificil esta a mitad del recorrido, y se aligera en los extremos.",
 };

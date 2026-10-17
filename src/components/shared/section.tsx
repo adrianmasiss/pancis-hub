@@ -22,10 +22,7 @@ export function Section({
 }) {
   return (
     <section
-      className={cn(
-        variant === "card" && "surface-card px-5 py-5 sm:px-6 sm:py-6",
-        className,
-      )}
+      className={cn(variant === "card" && "v11-card v11-padded", className)}
     >
       {title ? (
         /*
@@ -35,7 +32,9 @@ export function Section({
           su propia linea en vez de desbordar.
         */
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-          <h2 className="display-title">{title}</h2>
+          <h2 className="text-[15px] font-semibold tracking-[-0.012em]">
+            {title}
+          </h2>
           {action ? <div>{action}</div> : null}
         </div>
       ) : null}

@@ -1,0 +1,134 @@
+.macro-skills {
+  --skill-p: #ffc75a;
+  --skill-c: #a996ff;
+  --skill-f: #3fd9cf;
+  --skill-fiber: #7ddc8f;
+  display: grid;
+  grid-auto-rows: var(--skill-row, 40px);
+}
+.macro-skill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  gap: 6px;
+}
+.macro-skill[data-macro="proteinG"] {
+  --skill: var(--skill-p);
+}
+.macro-skill[data-macro="carbohydrateG"] {
+  --skill: var(--skill-c);
+}
+.macro-skill[data-macro="fatG"] {
+  --skill: var(--skill-f);
+}
+.macro-skill[data-macro="fiberG"] {
+  --skill: var(--skill-fiber);
+}
+.macro-skill dt {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.macro-skill-value {
+  font-size: 12px;
+  color: var(--skill);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.macro-skill-value small {
+  font-size: 10px;
+  opacity: 0.7;
+}
+.macro-skill-bar {
+  position: absolute;
+  display: block;
+  height: 4px;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  border-radius: 99px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--foreground) 9%, transparent);
+}
+.macro-skill-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--skill);
+  transform-origin: left;
+}
+@media (max-width: 600px) {
+  .swap-food-card .macro-skill dt,
+  .swap-food-card .macro-skill-value {
+    font-size: 9px;
+  }
+  .swap-food-card .macro-skill-value small {
+    font-size: 8px;
+  }
+  .swap-food-card .macro-skill {
+    padding-bottom: 8px;
+  }
+  .swap-food-card .macro-skill-bar {
+    bottom: 5px;
+    height: 3px;
+  }
+}
+/* Halo difuminado arriba, en el color de la tarjeta (--compare-tint). */
+.compare-halo-orb {
+  position: absolute;
+  top: -55%;
+  left: 50%;
+  z-index: 0;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 50%;
+  background: color-mix(
+    in oklch,
+    var(--compare-tint, var(--primary)) 14%,
+    transparent
+  );
+  filter: blur(48px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: background-color 0.7s ease;
+}
+.v11-card:hover > .compare-halo-orb {
+  background: color-mix(
+    in oklch,
+    var(--compare-tint, var(--primary)) 22%,
+    transparent
+  );
+}
+
+/* Boton con borde que se rellena al pasar el puntero. */
+.compare-outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--primary) 50%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: transparent;
+  transition:
+    background-color 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    color 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.compare-outline-button:hover {
+  color: var(--primary-foreground, #0b0b0c);
+  background: var(--primary);
+}
+.compare-outline-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.compare-outline-button:active {
+  transform: scale(0.98);
+}

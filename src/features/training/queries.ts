@@ -12,11 +12,16 @@ import {
 } from "@/features/training/lib/routine-analysis";
 import {
   effectiveSetCount,
+  exerciseHistory,
+  latestRecord,
   muscleFrequency,
   personalRecords,
   sessionVolume,
+  type DatedSet,
+  type ExerciseHistory,
   type LoggedSet,
   type PersonalRecord,
+  type RecordEvent,
 } from "@/features/training/lib/stats";
 
 export type PlanSummary = {
@@ -32,6 +37,8 @@ export type PlanExerciseView = {
   exerciseId: string;
   name: string;
   primaryMuscle: string;
+  /** Los que ayudan. Alimentan el resaltado de asistentes en el maniqui. */
+  secondaryMuscles: string[];
   equipment: string | null;
   position: number;
   sets: number | null;
@@ -102,13 +109,33 @@ export type SessionSummary = {
   durationMinutes: number | null;
 };
 
+export type LiveSet = {
+  id: string;
+  exerciseId: string;
+  setNumber: number;
+  isWarmup: boolean;
+  weightKg: number | null;
+  repetitions: number | null;
+};
+
 export type TrainingOverview = {
   plans: PlanSummary[];
   activePlan: PlanDetail | null;
-  sessionInProgress: { id: string; startedAt: string } | null;
+  sessionInProgress: {
+    id: string;
+    startedAt: string;
+    /** El día del plan que se está entrenando; null en una sesión libre. */
+    planDayId: string | null;
+    /** Lo registrado hasta ahora, en orden. */
+    sets: LiveSet[];
+  } | null;
   recentSessions: SessionSummary[];
   records: PersonalRecord[];
   muscleSets7d: [string, number][];
+  /** Última vez y la anterior, por `exerciseId`. */
+  history: Record<string, ExerciseHistory>;
+  /** La marca personal más reciente, si la hubo. */
+  latestRecord: RecordEvent | null;
 };
 
 function mapPlanExercises(
@@ -127,6 +154,7 @@ function mapPlanExercises(
     exercise_catalog: {
       name: string;
       primary_muscle: string;
+      secondary_muscles: string[] | null;
       equipment: string | null;
     } | null;
   }[],
@@ -138,6 +166,7 @@ function mapPlanExercises(
       exerciseId: row.exercise_id,
       name: row.exercise_catalog?.name ?? "",
       primaryMuscle: row.exercise_catalog?.primary_muscle ?? "",
+      secondaryMuscles: row.exercise_catalog?.secondary_muscles ?? [],
       equipment: row.exercise_catalog?.equipment ?? null,
       position: row.position,
       sets: row.sets,
@@ -187,7 +216,7 @@ async function getExerciseDaySwaps(
 }
 
 const PLAN_SELECT =
-  "id, name, objective, active, workout_plan_days(id, day_index, name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, equipment)))";
+  "id, name, objective, active, workout_plan_days(id, day_index, name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment)))";
 
 type PlanRow = {
   id: string;
@@ -263,7 +292,11 @@ export async function getPlanDetail(
     getExerciseDaySwaps(userId, date),
   ]);
   if (!data) return null;
-  return withDaySwaps(mapPlanDetail(data as unknown as PlanRow), daySwaps, date);
+  return withDaySwaps(
+    mapPlanDetail(data as unknown as PlanRow),
+    daySwaps,
+    date,
+  );
 }
 
 export async function getSessionDetail(
@@ -274,7 +307,7 @@ export async function getSessionDetail(
   const { data: session } = await supabase
     .from("workout_sessions")
     .select(
-      "id, started_at, completed_at, notes, workout_plans(name), workout_plan_days(name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, equipment))), workout_sets(id, exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, rpe, tempo, rest_seconds, notes, created_at, exercise_catalog(name))",
+      "id, started_at, completed_at, notes, workout_plans(name), workout_plan_days(name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment))), workout_sets(id, exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, rpe, tempo, rest_seconds, notes, created_at, exercise_catalog(name))",
     )
     .eq("id", sessionId)
     .eq("user_id", userId)
@@ -355,7 +388,9 @@ export async function getTrainingOverview(
       .maybeSingle(),
     supabase
       .from("workout_sessions")
-      .select("id, started_at")
+      .select(
+        "id, started_at, workout_plan_day_id, workout_sets(id, exercise_id, set_number, is_warmup, weight_kg, repetitions, created_at)",
+      )
       .eq("user_id", userId)
       .is("completed_at", null)
       .order("started_at", { ascending: false })
@@ -376,6 +411,8 @@ export async function getTrainingOverview(
         "exercise_id, is_warmup, weight_kg, repetitions, created_at, exercise_catalog(name, primary_muscle), workout_sessions!inner(user_id)",
       )
       .eq("workout_sessions.user_id", userId)
+      // Las más recientes: el tope no puede dejar fuera la última sesión.
+      .order("created_at", { ascending: false })
       .limit(1000),
     getExerciseDaySwaps(userId, date),
   ]);
@@ -387,6 +424,10 @@ export async function getTrainingOverview(
     isWarmup: set.is_warmup,
     weightKg: set.weight_kg !== null ? Number(set.weight_kg) : null,
     repetitions: set.repetitions,
+  }));
+  const datedSets: DatedSet[] = (setsResult.data ?? []).map((set, i) => ({
+    ...allSets[i]!,
+    createdAt: set.created_at,
   }));
   const recentSets = (setsResult.data ?? [])
     .filter((set) => set.created_at >= since7)
@@ -417,6 +458,17 @@ export async function getTrainingOverview(
       ? {
           id: inProgressResult.data.id,
           startedAt: inProgressResult.data.started_at,
+          planDayId: inProgressResult.data.workout_plan_day_id,
+          sets: [...(inProgressResult.data.workout_sets ?? [])]
+            .sort((a, b) => a.created_at.localeCompare(b.created_at))
+            .map((set) => ({
+              id: set.id,
+              exerciseId: set.exercise_id,
+              setNumber: set.set_number,
+              isWarmup: set.is_warmup,
+              weightKg: set.weight_kg !== null ? Number(set.weight_kg) : null,
+              repetitions: set.repetitions,
+            })),
         }
       : null,
     recentSessions: (sessionsResult.data ?? []).map((session) => {
@@ -449,6 +501,8 @@ export async function getTrainingOverview(
     }),
     records: personalRecords(allSets).slice(0, 5),
     muscleSets7d: [...muscleFrequency(recentSets).entries()],
+    history: Object.fromEntries(exerciseHistory(datedSets)),
+    latestRecord: latestRecord(datedSets),
   };
 }
 
@@ -511,10 +565,298 @@ export async function getRoutineAnalysis(
           sets: exercise.sets,
           repsMin: exercise.target_reps_min,
           repsMax: exercise.target_reps_max,
-          rir: exercise.target_rir === null ? null : Number(exercise.target_rir),
+          rir:
+            exercise.target_rir === null ? null : Number(exercise.target_rir),
           systemicFatigue: exercise.exercise_catalog!.systemic_fatigue,
         })),
     }));
 
   return analyzeRoutine(days);
+}
+
+// ------------------------------------------------------------- catalogo
+
+export type CatalogoFiltros = {
+  query?: string;
+  muscle?: string;
+  equipment?: string;
+  /** Pagina empezando en 1. */
+  page?: number;
+};
+
+export type CatalogoEjercicio = {
+  id: string;
+  name: string;
+  primaryMuscle: string;
+  secondaryMuscles: string[];
+  equipment: string | null;
+  instructions: string | null;
+  isUnilateral: boolean;
+  /** Si trae biomecanica escrita, que es lo que la comparacion necesita. */
+  curated: boolean;
+};
+
+export const CATALOGO_POR_PAGINA = 24;
+
+/**
+ * El catalogo entero, paginado.
+ *
+ * Pagina en el servidor con `range` en vez de traerlo todo: son 1.339 filas y
+ * de aqui saldran mas. La cuenta viene en la misma peticion (`count: exact`),
+ * asi que la paginacion no cuesta un viaje extra.
+ *
+ * Los vocabularios —musculos y equipo— NO se declaran en codigo: se leen de lo
+ * que hay en la tabla. El catalogo crece por importacion, y una lista escrita
+ * a mano se quedaria corta el dia que entre un termino nuevo.
+ */
+export async function getExerciseCatalog(filtros: CatalogoFiltros): Promise<{
+  exercises: CatalogoEjercicio[];
+  total: number;
+  muscles: string[];
+  equipment: string[];
+}> {
+  const supabase = await createClient();
+  const page = Math.max(1, filtros.page ?? 1);
+  const desde = (page - 1) * CATALOGO_POR_PAGINA;
+
+  let consulta = supabase
+    .from("exercise_catalog")
+    .select(
+      "id, name, primary_muscle, secondary_muscles, equipment, instructions, is_unilateral, resistance_profile",
+      { count: "exact" },
+    )
+    .is("deleted_at", null);
+
+  if (filtros.query) consulta = consulta.ilike("name", `%${filtros.query}%`);
+  if (filtros.muscle) consulta = consulta.eq("primary_muscle", filtros.muscle);
+  if (filtros.equipment) consulta = consulta.eq("equipment", filtros.equipment);
+
+  const [{ data, count }, { data: vocabulario }] = await Promise.all([
+    consulta.order("name").range(desde, desde + CATALOGO_POR_PAGINA - 1),
+    supabase
+      .from("exercise_catalog")
+      .select("primary_muscle, equipment")
+      .is("deleted_at", null),
+  ]);
+
+  const musculos = new Set<string>();
+  const equipos = new Set<string>();
+  for (const fila of vocabulario ?? []) {
+    if (fila.primary_muscle) musculos.add(fila.primary_muscle);
+    if (fila.equipment) equipos.add(fila.equipment);
+  }
+
+  return {
+    exercises: (data ?? []).map((fila) => ({
+      id: fila.id,
+      name: fila.name,
+      primaryMuscle: fila.primary_muscle,
+      secondaryMuscles: fila.secondary_muscles ?? [],
+      equipment: fila.equipment,
+      instructions: fila.instructions,
+      isUnilateral: fila.is_unilateral,
+      curated: fila.resistance_profile !== null,
+    })),
+    total: count ?? 0,
+    muscles: [...musculos].sort((a, b) => a.localeCompare(b, "es")),
+    equipment: [...equipos].sort((a, b) => a.localeCompare(b, "es")),
+  };
+}
+
+export type BibliotecaEjercicio = CatalogoEjercicio & {
+  imageUrl: string | null;
+  /** Si está en alguna rutina tuya: la tarjeta lo dice. */
+  inRoutine: boolean;
+};
+
+/**
+ * La biblioteca de ejercicios: el catálogo con foto, filtrado por grupo
+ * muscular, equipo, nombre y colección (todos, los de tus rutinas o los que
+ * registraste hace poco).
+ *
+ * Las colecciones se resuelven a una lista de ids antes de consultar el
+ * catálogo: así la paginación y la cuenta siguen saliendo de una sola
+ * petición. Los ids de tus rutinas se piden siempre, porque además marcan
+ * las tarjetas.
+ */
+export async function getExerciseLibrary(
+  userId: string,
+  filtros: {
+    query?: string;
+    muscles?: readonly string[];
+    equipment?: string;
+    collection: "todos" | "rutinas" | "recientes";
+    page?: number;
+  },
+): Promise<{
+  exercises: BibliotecaEjercicio[];
+  total: number;
+  equipment: string[];
+}> {
+  const supabase = await createClient();
+  const page = Math.max(1, filtros.page ?? 1);
+  const desde = (page - 1) * CATALOGO_POR_PAGINA;
+
+  const [{ data: planes }, recientes, { data: vocabulario }] =
+    await Promise.all([
+      supabase
+        .from("workout_plans")
+        .select("workout_plan_days(workout_plan_exercises(exercise_id))")
+        .eq("user_id", userId)
+        .is("deleted_at", null),
+      filtros.collection === "recientes"
+        ? supabase
+            .from("workout_sessions")
+            .select("workout_sets(exercise_id)")
+            .eq("user_id", userId)
+            .order("started_at", { ascending: false })
+            .limit(20)
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("exercise_catalog")
+        .select("equipment")
+        .is("deleted_at", null),
+    ]);
+
+  const enRutinas = new Set(
+    (planes ?? []).flatMap((plan) =>
+      (plan.workout_plan_days ?? []).flatMap((day) =>
+        (day.workout_plan_exercises ?? []).map((e) => e.exercise_id),
+      ),
+    ),
+  );
+  const ids =
+    filtros.collection === "rutinas"
+      ? [...enRutinas]
+      : filtros.collection === "recientes"
+        ? [
+            ...new Set(
+              (recientes.data ?? []).flatMap((sesion) =>
+                (sesion.workout_sets ?? []).map((set) => set.exercise_id),
+              ),
+            ),
+          ]
+        : null;
+
+  const equipos = [
+    ...new Set(
+      (vocabulario ?? []).map((fila) => fila.equipment).filter(Boolean),
+    ),
+  ] as string[];
+  const vacio = {
+    exercises: [],
+    total: 0,
+    equipment: equipos.sort((a, b) => a.localeCompare(b, "es")),
+  };
+  if (ids && ids.length === 0) return vacio;
+
+  let consulta = supabase
+    .from("exercise_catalog")
+    .select(
+      "id, name, primary_muscle, secondary_muscles, equipment, instructions, is_unilateral, resistance_profile, image_url",
+      { count: "exact" },
+    )
+    .is("deleted_at", null);
+  if (ids) consulta = consulta.in("id", ids);
+  if (filtros.query) consulta = consulta.ilike("name", `%${filtros.query}%`);
+  if (filtros.muscles?.length)
+    consulta = consulta.in("primary_muscle", [...filtros.muscles]);
+  if (filtros.equipment) consulta = consulta.eq("equipment", filtros.equipment);
+
+  const { data, count } = await consulta
+    .order("name")
+    .range(desde, desde + CATALOGO_POR_PAGINA - 1);
+
+  return {
+    ...vacio,
+    exercises: (data ?? []).map((fila) => ({
+      id: fila.id,
+      name: fila.name,
+      primaryMuscle: fila.primary_muscle,
+      secondaryMuscles: fila.secondary_muscles ?? [],
+      equipment: fila.equipment,
+      instructions: fila.instructions,
+      isUnilateral: fila.is_unilateral,
+      curated: fila.resistance_profile !== null,
+      imageUrl: fila.image_url,
+      inRoutine: enRutinas.has(fila.id),
+    })),
+    total: count ?? 0,
+  };
+}
+
+export type LogSet = {
+  exerciseId: string;
+  exerciseName: string;
+  primaryMuscle: string;
+  equipment: string | null;
+  setNumber: number;
+  isWarmup: boolean;
+  weightKg: number | null;
+  repetitions: number | null;
+  createdAt: string;
+};
+
+export type LogSession = {
+  id: string;
+  startedAt: string;
+  durationMinutes: number | null;
+  planName: string | null;
+  dayName: string | null;
+  sets: LogSet[];
+};
+
+/**
+ * Todo lo entrenado, serie por serie: la base del historial.
+ *
+ * Se piden las sesiones terminadas con sus series en una consulta; la vista
+ * por ejercicio («todas mis series de press banca») se arma en el cliente a
+ * partir de esto, para que buscar no vuelva al servidor en cada letra. El
+ * tope de 300 sesiones son años de entrenamiento a cuatro por semana.
+ */
+export async function getTrainingLog(userId: string): Promise<LogSession[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_sessions")
+    .select(
+      "id, started_at, completed_at, workout_plans(name), workout_plan_days(name), workout_sets(exercise_id, set_number, is_warmup, weight_kg, repetitions, created_at, exercise_catalog(name, primary_muscle, equipment))",
+    )
+    .eq("user_id", userId)
+    .not("completed_at", "is", null)
+    .order("started_at", { ascending: false })
+    .limit(300);
+
+  return (data ?? []).map((session) => ({
+    id: session.id,
+    startedAt: session.started_at,
+    durationMinutes: session.completed_at
+      ? Math.max(
+          1,
+          Math.round(
+            (Date.parse(session.completed_at) -
+              Date.parse(session.started_at)) /
+              60000,
+          ),
+        )
+      : null,
+    planName: session.workout_plans?.name ?? null,
+    dayName: session.workout_plan_days?.name ?? null,
+    sets: [...(session.workout_sets ?? [])]
+      .sort(
+        (a, b) =>
+          a.created_at.localeCompare(b.created_at) ||
+          a.set_number - b.set_number,
+      )
+      .map((set) => ({
+        exerciseId: set.exercise_id,
+        exerciseName: set.exercise_catalog?.name ?? "Ejercicio",
+        primaryMuscle: set.exercise_catalog?.primary_muscle ?? "",
+        equipment: set.exercise_catalog?.equipment ?? null,
+        setNumber: set.set_number,
+        isWarmup: set.is_warmup,
+        weightKg: set.weight_kg !== null ? Number(set.weight_kg) : null,
+        repetitions: set.repetitions,
+        createdAt: set.created_at,
+      })),
+  }));
 }

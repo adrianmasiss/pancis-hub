@@ -48,6 +48,8 @@ export const photoMetaSchema = z.object({
   capturedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, t.invalidDate),
   viewType: z.enum(PHOTO_VIEWS),
   notes: z.string().trim().max(200).optional(),
+  /* Opcional: una foto sin bascula delante sigue valiendo. */
+  measurementId: z.uuid().optional(),
 });
 
 export const photoIdSchema = z.object({ photoId: z.uuid() });

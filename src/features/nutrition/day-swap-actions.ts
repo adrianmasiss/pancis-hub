@@ -63,10 +63,65 @@ export async function swapDietItemForDay(
       external_carbohydrate_g: external?.carbohydrateG ?? null,
       external_fat_g: external?.fatG ?? null,
       source: foodId ? "biblioteca" : "asistente",
+      // Sustituir un alimento omitido lo vuelve a contar.
+      omitted: false,
     },
     { onConflict: "user_id,template_item_id,date" },
   );
 
+  if (error) return { error: messages.common.genericError };
+
+  revalidatePath("/");
+  revalidatePath("/nutricion");
+  return {};
+}
+
+/**
+ * «Hoy no me lo comí»: omite un alimento del plan SOLO en esta fecha. Se
+ * guarda como excepción del día con el alimento y la cantidad originales, así
+ * que el plan no se toca y deshacerlo es borrar la fila
+ * (`undoDietItemDaySwap`), igual que con una sustitución.
+ */
+export async function omitDietItemForDay(input: {
+  templateItemId: string;
+  date: string;
+}): Promise<{ error?: string }> {
+  const parsed = z
+    .object({ templateItemId: z.uuid(), date: z.iso.date() })
+    .safeParse(input);
+  if (!parsed.success) return { error: messages.common.genericError };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.common.genericError };
+
+  // RLS limita la lectura a la dieta propia: si no aparece, no es suya.
+  const { data: item } = await supabase
+    .from("diet_template_items")
+    .select("food_id, quantity_g")
+    .eq("id", parsed.data.templateItemId)
+    .maybeSingle();
+  if (!item) return { error: messages.common.genericError };
+
+  const { error } = await supabase.from("diet_item_day_swaps").upsert(
+    {
+      user_id: user.id,
+      template_item_id: parsed.data.templateItemId,
+      date: parsed.data.date,
+      food_id: item.food_id,
+      quantity_g: item.quantity_g,
+      external_name: null,
+      external_calories: null,
+      external_protein_g: null,
+      external_carbohydrate_g: null,
+      external_fat_g: null,
+      source: "biblioteca",
+      omitted: true,
+    },
+    { onConflict: "user_id,template_item_id,date" },
+  );
   if (error) return { error: messages.common.genericError };
 
   revalidatePath("/");

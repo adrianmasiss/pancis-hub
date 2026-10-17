@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { AvatarUpload } from "@/features/settings/components/avatar-upload";
 import { AccountCard } from "@/features/settings/components/account-card";
+import { UsernameCard } from "@/features/settings/components/username-card";
 import { AppearanceCard } from "@/features/settings/components/appearance-card";
 import { AssistantMemoryCard } from "@/features/settings/components/assistant-memory-card";
 import { GoalSettingsForm } from "@/features/settings/components/goal-settings-form";
 import { ProfileSettingsForm } from "@/features/settings/components/profile-settings-form";
 import { TargetsUpdateCard } from "@/features/settings/components/targets-update-card";
 import { ToleranceSettingsForm } from "@/features/settings/components/tolerance-settings-form";
+import { FoodSourcesCard } from "@/features/settings/components/food-sources-card";
+import { countFoodsToReview } from "@/features/foods/source-queries";
 import { DEFAULT_TOLERANCES } from "@/features/nutrition/lib/tolerances";
 import { getTargetRecalculation } from "@/features/settings/target-recalculation";
 import type { GoalSettingsInput } from "@/features/settings/schemas";
@@ -32,19 +35,21 @@ export default async function SettingsPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, height_cm, unit_system, timezone, avatar_storage_path, primary_goal, activity_level, tolerance_calories_pct, tolerance_protein_pct, tolerance_carbs_pct, tolerance_fat_pct",
+      "display_name, username, height_cm, unit_system, timezone, avatar_storage_path, primary_goal, activity_level, tolerance_calories_pct, tolerance_protein_pct, tolerance_carbs_pct, tolerance_fat_pct",
     )
     .eq("id", user.id)
     .single();
-  const [avatarUrl, conversationCount, recalculation] = await Promise.all([
-    resolveAvatarUrl(supabase, profile?.avatar_storage_path ?? null),
-    countConversations(user.id),
-    getTargetRecalculation(user.id),
-  ]);
+  const [avatarUrl, conversationCount, recalculation, foodsToReview] =
+    await Promise.all([
+      resolveAvatarUrl(supabase, profile?.avatar_storage_path ?? null),
+      countConversations(user.id),
+      getTargetRecalculation(user.id),
+      countFoodsToReview(),
+    ]);
 
   return (
     <>
-      <PageHeader title={messages.nav.settings} />
+      <ViewHeader title={messages.nav.settings} />
       {/* Arriba del todo porque es lo unico de esta pagina que espera una
           decision. Un aviso al final de una lista de formularios no lo lee
           nadie. */}
@@ -90,8 +95,14 @@ export default async function SettingsPage() {
           ),
         }}
       />
+      {/* Junto a las tolerancias: las dos deciden que numero de nutricion
+          vale para ti. Vivia como franja en la Biblioteca. */}
+      <FoodSourcesCard count={foodsToReview} />
       <AssistantMemoryCard count={conversationCount} />
       <AppearanceCard />
+      {/* Junto a la cuenta y no arriba con el perfil: el usuario no es como te
+          presentas, es como entras. */}
+      <UsernameCard username={profile?.username ?? null} />
       <AccountCard email={user.email} />
     </>
   );

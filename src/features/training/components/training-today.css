@@ -1,0 +1,1404 @@
+/* «Hoy» en Entrenamiento (14 oct 2026): el maniquí manda, sin tarjeta que lo
+   encierre. Cuerpo en tono piel con los músculos del día latiendo; una línea
+   de datos, la tira de ejercicios (al tocar uno, la cámara se acerca a sus
+   músculos) y la acción. Al lado o debajo, los días en filas-píldora.
+
+   Sin tarjeta, todo va con los colores del tema: el naranja queda para lo
+   que se toca (el ejercicio elegido, el botón principal) y para el músculo
+   que trabaja. Antes era una tarjeta naranja entera y competía con él. */
+
+.today {
+  --today-ink: var(--foreground);
+  --today-ink-soft: var(--muted-foreground);
+  --today-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  display: grid;
+  gap: 20px;
+}
+
+/* ── Tarjeta ─────────────────────────────────────────────────────────── */
+.today-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 18px;
+  color: var(--foreground);
+}
+
+.today-hero-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.today-eyebrow {
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--today-ink-soft);
+}
+.today-hero-head h2 {
+  margin-top: 6px;
+  max-width: 14ch;
+  font-size: clamp(28px, 4.2vw, 36px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+/* El maniquí. Sin caja ni halo: flota sobre la página con su sombra de
+   suelo. Un halo detrás se leía como un reflejo circular. */
+.today-model {
+  position: relative;
+  height: clamp(380px, 56vh, 520px);
+}
+.today-model > div:first-child {
+  position: absolute;
+  inset: 0;
+}
+/* Con el zoom el cuerpo desborda el lienzo: se desvanece arriba y abajo en
+   lugar de cortarse en seco. Sólo acercado: entero, la cabeza toca el borde
+   y el degradado se la comería. */
+.today-model[data-focus] > div:first-child {
+  mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent);
+}
+.today-model::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3%;
+  width: 52%;
+  height: 7%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgb(0 0 0 / 0.45),
+    transparent 72%
+  );
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 300ms ease;
+}
+/* Acercado no hay suelo a la vista: la sombra sobra. */
+.today-model[data-focus]::after {
+  opacity: 0;
+}
+.today-model .muscle-model-status {
+  background: transparent;
+  color: var(--today-ink-soft);
+}
+.today-model .muscle-model-stage canvas {
+  cursor: grab;
+}
+
+.today-turn {
+  position: absolute;
+  left: 4px;
+  bottom: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition:
+    transform 160ms var(--today-ease),
+    background-color 160ms ease;
+}
+/* Encender los secundarios: al lado del giro, en pastilla con texto porque
+   un icono solo no dice qué hace. Encendido, toma el naranja de lo activo. */
+.today-secondary {
+  position: absolute;
+  left: 46px;
+  bottom: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition:
+    transform 160ms var(--today-ease),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+.today-secondary[aria-pressed="true"] {
+  color: var(--foreground);
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 16%, var(--card));
+}
+.today-secondary[aria-pressed="true"] svg {
+  color: var(--primary);
+}
+.today-secondary:active {
+  transform: scale(0.96);
+}
+.today-secondary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .today-secondary[aria-pressed="false"]:hover {
+    color: var(--foreground);
+  }
+}
+.today-turn:active {
+  transform: scale(0.9) rotate(-40deg);
+}
+.today-turn:focus-visible {
+  outline: 2px solid var(--today-ink);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .today-turn:hover {
+    background: var(--secondary);
+  }
+}
+
+/* Los datos, en una línea y sin cajas: el maniquí es lo que se mira; esto
+   se lee de pasada. Separados por un filo de tinta, no por tarjetas. */
+/* Las dos primeras columnas, a su medida; la tercera se queda el resto,
+   que es la que trae texto largo. */
+.today-stats {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+}
+.today-stats > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 14px;
+}
+.today-stats > div:first-child {
+  padding-left: 0;
+}
+.today-stats > div + div {
+  border-left: 1px solid var(--border);
+}
+.today-stats dt {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  color: var(--today-ink-soft);
+}
+.today-stats dd {
+  display: flex;
+  align-items: baseline;
+  column-gap: 4px;
+  min-width: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.today-stats small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 550;
+  letter-spacing: 0;
+  color: var(--today-ink-soft);
+}
+.today-approx {
+  margin-right: 1px;
+  font-size: 0.7em;
+  font-weight: 600;
+  color: var(--today-ink-soft);
+}
+
+/* El ejercicio en foco, nombrado sobre el maniquí acercado: qué es y qué
+   músculos son los que se ven encendidos. El detalle está en su fila. */
+.today-focus-label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  max-width: calc(100% - 130px);
+  pointer-events: none;
+}
+.today-focus-label strong {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.today-focus-label span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+/* Los puntos repiten los dos colores del maniquí (tono «anatomia»): rojo lo
+   que trabaja, ámbar lo que asiste. */
+.today-focus-label span::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 999px;
+  vertical-align: 1px;
+  background: #bb4936;
+}
+.today-focus-label span[data-kind="asistente"]::before {
+  background: #c59860;
+}
+
+/* Volver al día: arriba a la derecha del maniquí, donde el pulgar lo busca
+   tras acercar. */
+.today-unfocus {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  animation: today-swap 360ms var(--today-ease) both;
+}
+.today-unfocus:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Los músculos: principales en tinta, asistentes con borde. */
+.today-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.today-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+/* El punto repite el rojo del músculo en el maniquí: la chip dice cuál es. */
+.today-chips li[data-kind="principal"] {
+  color: var(--foreground);
+  background: var(--secondary);
+}
+.today-chips li[data-kind="principal"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #e04a22;
+  box-shadow: 0 0 8px color-mix(in oklab, #e04a22 70%, transparent);
+}
+.today-chips li[data-kind="mas"] {
+  padding: 0 12px;
+  color: var(--today-ink-soft);
+  background: color-mix(in oklab, var(--today-ink) 10%, transparent);
+}
+.today-chips li[data-kind="asistente"] {
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+
+.today-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+/* Doble clase: le gana a las utilidades del botón compartido. */
+.today-hero .today-cta.today-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 58px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 18px 30px -18px color-mix(in oklab, var(--primary) 85%, #000);
+  transition:
+    transform 160ms var(--today-ease),
+    background-color 160ms ease;
+}
+.today-hero .today-cta.today-cta:active {
+  transform: scale(0.98);
+}
+.today-hero .today-cta.today-cta:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .today-hero .today-cta.today-cta:hover {
+    background: color-mix(in oklab, var(--primary) 88%, #fff);
+  }
+}
+.today-hero .today-cta svg {
+  width: 16px;
+  height: 16px;
+}
+.today-status {
+  font-size: 13px;
+  font-weight: 600;
+}
+.today-plan {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--today-ink-soft);
+}
+.today-plan:hover {
+  color: var(--today-ink);
+}
+
+/* ── Ejercicios por músculo ──────────────────────────────────────────── */
+.today-list {
+  display: grid;
+  gap: 26px;
+  align-content: start;
+}
+.today-group {
+  display: grid;
+  gap: 12px;
+}
+.today-group > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+.today-group h3 {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.today-group > header span {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.today-group ul {
+  display: grid;
+  gap: 10px;
+}
+
+.today-row {
+  border-radius: 30px;
+  background: var(--card);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 1px 0 color-mix(in oklab, #000 18%, transparent);
+  transition: background-color 200ms ease;
+}
+.today-row[data-open] {
+  background: color-mix(in oklab, var(--card) 88%, var(--foreground));
+}
+.today-row-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px 12px 12px;
+  text-align: left;
+  border-radius: 30px;
+}
+.today-row-head:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.today-row-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.today-row-name {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.today-row-name strong {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.today-row-name small {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.today-row-dose {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+.today-row-dose strong {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.today-row-dose i {
+  margin: 0 2px;
+  font-style: normal;
+  font-size: 0.62em;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.today-row-dose small {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.today-row-chevron {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+  transition: transform 260ms var(--today-ease);
+}
+.today-row[data-open] .today-row-chevron {
+  transform: rotate(180deg);
+  color: var(--foreground);
+}
+
+/* Se abre animando la altura con una rejilla de 0fr a 1fr: el contenido no
+   salta, crece. */
+.today-row-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--today-ease);
+}
+.today-row[data-open] .today-row-panel {
+  grid-template-rows: 1fr;
+}
+.today-row-panel > div {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 12px;
+  visibility: hidden;
+  transition: visibility 0s linear 320ms;
+}
+.today-row[data-open] .today-row-panel > div {
+  padding-bottom: 14px;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.today-last {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 24px;
+  text-align: center;
+  background: color-mix(in oklab, #000 26%, var(--card));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
+}
+.today-last-value {
+  font-size: 38px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.today-last-value small {
+  margin-left: 3px;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: 0;
+  color: var(--muted-foreground);
+}
+.today-last-meta {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.today-last-delta {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--primary);
+}
+.today-last-delta[data-down] {
+  color: var(--muted-foreground);
+}
+
+.today-sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: 8px;
+}
+.today-sets li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 9px 4px;
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.today-sets span {
+  font-size: 13px;
+  font-weight: 650;
+}
+.today-sets small {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.today-row-notes {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.today-row-help {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.today-empty,
+.today-empty a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Días de la rutina ───────────────────────────────────────────────── */
+.today-list-title {
+  padding: 0 4px;
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.today-day {
+  border-radius: 32px;
+  background: var(--card);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 1px 0 color-mix(in oklab, #000 18%, transparent);
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+/* El día que muestra la tarjeta naranja lleva su borde: se sabe cuál es sin
+   tener que abrirlo. */
+.today-day[data-selected] {
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in oklch, var(--primary) 70%, transparent),
+    0 18px 40px -28px color-mix(in oklch, var(--primary) 70%, transparent);
+}
+.today-day-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px 12px 12px;
+  text-align: left;
+  border-radius: 32px;
+}
+.today-day-head:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.today-day-badge {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  transition:
+    background-color 240ms ease,
+    color 240ms ease,
+    transform 240ms var(--today-ease);
+}
+.today-day[data-selected] .today-day-badge {
+  color: #1b0e06;
+  background: var(--primary);
+}
+.today-day-head:active .today-day-badge {
+  transform: scale(0.92);
+}
+.today-day-name {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.today-day-name strong {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.today-day-name small {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.today-day[data-open] > .today-day-head .today-row-chevron {
+  transform: rotate(180deg);
+  color: var(--foreground);
+}
+.today-day[data-open] > .today-row-panel {
+  grid-template-rows: 1fr;
+}
+.today-day[data-open] > .today-row-panel > div {
+  padding-bottom: 12px;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.today-day > .today-row-panel > div {
+  padding: 0 8px;
+}
+.today-day-list {
+  display: grid;
+  gap: 8px;
+}
+/* Las filas dentro del día, un escalón más claras que la tarjeta. */
+.today-day-list .today-row {
+  border-radius: 26px;
+  background: color-mix(in oklab, var(--card) 86%, var(--foreground));
+  box-shadow: none;
+}
+.today-day-list .today-row[data-open] {
+  background: color-mix(in oklab, var(--card) 80%, var(--foreground));
+}
+.today-day-list .today-row-icon {
+  width: 46px;
+  height: 46px;
+}
+.today-day-list .today-last {
+  background: color-mix(in oklab, #000 30%, var(--card));
+}
+/* Al cambiar de día, lo que cambia en la tarjeta naranja entra de nuevo:
+   título, chips y datos se recomponen en lugar de saltar. */
+.today-swap {
+  animation: today-swap 460ms var(--today-ease) both;
+}
+@keyframes today-swap {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(3px);
+  }
+}
+
+/* ── Composición ─────────────────────────────────────────────────────── */
+/* En escritorio, el maniquí a la izquierda, alto y fijo mientras se recorre
+   la columna de la derecha: al abrir un ejercicio, el zoom pasa a la vista. */
+@media (min-width: 1024px) {
+  .today {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "model head"
+      "model hero"
+      "model list";
+    align-items: start;
+    column-gap: 40px;
+    row-gap: 22px;
+  }
+  .today-hero-head {
+    grid-area: head;
+  }
+  .today-hero {
+    grid-area: hero;
+  }
+  .today-list {
+    grid-area: list;
+  }
+  .today-model {
+    grid-area: model;
+    position: sticky;
+    top: 24px;
+    height: min(calc(100dvh - 120px), 720px);
+  }
+}
+
+@media (max-width: 420px) {
+  .today-model {
+    height: 380px;
+  }
+  .today-stats > div {
+    padding: 0 10px;
+  }
+  .today-stats dt {
+    letter-spacing: 0.06em;
+  }
+  .today-stats dd {
+    font-size: 17px;
+  }
+
+  .today-row-head {
+    gap: 10px;
+  }
+  .today-row-icon {
+    width: 44px;
+    height: 44px;
+  }
+  .today-row-dose strong {
+    font-size: 19px;
+  }
+  .today-group h3 {
+    font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-unfocus,
+  .today-swap {
+    animation: none;
+  }
+  .today-row-panel,
+  .today-row-chevron {
+    transition: none;
+  }
+}
+
+/* ── Historial ───────────────────────────────────────────────────────── */
+/* Una sola columna: es una lista para leer y buscar, no un tablero. */
+.today.hist {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 860px;
+}
+.hist-week {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border-radius: 28px;
+  background: var(--card);
+}
+.hist-week h3 {
+  font-size: 15px;
+  font-weight: 650;
+}
+.hist-week h3 span {
+  margin-left: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.hist-week ul {
+  display: grid;
+  gap: 8px;
+}
+.hist-week li {
+  display: grid;
+  grid-template-columns: 9.5em minmax(0, 1fr) 2.5em;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.hist-week i {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  overflow: hidden;
+}
+.hist-week b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transform-origin: left;
+  animation: hist-grow 620ms var(--today-ease) both;
+}
+@keyframes hist-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.hist-week strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.hist-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.hist-segments {
+  display: flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--card);
+}
+.hist-segments button {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+.hist-segments button[aria-selected="true"] {
+  color: #1b0e06;
+  background: var(--primary);
+}
+.hist-segments button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.hist-search {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 8px 0 18px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 8%, transparent);
+  transition: box-shadow 160ms ease;
+}
+.hist-search:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.hist-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--foreground);
+}
+.hist-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.hist-search button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.hist-count {
+  padding: 0 6px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.hist-list {
+  display: grid;
+  gap: 10px;
+}
+.hist-date {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+.hist-date b {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hist-date small {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+.hist-best {
+  padding: 0 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.hist-best svg {
+  display: inline;
+  vertical-align: -2px;
+}
+.hist-best strong {
+  color: var(--primary);
+  font-weight: 650;
+}
+.hist-days {
+  display: grid;
+  gap: 8px;
+}
+.hist-days > li {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 22px;
+  background: color-mix(in oklab, #000 24%, var(--card));
+}
+.hist-days time,
+.hist-exercise {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.hist-exercise {
+  color: var(--foreground);
+}
+.hist-sets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.hist-sets li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.hist-sets small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.hist-sets i {
+  margin: 0 3px;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.hist-sets li[data-warmup] {
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+.hist-tag {
+  margin-left: 5px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.hist-empty {
+  padding: 28px 20px;
+  border-radius: 28px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hist-week b {
+    animation: none;
+  }
+}
+
+/* ── Pestañas de Entrenamiento ───────────────────────────────────────── */
+.training-tabs {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--card);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.training-tabs a {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+.training-tabs a[aria-current="page"] {
+  color: #1b0e06;
+  background: var(--primary);
+}
+@media (hover: hover) and (pointer: fine) {
+  .training-tabs a:not([aria-current="page"]):hover {
+    color: var(--foreground);
+  }
+}
+.training-tabs a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+/* Con la biblioteca son cuatro: en un teléfono caben si se aprietan, y una
+   pestaña cortada en el borde no se sabe que existe. */
+@media (max-width: 480px) {
+  .training-tabs a {
+    padding: 0 13px;
+    font-size: 13.5px;
+  }
+}
+
+/* ── Entrenando: modo en vivo ────────────────────────────────────────── */
+.today-eyebrow[data-live]::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  vertical-align: 1px;
+  background: var(--today-ink);
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+.today-progress {
+  display: block;
+  height: 5px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--today-ink) 14%, transparent);
+  overflow: hidden;
+}
+.today-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--today-ink);
+  transition: width 420ms var(--today-ease);
+}
+.today-discard {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--today-ink-soft);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+.today-discard[data-armed] {
+  color: #fff;
+  background: var(--destructive, #b3261e);
+}
+
+.live-row[data-complete] .today-row-icon {
+  color: #1b0e06;
+  background: var(--primary);
+}
+.live-row[data-complete] .today-row-dose strong {
+  color: var(--primary);
+}
+.live-logger {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  border-radius: 24px;
+  background: color-mix(in oklab, #000 26%, var(--card));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
+}
+.live-field {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.live-field > span {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+/* En el registro de series el contador es el protagonista: un poco más
+   grande que en la ficha de alimentos, con la cifra legible a un brazo. */
+.live-field .qty-stepper {
+  height: 50px;
+}
+.live-field .qty-stepper-disc {
+  height: 44px;
+  min-width: 56px;
+  padding: 0 12px;
+}
+.live-field .qty-stepper-cell,
+.live-field .qty-stepper-disc input,
+.live-field .qty-stepper-roll,
+.live-field .qty-stepper-unit {
+  font-size: 17px;
+}
+.live-field .qty-stepper-roll,
+.live-field .qty-stepper-unit {
+  height: 20px;
+}
+.live-field .qty-stepper-step {
+  width: 40px;
+  height: 44px;
+}
+.live-hint {
+  padding: 0 6px;
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.live-log {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 54px;
+  border-radius: 999px;
+  font-size: 15.5px;
+  font-weight: 650;
+  color: #1b0e06;
+  background: var(--primary);
+  box-shadow: 0 14px 26px -16px
+    color-mix(in oklch, var(--primary) 90%, transparent);
+  transition: transform 140ms var(--today-ease);
+}
+.live-log:active {
+  transform: scale(0.97);
+}
+.live-log:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+.live-sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+}
+.live-sets button,
+.live-set-empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 4px;
+  border-radius: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.live-sets button {
+  color: #1b0e06;
+  background: var(--primary);
+  animation: live-pop 380ms var(--today-ease) both;
+}
+@keyframes live-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0.4;
+  }
+}
+.live-sets button span {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.live-sets button i {
+  margin: 0 2px;
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.7;
+}
+.live-sets button small {
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.live-sets button[data-armed] {
+  color: #fff4ea;
+  background: color-mix(in oklab, #8a1500 70%, var(--card));
+  animation: none;
+}
+.live-set-empty {
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.live-set-empty span {
+  font-size: 13px;
+  font-weight: 650;
+}
+.live-set-empty small {
+  font-size: 10.5px;
+}
+.live-set-empty[data-next] {
+  color: var(--foreground);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+
+/* El temporizador flotante: encima de la barra en el teléfono, abajo en el
+   centro en escritorio. */
+.live-timer {
+  position: fixed;
+  left: 50%;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px 7px 7px;
+  border-radius: 999px;
+  color: #fff4ea;
+  background: color-mix(in oklab, #120a06 92%, transparent);
+  border: 1px solid color-mix(in oklab, #fff 10%, transparent);
+  box-shadow: 0 20px 44px -18px rgb(0 0 0 / 0.8);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  animation: live-timer-in 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (min-width: 768px) {
+  .live-timer {
+    bottom: 28px;
+  }
+}
+@keyframes live-timer-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(0.96);
+  }
+}
+.live-timer svg {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+.live-timer circle {
+  fill: none;
+  stroke-width: 3.5;
+}
+.live-timer-track {
+  stroke: color-mix(in oklab, #fff 14%, transparent);
+}
+.live-timer-ring {
+  stroke: var(--primary);
+  stroke-linecap: round;
+  stroke-dasharray: 97.4;
+  transition: stroke-dashoffset 250ms linear;
+}
+.live-timer[data-kind="trabajo"] .live-timer-ring {
+  stroke: #fff4ea;
+}
+.live-timer-text {
+  display: grid;
+  min-width: 84px;
+  line-height: 1.05;
+}
+.live-timer-text small {
+  max-width: 9em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffb27e;
+}
+.live-timer-text strong {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.live-timer button {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  color: #fff4ea;
+  background: color-mix(in oklab, #fff 12%, transparent);
+  transition: transform 120ms ease;
+}
+.live-timer button:active {
+  transform: scale(0.94);
+}
+.live-timer[data-kind="listo"] {
+  padding: 12px 20px;
+  color: #1b0e06;
+  background: var(--primary);
+}
+.live-timer-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .today-eyebrow[data-live]::before,
+  .live-sets button,
+  .live-timer {
+    animation: none;
+  }
+}

@@ -7,6 +7,7 @@ import { recordChange } from "@/lib/audit";
 import { applyCorrection } from "@/features/foods/lib/corrections";
 import { getUserFoodCorrections } from "@/features/foods/correction-actions";
 import { scaleMacros } from "@/features/nutrition/lib/macros";
+import { rescaleExtra, scaleExtra } from "@/features/nutrition/lib/extras";
 import {
   addMealItemSchema,
   createMealSchema,
@@ -64,6 +65,7 @@ export async function createMeal(
   });
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -102,6 +104,7 @@ export async function updateMealStatus(
   });
 
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -138,6 +141,7 @@ export async function updateMealNotes(
     .eq("user_id", user.id);
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -156,6 +160,7 @@ export async function deleteMeal(
     .eq("user_id", user.id);
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -172,7 +177,9 @@ export async function addMealItem(
   const [{ data: food }, corrections] = await Promise.all([
     supabase
       .from("foods")
-      .select("id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state")
+      .select(
+        "id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state, sodium_mg, sugar_g",
+      )
       .eq("id", parsed.data.foodId)
       .single(),
     getUserFoodCorrections(user.id),
@@ -213,9 +220,12 @@ export async function addMealItem(
     carbohydrate_snapshot: snapshot.carbohydrateG,
     fat_snapshot: snapshot.fatG,
     fiber_snapshot: snapshot.fiberG,
+    sodium_snapshot_mg: scaleExtra(food.sodium_mg, parsed.data.quantityG),
+    sugar_snapshot_g: scaleExtra(food.sugar_g, parsed.data.quantityG),
   });
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -231,7 +241,7 @@ export async function updateMealItemQuantity(
   const { data: item } = await supabase
     .from("meal_items")
     .select(
-      "quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot",
+      "quantity_g, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, sodium_snapshot_mg, sugar_snapshot_g",
     )
     .eq("id", parsed.data.itemId)
     .single();
@@ -256,10 +266,21 @@ export async function updateMealItemQuantity(
       carbohydrate_snapshot: snapshot.carbohydrateG,
       fat_snapshot: snapshot.fatG,
       fiber_snapshot: snapshot.fiberG,
+      sodium_snapshot_mg: rescaleExtra(
+        item.sodium_snapshot_mg,
+        Number(item.quantity_g),
+        parsed.data.quantityG,
+      ),
+      sugar_snapshot_g: rescaleExtra(
+        item.sugar_snapshot_g,
+        Number(item.quantity_g),
+        parsed.data.quantityG,
+      ),
     })
     .eq("id", parsed.data.itemId);
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -276,6 +297,7 @@ export async function deleteMealItem(
     .eq("id", parsed.data.itemId);
   if (error) return fail;
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -317,11 +339,14 @@ export async function copyMeal(input: unknown): Promise<NutritionActionResult> {
         carbohydrate_snapshot: item.carbohydrate_snapshot,
         fat_snapshot: item.fat_snapshot,
         fiber_snapshot: item.fiber_snapshot,
+        sodium_snapshot_mg: item.sodium_snapshot_mg,
+        sugar_snapshot_g: item.sugar_snapshot_g,
       })),
     );
     if (itemsError) return fail;
   }
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -367,12 +392,15 @@ export async function duplicateDay(
           carbohydrate_snapshot: item.carbohydrate_snapshot,
           fat_snapshot: item.fat_snapshot,
           fiber_snapshot: item.fiber_snapshot,
+          sodium_snapshot_mg: item.sodium_snapshot_mg,
+          sugar_snapshot_g: item.sugar_snapshot_g,
         })),
       );
       if (itemsError) return fail;
     }
   }
   revalidatePath("/nutricion");
+  revalidatePath("/");
   return { success: true };
 }
 

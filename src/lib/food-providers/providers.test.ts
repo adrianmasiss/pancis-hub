@@ -5,10 +5,19 @@ import {
   inferFoodGroup,
   normalizeText,
 } from "@/lib/food-providers/classify";
-import { mergeProviderResults, relevanceScore } from "@/lib/food-providers/dedupe";
+import {
+  mergeProviderResults,
+  relevanceScore,
+} from "@/lib/food-providers/dedupe";
 import { normalizeUsdaFood } from "@/lib/food-providers/usda";
-import { normalizeOffProduct } from "@/lib/food-providers/open-food-facts";
-import { isPlausibleFood, type NormalizedFood } from "@/lib/food-providers/types";
+import {
+  normalizeOffProduct,
+  offNutritionBasis,
+} from "@/lib/food-providers/open-food-facts";
+import {
+  isPlausibleFood,
+  type NormalizedFood,
+} from "@/lib/food-providers/types";
 
 const baseFood = (overrides: Partial<NormalizedFood> = {}): NormalizedFood => ({
   source: "usda",
@@ -89,7 +98,11 @@ describe("inferFoodGroup", () => {
       fiberG: 0,
     };
     expect(
-      inferFoodGroup("Nutella", "Spreads, Sweet spreads, Preserves", nutellaMacros),
+      inferFoodGroup(
+        "Nutella",
+        "Spreads, Sweet spreads, Preserves",
+        nutellaMacros,
+      ),
     ).not.toBe("proteina");
 
     // "papa" no debe capturar "papaya", que es fruta.
@@ -144,7 +157,9 @@ describe("deriveAliases", () => {
 describe("isPlausibleFood", () => {
   it("rechaza alimentos sin calorias", () => {
     expect(
-      isPlausibleFood(baseFood({ per100g: { ...baseFood().per100g, calories: 0 } })),
+      isPlausibleFood(
+        baseFood({ per100g: { ...baseFood().per100g, calories: 0 } }),
+      ),
     ).toBe(false);
   });
 
@@ -276,7 +291,11 @@ describe("normalizeOffProduct", () => {
   it("deriva el sodio desde la sal cuando falta", () => {
     const food = normalizeOffProduct({
       ...product,
-      nutriments: { ...product.nutriments, sodium_100g: undefined, salt_100g: 1.25 },
+      nutriments: {
+        ...product.nutriments,
+        sodium_100g: undefined,
+        salt_100g: 1.25,
+      },
     });
     expect(food!.sodiumMg).toBe(500);
   });
@@ -333,7 +352,12 @@ describe("mergeProviderResults", () => {
   it("deduplica por nombre y marca cuando no hay codigo de barras", () => {
     const merged = mergeProviderResults(
       [
-        baseFood({ source: "usda", externalId: "1", name: "Pollo", brand: "ACME" }),
+        baseFood({
+          source: "usda",
+          externalId: "1",
+          name: "Pollo",
+          brand: "ACME",
+        }),
         baseFood({
           source: "openfoodfacts",
           externalId: "2",
@@ -442,5 +466,32 @@ describe("relevanceScore", () => {
       "pollo",
     );
     expect(merged[0]!.name).toBe("Pollo");
+  });
+});
+
+describe("offNutritionBasis", () => {
+  it("lee el volumen del envase", () => {
+    expect(offNutritionBasis({ quantity: "355 ml" })).toBe("100ml");
+    expect(offNutritionBasis({ quantity: "3.785L" })).toBe("100ml");
+    expect(offNutritionBasis({ quantity: "400g" })).toBe("100g");
+  });
+
+  it("sin cantidad, decide la categoría", () => {
+    expect(offNutritionBasis({ categories_tags: ["en:milks"] })).toBe("100ml");
+    expect(
+      offNutritionBasis({
+        categories_tags: ["en:beverages", "en:instant-beverages"],
+      }),
+    ).toBe("100g");
+    expect(offNutritionBasis({ categories_tags: ["en:snacks"] })).toBe("100g");
+  });
+
+  it("si el envase dice gramos, manda el envase", () => {
+    expect(
+      offNutritionBasis({
+        quantity: "500 g",
+        categories_tags: ["en:beverages"],
+      }),
+    ).toBe("100g");
   });
 });

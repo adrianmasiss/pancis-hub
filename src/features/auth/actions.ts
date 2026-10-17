@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { pareceCorreo } from "@/features/auth/username";
 import { messages } from "@/i18n/es-419";
 import {
   loginSchema,
@@ -50,6 +52,65 @@ function mapAuthError(error: unknown): string {
   }
 }
 
+/**
+ * De lo que se escribio al correo con el que Supabase sabe entrar.
+ *
+ * Supabase autentica por correo; el usuario es nuestro, vive en `profiles`. La
+ * traduccion se hace AQUI, en el servidor, con la llave de servicio, y no con
+ * una funcion SQL que pueda llamar el navegador: una funcion asi seria un
+ * conversor publico de usuario a correo, es decir una forma comoda de
+ * cosechar correos de cuentas reales.
+ *
+ * Devuelve `null` cuando no hay nadie con ese usuario, y quien llama responde
+ * lo MISMO que ante una contraseña equivocada. Si contestara "ese usuario no
+ * existe", la pantalla diria quien esta registrado y quien no.
+ */
+async function correoDelIdentificador(
+  identificador: string,
+): Promise<string | null> {
+  if (pareceCorreo(identificador)) return identificador;
+
+  const admin = createAdminClient();
+  const { data: perfil, error } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("username", identificador)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[Auth] Fallo al buscar el usuario", error);
+    return null;
+  }
+  if (!perfil) return null;
+
+  const { data, error: errorUsuario } = await admin.auth.admin.getUserById(
+    perfil.id,
+  );
+  if (errorUsuario) {
+    console.error("[Auth] Fallo al leer la cuenta del usuario", errorUsuario);
+    return null;
+  }
+  return data.user?.email ?? null;
+}
+
+/** Si el usuario ya esta tomado. El indice unico es la garantia; esto es solo
+    para poder decirlo ANTES de crear la cuenta, con un mensaje util. */
+async function usuarioDisponible(usuario: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("username", usuario)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[Auth] Fallo al comprobar el usuario", error);
+    // Ante la duda se deja pasar: el indice unico sigue estando detras.
+    return true;
+  }
+  return data === null;
+}
+
 export async function signIn(
   input: LoginInput,
   next?: string,
@@ -59,8 +120,16 @@ export async function signIn(
     return { error: messages.auth.errors.invalidCredentials };
   }
 
+  const email = await correoDelIdentificador(parsed.data.identifier);
+  if (!email) {
+    return { error: messages.auth.errors.invalidCredentials };
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: parsed.data.password,
+  });
   if (error) {
     return { error: mapAuthError(error) };
   }
@@ -79,15 +148,29 @@ export async function signUp(input: RegisterInput): Promise<AuthActionResult> {
     };
   }
 
+  if (!(await usuarioDisponible(parsed.data.username))) {
+    return { error: messages.auth.errors.usernameTaken };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { display_name: parsed.data.displayName },
+      data: {
+        display_name: parsed.data.displayName,
+        username: parsed.data.username,
+      },
     },
   });
   if (error) {
+    /* El disparador que crea el perfil aborta el alta si el usuario se tomo
+       entre la comprobacion de arriba y este insert. Supabase lo devuelve como
+       fallo de base de datos, sin codigo propio, asi que se mira el texto: es
+       lo unico que distingue esa carrera de un fallo de verdad. */
+    if (/duplicate key|profiles_username_key/i.test(error.message)) {
+      return { error: messages.auth.errors.usernameTaken };
+    }
     return { error: mapAuthError(error) };
   }
 

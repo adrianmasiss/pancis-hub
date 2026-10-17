@@ -5,7 +5,7 @@ import { ArrowLeft, Clock, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
 import { MacroChip } from "@/components/shared/macro-chip";
 import { IngredientList } from "@/features/recipes/components/ingredient-list";
@@ -43,7 +43,7 @@ export default async function RecipeDetailPage({
         alt={recipe.name}
         className="aspect-[21/9] w-full"
       />
-      <PageHeader
+      <ViewHeader
         title={recipe.name}
         description={recipe.description ?? undefined}
         actions={
@@ -101,28 +101,44 @@ export default async function RecipeDetailPage({
 
       <Section title={t.macrosTitle}>
         <div className="space-y-3">
-            <div className="space-y-1.5">
-              <p className="text-2xl font-semibold tracking-tight tabular-nums">
-                {recipe.perServing.calories} {messages.nutrition.kcal}
-                <span className="text-muted-foreground text-sm font-normal">
-                  {" "}
-                  {t.perServing}
-                </span>
-              </p>
-              <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <MacroChip type="protein" value={recipe.perServing.proteinG} variant="full" />
-                <MacroChip type="carbs" value={recipe.perServing.carbohydrateG} variant="full" />
-                <MacroChip type="fat" value={recipe.perServing.fatG} variant="full" />
-                <MacroChip type="fiber" value={recipe.perServing.fiberG} variant="full" />
-              </div>
-            </div>
-            <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
-              <span>{t.totalRecipe}:</span>
-              <MacroChip type="calories" value={recipe.totals.calories} />
-              <MacroChip type="protein" value={recipe.totals.proteinG} />
-              <MacroChip type="carbs" value={recipe.totals.carbohydrateG} />
-              <MacroChip type="fat" value={recipe.totals.fatG} />
+          <div className="space-y-1.5">
+            <p className="text-2xl font-semibold tracking-tight tabular-nums">
+              {recipe.perServing.calories} {messages.nutrition.kcal}
+              <span className="text-muted-foreground text-sm font-normal">
+                {" "}
+                {t.perServing}
+              </span>
             </p>
+            <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <MacroChip
+                type="protein"
+                value={recipe.perServing.proteinG}
+                variant="full"
+              />
+              <MacroChip
+                type="carbs"
+                value={recipe.perServing.carbohydrateG}
+                variant="full"
+              />
+              <MacroChip
+                type="fat"
+                value={recipe.perServing.fatG}
+                variant="full"
+              />
+              <MacroChip
+                type="fiber"
+                value={recipe.perServing.fiberG}
+                variant="full"
+              />
+            </div>
+          </div>
+          <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
+            <span>{t.totalRecipe}:</span>
+            <MacroChip type="calories" value={recipe.totals.calories} />
+            <MacroChip type="protein" value={recipe.totals.proteinG} />
+            <MacroChip type="carbs" value={recipe.totals.carbohydrateG} />
+            <MacroChip type="fat" value={recipe.totals.fatG} />
+          </p>
         </div>
       </Section>
 

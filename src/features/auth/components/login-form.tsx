@@ -5,17 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail } from "lucide-react";
+import { UserRound } from "lucide-react";
+import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AuthVariantToggle } from "@/features/auth/components/auth-variant-toggle";
-import { AuthFormHeader } from "@/features/auth/components/auth-form-header";
-import { SocialAuthRow } from "@/features/auth/components/social-auth-row";
+import { PasskeyLogin } from "@/features/auth/components/passkey-login";
+import { RememberToggle } from "@/features/auth/components/remember-toggle";
 import { IconField } from "@/features/auth/components/icon-field";
 import { PasswordField } from "@/features/auth/components/password-field";
 import { signIn } from "@/features/auth/actions";
 import { loginSchema, type LoginInput } from "@/features/auth/schemas";
 import { messages } from "@/i18n/es-419";
+import { cn } from "@/lib/utils";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -23,13 +23,15 @@ export function LoginForm() {
     searchParams.get("error") ? messages.auth.errors.sessionExpired : null,
   );
   const [rememberMe, setRememberMe] = useState(true);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [pending, startTransition] = useTransition();
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { identifier: "", password: "" },
   });
 
   const onSubmit = (data: LoginInput) => {
+    if (passkeyBusy) return;
     setServerError(null);
     startTransition(async () => {
       const result = await signIn(data, searchParams.get("next") ?? undefined);
@@ -40,62 +42,43 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <AuthFormHeader
-        title={messages.auth.login.title}
-        description={messages.auth.login.description}
-      />
-
-      <AuthVariantToggle variant="login" className="w-full lg:hidden" />
-
-      <SocialAuthRow />
-
-      <div className="flex w-full items-center gap-3.5">
-        <span className="bg-divider h-px flex-1" />
-        <span className="text-muted-foreground text-sm">
-          {messages.auth.common.or}
-        </span>
-        <span className="bg-divider h-px flex-1" />
+    <div className="auth-reference-form flex flex-col items-center gap-6">
+      {/*
+        Solo el titulo. La marca y la frase de bienvenida viven en la zona
+        negra del escenario, quietas mientras la hoja sube; repetirlas aqui
+        daba dos logotipos y la misma frase dos veces. `AuthFormHeader` se
+        conserva intacto porque Recuperar y Nueva contrasena siguen siendo
+        tarjetas de una columna y ahi la marca SI hace falta.
+      */}
+      <div
+        className="auth-step w-full"
+        style={{ "--step": 0 } as React.CSSProperties}
+      >
+        <h1 className="page-display text-balance">
+          {messages.auth.login.title}
+        </h1>
       </div>
 
+      {/* El cuerpo del formulario llega un paso detras del titulo. */}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-4"
+        style={{ "--step": 1 } as React.CSSProperties}
+        className="auth-step flex w-full flex-col gap-4"
         noValidate
       >
-        {/* Pestana Correo/Telefono del prototipo: solo correo tiene backend
-            hoy (signInWithPassword). Telefono queda visible pero inerte, en
-            vez de omitirse, para no perder fidelidad con el diseno. */}
-        <div className="border-border bg-card-raised/50 relative grid h-12 grid-cols-2 rounded-[14px] border p-[3px]">
-          <span
-            aria-hidden="true"
-            className="bg-card border-border/60 absolute top-[3px] bottom-[3px] left-[3px] w-[calc(50%-3px)] rounded-[11px] border"
-          />
-          <span
-            role="tab"
-            aria-selected="true"
-            className="text-foreground relative z-10 flex items-center justify-center text-[14px] font-medium"
-          >
-            {messages.auth.common.emailMethod}
-          </span>
-          <button
-            type="button"
-            disabled
-            title={`${messages.auth.common.phoneMethod} (${messages.auth.common.comingSoon.toLowerCase()})`}
-            className="text-subtle-foreground relative z-10 flex cursor-not-allowed items-center justify-center text-[14px] font-medium"
-          >
-            {messages.auth.common.phoneMethod}
-          </button>
-        </div>
-
+        {/* Un solo campo para las dos formas de entrar. `type="text"`, no
+            `email`: con `email` el navegador marca como invalido un usuario
+            —que no lleva arroba— y ofrece solo correos guardados.
+            `autoComplete="username"` es justo el valor para esto; el gestor de
+            contraseñas guarda ahi lo que se use, sea correo o usuario. */}
         <IconField
-          icon={Mail}
-          label={messages.auth.fields.email}
-          type="email"
-          autoComplete="email"
-          placeholder={messages.auth.fields.emailPlaceholder}
-          error={form.formState.errors.email?.message}
-          {...form.register("email")}
+          icon={UserRound}
+          label={messages.auth.fields.identifier}
+          type="text"
+          autoComplete="username"
+          placeholder={messages.auth.fields.identifierPlaceholder}
+          error={form.formState.errors.identifier?.message}
+          {...form.register("identifier")}
         />
 
         <PasswordField
@@ -107,13 +90,11 @@ export function LoginForm() {
         />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <label className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 text-sm font-medium transition-colors">
-            <Checkbox
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked === true)}
-            />
-            {messages.auth.login.rememberMe}
-          </label>
+          <RememberToggle
+            checked={rememberMe}
+            onCheckedChange={setRememberMe}
+            label={messages.auth.login.rememberMe}
+          />
           <Link
             href="/recuperar"
             className="hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
@@ -128,18 +109,60 @@ export function LoginForm() {
           </p>
         ) : null}
 
+        {/*
+          El boton se ENCOGE a un disco con spinner mientras envia, en vez de
+          cambiar su rotulo por "Cargando...". Es el gesto de las dos
+          referencias, y dice algo que el cambio de texto no dice: que el
+          boton dejo de estar disponible. Un boton del mismo tamano con otra
+          palabra sigue invitando a pulsarlo.
+
+          El ancho y el radio se animan juntos con la curva de la fuente. El
+          nombre accesible lo lleva `aria-label`, asi que un lector de
+          pantalla oye "Enviando" y no un boton sin texto.
+        */}
         <Button
           type="submit"
           variant="brand"
           size="xl"
-          className="w-full"
-          disabled={pending}
+          disabled={pending || passkeyBusy}
+          aria-busy={pending}
+          aria-label={pending ? messages.common.loading : undefined}
+          className={cn(
+            "relative overflow-hidden transition-[width,border-radius]",
+            "duration-[var(--pc-dur-surface,260ms)] ease-[var(--pc-spring)]",
+            pending ? "mx-auto w-14 rounded-full" : "w-full",
+          )}
         >
-          {pending ? messages.common.loading : messages.auth.login.submit}
+          <span
+            aria-hidden={pending}
+            className={cn(
+              "transition-opacity duration-[var(--pc-dur-hover,160ms)] ease-linear",
+              pending && "opacity-0",
+            )}
+          >
+            {messages.auth.login.submit}
+          </span>
+          {pending ? (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 grid place-items-center"
+            >
+              <NewtonsCradle size={32} />
+            </span>
+          ) : null}
         </Button>
       </form>
 
-      <p className="flex items-center gap-2 text-sm lg:hidden">
+      <PasskeyLogin
+        next={searchParams.get("next")}
+        disabled={pending}
+        onBusyChange={setPasskeyBusy}
+      />
+
+      <p
+        style={{ "--step": 2 } as React.CSSProperties}
+        className="auth-step auth-account-link flex flex-wrap items-center justify-center gap-2 text-sm"
+      >
         <span className="text-muted-foreground">
           {messages.auth.login.noAccount}
         </span>

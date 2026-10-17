@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { esperarAcceso } from "./helpers/auth";
 import {
   changeSeededQuantity,
   findUserId,
@@ -12,6 +13,7 @@ import {
  */
 
 const email = `e2e-${Date.now()}@pancis.local`;
+const usuario = `e2e${Date.now()}`.slice(0, 20);
 const password = "password-e2e-12345";
 
 test.describe.configure({ mode: "serial" });
@@ -19,9 +21,11 @@ test.describe.configure({ mode: "serial" });
 test("registro y onboarding completo", async ({ page }) => {
   await page.goto("/registro");
   await page.getByLabel("Nombre").fill("Usuaria E2E");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByLabel("Confirmar contrasena").fill(password);
+  await esperarAcceso(page);
+  await page.getByLabel("Usuario", { exact: true }).fill(usuario);
+  await page.getByLabel("Correo electrónico").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByLabel("Confirmar contraseña").fill(password);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
@@ -33,17 +37,17 @@ test("registro y onboarding completo", async ({ page }) => {
   await page.getByRole("button", { name: "Continuar" }).click();
 
   // Paso 2: objetivo (recomposicion destacada)
-  await page.getByRole("radio", { name: /Recomposicion corporal/ }).check();
+  await page.getByRole("radio", { name: /Recomposición corporal/ }).check();
   await page.getByRole("button", { name: "Continuar" }).click();
 
   // Paso 3: actividad
   await page.getByLabel("Experiencia entrenando").selectOption("intermedio");
-  await page.getByLabel("Dias de entrenamiento por semana").fill("4");
+  await page.getByLabel("Días de entrenamiento por semana").fill("4");
   await page.getByLabel("Actividad cotidiana").selectOption("moderado");
   await page.getByRole("button", { name: "Continuar" }).click();
 
   // Paso 4: nutricion
-  await page.getByLabel(/Comidas al dia/).fill("4");
+  await page.getByLabel(/Comidas al día/).fill("4");
   await page.getByRole("button", { name: "Continuar" }).click();
 
   // Paso 5: linea base
@@ -58,7 +62,7 @@ test("registro y onboarding completo", async ({ page }) => {
 
   // Dashboard con datos reales.
   //
-  // Se comprueba la cifra troquelada y no el titulo "Nutricion de hoy": la
+  // Se comprueba la cifra troquelada y no el titulo "Nutrición de hoy": la
   // tarjeta de la maqueta no lleva titulo, porque la cifra ES el titular.
   await expect(page).toHaveURL("/", { timeout: 20_000 });
   await expect(page.getByText(/te faltan hoy/)).toBeVisible();
@@ -66,9 +70,10 @@ test("registro y onboarding completo", async ({ page }) => {
 
 test("registrar comida e intercambiar un alimento", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/nutricion");
@@ -85,7 +90,7 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
     .first()
     .click();
   // El arroz tiene porciones domesticas: cambiar a gramos exactos.
-  await page.getByLabel("Porcion").selectOption({ label: "Gramos exactos" });
+  await page.getByLabel("Porción").selectOption({ label: "Gramos exactos" });
   await page.getByLabel("Gramos exactos").fill("200");
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText("Alimento agregado.")).toBeVisible();
@@ -100,8 +105,8 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   ).toBeVisible();
   // Cada alternativa muestra su compatibilidad 0-10.
   // Requisito 5.2: filtrar la busqueda segun lo que hace falta.
-  await page.getByLabel("Buscar").selectOption("mas_proteina");
-  await expect(page.getByText(/se comparan por caloria/)).toBeVisible();
+  await page.getByLabel("Buscar").selectOption("más_proteína");
+  await expect(page.getByText(/se comparan por caloría/)).toBeVisible();
   await page.getByLabel("Buscar").selectOption("similar");
   await expect(page.getByText(/Compatibilidad:/).first()).toBeVisible();
 
@@ -111,13 +116,13 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   // dia sin ensenar que pasaba con el.
   await page.getByRole("button", { name: "Ver el cambio" }).first().click();
   await expect(page.getByText("SI HACES EL CAMBIO")).toBeVisible();
-  await expect(page.getByText("Efecto en el dia")).toBeVisible();
+  await expect(page.getByText("Efecto en el día")).toBeVisible();
   await page.getByRole("button", { name: "Aplicar el cambio" }).click();
   await expect(page.getByText("Alimento intercambiado.")).toBeVisible();
   // Tras aceptar, la hoja explica como queda el resto del dia.
   // Por rol: el panel de consulta repite ese texto en su descripcion.
   await expect(
-    page.getByRole("heading", { name: "Como queda tu dia" }),
+    page.getByRole("heading", { name: "Como queda tu día" }),
   ).toBeVisible();
 
   // La vista Hoy recoge lo registrado y responde lo que falta (doc 13). Las
@@ -128,21 +133,22 @@ test("registrar comida e intercambiar un alimento", async ({ page }) => {
   // trae su disco, y el gesto de registrar vive en la misma pantalla.
   // "kcal" ya no viaja en el rotulo: la unidad va pegada a la cifra.
   await expect(page.getByText(/te faltan hoy|de mas/)).toBeVisible();
-  await expect(page.getByText("proteina", { exact: true })).toBeVisible();
+  await expect(page.getByText("proteína", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar comida" }),
   ).toBeVisible();
   // Con una comida registrada, el dia ya empezo.
   await expect(
-    page.getByText("Todavia no has registrado nada de hoy."),
+    page.getByText("Todavía no has registrado nada de hoy."),
   ).toHaveCount(0);
 });
 
-test("horarios ordenan el dia", async ({ page }) => {
+test("horarios ordenan el día", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/nutricion");
@@ -190,11 +196,12 @@ test("horarios ordenan el dia", async ({ page }) => {
   expect(desayuno).toBeLessThan(cena);
 });
 
-test("corregir un alimento del catalogo", async ({ page }) => {
+test("corregir un alimento del catálogo", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/nutricion/alimentos?q=avena");
@@ -204,10 +211,10 @@ test("corregir un alimento del catalogo", async ({ page }) => {
     .click();
 
   // Solo se corrigen las calorias; el resto debe seguir heredando el catalogo.
-  await page.getByLabel(/Calorias por 100 g/).fill("377");
+  await page.getByLabel(/Calorías por 100 g/).fill("377");
   await page.getByLabel(/Motivo/).fill("La etiqueta dice 377");
-  await page.getByRole("button", { name: "Guardar correccion" }).click();
-  await expect(page.getByText("Correccion guardada.")).toBeVisible();
+  await page.getByRole("button", { name: "Guardar corrección" }).click();
+  await expect(page.getByText("Corrección guardada.")).toBeVisible();
 
   await page.reload();
   await expect(page.getByText("Corregido por ti").first()).toBeVisible();
@@ -234,26 +241,27 @@ test("corregir un alimento del catalogo", async ({ page }) => {
   await expect(page.getByText(/La etiqueta dice 377/).first()).toBeVisible();
 });
 
-test("escanear codigo de barras", async ({ page }) => {
+test("escanear código de barras", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/nutricion/alimentos");
-  await page.getByRole("button", { name: "Escanear codigo" }).click();
+  await page.getByRole("button", { name: "Escanear código" }).click();
 
   // Un codigo con un digito mal leido se rechaza ANTES de consultar.
   await page
-    .getByRole("textbox", { name: "Codigo de barras" })
+    .getByRole("textbox", { name: "Código de barras" })
     .fill("3017620422013");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
-  await expect(page.getByText(/no parece valido/)).toBeVisible();
+  await expect(page.getByText(/no parece válido/)).toBeVisible();
 
   // El codigo real de Nutella si resuelve contra Open Food Facts.
   await page
-    .getByRole("textbox", { name: "Codigo de barras" })
+    .getByRole("textbox", { name: "Código de barras" })
     .fill("3017620422003");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await expect(page.getByText(/Nutella/i).first()).toBeVisible({
@@ -264,9 +272,10 @@ test("escanear codigo de barras", async ({ page }) => {
 
 test("sustituir una comida por una receta", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Receta con un ingrediente, para tener con que comparar.
@@ -312,7 +321,7 @@ test("sustituir una comida por una receta", async ({ page }) => {
   await expect(page.getByText("1 de 2 pasos")).toBeVisible();
 
   // Conservacion y meal prep.
-  await page.getByLabel("Conservacion").fill("3 dias en refrigeracion");
+  await page.getByLabel("Conservación").fill("3 días en refrigeración");
   await page.getByRole("button", { name: "Guardar notas" }).click();
   await expect(page.getByText("Notas guardadas.")).toBeVisible();
 
@@ -362,9 +371,10 @@ test("versionar y restaurar la dieta", async ({ page }) => {
   const templateId = await seedActiveDiet(userId);
 
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/nutricion/dieta");
@@ -372,16 +382,16 @@ test("versionar y restaurar la dieta", async ({ page }) => {
 
   // Version 1: el plan tal como quedo sembrado.
   await page.getByLabel(/Motivo/).fill("Antes de subir avena");
-  await page.getByRole("button", { name: "Guardar version" }).click();
-  await expect(page.getByText("Version 1 guardada.")).toBeVisible();
+  await page.getByRole("button", { name: "Guardar versión" }).click();
+  await expect(page.getByText("Versión 1 guardada.")).toBeVisible();
   await page.reload();
-  await expect(page.getByText(/Version 1/).first()).toBeVisible();
+  await expect(page.getByText(/Versión 1/).first()).toBeVisible();
 
   // Se cambia la dieta por fuera y la pagina debe detectar la diferencia.
   await changeSeededQuantity(templateId, 150);
   await page.reload();
   await expect(
-    page.getByText("Cambios sin guardar desde la ultima version"),
+    page.getByText("Cambios sin guardar desde la última versión"),
   ).toBeVisible();
   await expect(page.getByText(/80 g -> 150 g/)).toBeVisible();
 
@@ -389,27 +399,28 @@ test("versionar y restaurar la dieta", async ({ page }) => {
   await page.getByRole("button", { name: "Restaurar" }).first().click();
   await page.getByRole("button", { name: "Restaurar" }).last().click();
   await expect(
-    page.getByText("Se restauro la version 1.").first(),
+    page.getByText("Se restauró la versión 1.").first(),
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByText("Cambios sin guardar desde la ultima version"),
+    page.getByText("Cambios sin guardar desde la última versión"),
   ).toHaveCount(0);
   // Restaurar guarda el estado previo (v2) y el restaurado (v3), asi que
   // la version mas reciente coincide con lo que hay en pantalla.
-  await expect(page.getByText(/Version 3/).first()).toBeVisible();
+  await expect(page.getByText(/Versión 3/).first()).toBeVisible();
 });
 
 test("registrar entrenamiento y peso", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Sesion libre con una serie registrada
   await page.goto("/entrenamiento");
-  await page.getByRole("button", { name: "Sesion libre" }).click();
+  await page.getByRole("button", { name: "Sesión libre" }).click();
   await expect(page).toHaveURL(/\/entrenamiento\/sesion\//, {
     timeout: 20_000,
   });
@@ -420,23 +431,24 @@ test("registrar entrenamiento y peso", async ({ page }) => {
   await page.getByLabel("Reps").fill("8");
   await page.getByRole("button", { name: "Agregar serie" }).click();
   await expect(page.getByText("Serie registrada.")).toBeVisible();
-  await page.getByRole("button", { name: "Finalizar sesion" }).click();
+  await page.getByRole("button", { name: "Finalizar sesión" }).click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page).toHaveURL("/entrenamiento", { timeout: 20_000 });
 
   // Peso
   await page.goto("/progreso");
-  await page.getByRole("button", { name: "Registrar medicion" }).click();
+  await page.getByRole("button", { name: "Registrar medición" }).click();
   await page.getByLabel("Peso (kg)").fill("67.8");
   await page.getByRole("button", { name: "Guardar" }).click();
-  await expect(page.getByText("Medicion guardada.")).toBeVisible();
+  await expect(page.getByText("Medición guardada.")).toBeVisible();
 });
 
-test("composicion corporal con dos InBody", async ({ page }) => {
+test("composición corporal con dos InBody", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/progreso");
@@ -446,27 +458,27 @@ test("composicion corporal con dos InBody", async ({ page }) => {
   baseline.setDate(baseline.getDate() - 30);
   const baselineDate = baseline.toISOString().slice(0, 10);
 
-  await page.getByRole("button", { name: "Registrar medicion" }).click();
+  await page.getByRole("button", { name: "Registrar medición" }).click();
   await page.getByLabel("Fecha").fill(baselineDate);
   await page.getByLabel("Fuente").selectOption("inbody");
   await page.getByLabel("Peso (kg)").fill("80");
   await page.getByLabel(/Grasa corporal/).fill("24");
   await page.getByLabel(/Masa muscular/).fill("34");
   await page.getByRole("button", { name: "Guardar" }).click();
-  await expect(page.getByText("Medicion guardada.")).toBeVisible();
+  await expect(page.getByText("Medición guardada.")).toBeVisible();
 
   // Medicion actual: menos grasa y mas musculo.
-  await page.getByRole("button", { name: "Registrar medicion" }).click();
+  await page.getByRole("button", { name: "Registrar medición" }).click();
   await page.getByLabel("Fuente").selectOption("inbody");
   await page.getByLabel("Peso (kg)").fill("80");
   await page.getByLabel(/Grasa corporal/).fill("20");
   await page.getByLabel(/Masa muscular/).fill("36");
   await page.getByRole("button", { name: "Guardar" }).click();
-  await expect(page.getByText("Medicion guardada.")).toBeVisible();
+  await expect(page.getByText("Medición guardada.")).toBeVisible();
 
-  // La seccion de composicion compara ambas mediciones.
+  // La tarjeta del cuerpo y la del cambio, que compara ambas mediciones.
   await expect(
-    page.getByText("Composicion corporal", { exact: true }),
+    page.getByRole("heading", { name: "Tu cuerpo hoy" }),
   ).toBeVisible();
 
   // Las aserciones se acotan a la tarjeta de composicion: el grafico de
@@ -475,7 +487,7 @@ test("composicion corporal con dos InBody", async ({ page }) => {
   // Se sube al <section> que la contiene. Antes trepaba hasta un
   // `data-slot=card`, atributo del componente Card que esta tarjeta ya no usa.
   const compositionCard = page
-    .getByRole("heading", { name: "Composicion corporal" })
+    .getByRole("heading", { name: "Cambio desde tu medición anterior" })
     .locator("xpath=ancestor::section[1]");
 
   // Masa grasa derivada: 80 x 24 % = 19.2 kg -> 80 x 20 % = 16 kg,
@@ -489,21 +501,22 @@ test("composicion corporal con dos InBody", async ({ page }) => {
 
   // Bajar grasa y subir musculo a la vez se destaca como recomposicion.
   await expect(
-    page.getByText("Recomposicion en curso", { exact: true }),
+    page.getByText("Recomposición en curso", { exact: true }),
   ).toBeVisible();
 });
 
-test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
+test("ficha biomecánica y sustitución explicada", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Rutina con un ejercicio para poder inspeccionarlo.
-  await page.goto("/entrenamiento");
+  await page.goto("/entrenamiento?vista=rutinas");
   await page.getByRole("button", { name: "Crear rutina" }).click();
-  await page.getByLabel("Nombre").fill("Rutina biomecanica");
+  await page.getByLabel("Nombre").fill("Rutina biomecánica");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Rutina creada.")).toBeVisible();
 
@@ -511,7 +524,7 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
     .getByRole("link", { name: /Rutina biomecanica/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "Agregar dia" }).click();
+  await page.getByRole("button", { name: "Agregar día" }).click();
   await page.getByRole("button", { name: "Agregar ejercicio" }).first().click();
   await page.getByLabel("Buscar ejercicio…").fill("sentadilla");
   await page.getByRole("button", { name: /Sentadilla con barra/ }).click();
@@ -539,7 +552,7 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   await expect(page.getByText("Articulaciones involucradas")).toBeVisible();
   await expect(page.getByText("Curva de resistencia")).toBeVisible();
   await expect(page.getByText("Errores comunes")).toBeVisible();
-  await expect(page.getByText("Valoracion para tu contexto")).toBeVisible();
+  await expect(page.getByText("Valoración para tu contexto")).toBeVisible();
   // Ninguna puntuacion se muestra sin su motivo.
   await expect(page.getByText("Ajuste a tu objetivo")).toBeVisible();
   await expect(page.getByText(/rango amplio/).first()).toBeVisible();
@@ -554,14 +567,15 @@ test("ficha biomecanica y sustitucion explicada", async ({ page }) => {
   await expect(page.getByText("Que pierdes").first()).toBeVisible();
 });
 
-test("esquema sugerido y analisis de la rutina", async ({ page }) => {
+test("esquema sugerido y análisis de la rutina", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
-  await page.goto("/entrenamiento");
+  await page.goto("/entrenamiento?vista=rutinas");
   await page
     .getByRole("link", { name: /Rutina biomecanica/ })
     .first()
@@ -581,8 +595,8 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
   // Versionado de la rutina: guardar, cambiar y restaurar.
   await expect(page.getByText("Versiones de la rutina")).toBeVisible();
   await page.getByLabel(/Motivo/).fill("Antes de subir series");
-  await page.getByRole("button", { name: "Guardar version" }).click();
-  await expect(page.getByText("Version 1 guardada.")).toBeVisible();
+  await page.getByRole("button", { name: "Guardar versión" }).click();
+  await expect(page.getByText("Versión 1 guardada.")).toBeVisible();
 
   // Se cambian las series del ejercicio y debe detectarse la diferencia.
   await page
@@ -593,23 +607,23 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
   await expect(page.getByText("Ejercicio actualizado.")).toBeVisible();
   await page.reload();
   await expect(
-    page.getByText("Cambios sin guardar desde la ultima version"),
+    page.getByText("Cambios sin guardar desde la última versión"),
   ).toBeVisible();
   await expect(page.getByText(/series 3 -> 5/)).toBeVisible();
 
   await page.getByRole("button", { name: "Restaurar" }).first().click();
   await page.getByRole("button", { name: "Restaurar" }).last().click();
   await expect(
-    page.getByText("Se restauro la version 1.").first(),
+    page.getByText("Se restauró la versión 1.").first(),
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByText("Cambios sin guardar desde la ultima version"),
+    page.getByText("Cambios sin guardar desde la última versión"),
   ).toHaveCount(0);
 
   // Requisito 14: analisis con hallazgos priorizados.
-  await expect(page.getByText("Analisis de la rutina")).toBeVisible();
-  await expect(page.getByText("Series semanales por musculo")).toBeVisible();
+  await expect(page.getByText("Análisis de la rutina")).toBeVisible();
+  await expect(page.getByText("Series semanales por músculo")).toBeVisible();
   // La rutina tiene un solo ejercicio: faltan patrones por cubrir y el
   // rango de repeticiones no esta definido (el alta se reserva a no tener
   // series, y al agregar un ejercicio se crean 3 por defecto).
@@ -622,16 +636,17 @@ test("esquema sugerido y analisis de la rutina", async ({ page }) => {
 
 test("bienestar diario e historial de cambios", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Sueno, estres y energia vuelven a registrarse, ahora dentro de progreso.
   await page.goto("/progreso");
-  await page.getByLabel("Horas de sueno").fill("7.5");
-  await page.getByLabel("Estres").selectOption("2");
-  await page.getByLabel("Energia").selectOption("4");
+  await page.getByLabel("Horas de sueño").fill("7.5");
+  await page.getByLabel("Estrés").selectOption("2");
+  await page.getByLabel("Energía").selectOption("4");
   await page.getByRole("button", { name: "Guardar como me senti" }).click();
   await expect(page.getByText("Registro guardado.")).toBeVisible();
 
@@ -640,15 +655,16 @@ test("bienestar diario e historial de cambios", async ({ page }) => {
   await page.goto("/historial");
   await expect(page.getByText("Alimento sustituido").first()).toBeVisible();
   await expect(page.getByText("Antes:").first()).toBeVisible();
-  await expect(page.getByText("Despues:").first()).toBeVisible();
+  await expect(page.getByText("Después:").first()).toBeVisible();
   await expect(page.getByText("Lo hiciste tu").first()).toBeVisible();
 });
 
 test("asistente accesible y conectado a los motores", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Requisito 15: acceso al asistente desde cualquier pantalla.
@@ -665,7 +681,7 @@ test("asistente accesible y conectado a los motores", async ({ page }) => {
 
   // Requisito 15: acceso desde un ejercicio concreto, con la pregunta ya
   // redactada para que active la comparacion biomecanica.
-  await page.goto("/entrenamiento");
+  await page.goto("/entrenamiento?vista=rutinas");
   await page
     .getByRole("link", { name: /Rutina biomecanica/ })
     .first()
@@ -708,12 +724,13 @@ test("asistente accesible y conectado a los motores", async ({ page }) => {
 
 test("importar una rutina escrita", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
-  await page.goto("/entrenamiento");
+  await page.goto("/entrenamiento?vista=rutinas");
   await page.getByRole("button", { name: "Importar rutina" }).click();
 
   // Formato tipico de mensaje, con una linea inventada que no existe en
@@ -722,11 +739,11 @@ test("importar una rutina escrita", async ({ page }) => {
     .getByLabel("Texto de la rutina")
     .fill(
       [
-        "Dia 1 - Pierna",
+        "Día 1 - Pierna",
         "Sentadilla con barra 4x8-10 RIR 2 desc 120",
         "Prensa de pierna 3x12",
-        "Maquina inventada xyz 3x10",
-        "Dia 2 - Torso",
+        "Máquina inventada xyz 3x10",
+        "Día 2 - Torso",
         "Press de banca 4x6-8 RIR 1 rest 3min",
       ].join("\n"),
     );
@@ -734,8 +751,8 @@ test("importar una rutina escrita", async ({ page }) => {
 
   // Se revisa antes de guardar: dias, ejercicios y lo que queda fuera.
   await expect(page.getByText("Esto entendimos")).toBeVisible();
-  await expect(page.getByText("2 dias · 4 ejercicios")).toBeVisible();
-  await expect(page.getByText(/no existen en el catalogo/)).toBeVisible();
+  await expect(page.getByText("2 días · 4 ejercicios")).toBeVisible();
+  await expect(page.getByText(/no existen en el catálogo/)).toBeVisible();
   await expect(page.getByText(/RIR 2/).first()).toBeVisible();
   // 3min se interpreta como 180 segundos.
   await expect(page.getByText(/180s/).first()).toBeVisible();
@@ -753,9 +770,10 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
   page,
 }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   await page.goto("/configuracion");
@@ -773,8 +791,8 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
   */
   const objetivo = page.getByLabel("Objetivo");
   await expect(objetivo).not.toHaveValue("");
-  await objetivo.selectOption("perdida_grasa");
-  await expect(objetivo).toHaveValue("perdida_grasa");
+  await objetivo.selectOption("pérdida_grasa");
+  await expect(objetivo).toHaveValue("pérdida_grasa");
   await page
     .getByRole("button", { name: "Guardar objetivo y actividad" })
     .click();
@@ -787,7 +805,7 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
     page.getByText("Tus objetivos ya no corresponden a tus datos"),
   ).toBeVisible();
   await expect(
-    page.getByText(/Tu objetivo paso de Recomposicion corporal a Perdida/),
+    page.getByText(/Tu objetivo paso de Recomposición corporal a Pérdida/),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Actualizar mis objetivos" }).click();
@@ -807,9 +825,10 @@ test("cambiar de objetivo propone recalcular, y no lo hace solo", async ({
 
 test("el margen por macro se puede cambiar", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Las columnas existian desde la fase 3 sin ninguna pantalla que las
@@ -825,7 +844,7 @@ test("el margen por macro se puede cambiar", async ({ page }) => {
     control, y afirmar despues del relleno impide volver a perseguir el mismo
     fantasma.
   */
-  const margenCalorias = page.getByLabel("Calorias (%)");
+  const margenCalorias = page.getByLabel("Calorías (%)");
   await expect(margenCalorias).not.toHaveValue("");
   await margenCalorias.fill("12");
   await expect(margenCalorias).toHaveValue("12");
@@ -833,14 +852,15 @@ test("el margen por macro se puede cambiar", async ({ page }) => {
   await expect(page.getByText("Margen actualizado.")).toBeVisible();
 
   await page.reload();
-  await expect(page.getByLabel("Calorias (%)")).toHaveValue("12");
+  await expect(page.getByLabel("Calorías (%)")).toHaveValue("12");
 });
 
-test("tema, cierre de sesion y persistencia", async ({ page }) => {
+test("tema, cierre de sesión y persistencia", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
 
   // Cambiar tema a oscuro y verificar la clase en html
@@ -849,14 +869,17 @@ test("tema, cierre de sesion y persistencia", async ({ page }) => {
   await expect(page.locator("html")).toHaveClass(/dark/);
 
   // Cerrar sesion
-  await page.getByRole("button", { name: "Abrir menu" }).last().click();
-  await page.getByRole("menuitem", { name: "Cerrar sesion" }).click();
+  await page.getByRole("button", { name: "Abrir menú" }).last().click();
+  await page.getByRole("menuitem", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 20_000 });
 
-  // Volver a entrar: los datos persisten
-  await page.getByLabel("Correo electronico").fill(email);
-  await page.getByLabel("Contrasena", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesion" }).click();
+  // Volver a entrar: los datos persisten. Y se entra con el USUARIO, no con
+  // el correo, que es la segunda forma de acceder: si se rompiera la busqueda
+  // de usuario a correo, esta prueba lo dice.
+  await esperarAcceso(page);
+  await page.getByLabel("Correo o usuario").fill(usuario);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL("/", { timeout: 20_000 });
   await page.goto("/progreso");
   await expect(page.getByText("67.8 kg").first()).toBeVisible();

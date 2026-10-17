@@ -19,7 +19,9 @@ import {
   type NormalizedPortion,
 } from "@/lib/food-providers/types";
 
-const SEARCH_URL = "https://world.openfoodfacts.org/cgi/search.pl";
+/* El buscador nuevo (search-a-licious). El viejo `cgi/search.pl` tardaba ~3 s
+   y no se podía paginar; este contesta en menos de uno y admite filtros. */
+const SEARCH_URL = "https://search.openfoodfacts.org/search";
 const PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product";
 const TIMEOUT_MS = 8000;
 
@@ -45,19 +47,26 @@ const OFF_FIELDS = [
   "last_modified_t",
   "serving_quantity",
   "serving_size",
+  "quantity",
+  "product_quantity_unit",
+  "categories_tags",
   "nutriments",
 ].join(",");
 
 type OffNutriments = Record<string, number | string | undefined>;
 
-type OffProduct = {
+export type OffProduct = {
   code?: string;
   product_name?: string;
   product_name_es?: string;
   generic_name?: string;
   generic_name_es?: string;
-  brands?: string;
+  /* Texto con comas en el API de productos; lista en el buscador nuevo. */
+  brands?: string | string[];
   categories?: string;
+  categories_tags?: string[];
+  quantity?: string;
+  product_quantity_unit?: string;
   categories_es?: string;
   image_front_url?: string;
   image_url?: string;
@@ -68,12 +77,36 @@ type OffProduct = {
 };
 
 function num(value: number | string | undefined): number | undefined {
-  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : undefined;
   if (typeof value === "string" && value.trim() !== "") {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
   }
   return undefined;
+}
+
+/**
+ * Si la etiqueta es por 100 ml. Lo dice el envase («355 ml», «1 l») o, cuando
+ * el envase no trae cantidad —pasa con muchos productos ticos—, la
+ * categoría: una bebida o una leche, salvo en polvo, condensada o
+ * concentrada. Si el envase dice gramos, manda el envase.
+ */
+export function offNutritionBasis(
+  product: Partial<OffProduct>,
+): "100g" | "100ml" {
+  const quantity = String(product.quantity ?? "").toLowerCase();
+  if (product.product_quantity_unit === "ml") return "100ml";
+  if (/\d\s*(ml|cl|lt?|litros?|fl\.?\s?oz)\b/.test(quantity)) return "100ml";
+  if (/\d\s*(g|gr|kg)\b/.test(quantity)) return "100g";
+  const cats = product.categories_tags ?? [];
+  const drink = cats.some((c) =>
+    /^en:(beverages|milks|plant-based-milks|drinks)/.test(c),
+  );
+  const notLiquid = cats.some((c) =>
+    /powder|condensed|dried|instant|concentrate|syrup|mix/.test(c),
+  );
+  return drink && !notLiquid ? "100ml" : "100g";
 }
 
 function portionsOf(product: OffProduct): NormalizedPortion[] {
@@ -128,19 +161,26 @@ export function normalizeOffProduct(raw: unknown): NormalizedFood | null {
         ? (saltG / 2.5) * 1000
         : null;
 
-  const category = product.categories_es?.trim() || product.categories?.trim() || null;
+  const category =
+    product.categories_es?.trim() || product.categories?.trim() || null;
 
   const normalized: NormalizedFood = {
     source: "openfoodfacts",
     externalId: code,
     name,
     externalName: product.product_name?.trim() || name,
-    brand: product.brands?.split(",")[0]?.trim() || null,
+    brand:
+      (Array.isArray(product.brands)
+        ? product.brands[0]
+        : product.brands?.split(",")[0]
+      )?.trim() || null,
     barcode: code,
-    imageUrl: product.image_front_url?.trim() || product.image_url?.trim() || null,
+    imageUrl:
+      product.image_front_url?.trim() || product.image_url?.trim() || null,
     foodGroup: inferFoodGroup(name, category, per100g) as FoodGroup,
     cookedState: inferCookedState(name),
     per100g,
+    nutritionBasis: offNutritionBasis(product),
     sugarG: sugar !== undefined ? round1(sugar) : null,
     sodiumMg: sodiumMg !== null ? round1(sodiumMg) : null,
     sourceUpdatedAt: product.last_modified_t
@@ -199,22 +239,41 @@ export const openFoodFactsProvider: FoodProvider = {
     return true;
   },
 
+  /*
+    Dos consultas a la vez: los productos de Costa Rica y el resto del mundo.
+    Lo tico va primero porque es lo que está en el súper de quien busca, y
+    es lo que ninguna otra fuente tiene. Muchos productos de aquí no traen la
+    etiqueta de país, así que la consulta mundial también los recoge; la
+    fusión quita los repetidos.
+  */
   async searchFoods(query, signal) {
-    const url = new URL(SEARCH_URL);
-    url.searchParams.set("search_terms", query);
-    url.searchParams.set("json", "1");
-    url.searchParams.set("page_size", "20");
-    url.searchParams.set("fields", OFF_FIELDS);
-    // Solo productos con nutrientes cargados: el resto no sirve para el plan.
-    url.searchParams.set("tagtype_0", "states");
-    url.searchParams.set("tag_contains_0", "contains");
-    url.searchParams.set("tag_0", "nutrition-facts-completed");
-
-    const data = await requestJson(url, signal);
-    const products = (data as { products?: unknown[] } | null)?.products ?? [];
+    // Los signos de la sintaxis de Lucene, escritos por la persona, no
+    // pueden convertirse en un filtro.
+    const terms = query.replace(/[+\-!(){}[\]^"~*?:\\/&|]/g, " ").trim();
+    if (!terms) return [];
+    const ask = (q: string, size: number) => {
+      const url = new URL(SEARCH_URL);
+      url.searchParams.set("q", q);
+      url.searchParams.set("langs", "es,en");
+      url.searchParams.set("page_size", String(size));
+      url.searchParams.set("fields", OFF_FIELDS);
+      return requestJson(url, signal);
+    };
+    const [local, world] = await Promise.all([
+      ask(`${terms} countries_tags:"en:costa-rica"`, 12),
+      ask(terms, 20),
+    ]);
+    const seen = new Set<string>();
+    const products = [local, world].flatMap(
+      (data) => (data as { hits?: unknown[] } | null)?.hits ?? [],
+    );
     return products
       .map(normalizeOffProduct)
-      .filter((food): food is NormalizedFood => food !== null);
+      .filter((food): food is NormalizedFood => {
+        if (!food || seen.has(food.externalId)) return false;
+        seen.add(food.externalId);
+        return true;
+      });
   },
 
   async getFoodById(externalId, signal) {

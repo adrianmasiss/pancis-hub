@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Clock, GraduationCap } from "lucide-react";
+import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ViewHeader } from "@/components/shared/view-header";
 import { getArticles } from "@/features/academy/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
@@ -31,7 +31,7 @@ export default async function AcademyPage({
 
   return (
     <>
-      <PageHeader icon={GraduationCap} title={t.title} description={t.subtitle} />
+      <ViewHeader title={t.title} description={t.subtitle} />
 
       <nav aria-label={t.title} className="flex flex-wrap gap-1.5">
         <Link
@@ -112,7 +112,6 @@ export default async function AcademyPage({
         <EmptyState
           title={t.empty}
           description={messages.emptyStates.academy.description}
-          icon={GraduationCap}
         />
       )}
     </>

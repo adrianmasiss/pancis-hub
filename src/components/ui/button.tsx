@@ -26,7 +26,7 @@ const buttonVariants = cva(
         brand:
           "bg-brand-button shadow-[0_8px_22px_-14px_color-mix(in_oklch,var(--primary)_70%,transparent)]",
         default:
-          "bg-foreground text-background hover:bg-foreground/88 active:bg-foreground/78",
+          "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
         outline:
           "border-border-strong bg-card/80 text-foreground hover:border-foreground/20 hover:bg-card active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:

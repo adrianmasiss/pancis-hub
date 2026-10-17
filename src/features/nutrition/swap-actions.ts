@@ -12,6 +12,8 @@ import {
   type SwapCandidate,
 } from "@/features/foods/lib/equivalence";
 import { scaleMacros, type MacroSet } from "@/features/nutrition/lib/macros";
+import { scaleExtra } from "@/features/nutrition/lib/extras";
+
 import {
   rebalanceDay,
   type RebalanceReport,
@@ -29,6 +31,8 @@ const t = messages.swap;
 const swapSuggestionsSchema = z.object({
   itemId: z.uuid(),
   filter: z.enum(SWAP_FILTERS).optional(),
+  query: z.string().trim().max(100).optional(),
+  sameGroupOnly: z.boolean().optional(),
 });
 
 const swapItemSchema = z.object({
@@ -48,6 +52,7 @@ type DbFood = {
   name: string;
   food_group: string;
   cooked_state: string | null;
+  image_url?: string | null;
   calories: number;
   protein_g: number;
   carbohydrate_g: number;
@@ -60,6 +65,7 @@ function toEquivalenceFood(food: DbFood): EquivalenceFood {
     id: food.id,
     name: food.name,
     foodGroup: food.food_group as FoodGroup,
+    imageUrl: food.image_url,
     cookedState: food.cooked_state as "crudo" | "cocido" | null,
     per100g: {
       calories: Number(food.calories),
@@ -90,29 +96,36 @@ export async function getSwapSuggestions(
     .single();
   if (!item?.foods) return { error: t.failed };
 
-  const [candidatesResult, preferencesResult, favoriteIds, recentIds, pantryIds] =
-    await Promise.all([
-      supabase
-        .from("foods")
-        .select(
-          "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, food_portions(label, grams)",
-        )
-        .is("deleted_at", null)
-        .limit(300),
-      supabase
-        .from("dietary_preferences")
-        .select("preference_type, value")
-        .eq("user_id", user.id)
-        .in("preference_type", [
-          "alergia",
-          "restriccion",
-          "alimento_no_deseado",
-        ]),
-      getFavoriteFoodIds(user.id),
-      getRecentFoodIds(user.id),
-      getPantryFoodIds(user.id),
-    ]);
+  const [
+    candidatesResult,
+    preferencesResult,
+    favoriteIds,
+    recentIds,
+    pantryIds,
+    corrections,
+  ] = await Promise.all([
+    supabase
+      .from("foods")
+      .select(
+        "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)",
+      )
+      .is("deleted_at", null)
+      .ilike("name", `%${(parsed.data.query ?? "").replace(/[%_]/g, "")}%`)
+      .order("name")
+      .limit(parsed.data.query ? 100 : 1000),
+    supabase
+      .from("dietary_preferences")
+      .select("preference_type, value")
+      .eq("user_id", user.id)
+      .in("preference_type", ["alergia", "restriccion", "alimento_no_deseado"]),
+    getFavoriteFoodIds(user.id),
+    getRecentFoodIds(user.id),
+    getPantryFoodIds(user.id),
+    getUserFoodCorrections(user.id),
+  ]);
 
+  if (candidatesResult.error || preferencesResult.error)
+    return { error: "No pudimos cargar las alternativas. Inténtalo de nuevo." };
   const candidateRows = candidatesResult.data ?? [];
   const portionsByFoodId = buildPortionsMap(candidateRows);
 
@@ -121,7 +134,30 @@ export async function getSwapSuggestions(
     rankAlternatives({
       source,
       sourceQuantityG: Number(item.quantity_g),
-      candidates: candidateRows.map((food) => toEquivalenceFood(food as DbFood)),
+      candidates: candidateRows
+        .map((row) => {
+          const food = toEquivalenceFood(row as DbFood);
+          const corrected = applyCorrection(
+            { ...food, ...food.per100g },
+            corrections.get(food.id),
+          );
+          return {
+            ...food,
+            name: corrected.name,
+            cookedState: corrected.cookedState,
+            per100g: {
+              calories: corrected.calories,
+              proteinG: corrected.proteinG,
+              carbohydrateG: corrected.carbohydrateG,
+              fatG: corrected.fatG,
+              fiberG: corrected.fiberG,
+            },
+          };
+        })
+        .filter(
+          (food) =>
+            !parsed.data.sameGroupOnly || food.foodGroup === source.foodGroup,
+        ),
       favoriteIds,
       recentIds: new Set(recentIds),
       pantryIds,
@@ -164,7 +200,9 @@ export async function swapMealItem(
   const [{ data: food }, corrections] = await Promise.all([
     supabase
       .from("foods")
-      .select("id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state")
+      .select(
+        "id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state, sodium_mg, sugar_g",
+      )
       .eq("id", parsed.data.foodId)
       .single(),
     getUserFoodCorrections(user.id),
@@ -208,6 +246,8 @@ export async function swapMealItem(
       carbohydrate_snapshot: snapshot.carbohydrateG,
       fat_snapshot: snapshot.fatG,
       fiber_snapshot: snapshot.fiberG,
+      sodium_snapshot_mg: scaleExtra(food.sodium_mg, parsed.data.quantityG),
+      sugar_snapshot_g: scaleExtra(food.sugar_g, parsed.data.quantityG),
     })
     .eq("id", parsed.data.itemId)
     .select("meal_id")
@@ -219,7 +259,10 @@ export async function swapMealItem(
   // del plan. Una comida aun planificada no se completa sola.
   await supabase
     .from("meals")
-    .update({ status: "completada_con_cambios", modified_reason: t.modifiedReason })
+    .update({
+      status: "completada_con_cambios",
+      modified_reason: t.modifiedReason,
+    })
     .eq("id", updated.meal_id)
     .eq("user_id", user.id)
     .eq("status", "completada");

@@ -1,0 +1,1418 @@
+.food-library {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+.library-header,
+.library-brand,
+.library-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.library-header {
+  flex-wrap: wrap;
+}
+.library-brand {
+  justify-content: flex-start;
+}
+.library-brand h1 {
+  font-size: clamp(22px, 2.6cqw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.library-brand p,
+.library-section-heading p {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.library-section-heading {
+  align-items: baseline;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.library-section-heading h2 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.library-section-heading > span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.library-categories {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 3px 12px;
+  scrollbar-width: thin;
+}
+.library-categories a {
+  min-width: 90px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 10px;
+  background: var(--card);
+  border: 1px solid var(--v11-line);
+  border-radius: 18px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.library-categories svg {
+  color: var(--primary);
+}
+.library-categories [data-category="verdura"] svg,
+.library-categories [data-category="legumbre"] svg {
+  color: var(--chart-2);
+}
+.library-categories [aria-current="true"] {
+  border-color: var(--primary);
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 10%, var(--card));
+}
+.food-library-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.food-library .food-library-card {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  animation: none;
+  transform: none;
+}
+.food-library .food-library-card:hover {
+  transform: none;
+}
+.library-food-photo {
+  position: relative;
+  height: 180px;
+  border-radius: 17px;
+  overflow: hidden;
+  background: #f4f2ed;
+}
+.library-food-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 22px;
+}
+.library-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-direction: column;
+  color: #756b5f;
+}
+.library-food-category {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 10px;
+  border-radius: 7px;
+  padding: 4px 8px;
+  background: #fffdf5ed;
+  color: #554535;
+}
+.library-save {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #45382c;
+  background: #fffdf5ed;
+  cursor: pointer;
+}
+.library-save[aria-pressed="true"] {
+  color: #a94310;
+}
+.library-save:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+.library-food-body {
+  padding: 14px 8px 8px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.library-food-brand {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  min-height: 16px;
+}
+.library-food-body h3 {
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+.library-food-energy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+.library-food-energy strong {
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.library-food-energy strong span {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--muted-foreground);
+}
+.library-food-energy > span {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.library-food-macros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--v11-line);
+  padding: 12px 0;
+  margin-top: 10px;
+  gap: 8px;
+}
+.library-food-macros dt {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.library-food-macros dd {
+  font-size: 15px;
+  font-weight: 550;
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.library-food-macros small {
+  font-size: 10px;
+  font-weight: 400;
+}
+.library-food-source {
+  color: var(--muted-foreground);
+  font-size: 10px;
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+}
+.library-use-button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 12px;
+  gap: 6px;
+}
+.library-food-incomplete {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.library-empty {
+  padding: 26px;
+}
+.library-empty h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+.library-empty p {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-top: 8px;
+}
+.library-empty > div {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.library-empty a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  min-height: 44px;
+  font-size: 13px;
+}
+.library-attribution {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 18px;
+}
+.library-attribution a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.library-other-sources {
+  border-top: 1px solid var(--v11-line);
+  padding-top: 12px;
+}
+.library-other-sources summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.library-detail-nutrients > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--v11-line);
+  font-size: 14px;
+}
+.library-swap-body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+  padding: 4px 24px 28px;
+  min-height: 0;
+}
+.library-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.library-field select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+  color: var(--foreground);
+}
+.library-quantity {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+.library-quantity label {
+  flex: 1;
+  min-width: 0;
+}
+.library-quantity button {
+  min-height: 44px;
+}
+.library-swap-foods {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 18px 0;
+}
+.library-swap-foods :is(span, strong, small) {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.library-swap-foods span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.library-swap-foods strong {
+  font-size: 14px;
+  margin-block: 6px;
+}
+.library-swap-foods small {
+  color: var(--primary);
+}
+.library-comparison {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.library-comparison caption {
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 0;
+}
+.library-comparison :is(th, td) {
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--v11-line);
+  text-align: right;
+}
+.library-comparison th:first-child {
+  text-align: left;
+}
+.library-comparison thead th {
+  font-weight: 400;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.library-swap-note,
+.library-swap-empty p {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.7;
+  margin-block: 16px;
+}
+.library-swap-empty h3 {
+  font-weight: 600;
+}
+.food-library :is(a, button):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.food-library :is(a, button):active {
+  opacity: 0.75;
+}
+@container (max-width:1050px) {
+  .food-library-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container (max-width:760px) {
+  .food-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .food-library {
+    gap: 22px;
+  }
+  .library-brand {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .library-brand p {
+    line-height: 1.6;
+  }
+  .library-section-heading > span {
+    display: none;
+  }
+  .food-library-grid {
+    gap: 12px;
+  }
+  .food-library .food-library-card {
+    padding: 7px;
+    border-radius: 20px;
+  }
+  .library-food-photo {
+    height: 146px;
+    border-radius: 14px;
+  }
+  .library-food-photo img {
+    padding: 20px 10px;
+  }
+  .library-food-body {
+    padding: 12px 5px 6px;
+  }
+  .library-food-body h3 {
+    font-size: 14px;
+  }
+  .library-food-energy strong {
+    font-size: 23px;
+  }
+  .library-food-macros {
+    gap: 4px;
+  }
+  .library-food-macros dd {
+    font-size: 13px;
+  }
+  .library-use-button {
+    font-size: 11px;
+    padding-inline: 4px;
+    gap: 4px;
+  }
+  .library-use-button svg {
+    width: 13px;
+  }
+  .library-swap-body {
+    padding-inline: 18px;
+  }
+  .library-food-dialog ul > li {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 359px) {
+  .food-library-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .library-food-photo {
+    height: 190px;
+  }
+}
+
+.library-food-illustration {
+  width: 100%;
+  height: 100%;
+  background-image: url("/images/foods/food-atlas.png");
+  background-size: 600% 400%;
+  background-repeat: no-repeat;
+}
+
+/* Navegación entre páginas de la biblioteca.
+   Antes la rejilla iba de 12 en 12 desde el cliente sobre un tope de 100
+   filas: con 28.140 alimentos eso no era paginar, era esconder. El salto de
+   página vive en la URL para que una página concreta se pueda compartir y
+   volver atrás funcione. */
+.library-pages {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.library-pages a {
+  justify-self: end;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground);
+  text-decoration: none;
+  transition:
+    border-color 180ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.library-pages a[rel="prev"] {
+  justify-self: start;
+}
+
+.library-pages a:hover {
+  border-color: var(--brand-accent, var(--primary));
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.library-pages > span:not(:has(a)) {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Cola de revisión: fuentes que no coinciden ─────────────────────────
+   Material de Nutrición: carbón mate, sin elevación al pasar el puntero.
+   El color de estado nunca va solo —siempre con el texto que lo explica—,
+   porque un borde rojo no dice qué pasa ni se ve igual para todo el mundo. */
+
+.review-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--v11-line, var(--border));
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color 200ms var(--ease-spring, ease),
+    border-color 200ms var(--ease-spring, ease);
+}
+
+.review-back:hover {
+  color: var(--foreground);
+  border-color: color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+.review-intro {
+  padding: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.review-intro h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.review-intro p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  max-width: 68ch;
+}
+
+.review-intro strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.review-intro-note {
+  padding-top: 10px;
+  border-top: 1px solid var(--v11-line, var(--border));
+}
+
+.review-queue {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.review-card {
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.review-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.review-card-head h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.review-card-head p {
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+.review-divergence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--danger);
+  border: 1px solid color-mix(in oklab, var(--danger) 38%, transparent);
+  background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+.review-readings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.review-reading {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--v11-line, var(--border));
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+/* La medición que la biblioteca está usando se marca con el filete de marca,
+   no sólo con la etiqueta: es la que responde a «¿y qué veo yo hoy?». */
+.review-reading[data-canonical] {
+  border-color: color-mix(in oklab, var(--primary) 42%, transparent);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+.review-reading-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.review-reading-source span {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+}
+
+.review-reading-energy {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.review-reading-energy strong {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+
+.review-reading-macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.review-reading-macros dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.review-reading-macros dd {
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.review-reading-name {
+  margin-top: 10px;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.review-worst {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.review-worst strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.review-resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--success);
+}
+
+.review-empty {
+  padding: 40px 22px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--muted-foreground);
+  margin-top: 20px;
+}
+
+.review-empty svg {
+  color: var(--success);
+}
+
+.review-empty h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.review-empty p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 52ch;
+}
+
+.review-empty a {
+  margin-top: 8px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid var(--v11-line, var(--border));
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+@media (max-width: 560px) {
+  .review-card-head {
+    flex-direction: column;
+  }
+}
+
+/* El sello de fuentes. El estado se lee en el texto; el color acompaña. */
+.source-seal {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.source-seal svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.source-seal[data-state="corroborado"] {
+  color: var(--success);
+}
+
+.source-seal[data-state="discrepa"] {
+  color: var(--danger);
+}
+
+.source-seal a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.library-detail-sources {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--v11-line, var(--border));
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.library-detail-sources h4 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.library-detail-sources ul {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+}
+
+.library-detail-sources li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.library-detail-sources li span:first-child {
+  font-weight: 600;
+}
+
+.library-detail-sources li span:last-child {
+  color: var(--muted-foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Tarjeta compacta (oct 2026, a peticion del usuario: «cada alimento puede
+   ser mas pequeño»). De 519px de alto y 4 por fila a ~320px y 5-6 por fila:
+   foto mas baja, cifras un punto menores y los mismos tres macros con el
+   punto de color de Mi plan (proteina oro, carbos violeta, grasas
+   turquesa), para que el codigo de color se lea igual en las dos pantallas.
+   Va al final para ganar a las reglas de arriba sin tocarlas.
+--------------------------------------------------------------------------- */
+.food-library-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+@container (min-width: 1240px) {
+  .food-library-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+.food-library .food-library-card {
+  padding: 7px;
+  border-radius: 20px;
+}
+.library-food-photo {
+  height: 118px;
+  border-radius: 14px;
+}
+.library-food-photo img {
+  padding: 12px;
+}
+.library-food-category {
+  bottom: 6px;
+  left: 6px;
+  font-size: 9.5px;
+  padding: 3px 7px;
+}
+/* El corazon se encoge, pero su area pulsable sigue en 36px. */
+.library-save {
+  top: 6px;
+  right: 6px;
+  width: 36px;
+  height: 36px;
+}
+.library-save svg {
+  width: 16px;
+  height: 16px;
+}
+.library-food-body {
+  padding: 10px 6px 4px;
+}
+.library-food-brand {
+  min-height: 0;
+  font-size: 10.5px;
+}
+.library-food-body h3 {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.library-food-energy {
+  padding-top: 10px;
+  gap: 4px;
+}
+.library-food-energy strong {
+  font-size: 20px;
+}
+.library-food-energy strong span {
+  font-size: 11px;
+}
+.library-food-macros {
+  padding: 8px 0;
+  margin-top: 6px;
+  gap: 4px;
+}
+.library-food-macros dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+.library-food-macros dt::before {
+  content: "";
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.library-food-macros > div:nth-child(1) dt::before {
+  background: #ffc75a;
+}
+.library-food-macros > div:nth-child(2) dt::before {
+  background: #a996ff;
+}
+.library-food-macros > div:nth-child(3) dt::before {
+  background: var(--chart-1, #3ff4e5);
+}
+.library-food-macros dd {
+  margin-top: 2px;
+  font-size: 13px;
+}
+.library-food-source {
+  margin-bottom: 8px;
+  font-size: 9.5px;
+}
+.library-use-button {
+  min-height: 36px;
+  font-size: 11.5px;
+}
+.library-use-button svg {
+  width: 13px;
+  height: 13px;
+}
+@container (max-width: 1050px) {
+  .food-library-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container (max-width: 760px) {
+  .food-library-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .food-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .library-food-photo {
+    height: 104px;
+  }
+}
+@media (max-width: 359px) {
+  .food-library-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.library-macro-short {
+  display: none;
+}
+@media (max-width: 600px) {
+  .library-macro-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .library-macro-short {
+    display: inline;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--foreground);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Ficha clara (oct 2026, a peticion del usuario: «lo necesario pero bien
+   claro, y que las fotos no se vean estiradas»).
+   - La foto es una caja 4:3 fija. La ilustracion es una celda cuadrada del
+     atlas (6x4 celdas de 256 px) y se pinta como un cuadrado centrado: con
+     `background-size: 600% 400%` sobre una caja apaisada, cada celda se
+     estiraba al ancho. El atlas es transparente, asi que el fondo de la caja
+     llena los lados sin costura.
+   - Una sola etiqueta sobre la foto (la categoria); «Ilustracion» baja a una
+     marca discreta en la esquina opuesta.
+   - Cuerpo: nombre, marca o estado, kcal, macros, fuente en una linea y dos
+     acciones. La fibra vive en la ficha completa.
+--------------------------------------------------------------------------- */
+.library-food-photo {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  background: #f4f2ed;
+}
+.library-food-photo img {
+  padding: 14px;
+  object-fit: contain;
+  /* El fondo blanco de muchas fotos de producto se funde con el papel de la
+     caja en vez de dibujar un rectangulo dentro de otro. */
+  mix-blend-mode: multiply;
+}
+.library-food-illustration {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 1;
+}
+.library-food-illustrative {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  font-size: 9px;
+  letter-spacing: 0.02em;
+  color: #6f6253;
+}
+.library-photo-fallback {
+  color: #a3968a;
+}
+.library-food-category {
+  font-weight: 500;
+}
+.library-food-body {
+  padding: 11px 6px 4px;
+  gap: 0;
+}
+.library-food-body h3 {
+  margin-top: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+.library-food-brand {
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-food-energy {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 5px;
+  padding-top: 12px;
+}
+.library-food-energy strong {
+  line-height: 1;
+}
+.library-food-energy > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.library-food-macros {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+.library-food-source {
+  margin: 6px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-food-body .source-seal {
+  margin-top: 4px;
+}
+.library-food-incomplete {
+  margin-top: 6px;
+}
+.library-food-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.library-food-actions .library-use-button {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.library-detail-button {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--v11-line);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+.library-detail-button:hover {
+  color: var(--primary);
+  border-color: color-mix(in oklch, var(--primary) 45%, transparent);
+}
+@media (max-width: 600px) {
+  .library-food-photo {
+    height: auto;
+  }
+  .library-food-photo img {
+    padding: 10px;
+  }
+  .library-food-energy > span {
+    font-size: 10px;
+  }
+  .library-food-actions {
+    gap: 4px;
+  }
+  .library-use-rest {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Buscador de la Biblioteca (referencia del usuario): una capsula grande con
+   la lupa a la izquierda y el microfono a la derecha, y las sugerencias en
+   su propia tarjeta debajo, separada, no pegada al campo.
+--------------------------------------------------------------------------- */
+.library-search-pill {
+  position: relative;
+  z-index: 20;
+}
+.library-search-field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+  padding: 0 10px 0 24px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--card) 92%, var(--foreground));
+  box-shadow:
+    inset 0 0 0 1px var(--v11-line),
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 7%, transparent),
+    0 18px 40px -26px rgb(0 0 0 / 0.75);
+  transition: box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.library-search-field:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in oklch, var(--primary) 70%, transparent),
+    0 18px 40px -26px rgb(0 0 0 / 0.75);
+}
+.library-search-field > svg {
+  flex-shrink: 0;
+  color: color-mix(in oklch, var(--foreground) 70%, transparent);
+}
+.library-search-field input {
+  flex: 1;
+  min-width: 0;
+  height: 60px;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--foreground);
+  outline: none;
+}
+.library-search-field input::placeholder {
+  color: color-mix(in oklch, var(--foreground) 45%, transparent);
+}
+.library-search-field input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.library-search-mic {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: color-mix(in oklch, var(--foreground) 75%, transparent);
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.library-search-mic:hover {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.library-search-mic[aria-pressed="true"] {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  animation: library-mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes library-mic-pulse {
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in oklch, var(--primary) 22%, transparent);
+  }
+}
+.library-search-suggestions {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  display: grid;
+  padding: 10px;
+  border-radius: 28px;
+  background: color-mix(in oklch, var(--card) 96%, var(--foreground));
+  box-shadow:
+    inset 0 0 0 1px var(--v11-line),
+    0 30px 60px -28px rgb(0 0 0 / 0.85);
+  list-style: none;
+  animation: library-suggest-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.library-search-suggestions[hidden] {
+  display: none;
+}
+@keyframes library-suggest-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.library-search-suggestions li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 14.5px;
+}
+.library-search-suggestions li > svg {
+  flex-shrink: 0;
+  color: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+.library-search-suggestions li[aria-selected="true"] {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.library-search-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.library-search-name span {
+  color: color-mix(in oklch, var(--foreground) 50%, transparent);
+}
+.library-search-name strong {
+  font-weight: 600;
+}
+.library-search-suggestions small {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .library-search-suggestions,
+  .library-search-mic[aria-pressed="true"] {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .library-search-field {
+    min-height: 54px;
+    padding-left: 18px;
+  }
+  .library-search-field input {
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+/* Paginacion: capsulas con el brillo naranja que sigue al puntero
+   (`data-glow`, el mismo de Copilot y los accesos). */
+.library-pages a[data-glow] {
+  position: relative;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 20px;
+  border-color: var(--v11-line);
+  background: color-mix(in oklch, var(--card) 92%, var(--foreground));
+}
+.library-pages a[data-glow]:hover {
+  background: color-mix(in oklch, var(--primary) 10%, var(--card));
+}
+/* El foco lo marca la capsula entera (borde naranja); el anillo global de
+   los campos dibujaba ademas un rectangulo dentro de ella. */
+.food-library .library-search-field input:focus,
+.food-library .library-search-field input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Buscador plegable (referencia en video del usuario), a la derecha de la
+   fila de colecciones: en reposo es un circulo con la lupa; al tocarlo se
+   estira hacia la izquierda hasta ser la capsula, con un leve rebote al
+   llegar, y vuelve a circulo al salir si no se escribio nada.
+--------------------------------------------------------------------------- */
+/* La fila de colecciones: pestañas a la izquierda, buscador a la derecha. */
+/* `.food-library .nutrition-workspace.` gana al diseño en columna centrada
+   que `.nutrition-workspace` trae de Nutricion. */
+.food-library .nutrition-workspace.library-views-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.library-views-tabs > .nutrition-navigation {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.library-search-slot {
+  display: flex;
+  flex: 0 1 400px;
+  justify-content: flex-end;
+  min-width: 48px;
+}
+.library-search-slot .library-search-pill {
+  flex: 0 1 auto;
+  width: 48px;
+  min-width: 48px;
+  transition: width 560ms cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.library-search-slot .library-search-pill[data-expanded] {
+  width: min(400px, 100%);
+}
+.library-search-slot .library-search-field {
+  min-height: 48px;
+  padding: 0 4px 0 0;
+  gap: 4px;
+  overflow: hidden;
+}
+.library-search-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: color-mix(in oklch, var(--foreground) 80%, transparent);
+  transition:
+    color 160ms ease,
+    transform 120ms ease;
+}
+.library-search-pill:not([data-expanded]) .library-search-toggle:hover {
+  color: var(--foreground);
+  transform: scale(1.06);
+}
+.library-search-toggle:active {
+  transform: scale(0.94);
+}
+.library-search-slot .library-search-field input {
+  height: 46px;
+  font-size: 15px;
+  opacity: 1;
+  transition: opacity 220ms ease 120ms;
+}
+.library-search-slot
+  .library-search-pill:not([data-expanded])
+  .library-search-field
+  input {
+  opacity: 0;
+  transition-delay: 0ms;
+  transition-duration: 80ms;
+}
+.library-search-slot .library-search-mic {
+  width: 40px;
+  height: 40px;
+}
+.library-search-slot .library-search-suggestions {
+  left: auto;
+  right: 0;
+  width: max(100%, 360px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .library-search-slot .library-search-pill {
+    transition: none;
+  }
+}
+@media (max-width: 600px) {
+  /* Movil: el buscador baja a su propia linea, bajo las pestañas, y al
+     abrirse ocupa todo el ancho. */
+  .food-library .nutrition-workspace.library-views-tabs {
+    flex-wrap: wrap;
+  }
+  .library-search-slot {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  .library-search-slot .library-search-pill[data-expanded] {
+    width: 100%;
+  }
+  .library-search-slot .library-search-suggestions {
+    left: 0;
+    right: auto;
+    width: calc(100vw - 32px);
+  }
+}

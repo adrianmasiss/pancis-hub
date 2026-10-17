@@ -7,7 +7,12 @@ import { messages } from "@/i18n/es-419";
 import { recordChange } from "@/lib/audit";
 import { applyCorrection } from "@/features/foods/lib/corrections";
 import { getUserFoodCorrections } from "@/features/foods/correction-actions";
-import { scaleMacros, sumMacros, type MacroSet } from "@/features/nutrition/lib/macros";
+import {
+  scaleMacros,
+  sumMacros,
+  type MacroSet,
+} from "@/features/nutrition/lib/macros";
+import { scaleExtra } from "@/features/nutrition/lib/extras";
 import {
   rankRecipeMatches,
   type RecipeMatch,
@@ -42,6 +47,8 @@ type IngredientRow = {
     fat_g: number;
     fiber_g: number;
     cooked_state: string | null;
+    sodium_mg?: number | null;
+    sugar_g?: number | null;
   } | null;
 };
 
@@ -71,7 +78,7 @@ export async function getRecipeSwapSuggestions(
     supabase
       .from("recipes")
       .select(
-        "id, name, servings, image_url, recipe_ingredients(food_id, quantity_g, foods(id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state))",
+        "id, name, servings, image_url, recipe_ingredients(food_id, quantity_g, foods(id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state, sodium_mg, sugar_g))",
       )
       .is("deleted_at", null)
       .limit(100),
@@ -89,53 +96,52 @@ export async function getRecipeSwapSuggestions(
     })),
   );
 
-  const options: RecipeOption[] = (recipes ?? [])
-    .map((recipe) => {
-      const ingredients = (recipe.recipe_ingredients ?? []) as IngredientRow[];
-      const totals = sumMacros(
-        ingredients
-          .filter((ingredient) => ingredient.foods)
-          .map((ingredient) => {
-            // Las correcciones del usuario tambien valen dentro de una receta.
-            const corrected = applyCorrection(
-              {
-                id: ingredient.foods!.id,
-                name: ingredient.foods!.name,
-                calories: Number(ingredient.foods!.calories),
-                proteinG: Number(ingredient.foods!.protein_g),
-                carbohydrateG: Number(ingredient.foods!.carbohydrate_g),
-                fatG: Number(ingredient.foods!.fat_g),
-                fiberG: Number(ingredient.foods!.fiber_g),
-                cookedState: ingredient.foods!.cooked_state as
-                  | "crudo"
-                  | "cocido"
-                  | null,
-              },
-              corrections.get(ingredient.foods!.id),
-            );
-            return scaleMacros(corrected, Number(ingredient.quantity_g));
-          }),
-      );
+  const options: RecipeOption[] = (recipes ?? []).map((recipe) => {
+    const ingredients = (recipe.recipe_ingredients ?? []) as IngredientRow[];
+    const totals = sumMacros(
+      ingredients
+        .filter((ingredient) => ingredient.foods)
+        .map((ingredient) => {
+          // Las correcciones del usuario tambien valen dentro de una receta.
+          const corrected = applyCorrection(
+            {
+              id: ingredient.foods!.id,
+              name: ingredient.foods!.name,
+              calories: Number(ingredient.foods!.calories),
+              proteinG: Number(ingredient.foods!.protein_g),
+              carbohydrateG: Number(ingredient.foods!.carbohydrate_g),
+              fatG: Number(ingredient.foods!.fat_g),
+              fiberG: Number(ingredient.foods!.fiber_g),
+              cookedState: ingredient.foods!.cooked_state as
+                "crudo" | "cocido" | null,
+            },
+            corrections.get(ingredient.foods!.id),
+          );
+          return scaleMacros(corrected, Number(ingredient.quantity_g));
+        }),
+    );
 
-      const servings = Math.max(1, Number(recipe.servings));
-      return {
-        id: recipe.id,
-        name: recipe.name,
-        imageUrl: recipe.image_url,
-        perServing: {
-          calories: Math.round(totals.calories / servings),
-          proteinG: Math.round((totals.proteinG / servings) * 10) / 10,
-          carbohydrateG: Math.round((totals.carbohydrateG / servings) * 10) / 10,
-          fatG: Math.round((totals.fatG / servings) * 10) / 10,
-          fiberG: Math.round((totals.fiberG / servings) * 10) / 10,
-        },
-      };
-    });
+    const servings = Math.max(1, Number(recipe.servings));
+    return {
+      id: recipe.id,
+      name: recipe.name,
+      imageUrl: recipe.image_url,
+      perServing: {
+        calories: Math.round(totals.calories / servings),
+        proteinG: Math.round((totals.proteinG / servings) * 10) / 10,
+        carbohydrateG: Math.round((totals.carbohydrateG / servings) * 10) / 10,
+        fatG: Math.round((totals.fatG / servings) * 10) / 10,
+        fiberG: Math.round((totals.fiberG / servings) * 10) / 10,
+      },
+    };
+  });
 
   return {
-    mealName: meal.name || messages.nutrition.mealTypes[
-      meal.meal_type as keyof typeof messages.nutrition.mealTypes
-    ],
+    mealName:
+      meal.name ||
+      messages.nutrition.mealTypes[
+        meal.meal_type as keyof typeof messages.nutrition.mealTypes
+      ],
     mealMacros,
     matches: rankRecipeMatches(mealMacros, options),
   };
@@ -170,7 +176,7 @@ export async function replaceMealWithRecipe(
     supabase
       .from("recipes")
       .select(
-        "name, servings, recipe_ingredients(food_id, quantity_g, foods(id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state))",
+        "name, servings, recipe_ingredients(food_id, quantity_g, foods(id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state, sodium_mg, sugar_g))",
       )
       .eq("id", parsed.data.recipeId)
       .is("deleted_at", null)
@@ -201,9 +207,7 @@ export async function replaceMealWithRecipe(
           fatG: Number(ingredient.foods!.fat_g),
           fiberG: Number(ingredient.foods!.fiber_g),
           cookedState: ingredient.foods!.cooked_state as
-            | "crudo"
-            | "cocido"
-            | null,
+            "crudo" | "cocido" | null,
         },
         corrections.get(ingredient.foods!.id),
       );
@@ -218,6 +222,8 @@ export async function replaceMealWithRecipe(
         carbohydrate_snapshot: snapshot.carbohydrateG,
         fat_snapshot: snapshot.fatG,
         fiber_snapshot: snapshot.fiberG,
+        sodium_snapshot_mg: scaleExtra(ingredient.foods!.sodium_mg, quantityG),
+        sugar_snapshot_g: scaleExtra(ingredient.foods!.sugar_g, quantityG),
       };
     })
     .filter((item) => item.quantity_g > 0);

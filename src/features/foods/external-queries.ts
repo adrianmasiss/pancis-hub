@@ -11,6 +11,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeText } from "@/lib/food-providers/classify";
 import { mergeProviderResults } from "@/lib/food-providers/dedupe";
+import { filterByRelevance } from "@/lib/food-providers/relevance";
 import { availableProviders, barcodeProvider } from "@/lib/food-providers";
 import type {
   NormalizedFood,
@@ -20,8 +21,13 @@ import type {
 /** Vigencia de una busqueda cacheada. */
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Bajo este numero de resultados locales se complementa con lo externo. */
-export const LOCAL_RESULTS_THRESHOLD = 5;
+/*
+  Ya no hay umbral de resultados locales. Antes sólo se consultaba fuera si el
+  catálogo propio devolvía menos de cinco, y con la biblioteca unificada eso
+  escondía resultados buenos detrás de cinco mediocres: la lista es una, así
+  que se pregunta siempre que haya búsqueda escrita. La caché de siete días es
+  la que cuida la cuota, no el umbral.
+*/
 
 /** Consultas mas cortas producen ruido y gastan cuota. */
 export const MIN_QUERY_LENGTH = 3;
@@ -78,7 +84,10 @@ async function findImported(
   const { data } = await admin
     .from("foods")
     .select("id, external_source, external_id")
-    .in("external_id", foods.map((food) => food.externalId))
+    .in(
+      "external_id",
+      foods.map((food) => food.externalId),
+    )
     .not("external_source", "is", null);
 
   const map = new Map<string, string>();
@@ -117,7 +126,15 @@ export async function searchExternalFoods(
     }),
   );
 
-  const merged = mergeProviderResults(perProvider.flat(), query);
+  /*
+    El filtro va DESPUES de cachear y ANTES de mostrar. Así la caché guarda lo
+    que el proveedor devolvió de verdad —si mañana se afina el filtro, no hay
+    que volver a pedir— y el usuario sólo ve lo que de verdad empareja.
+  */
+  const merged = filterByRelevance(
+    query,
+    mergeProviderResults(perProvider.flat(), query),
+  );
   const imported = await findImported(merged);
 
   return merged.map((food) => {

@@ -62,7 +62,7 @@ export function AuthSplitPanel({ variant, children }: AuthSplitPanelProps) {
       <ViewTransition name="auth-accent-panel" share="auth-panel">
         <div
           className={cn(
-            "auth-accent hidden lg:flex lg:min-w-0 lg:flex-col lg:justify-between lg:p-9",
+            "auth-accent auth-accent-in hidden lg:flex lg:min-w-0 lg:flex-col lg:justify-between lg:p-9",
             isLogin ? "lg:order-2" : "lg:order-1",
           )}
         >

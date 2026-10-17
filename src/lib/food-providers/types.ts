@@ -8,7 +8,7 @@
 import type { FoodGroup } from "@/features/foods/schemas";
 import type { MacroSet } from "@/features/nutrition/lib/macros";
 
-export const PROVIDER_SOURCES = ["usda", "openfoodfacts"] as const;
+export const PROVIDER_SOURCES = ["usda", "openfoodfacts", "dietly"] as const;
 export type ProviderSource = (typeof PROVIDER_SOURCES)[number];
 
 export type NormalizedPortion = {
@@ -19,6 +19,8 @@ export type NormalizedPortion = {
 
 export type NormalizedFood = {
   source: ProviderSource;
+  /** Upstream provenance when a provider aggregates other sources. */
+  provenance?: string;
   /** fdcId en USDA, code de barras en Open Food Facts. */
   externalId: string;
   /** Nombre mostrable; en espanol cuando el proveedor lo entrega. */
@@ -30,7 +32,13 @@ export type NormalizedFood = {
   imageUrl: string | null;
   foodGroup: FoodGroup;
   cookedState: "crudo" | "cocido" | null;
+  /**
+   * Valores por 100 g, salvo en bebidas con etiqueta por volumen: Open Food
+   * Facts publica esas en las mismas casillas `_100g`, pero son por 100 ml.
+   */
   per100g: MacroSet;
+  /** Sobre qué cantidad están `per100g`. Ausente = 100 g. */
+  nutritionBasis?: "100g" | "100ml";
   sugarG: number | null;
   sodiumMg: number | null;
   sourceUpdatedAt: string | null;

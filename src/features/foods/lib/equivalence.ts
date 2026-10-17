@@ -31,6 +31,7 @@ export type EquivalenceFood = {
   id: string;
   name: string;
   foodGroup: FoodGroup;
+  imageUrl?: string | null;
   cookedState: "crudo" | "cocido" | null;
   per100g: MacroSet;
 };
@@ -218,11 +219,7 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
  * Nota 0-10 de un macro: 10 cuando la alternativa aporta lo mismo, 0
  * cuando se desvia el 100 % o mas respecto al original.
  */
-function macroScore(
-  source: number,
-  candidate: number,
-  floor: number,
-): number {
+function macroScore(source: number, candidate: number, floor: number): number {
   const base = Math.max(Math.abs(source), floor);
   const relativeError = Math.abs(candidate - source) / base;
   return clamp10(10 * (1 - relativeError));
@@ -244,8 +241,7 @@ export function compatibilityScore(
     profile?: CompatibilityProfile;
   },
 ): CompatibilityScore {
-  const weights =
-    COMPATIBILITY_PROFILES[options?.profile ?? "comida"];
+  const weights = COMPATIBILITY_PROFILES[options?.profile ?? "comida"];
   const perMacro = {
     calories: macroScore(
       source.calories,
@@ -278,7 +274,9 @@ export function compatibilityScore(
     perMacro.fiberG * weights.fiberG;
 
   const penalties =
-    (options?.sameGroup === false ? COMPATIBILITY_PENALTIES.differentGroup : 0) +
+    (options?.sameGroup === false
+      ? COMPATIBILITY_PENALTIES.differentGroup
+      : 0) +
     (options?.sameCookedState === false
       ? COMPATIBILITY_PENALTIES.differentCookedState
       : 0);
@@ -326,6 +324,7 @@ export { matchesRestriction, findRestrictionMatch };
  */
 export const SWAP_FILTERS = [
   "similar",
+  "macros",
   "mas_proteina",
   "menos_calorias",
   "mas_saciedad",
@@ -403,6 +402,11 @@ function filterSortKey(
   hasPantry: boolean,
 ): number {
   switch (filter) {
+    case "macros":
+      return nutritionalDistance(
+        { calories: 0, proteinG: 0, carbohydrateG: 0, fatG: 0, fiberG: 0 },
+        candidate.diff,
+      );
     case "mas_proteina":
       return -proteinDensity(candidate.macros);
     case "menos_calorias":

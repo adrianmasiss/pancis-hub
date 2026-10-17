@@ -1,0 +1,880 @@
+/* Progreso, en orden de importancia: el cuerpo arriba y a todo el ancho;
+   debajo, el cambio y la tendencia juntos (los dos dicen «cómo voy», así que
+   sí son pares). El cuerpo no comparte fila: no es equivalente a nada. */
+.progress-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ── Cabecera ──────────────────────────────────────────────────────────── */
+.progress-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.progress-header h1 {
+  font-size: clamp(24px, 2.6cqw, 29px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+.progress-header p {
+  margin-top: 6px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ── Pestañas ──────────────────────────────────────────────────────────── */
+.progress-nav {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  align-self: flex-start;
+}
+.progress-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding-inline: 18px;
+  border-radius: 10px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+.progress-nav a[aria-current] {
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+/* ── Escala tipográfica compartida ─────────────────────────────────────── */
+.progress-body-card h2,
+.progress-compare-card h2,
+.progress-trend-card h2,
+.progress-history-card h2 {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.progress-body-meta,
+.progress-card-meta {
+  margin-top: 5px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.progress-subhead {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted-foreground);
+}
+.progress-card-note,
+.progress-body-note {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--v11-line);
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.progress-body-card,
+.progress-compare-card,
+.progress-trend-card,
+.progress-history-card {
+  padding: 26px;
+  border-radius: 24px;
+}
+/* `clip` y no `hidden`: recorta igual, pero `hidden` convierte la tarjeta en
+   contenedor de scroll y eso anula el `sticky` del maniquí que lleva dentro.
+   Acotado a esta tarjeta; `.v11-card` sigue con `hidden` en el resto. */
+.progress-workspace .progress-body-card {
+  overflow: clip;
+}
+.progress-body-head,
+.progress-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ── La tarjeta del cuerpo ─────────────────────────────────────────────── */
+/* El maniquí manda en ancho y las cifras lo acompañan: el modelo es la
+   lectura de un vistazo y la columna es la lectura exacta. */
+.progress-body-grid {
+  display: grid;
+  /* La columna de cifras manda en ancho: ahora lleva las cuatro secciones
+     del informe y el maniquí ya no necesita la mitad de la tarjeta. */
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+  gap: 28px;
+  margin-top: 22px;
+  /* `stretch` estiraba el maniquí para igualar una columna larguísima y lo
+     dejaba enorme. Con `start` conserva su tamaño y se queda pegado arriba
+     mientras se recorre el informe, que es cuando sirve de referencia. */
+  align-items: start;
+}
+.progress-body-model {
+  min-width: 0;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  overflow: hidden;
+}
+.progress-body-readout {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-readout-list {
+  display: flex;
+  flex-direction: column;
+}
+.progress-readout-list > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--v11-line);
+}
+.progress-readout-list dt {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  min-width: 0;
+}
+.progress-readout-list dd {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.progress-readout-list dd span {
+  margin-left: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Los perímetros son cinco iguales, así que sí admiten rejilla. */
+.progress-perimeters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+.progress-perimeters li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+.progress-perimeters li span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.progress-perimeters li strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* Lo que falta se apaga, no se esconde: ver el hueco es lo que recuerda
+   medirlo la próxima vez. */
+.progress-perimeters li[data-missing] {
+  opacity: 0.55;
+}
+
+/* ── La comparación ───────────────────────────────────────────────────── */
+.progress-recomp-badge {
+  align-self: center;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--positive, #75d6a0) 14%, transparent);
+  color: var(--positive, #75d6a0);
+  font-size: 12px;
+  font-weight: 500;
+}
+/* Columna con techo: con una sola métrica comparada, `1fr` estiraba la
+   barra a todo el ancho de la tarjeta y dejaba el rótulo y la cifra a dos mil
+   píxeles de distancia. */
+.progress-compare-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 460px));
+  justify-content: start;
+  gap: 20px 32px;
+  margin-top: 22px;
+}
+.progress-compare-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.progress-compare-label span {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.progress-compare-label strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* El color es el JUICIO y la flecha es el HECHO. Nunca va el color solo:
+   bajar grasa es favorable y bajar músculo no, y eso no se puede leer de un
+   tono sin la flecha y la cifra al lado. */
+[data-assessment="favorable"] .progress-compare-label strong {
+  color: var(--positive, #75d6a0);
+}
+[data-assessment="desfavorable"] .progress-compare-label strong {
+  color: var(--caution, #f4cc6a);
+}
+.progress-compare-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.progress-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.progress-bar-track {
+  min-width: 0;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--foreground) 7%, transparent);
+  overflow: hidden;
+}
+.progress-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: width 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.progress-bar.is-prev {
+  background: color-mix(in oklch, var(--foreground) 22%, transparent);
+}
+.progress-bar.is-current {
+  background: var(--primary);
+}
+.progress-bar-row small {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.progress-single-note {
+  padding: 16px 20px;
+  border: 1px dashed var(--v11-line);
+  border-radius: 16px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* ── Historial ────────────────────────────────────────────────────────── */
+.progress-history-extras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Adaptación ───────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .progress-body-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  /* En una sola columna el maniquí va encima del texto: pegado taparía lo
+     que se está leyendo. */
+  .progress-workspace .progress-body-model {
+    position: static;
+    height: 370px;
+  }
+}
+@media (max-width: 600px) {
+  .progress-workspace {
+    gap: 18px;
+  }
+  .progress-body-card,
+  .progress-compare-card,
+  .progress-trend-card,
+  .progress-history-card {
+    padding: 18px;
+  }
+  .progress-body-card h2,
+  .progress-compare-card h2,
+  .progress-trend-card h2,
+  .progress-history-card h2 {
+    font-size: 19px;
+  }
+  .progress-nav {
+    align-self: stretch;
+  }
+  .progress-nav a {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar,
+  .progress-nav a {
+    transition: none;
+  }
+}
+
+/* El maniquí toma su `position: relative` y su altura de `.muscle-model`
+   (globals.css). Aquí sólo se ajusta la altura al hueco de esta tarjeta. */
+.progress-workspace .progress-body-model {
+  height: 460px;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--background) 70%, var(--card));
+  overflow: hidden;
+  position: sticky;
+  top: 24px;
+}
+.progress-workspace .muscle-model-stage canvas {
+  touch-action: pan-y;
+  cursor: grab;
+}
+@media (max-width: 600px) {
+  .progress-workspace .progress-body-model {
+    height: 320px;
+  }
+}
+/* Con el informe plegado la columna de cifras mide unos 580px: el maniquí
+   la acompaña de alto en vez de dejar un hueco debajo. */
+@media (min-width: 1001px) {
+  .progress-workspace .progress-body-model {
+    height: 560px;
+  }
+}
+
+/* ── El trío de fotos ─────────────────────────────────────────────────── */
+/* Siempre tres huecos: la vista que falta se dibuja apagada con su rótulo.
+   Una rejilla que sólo muestra lo que hay no deja ver que falta la lateral. */
+.photo-trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+/* Techo: en el historial la rejilla se repartía los dos mil píxeles de la
+   tarjeta y cada miniatura salía del tamaño de un póster. */
+.photo-trio[data-size="sm"] {
+  max-width: 340px;
+}
+.photo-trio[data-size="lg"] {
+  gap: 14px;
+  max-width: 620px;
+}
+.photo-trio li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.photo-trio-img,
+.photo-trio-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  object-fit: cover;
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+.photo-trio-empty {
+  border: 1px dashed var(--v11-line);
+  color: var(--muted-foreground);
+}
+.photo-trio li[data-missing] .photo-trio-label {
+  opacity: 0.5;
+}
+.photo-trio-label {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* ── Historial en fichas ──────────────────────────────────────────────── */
+.measurement-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+.measurement-entry {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+.measurement-entry-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.measurement-entry-head h3 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.measurement-entry-head p {
+  margin-top: 3px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.measurement-source {
+  color: var(--primary);
+}
+/* Sólo lo que esa medición registró: un pesaje trae un número y un InBody
+   trae ocho, así que las columnas fijas de una tabla dejaban filas de
+   guiones. */
+.measurement-entry-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 14px;
+}
+.measurement-entry-data > div {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+.measurement-entry-data dt {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.measurement-entry-data dd {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.measurement-entry-note,
+.measurement-entry-empty {
+  margin-top: 12px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ── Galería por fecha ────────────────────────────────────────────────── */
+.photo-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-top: 20px;
+}
+/* Mismo techo que el trío: con el ancho entero, el contador se iba a dos mil
+   píxeles de las fotos que cuenta. */
+.photo-gallery-head {
+  max-width: 620px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--v11-line);
+}
+.photo-gallery-head h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.photo-gallery-head span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.photo-gallery-note {
+  margin-top: 10px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.progress-photos-card,
+.progress-wellbeing-card {
+  padding: 26px;
+  border-radius: 24px;
+}
+@media (max-width: 600px) {
+  .progress-photos-card,
+  .progress-wellbeing-card {
+    padding: 18px;
+  }
+  .measurement-entry {
+    padding: 15px 16px;
+  }
+}
+
+/* ── Análisis segmental ───────────────────────────────────────────────── */
+/* Una tabla, magra y grasa lado a lado: son las mismas cinco filas, y en
+   dos listas se leían como diez. Kilos en cifra y el porcentaje sobre lo
+   ideal debajo, pequeño; la evaluación del aparato al final. */
+.progress-segment-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.progress-segment-table th,
+.progress-segment-table td {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--v11-line);
+  text-align: right;
+  vertical-align: baseline;
+}
+.progress-segment-table thead th {
+  padding-top: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.progress-segment-table th:first-child {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.progress-segment-table thead th:first-child {
+  font-size: 11px;
+}
+.progress-segment-table td + td,
+.progress-segment-table th + th {
+  padding-left: 14px;
+}
+.progress-segment-table td strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.progress-segment-table td small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.progress-segment-table tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* La evaluación se lee por su palabra; el color sólo la acompaña. «bajo» no
+   puede distinguirse de «normal» por el tono a solas. */
+.progress-segment-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  color: var(--muted-foreground);
+}
+[data-evaluation="normal"] .progress-segment-badge {
+  background: color-mix(in oklch, var(--positive, #75d6a0) 14%, transparent);
+  color: var(--positive, #75d6a0);
+}
+[data-evaluation="bajo"] .progress-segment-badge {
+  background: color-mix(in oklch, var(--caution, #f4cc6a) 14%, transparent);
+  color: var(--caution, #f4cc6a);
+}
+
+/* ── Puntuación InBody ────────────────────────────────────────────────── */
+.progress-readout-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+.progress-score {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+.progress-score strong {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+.progress-score span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+/* ── Cifra contra su rango normal ─────────────────────────────────────── */
+/* El paréntesis del informe, dibujado: dónde cae el valor dentro de lo que
+   el aparato considera normal para esta persona. */
+.progress-ranges {
+  display: flex;
+  flex-direction: column;
+}
+.progress-ranges > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 1.15fr);
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--v11-line);
+}
+.progress-range-name {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  min-width: 0;
+}
+.range-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "valor pista" "valor pie";
+  align-items: center;
+  gap: 2px 12px;
+}
+.range-value {
+  grid-area: valor;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.range-value small {
+  margin-left: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.range-track {
+  grid-area: pista;
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.range-normal {
+  position: absolute;
+  inset-block: 0;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+/* La marca es una pastilla vertical, no un punto: sobre la banda se ve, y a
+   6px de alto un círculo se pierde. */
+.range-mark {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+[data-state="normal"] .range-mark {
+  background: var(--positive, #75d6a0);
+}
+[data-state="bajo"] .range-mark,
+[data-state="alto"] .range-mark {
+  background: var(--caution, #f4cc6a);
+}
+.range-caption {
+  grid-area: pie;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.range-caption strong {
+  font-weight: 600;
+}
+[data-state="normal"] .range-caption strong {
+  color: var(--positive, #75d6a0);
+}
+[data-state="bajo"] .range-caption strong,
+[data-state="alto"] .range-caption strong {
+  color: var(--caution, #f4cc6a);
+}
+
+/* ── Control de peso ──────────────────────────────────────────────────── */
+.progress-control {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+.progress-control li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+.progress-control li span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.progress-control li strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* El signo ya dice la dirección; el color sólo la acompaña. */
+.progress-control li strong[data-direction="baja"] {
+  color: var(--caution, #f4cc6a);
+}
+.progress-control li strong[data-direction="sube"] {
+  color: var(--positive, #75d6a0);
+}
+
+@media (max-width: 760px) {
+  .progress-ranges > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+/* Sin rango impreso no hay barra que dibujar, pero la cifra mantiene su
+   columna para que la fila no se descoloque respecto a las que sí lo traen. */
+.range-bar[data-state="sin-rango"] {
+  grid-template-columns: auto;
+  grid-template-areas: "valor";
+}
+
+/* ── El informe plegado ───────────────────────────────────────────────── */
+/* Lo esencial queda abierto; el resto del informe son filas que se abren.
+   Cada una dice en su resumen lo que trae, en una línea que se corta antes
+   que partirse: así el grupo cerrado ya responde la pregunta frecuente. */
+.progress-report {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+  border-top: 1px solid var(--v11-line);
+}
+.progress-fold {
+  border-bottom: 1px solid var(--v11-line);
+}
+.progress-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 2px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 10px;
+}
+.progress-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.progress-fold > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.progress-fold-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.progress-fold-text strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.progress-fold-text span {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.progress-fold > summary > svg {
+  flex: none;
+  color: var(--muted-foreground);
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.progress-fold[open] > summary > svg {
+  transform: rotate(180deg);
+}
+/* Abierto, el resumen sobra: las cifras están justo debajo. */
+.progress-fold[open] .progress-fold-text span {
+  display: none;
+}
+.progress-fold-body {
+  padding: 0 2px 16px;
+}
+.progress-fold-body .progress-body-note {
+  margin-top: 12px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .progress-fold > summary:hover strong {
+    color: var(--primary);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-fold > summary > svg {
+    transition: none;
+  }
+}
+
+/* ── Cambio y tendencia ───────────────────────────────────────────────── */
+.progress-pair {
+  display: grid;
+  gap: 24px;
+}
+@media (min-width: 1100px) {
+  /* Lado a lado y de la misma altura: dos tarjetas pares que terminan a
+     distinta altura se leen como un error de maquetación. */
+  .progress-pair {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+  /* Dos columnas de barras también en media tarjeta: en una sola, las
+     cinco apiladas doblaban la altura de la tendencia. */
+  .progress-pair .progress-compare-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 24px;
+  }
+}
+@media (max-width: 600px) {
+  .progress-pair {
+    gap: 18px;
+  }
+}

@@ -1,0 +1,62 @@
+/* ---------------------------------------------------------------------------
+   Prueba de tipografía (oct 2026): la del comparador, en todo el sistema.
+
+   El comparador usa una sola familia, Geist, con dos papeles: lo principal
+   en seminegrita (600) con tracking apretado, y lo secundario en regular
+   (400). El resto de la app usaba tres voces: Karrik (la display irregular
+   del handoff) para los títulos, Geist Mono para las cifras y los rótulos,
+   y Geist para el texto. Aquí las tres se vuelven Geist y los títulos y las
+   cifras pasan a 600, como en el comparador.
+
+   Es reversible a propósito: para volver, quitar el import de este archivo
+   en `src/app/layout.tsx`. No se tocó ninguna otra regla.
+
+   Sin capa (@layer) a propósito: gana a las utilidades de Tailwind, que
+   viven en `@layer utilities`, sin necesitar !important.
+--------------------------------------------------------------------------- */
+
+/* Las familias: Karrik y Mono apuntan a Geist. `html:root` (0,1,1) gana a
+   la clase con la que next/font declara estas variables en <html> (0,1,0). */
+html:root {
+  --font-karrik: var(--font-geist-sans);
+  --font-geist-mono: var(--font-geist-sans);
+}
+
+/* Títulos: de Karrik 400 a Geist 600. El tracking se aprieta según el
+   cuerpo: más en el título de pantalla, menos en el de sección. */
+.page-display {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.display-title,
+.font-heading {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Cifras: siguen tabulares (Geist lo soporta con `tnum`), ahora en la sans
+   y en 600, como las kcal del comparador. */
+.num-display {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.num-strong {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Rótulos en caja alta: en la sans el tracking de la mono queda abierto de
+   más; se cierra un poco y el peso baja a medio, como la pastilla de papel. */
+.label-micro,
+.rail-section {
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+/* Dos pesos, como en el comparador: la negrita (700) baja a seminegrita.
+   El medio (500) se queda en botones y rótulos pequeños, donde ya estaba. */
+.font-bold,
+.nutrition-calories strong,
+.nutrition-delta {
+  font-weight: 600;
+}

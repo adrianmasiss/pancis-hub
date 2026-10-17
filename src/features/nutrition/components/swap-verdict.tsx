@@ -78,6 +78,9 @@ export type SwapVerdictProps = {
   dayTargets?: MacroSet | null;
   pending?: boolean;
   onConfirm: () => void;
+  confirmLabel?: string;
+  /** El contenedor puede mantener la confirmación fuera del área desplazable. */
+  confirmationInFooter?: boolean;
 };
 
 /**
@@ -94,6 +97,8 @@ export function SwapVerdict({
   dayTargets,
   pending = false,
   onConfirm,
+  confirmLabel,
+  confirmationInFooter = false,
 }: SwapVerdictProps) {
   const [detailOpen, setDetailOpen] = useState(false);
   const hasTargets = Boolean(dayTargets && dayTotals);
@@ -131,7 +136,7 @@ export function SwapVerdict({
           truncaban a "Pro…" y "Car…", y el valor se partia en dos lineas. En
           telefono van en filas, que es donde hay ancho; desde `sm` recuperan
           la rejilla del handoff. */}
-      <ul className="flex flex-col gap-1.5 sm:grid sm:grid-cols-5">
+      <ul className="swap-verdict-axes flex flex-col gap-1.5 sm:grid sm:grid-cols-5">
         {AXES.map((axis) => {
           const delta = diff[axis.key];
           const direction = directionFor(
@@ -212,15 +217,17 @@ export function SwapVerdict({
           />
         </button>
 
-        <Button
-          type="button"
-          variant="brand"
-          onClick={onConfirm}
-          disabled={pending}
-          className="shrink-0"
-        >
-          {pending ? messages.common.loading : v.confirm}
-        </Button>
+        {!confirmationInFooter && (
+          <Button
+            type="button"
+            variant="brand"
+            onClick={onConfirm}
+            disabled={pending}
+            className="shrink-0"
+          >
+            {pending ? messages.common.loading : (confirmLabel ?? v.confirm)}
+          </Button>
+        )}
       </div>
 
       {detailOpen ? (

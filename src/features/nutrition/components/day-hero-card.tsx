@@ -1,4 +1,5 @@
 import { messages } from "@/i18n/es-419";
+import { formatNumber } from "@/lib/format/number";
 import type { DayPlan } from "@/features/nutrition/queries";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +50,6 @@ export function DayHeroCard({
   const { totals, targets } = plan;
   const deltaKcal = Math.round(totals.calories - targets.calories);
   const pending = Math.max(0, mealCount - loggedCount);
-  const fmt = (n: number) => Math.round(n).toLocaleString("es-419");
 
   /*
     Las cuatro tintas de la banda, con la formula del prototipo: el color
@@ -85,9 +85,9 @@ export function DayHeroCard({
 
   const stateLine =
     deltaKcal > 0
-      ? t.stateOver(`${fmt(deltaKcal)} ${messages.nutrition.kcal}`)
+      ? t.stateOver(`${formatNumber(deltaKcal)} ${messages.nutrition.kcal}`)
       : deltaKcal < 0
-        ? t.stateUnder(`${fmt(-deltaKcal)} ${messages.nutrition.kcal}`)
+        ? t.stateUnder(`${formatNumber(-deltaKcal)} ${messages.nutrition.kcal}`)
         : t.stateMet;
 
   const pendingLine =
@@ -163,7 +163,7 @@ export function DayHeroCard({
 
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <span className="num-display text-[clamp(2.75rem,11vw,3.75rem)] leading-[0.9] font-medium tracking-[-0.05em]">
-            {fmt(totals.calories)}
+            {formatNumber(totals.calories)}
           </span>
           <span className="hero-muted text-[15px]">
             {messages.nutrition.kcal}
@@ -175,8 +175,11 @@ export function DayHeroCard({
             )}
           >
             {deltaKcal > 0
-              ? t.over(fmt(deltaKcal), fmt(targets.calories))
-              : t.under(fmt(totals.calories), fmt(targets.calories))}
+              ? t.over(formatNumber(deltaKcal), formatNumber(targets.calories))
+              : t.under(
+                  formatNumber(totals.calories),
+                  formatNumber(targets.calories),
+                )}
           </span>
         </div>
 

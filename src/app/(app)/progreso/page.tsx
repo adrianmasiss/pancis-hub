@@ -1,126 +1,226 @@
+import "@/features/progress/components/progress-workspace.css";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
-import { MetricCard } from "@/components/shared/metric-card";
-import { PageHeader } from "@/components/shared/page-header";
-import { Section } from "@/components/shared/section";
 import { WeightTrendChart } from "@/components/charts/weight-trend-chart";
-import { CompositionChart } from "@/components/charts/composition-chart";
-import { CompositionSection } from "@/features/progress/components/composition-section";
+import { BodyCompositionCard } from "@/features/progress/components/body-composition-card";
+import { InbodyComparison } from "@/features/progress/components/inbody-comparison";
 import { MeasurementFormDialog } from "@/features/progress/components/measurement-form-dialog";
-import { MeasurementsTable } from "@/features/progress/components/measurements-table";
-import { PhotosSection } from "@/features/progress/components/photos-section";
+import { MeasurementHistory } from "@/features/progress/components/measurement-history";
+import { PhotoGallery } from "@/features/progress/components/photo-gallery";
+import { PhotoUploadDialog } from "@/features/progress/components/photo-upload-dialog";
+import {
+  ProgressNav,
+  type ProgressView,
+} from "@/features/progress/components/progress-nav";
 import { WellbeingForm } from "@/features/progress/components/wellbeing-form";
 import { getProgressData } from "@/features/progress/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.progress;
-const d = messages.dashboard.progress;
 
 export const metadata: Metadata = { title: t.title };
 
-function signed(value: number | null): string {
-  if (value === null) return "—";
-  return `${value > 0 ? "+" : ""}${value} kg`;
-}
+/*
+  `measured_at` es un DATE sin hora: `new Date("2026-07-31")` lo parsea como
+  medianoche UTC y, formateado en la zona local (Costa Rica, UTC-6), retrocede
+  al día 30. La misma medición salía como «31 jul» en la tabla y «30 de julio»
+  en la cabecera. Formatear en UTC la deja en el día que se escribió.
+*/
+const fecha = (iso: string) =>
+  new Intl.DateTimeFormat("es-419", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(iso));
 
-export default async function ProgressPage() {
+const fechaCorta = (iso: string) =>
+  new Intl.DateTimeFormat("es-419", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+
+export default async function ProgressPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vista?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const params = await searchParams;
+  const VISTAS: ProgressView[] = ["resumen", "historial", "fotos", "bienestar"];
+  const vista: ProgressView = VISTAS.includes(params.vista as ProgressView)
+    ? (params.vista as ProgressView)
+    : "resumen";
   const data = await getProgressData(user.id);
-  const hasData = data.measurements.length > 0;
+  /*
+    La tarjeta del cuerpo usa la última medición CON composición, no la última
+    a secas: un pesaje suelto de ayer dejaría la tarjeta con seis «Sin dato» y
+    escondería el InBody de la semana pasada, que es el que tiene algo que
+    contar. Si ninguna la tiene, se cae a la última y la tarjeta lo dice por
+    su rótulo de fuente.
+  */
+  const conSegmental = data.measurements.find((m) => m.segments.length > 0);
+  const conComposicion = data.measurements.find(
+    (m) =>
+      m.bodyFatPercentage != null ||
+      m.skeletalMuscleKg != null ||
+      m.bodyWaterPercentage != null,
+  );
+  /* Orden de preferencia: la que trae análisis segmental manda, porque es la
+     única que llena el maniquí; después cualquiera con composición; y si no
+     hay ninguna, la última a secas. */
+  const ultima = conSegmental ?? conComposicion ?? data.measurements[0];
 
   return (
-    <>
-      {/* Sin icono ni frase de presentacion: la barra superior y el riel ya
-          dicen donde estas, y "lleva un registro de tus mediciones" no decia
-          nada que la pantalla no dijera sola. */}
-      <PageHeader title={t.title} actions={<MeasurementFormDialog />} />
+    <div className="progress-workspace" data-view={vista}>
+      <header className="progress-header">
+        <div>
+          <h1>{t.title}</h1>
+          <p>
+            {data.measurements[0]
+              ? `Tu última medición es del ${fecha(data.measurements[0].measuredAt)}.`
+              : "Aún no has registrado ninguna medición."}
+          </p>
+        </div>
+        <MeasurementFormDialog />
+      </header>
 
-      {hasData ? (
+      <ProgressNav active={vista} />
+
+      {!data.measurements[0] || !ultima ? (
+        <EmptyState
+          size="page"
+          tone="plain"
+          icon={TrendingUp}
+          title={t.noMeasurements}
+          description={t.noMeasurementsDescription}
+          action={<MeasurementFormDialog />}
+        />
+      ) : vista === "resumen" ? (
         <>
-          <Section title={t.chartTitle}>
-            <div className="space-y-4">
-              {/* Las tres lecturas SI son una rejilla: no es una secuencia,
-                  son tres medidas del mismo peso que se comparan de un
-                  vistazo. La prohibicion de rejillas es para listas. */}
-              <div className="grid grid-cols-3 gap-4">
-                <MetricCard
-                  label={d.lastWeight}
-                  value={
-                    data.lastWeight !== null ? `${data.lastWeight} kg` : "—"
-                  }
-                />
-                <MetricCard
-                  label={t.weekLabel}
-                  value={signed(data.weeklyChange)}
-                  delta={
-                    data.trend
-                      ? {
-                          text: d.trend[data.trend],
-                          direction:
-                            data.trend === "sube"
-                              ? "up"
-                              : data.trend === "baja"
-                                ? "down"
-                                : "flat",
-                          tone: "neutral",
-                        }
-                      : undefined
-                  }
-                />
-                <MetricCard
-                  label={t.monthLabel}
-                  value={signed(data.monthlyChange)}
-                />
-              </div>
+          <BodyCompositionCard
+            measurement={ultima}
+            snapshot={data.composition?.current ?? null}
+            fechaLegible={fecha(ultima.measuredAt)}
+          />
+
+          {/* Cambio y tendencia, juntos: los dos responden «cómo voy», uno
+              entre las dos últimas mediciones y otro a lo largo del tiempo.
+              En escritorio van lado a lado; en una columna, uno tras otro. */}
+          <div className="progress-pair">
+            {/* Sólo con una medición anterior: sin ella no hay comparación, y
+              una barra contra sí misma dice cero. */}
+            {data.composition?.previous && data.measurements[1] ? (
+              /* Las fechas son las que el INFORME compara —la última y la
+               anterior—, no las de la tarjeta del cuerpo: esa puede estar
+               mostrando una medición más vieja por ser la que trae
+               composición, y mezclarlas daba un rango al revés. */
+              <InbodyComparison
+                report={data.composition}
+                fechaAnterior={fechaCorta(data.measurements[1].measuredAt)}
+                fechaActual={fechaCorta(data.measurements[0].measuredAt)}
+              />
+            ) : (
+              <p className="progress-single-note">
+                Con una sola medición no hay nada que comparar todavía. La
+                segunda activa el antes y el después.
+              </p>
+            )}
+
+            <section
+              className="v11-card progress-trend-card"
+              aria-labelledby="pt-title"
+            >
+              <header className="progress-card-head">
+                <div>
+                  <h2 id="pt-title">Evolución del peso</h2>
+                  <p className="progress-card-meta">
+                    {data.measurements.length}{" "}
+                    {data.measurements.length === 1 ? "medición" : "mediciones"}{" "}
+                    registradas
+                  </p>
+                </div>
+              </header>
               <WeightTrendChart
                 daily={data.weightSeries}
                 average={data.weightAverage7}
               />
-            </div>
-          </Section>
-
-          {data.composition ? (
-            <CompositionSection report={data.composition} />
-          ) : null}
-
-          {data.fatMassSeries.length >= 2 ? (
-            <Section title={t.composition.chartTitle}>
-              <CompositionChart
-                fatMass={data.fatMassSeries}
-                leanMass={data.leanMassSeries}
-              />
-            </Section>
-          ) : null}
-
-          <Section title={t.historyTitle}>
-            <MeasurementsTable measurements={data.measurements} />
-            <p className="text-muted-foreground mt-3 text-xs text-balance">
-              {t.inbodyNotice}
-            </p>
-          </Section>
+            </section>
+          </div>
         </>
+      ) : vista === "historial" ? (
+        <section
+          className="v11-card progress-history-card"
+          aria-labelledby="ph-title"
+        >
+          <header className="progress-card-head">
+            <div>
+              <h2 id="ph-title">{t.historyTitle}</h2>
+              <p className="progress-card-meta">
+                Cada medición con sus cifras, su archivo original y las fotos de
+                ese día.
+              </p>
+            </div>
+          </header>
+          <MeasurementHistory
+            measurements={data.measurements}
+            photos={data.photos}
+          />
+          <p className="progress-card-note">{t.inbodyNotice}</p>
+        </section>
+      ) : vista === "fotos" ? (
+        <section
+          className="v11-card progress-photos-card"
+          aria-labelledby="pf-title"
+        >
+          <header className="progress-card-head">
+            <div>
+              <h2 id="pf-title">Todas tus fotos</h2>
+              <p className="progress-card-meta">
+                Agrupadas por fecha, de la más reciente a la más antigua.
+              </p>
+            </div>
+            <PhotoUploadDialog
+              measurements={data.measurements.map((m) => ({
+                id: m.id,
+                measuredAt: m.measuredAt,
+              }))}
+            />
+          </header>
+          {data.photos.length > 0 ? (
+            <PhotoGallery photos={data.photos} />
+          ) : (
+            <p className="progress-card-note">
+              Aún no hay fotos. Son privadas: sólo tú puedes verlas.
+            </p>
+          )}
+        </section>
       ) : (
-        <EmptyState
-          title={t.noMeasurements}
-          description={t.noMeasurementsDescription}
-          icon={TrendingUp}
-        />
+        <section
+          className="v11-card progress-wellbeing-card"
+          aria-labelledby="pw-title"
+        >
+          <header className="progress-card-head">
+            <div>
+              <h2 id="pw-title">Bienestar</h2>
+              <p className="progress-card-meta">
+                El sueño, el estrés y la energía explican buena parte de tu
+                rendimiento y tu adherencia.
+              </p>
+            </div>
+          </header>
+          <WellbeingForm today={data.wellbeingToday} />
+        </section>
       )}
-
-      {/* Dos tarjetas sueltas que no se leen en secuencia: en escritorio van
-          en paralelo en vez de una debajo de la otra a ancho completo. */}
-      <div className="grid gap-6 md:grid-cols-2 md:items-start">
-        <WellbeingForm today={data.wellbeingToday} />
-        <PhotosSection photos={data.photos} />
-      </div>
-    </>
+    </div>
   );
 }

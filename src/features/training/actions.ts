@@ -1,5 +1,8 @@
 "use server";
 
+import { loadExerciseCatalog } from "@/features/training/catalog-cache";
+import { searchExerciseCatalog } from "@/features/training/lib/exercise-matcher";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -31,6 +34,7 @@ import {
   dayIdSchema,
   finishSessionSchema,
   logSetSchema,
+  catalogExerciseIdSchema,
   planExerciseIdSchema,
   planIdSchema,
   searchExercisesSchema,
@@ -384,20 +388,22 @@ export async function searchExercises(
   input: unknown,
 ): Promise<{ error: string } | { results: CatalogExercise[] }> {
   const parsed = searchExercisesSchema.safeParse(input);
-  const { supabase, user } = await requireUser();
+  const { user } = await requireUser();
   if (!parsed.success || !user) return { error: t.actionFailed };
 
-  const { data, error } = await supabase
-    .from("exercise_catalog")
-    .select(
-      "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty",
-    )
-    .ilike("name", `%${parsed.data.term}%`)
-    .is("deleted_at", null)
-    .order("name")
-    .limit(20);
-  if (error) return { error: t.actionFailed };
-  return { results: (data ?? []).map(toCatalogExercise) };
+  /* Se busca en el catálogo entero con el vocabulario traducido: el
+     catálogo está casi todo en inglés y «remo mancuerna» tiene que
+     encontrar «One-Arm Dumbbell Row». */
+  try {
+    const catalog = await loadExerciseCatalog();
+    const byId = new Map(catalog.map((row) => [row.id, row]));
+    const results = searchExerciseCatalog(parsed.data.term, catalog).map(
+      (match) => toCatalogExercise(byId.get(match.id) as ExerciseRow),
+    );
+    return { results };
+  } catch {
+    return { error: t.actionFailed };
+  }
 }
 
 /** Columnas biomecanicas del catalogo, usadas por la ficha y la comparacion. */
@@ -422,9 +428,7 @@ type BiomechanicsRow = ExerciseRow & {
   execution_notes?: string | null;
 };
 
-function toBiomechanicalExercise(
-  row: BiomechanicsRow,
-): BiomechanicalExercise {
+function toBiomechanicalExercise(row: BiomechanicsRow): BiomechanicalExercise {
   return {
     ...toCatalogExercise(row),
     joints: row.joints ?? [],
@@ -478,9 +482,7 @@ export type ExerciseAlternativeDetail = ExerciseComparison & {
   exercise: BiomechanicalExercise;
 };
 
-export async function getExerciseAlternatives(
-  input: unknown,
-): Promise<
+export async function getExerciseAlternatives(input: unknown): Promise<
   | { error: string }
   | {
       source: BiomechanicalExercise;
@@ -498,10 +500,18 @@ export async function getExerciseAlternatives(
     .single();
   if (!planExercise?.exercise_catalog) return { error: t.actionFailed };
 
+  /* Candidatos: solo los que tienen biomecanica escrita.
+     El catalogo importado entra sin ella, y el comparador sustituye cada valor
+     ausente por una puntuacion media —no falla, pero deja que un ejercicio del
+     que no sabemos nada adelante a uno con datos reales—. Y el `limit` sin
+     orden dejaba de ser inocuo al pasar de 15 filas a 1.339: cuales eran esas
+     200 lo decidia el orden fisico de la tabla. */
   const { data: candidates } = await supabase
     .from("exercise_catalog")
     .select(BIOMECHANICS_COLUMNS)
     .is("deleted_at", null)
+    .not("resistance_profile", "is", null)
+    .order("name")
     .limit(200);
 
   const source = toBiomechanicalExercise(
@@ -523,13 +533,19 @@ export type ExerciseDetail = {
   exercise: BiomechanicalExercise;
   setupNotes: string | null;
   executionNotes: string | null;
-  ratings: ExerciseRating[];
+  /**
+   * Nulos cuando el ejercicio no tiene biomecanica escrita. Un ejercicio
+   * importado no la trae, y el motor rellena cada hueco con una puntuacion
+   * media: enseñar "5/10" en las seis dimensiones seria inventarse una lectura
+   * y presentarla con la misma cara que una real.
+   */
+  ratings: ExerciseRating[] | null;
   /**
    * Esquema sugerido de series, repeticiones, RIR y descanso. Se muestra
    * APARTE y no modifica la rutina: aplicarlo es decision del usuario
    * (requisito 13).
    */
-  prescription: Prescription;
+  prescription: Prescription | null;
 };
 
 /**
@@ -573,6 +589,55 @@ export async function getExerciseDetail(
   };
 }
 
+/**
+ * La misma ficha, pero pedida desde el catalogo.
+ *
+ * Cambia una cosa y no es menor: sin plan no hay `positionInSession`, y esa
+ * posicion es lo que ajusta la prescripcion —el quinto ejercicio de una sesion
+ * no se prescribe como el primero—. Aqui se omite, asi que lo que se ve es la
+ * lectura del ejercicio EN ABSTRACTO, no la de tu sesion de hoy.
+ */
+export async function getCatalogExerciseDetail(
+  input: unknown,
+): Promise<{ error: string } | ExerciseDetail> {
+  const parsed = catalogExerciseIdSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return { error: t.actionFailed };
+
+  const { data } = await supabase
+    .from("exercise_catalog")
+    .select(BIOMECHANICS_COLUMNS)
+    .eq("id", parsed.data.exerciseId)
+    .is("deleted_at", null)
+    .single();
+  if (!data) return { error: t.actionFailed };
+
+  const row = data as BiomechanicsRow;
+  const exercise = toBiomechanicalExercise(row);
+
+  /* Sin biomecanica no hay lectura que dar. Se devuelven nulos y la ficha
+     explica por que, en vez de mostrar seises inventados. */
+  if (row.resistance_profile === null) {
+    return {
+      exercise,
+      setupNotes: row.setup_notes ?? null,
+      executionNotes: row.execution_notes ?? null,
+      ratings: null,
+      prescription: null,
+    };
+  }
+
+  const context = await getRatingContext(user.id);
+
+  return {
+    exercise,
+    setupNotes: row.setup_notes ?? null,
+    executionNotes: row.execution_notes ?? null,
+    ratings: rateExercise(exercise, context),
+    prescription: recommendPrescription(exercise, context),
+  };
+}
+
 // --------------------------------------------------------------- sesiones
 
 export async function startSession(
@@ -590,7 +655,15 @@ export async function startSession(
     .is("completed_at", null)
     .limit(1)
     .maybeSingle();
-  if (inProgress) redirect(`/entrenamiento/sesion/${inProgress.id}`);
+  /* Una sesión de un día del plan se entrena en la misma pantalla de
+     Entrenamiento, sobre las tarjetas del día. La sesión libre, sin plan
+     que seguir, sigue en su propia pantalla para ir añadiendo ejercicios. */
+  if (inProgress)
+    redirect(
+      parsed.data.planDayId
+        ? "/entrenamiento"
+        : `/entrenamiento/sesion/${inProgress.id}`,
+    );
 
   const { data: created, error } = await supabase
     .from("workout_sessions")
@@ -602,7 +675,12 @@ export async function startSession(
     .select("id")
     .single();
   if (error || !created) return fail;
-  redirect(`/entrenamiento/sesion/${created.id}`);
+  revalidateTraining();
+  redirect(
+    parsed.data.planDayId
+      ? "/entrenamiento"
+      : `/entrenamiento/sesion/${created.id}`,
+  );
 }
 
 export async function logSet(input: unknown): Promise<TrainingActionResult> {

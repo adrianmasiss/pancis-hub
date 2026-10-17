@@ -39,7 +39,9 @@ export function CompatibilityScore({
     <div className={cn("space-y-1", className)}>
       <p className="flex items-baseline gap-1.5 text-sm">
         <span className="text-muted-foreground">{t.compatibility}:</span>
-        <span className={cn("font-semibold tabular-nums", toneFor(score.overall))}>
+        <span
+          className={cn("font-semibold tabular-nums", toneFor(score.overall))}
+        >
           {t.compatibilityOf10.replace("{score}", String(score.overall))}
         </span>
       </p>

@@ -169,10 +169,29 @@ export async function uploadProgressPhoto(
     capturedAt: formText(formData.get("capturedAt")),
     viewType: formText(formData.get("viewType")),
     notes: formText(formData.get("notes")),
+    measurementId: formText(formData.get("measurementId")),
   });
   const file = formData.get("file");
   if (!parsed.success || !(file instanceof File) || file.size === 0)
     return fail;
+
+  /*
+    Si la foto cuelga de una medición, manda la fecha de ESA medición.
+    Con las dos libres se podía enlazar una foto a la medición del 31 y
+    fecharla el 11, y entonces la misma foto salía bajo el 11 en la galería y
+    bajo el 31 en el historial. Una cosa no puede haber pasado dos días.
+  */
+  let capturedAt = parsed.data.capturedAt;
+  if (parsed.data.measurementId) {
+    const { data: medicion } = await supabase
+      .from("body_measurements")
+      .select("measured_at")
+      .eq("id", parsed.data.measurementId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!medicion) return fail;
+    capturedAt = medicion.measured_at;
+  }
 
   const path = await uploadPrivateFile(
     supabase,
@@ -186,10 +205,11 @@ export async function uploadProgressPhoto(
 
   const { error } = await supabase.from("progress_photos").insert({
     user_id: user.id,
-    captured_at: parsed.data.capturedAt,
+    captured_at: capturedAt,
     view_type: parsed.data.viewType,
     private_storage_path: path,
     notes: parsed.data.notes ?? null,
+    measurement_id: parsed.data.measurementId ?? null,
   });
   if (error) {
     await supabase.storage.from("progress-photos").remove([path]);

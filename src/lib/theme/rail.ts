@@ -2,10 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-export const RAIL_STORAGE_KEY = "pancis-rail";
-
-/** El riel se despliega solo desde este ancho; debajo arranca colapsado. */
-const EXPANDED_QUERY = "(min-width: 1280px)";
+export const RAIL_STORAGE_KEY = "pancis-rail-capsules";
 
 export type RailState = "expanded" | "collapsed";
 
@@ -48,12 +45,6 @@ export function storeRail(state: RailState): void {
   for (const listener of listeners) listener();
 }
 
-function subscribeQuery(onChange: () => void): () => void {
-  const media = window.matchMedia(EXPANDED_QUERY);
-  media.addEventListener("change", onChange);
-  return () => media.removeEventListener("change", onChange);
-}
-
 export type Rail = {
   /** La eleccion explicita, o `null` si manda el punto de corte. */
   pinned: RailState | null;
@@ -62,11 +53,7 @@ export type Rail = {
   toggle: () => void;
 };
 
-/**
- * Estado del riel: el pin explicito de la persona si existe, y si no, el punto
- * de corte. El servidor rinde siempre la version del punto de corte, que es lo
- * que el CSS ya sirve, asi que no hay salto al hidratar.
- */
+/** Collapsed capsule by default; an explicit expansion persists locally. */
 export function useRail(): Rail {
   const pinned = useSyncExternalStore(
     subscribeStore,
@@ -74,13 +61,7 @@ export function useRail(): Rail {
     () => null,
   );
 
-  const wideEnough = useSyncExternalStore(
-    subscribeQuery,
-    () => window.matchMedia(EXPANDED_QUERY).matches,
-    () => false,
-  );
-
-  const collapsed = pinned ? pinned === "collapsed" : !wideEnough;
+  const collapsed = pinned === "collapsed";
 
   const toggle = useCallback(() => {
     storeRail(collapsed ? "expanded" : "collapsed");

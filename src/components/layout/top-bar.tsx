@@ -1,38 +1,78 @@
-import Link from "next/link";
+"use client";
+
+import { useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { messages } from "@/i18n/es-419";
+import { UserMenu } from "@/features/auth/components/user-menu";
+import { CopilotDrawer } from "@/features/assistant/components/copilot-drawer";
+
+type TopBarProps = {
+  displayName?: string;
+  avatarUrl?: string | null;
+  email?: string;
+};
 
 /**
- * Barra superior del handoff: conmutador de tema y acceso al copiloto,
- * alineados a la derecha sobre el lienzo.
+ * Barra superior del lienzo v11: tema, copiloto y cuenta a la derecha.
  *
- * No es decoracion. Hasta ahora este componente existia y NADIE lo montaba, y
- * con el se habian perdido las dos funciones que contiene: no habia forma de
- * cambiar de tema ni de abrir el asistente desde la interfaz.
+ * La marca solo aparece en telefono. En escritorio la lleva el riel, y
+ * repetirla ponia DOS logotipos a sesenta pixeles de distancia —el de la isla
+ * y el de aqui— que se leian como un error de maquetado, no como una marca.
  *
- * La marca solo aparece en telefono: en escritorio ya la lleva el riel, y
- * repetirla era decir lo mismo dos veces en la misma pantalla.
+ * El copiloto abre un cajon lateral en vez de navegar: la pregunta se hace
+ * sobre la pantalla que la provoco, sin perderla de vista. El destino
+ * completo sigue en el riel para quien quiera la conversacion entera.
  */
-export function TopBar() {
+export function TopBar({ displayName, avatarUrl, email }: TopBarProps) {
+  const ring = useRef<HTMLSpanElement>(null);
+  const setRingSpeed = (hovered: boolean) => {
+    // Preserve the current phase when accelerating or returning to idle.
+    for (const animation of ring.current?.getAnimations() ?? []) {
+      animation.updatePlaybackRate(hovered ? 4.6 / 1.8 : 1);
+    }
+  };
+  const [copilotOpen, setCopilotOpen] = useState(false);
+
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-3 px-5 sm:px-7 md:h-[4.5rem] md:justify-end md:pr-[calc(1.75rem+var(--copilot-gutter))] lg:pr-[calc(2.75rem+var(--copilot-gutter))] lg:pl-11">
-      <span className="md:hidden" aria-hidden="true">
-        <BrandLogo variant="mark" height={28} />
-      </span>
+    <>
+      <header className="app-topbar">
+        <span className="md:hidden" aria-hidden="true">
+          <BrandLogo variant="mark" height={28} />
+        </span>
 
-      <div className="flex shrink-0 items-center gap-2">
-        <ThemeToggle />
+        {/* El conmutador de claro/oscuro sale de aqui: la barra de cada
+            pantalla no es sitio para una preferencia que se toca una vez. El
+            modo sigue estando, con las paletas, en Configuracion > Apariencia. */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setCopilotOpen(true)}
+            className="copilot-trigger"
+            onPointerEnter={(event) => {
+              if (event.pointerType !== "touch") setRingSpeed(true);
+            }}
+            onPointerLeave={() => setRingSpeed(false)}
+          >
+            <span ref={ring} className="copilot-ring" aria-hidden="true" />
+            <span className="copilot-core" aria-hidden="true" />
+            <span className="copilot-label">
+              <Sparkles className="text-primary size-4" aria-hidden="true" />
+              Copilot
+            </span>
+          </button>
 
-        <Link
-          href="/asistente"
-          className="border-border-strong bg-card/70 text-foreground hover:bg-card focus-visible:ring-ring flex h-10 items-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors duration-[var(--dur-fast)] focus-visible:ring-2 focus-visible:outline-none active:translate-y-px"
-        >
-          <Sparkles className="text-primary size-4" aria-hidden="true" />
-          {messages.nav.assistant}
-        </Link>
-      </div>
-    </header>
+          {displayName ? (
+            <UserMenu
+              variant="pill"
+              displayName={displayName}
+              avatarUrl={avatarUrl}
+              email={email}
+            />
+          ) : null}
+        </div>
+      </header>
+
+      <CopilotDrawer open={copilotOpen} onOpenChange={setCopilotOpen} />
+    </>
   );
 }

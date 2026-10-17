@@ -7,6 +7,7 @@ import { ConstantRow } from "@/features/evidence/components/constant-row";
 import { getEvidenceLibrary } from "@/features/evidence/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
+import { ViewHeader } from "@/components/shared/view-header";
 
 const t = messages.evidence;
 const d = messages.dashboard.nutrition;
@@ -39,16 +40,22 @@ export default async function EvidencePage() {
   const fmt = (n: number) => Math.round(n).toLocaleString("es-419");
 
   return (
-    <div className="flex flex-col gap-12 py-8">
-      <header className="flex flex-col items-center gap-4 text-center">
-        <p className="text-subtle-foreground label-micro">
-          {t.eyebrow(studies.length, constants.length)}
-        </p>
-        <h1 className="page-display max-w-[24ch] text-balance">{t.headline}</h1>
-        <p className="text-muted-foreground max-w-[62ch] text-[15px] leading-[1.65] text-pretty">
-          {t.subtitle}
-        </p>
-      </header>
+    <div className="flex flex-col gap-12">
+      {/* El encabezado era editorial y centrado, con la frase de portada como
+          `<h1>`. Pasa al bloque comun: el titulo nombra la pantalla, como en
+          el resto, y la frase baja a ser lo que siempre fue —la entradilla de
+          la pagina—, alineada a la izquierda con todo lo demas. */}
+      <ViewHeader
+        title={messages.nav.evidence}
+        meta={t.eyebrow(studies.length, constants.length)}
+      >
+        <div className="mt-4 flex flex-col gap-3">
+          <p className="page-display max-w-[24ch] text-balance">{t.headline}</p>
+          <p className="text-muted-foreground max-w-[62ch] text-[15px] leading-[1.65] text-pretty">
+            {t.subtitle}
+          </p>
+        </div>
+      </ViewHeader>
 
       {/* El anillo es el resumen en perspectiva; las tres capas de abajo son
           la biblioteca completa y la alternativa tabular que el handoff exige

@@ -1,198 +1,309 @@
 "use client";
-
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Plus, Send } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  Calendar,
+  ChevronDown,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { AssistantReplyCard } from "@/features/assistant/components/assistant-reply-card";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { askAssistant } from "@/features/assistant/actions";
 import type { AssistantReply } from "@/features/assistant/types";
 import { messages } from "@/i18n/es-419";
 
-const t = messages.assistant;
-const c = messages.assistant.copilot;
-
 type ChatEntry =
   { role: "user"; text: string } | { role: "assistant"; reply: AssistantReply };
+type Conversation = { id: string | null; title: string; entries: ChatEntry[] };
+const prompts = [
+  {
+    tag: "CENA · 21:00",
+    text: "¿Cómo cierro las 410 kcal que me quedan?",
+    tone: "default",
+  },
+  {
+    tag: "EMPUJE A",
+    text: "El pectoral va al 71 %. ¿Bajo el volumen?",
+    tone: "caution",
+  },
+  {
+    tag: "PROTEÍNA",
+    text: "Llevo tres días bajo el umbral en la mañana",
+    tone: "positive",
+  },
+  {
+    tag: "SUEÑO · 6 H 40",
+    text: "¿Afecta esto a la sesión de hoy?",
+    tone: "muted",
+  },
+];
 
-/**
- * `initialMessage` llega desde los accesos contextuales (una comida, un
- * alimento, un ejercicio). Se PRECARGA en el campo pero NO se envia sola:
- * mandar una consulta sin que el usuario la confirme gastaria una llamada
- * al modelo por el simple hecho de tocar un boton.
- */
-export function AssistantChat({ initialMessage }: { initialMessage?: string }) {
+export function AssistantChat({
+  initialMessage,
+  compact = false,
+}: {
+  initialMessage?: string;
+  compact?: boolean;
+}) {
   const [entries, setEntries] = useState<ChatEntry[]>([]);
-  // Se conserva entre preguntas para dar continuidad a la conversacion.
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [message, setMessage] = useState(initialMessage ?? "");
+  const [history, setHistory] = useState<Conversation[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const endRef = useRef<HTMLDivElement | null>(null);
-
+  const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [entries.length]);
-
-  const send = (text: string) => {
+    if (entries.length)
+      endRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+        block: "nearest",
+      });
+  }, [entries.length, pending]);
+  function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || pending) return;
     setEntries((previous) => [...previous, { role: "user", text: trimmed }]);
     setMessage("");
     startTransition(async () => {
-      const result = await askAssistant({
-        message: trimmed,
-        // Encadena con la conversacion en curso para que el asistente no
-        // vuelva a pedir datos que ya le diste.
-        conversationId: conversationId ?? undefined,
-      });
-      if ("error" in result) {
-        toast.error(result.error);
-      } else {
-        setConversationId(result.conversationId);
-        setEntries((previous) => [
-          ...previous,
-          { role: "assistant", reply: result.reply },
-        ]);
+      try {
+        const result = await askAssistant({
+          message: trimmed,
+          conversationId: conversationId ?? undefined,
+        });
+        if ("error" in result) {
+          toast.error(result.error);
+          setMessage(trimmed);
+          setEntries((previous) => previous.slice(0, -1));
+        } else {
+          setConversationId(result.conversationId);
+          setEntries((previous) => [
+            ...previous,
+            { role: "assistant", reply: result.reply },
+          ]);
+        }
+      } catch {
+        toast.error("No se pudo enviar tu pregunta. Inténtalo de nuevo.");
+        setMessage(trimmed);
+        setEntries((previous) => previous.slice(0, -1));
       }
     });
-  };
-
+  }
+  function archive() {
+    if (entries.length) {
+      const first = entries.find((e) => e.role === "user");
+      setHistory((previous) => [
+        {
+          id: conversationId,
+          title: first?.role === "user" ? first.text : "Conversación",
+          entries,
+        },
+        ...previous.filter((c) => !conversationId || c.id !== conversationId),
+      ]);
+    }
+  }
+  function newConversation() {
+    archive();
+    setEntries([]);
+    setConversationId(null);
+    setMessage("");
+    setHistoryOpen(false);
+    inputRef.current?.focus();
+  }
   const empty = entries.length === 0;
-
-  return (
-    /*
-      Es la UNICA pantalla que no pinta el panel grande de fondo (handoff): la
-      conversacion es el sujeto, y una superficie alrededor solo la encajona.
-    */
-    <div className="flex min-h-[calc(100dvh-18rem)] flex-col gap-6 md:min-h-[calc(100dvh-14rem)]">
-      {/*
-        El prototipo pone aqui un desplegable de conversaciones pasadas. No se
-        rinde: recorrerlas no esta implementado, y un rotulo "Historial · 6"
-        que no abre nada promete una funcion que no existe. Queda "Nueva", que
-        si hace lo que dice.
-      */}
-      <div className="flex items-center justify-end gap-3">
-        {!empty ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setEntries([]);
-              setConversationId(null);
-              setMessage("");
-            }}
-          >
-            <Plus aria-hidden="true" />
-            {c.newConversation}
-          </Button>
-        ) : null}
+  const composer = (
+    <form
+      className="assistant-composer pc-live-edge"
+      onSubmit={(e) => {
+        e.preventDefault();
+        send(message);
+      }}
+    >
+      <div className="assistant-input-row">
+        <textarea
+          ref={inputRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !e.nativeEvent.isComposing
+            ) {
+              e.preventDefault();
+              send(message);
+            }
+          }}
+          rows={1}
+          maxLength={2000}
+          aria-label="Pregunta al copiloto"
+          placeholder="Pregunta lo que quieras de tu plan"
+        />
       </div>
-
+      <div className="assistant-context">
+        <details className="assistant-context-menu">
+          <summary aria-label="Añadir contexto">
+            <Plus className="size-4" />
+          </summary>
+          <div>
+            <Link href="/nutricion/dieta">Revisar mi dieta</Link>
+            <Link href="/entrenamiento">Revisar mi rutina</Link>
+            <Link href="/progreso">Registrar medición</Link>
+          </div>
+        </details>
+        <span>
+          <Sparkles className="size-3" />
+          Cambios menores
+        </span>
+        <span>
+          <Calendar className="size-3" />
+          Hoy
+        </span>
+        {/* Enviar cierra la fila de abajo, no la del texto. Arriba quedaba a
+            la altura del campo y dejaba vacio todo el canto inferior
+            derecho; aqui ancla la esquina y el campo gana el ancho entero.
+            Tambien aguanta mejor el campo de varias lineas: el boton se
+            queda en el pie en vez de flotar contra un area que crece. */}
+        <button
+          data-glow
+          className="assistant-send"
+          type="submit"
+          aria-label={messages.assistant.send}
+          disabled={pending || !message.trim()}
+        >
+          <ArrowUpRight className="size-[18px]" />
+        </button>
+      </div>
+    </form>
+  );
+  return (
+    <div className="assistant-chat" data-compact={compact} data-empty={empty}>
+      {!compact && (
+        <header className="assistant-toolbar">
+          <div className="relative">
+            <button
+              data-glow
+              className="assistant-history-button"
+              type="button"
+              aria-expanded={historyOpen}
+              onClick={() => setHistoryOpen(!historyOpen)}
+            >
+              <span className="assistant-history-mark">
+                <Sparkles className="size-4" />
+              </span>
+              Historial <span>{history.length || ""}</span>
+              <ChevronDown className="size-3" />
+            </button>
+            {historyOpen && (
+              <div className="assistant-history-popover">
+                <p>Conversaciones de esta sesión</p>
+                {history.length ? (
+                  history.map((c, i) => (
+                    <button
+                      data-glow
+                      type="button"
+                      key={`${c.id}-${i}`}
+                      onClick={() => {
+                        archive();
+                        setEntries(c.entries);
+                        setConversationId(c.id);
+                        setHistoryOpen(false);
+                      }}
+                    >
+                      {c.title}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">
+                    Las conversaciones que cierres con «Nueva» aparecerán aquí.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            data-glow
+            className="assistant-new"
+            type="button"
+            onClick={newConversation}
+            disabled={pending}
+          >
+            <Plus className="size-4" />
+            Nueva
+          </button>
+        </header>
+      )}
       {empty ? (
-        /* Estado vacio del prototipo: la marca, la pregunta y —lo importante—
-           que contexto cruza de verdad. La frase enumera lo que
-           `AssistantContext` trae; no promete nada que no tenga. */
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-10 text-center">
-          <BrandLogo variant="mark" height={56} />
-          <h2 className="page-display max-w-[22ch] text-balance">
-            {c.emptyHeadline}
-          </h2>
-          <p className="text-muted-foreground max-w-[58ch] text-[15px] leading-[1.65] text-pretty">
-            {c.emptyContext}
-          </p>
+        <div className="assistant-empty">
+          {!compact && (
+            <>
+              <BrandLogo variant="mark" height={56} />
+              <h1>{messages.assistant.copilot.emptyHeadline}</h1>
+              <p>{messages.assistant.copilot.emptyContext}</p>
+            </>
+          )}
+          {compact && (
+            <div className="assistant-drawer-intro">
+              <p>Revisemos tu día.</p>
+              <span>
+                Pregunta por tu dieta, entrenamiento o progreso. Las propuestas
+                se revisan antes de cambiar tu plan.
+              </span>
+            </div>
+          )}
+          {composer}
+          {!compact && (
+            <div className="assistant-prompts">
+              {prompts.map((p) => (
+                <button
+                  data-glow
+                  key={p.tag}
+                  type="button"
+                  data-tone={p.tone}
+                  onClick={() => {
+                    setMessage(p.text);
+                    inputRef.current?.focus();
+                  }}
+                >
+                  <span>{p.tag}</span>
+                  <p>{p.text}</p>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
-        <div className="flex flex-1 flex-col gap-4">
-          {entries.map((entry, index) =>
-            entry.role === "user" ? (
-              <p
-                key={index}
-                className="bg-primary text-primary-foreground max-w-[85%] self-end rounded-[16px] rounded-br-[4px] px-4 py-2.5 text-[15px] leading-[1.5]"
-              >
-                {entry.text}
-              </p>
-            ) : (
-              <AssistantReplyCard key={index} reply={entry.reply} />
-            ),
-          )}
-          {pending ? (
-            <p className="text-muted-foreground flex items-center gap-2.5 self-start text-[15px]">
-              {/* El anillo que gira mientras piensa (handoff). */}
-              <span
-                aria-hidden="true"
-                className="border-primary/25 border-t-primary size-4 animate-spin rounded-full border-2 [animation-duration:900ms] motion-reduce:animate-none"
-              />
-              {t.thinking}
-            </p>
-          ) : null}
-          <div ref={endRef} />
-        </div>
-      )}
-
-      {/* El campo va al fondo, con el envio DENTRO (handoff). */}
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          send(message);
-        }}
-        className="surface-card sticky bottom-0 flex flex-col gap-3 p-3"
-      >
-        <label className="sr-only" htmlFor="copilot-pregunta">
-          {t.inputPlaceholder}
-        </label>
-        <div className="flex items-end gap-2">
-          <textarea
-            id="copilot-pregunta"
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            onKeyDown={(event) => {
-              /* Enter envia; Mayus+Enter salta de linea. Es lo que espera
-                 quien escribe en un chat, y sin esto Enter no hacia nada. */
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                send(message);
-              }
-            }}
-            placeholder={t.inputPlaceholder}
-            maxLength={500}
-            rows={1}
-            className="placeholder:text-subtle-foreground max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-[1.5] outline-none"
-          />
-          <Button
-            type="submit"
-            variant="brand"
-            size="icon"
-            className="shrink-0 rounded-full"
-            disabled={pending || !message.trim()}
-            aria-label={t.send}
+        <>
+          <div
+            className="assistant-messages"
+            role="log"
+            aria-label="Conversación con el copiloto"
+            aria-live="polite"
           >
-            <Send aria-hidden="true" />
-          </Button>
-        </div>
-
-        {empty ? (
-          /* Sugerencias como pastillas pulsables cuando no hay conversacion
-             (handoff). Cada una activa un motor determinista que ya existe. */
-          <div className="flex flex-wrap gap-2 px-1">
-            {t.suggestions.map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => send(suggestion)}
-                className="border-border text-muted-foreground hover:border-border-strong hover:text-foreground rounded-full border px-3 py-1.5 text-[13px] transition-colors duration-[var(--dur-fast)] active:translate-y-px"
-              >
-                {suggestion}
-              </button>
-            ))}
+            {entries.map((e, i) =>
+              e.role === "user" ? (
+                <p className="assistant-user-message" key={i}>
+                  {e.text}
+                </p>
+              ) : (
+                <AssistantReplyCard key={i} reply={e.reply} />
+              ),
+            )}
+            {pending && (
+              <p role="status" className="text-muted-foreground text-sm">
+                {messages.assistant.thinking}
+              </p>
+            )}
+            <div ref={endRef} />
           </div>
-        ) : null}
-      </form>
-
-      <p className="text-subtle-foreground text-[12px] leading-relaxed text-pretty">
-        <span className="font-medium">{t.limitsTitle}: </span>
-        {t.limits}
-      </p>
+          <div className="assistant-bottom-composer">{composer}</div>
+        </>
+      )}
     </div>
   );
 }
