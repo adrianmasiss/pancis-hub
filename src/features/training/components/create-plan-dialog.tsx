@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FormField } from "@/components/shared/form-field";
+import { FormGroup, MetricField } from "@/components/shared/form-kit";
 import { createPlan } from "@/features/training/actions";
 import { messages } from "@/i18n/es-419";
 
@@ -46,32 +48,43 @@ export function CreatePlanDialog() {
           {t.createPlan}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t.createPlan}</DialogTitle>
+          <DialogDescription>{t.createPlanHint}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <FormField
-            label={t.planName}
-            value={name}
-            maxLength={80}
-            onChange={(event) => setName(event.target.value)}
-            required
-          />
-          <FormField
-            label={t.planObjective}
-            value={objective}
-            maxLength={200}
-            onChange={(event) => setObjective(event.target.value)}
-          />
+        <form id="create-plan-form" onSubmit={onSubmit} className="grid gap-3">
+          <FormGroup title={t.createPlanGroup}>
+            <MetricField
+              type="text"
+              label={t.planName}
+              value={name}
+              maxLength={80}
+              placeholder={t.planNamePlaceholder}
+              onChange={(event) => setName(event.target.value)}
+              required
+              autoFocus
+            />
+            <MetricField
+              type="text"
+              label={t.planObjective}
+              value={objective}
+              maxLength={200}
+              placeholder={t.planObjectivePlaceholder}
+              onChange={(event) => setObjective(event.target.value)}
+            />
+          </FormGroup>
+        </form>
+        <DialogFooter>
           <Button
             type="submit"
+            form="create-plan-form"
             className="w-full"
             disabled={pending || !name.trim()}
           >
             {pending ? messages.common.loading : messages.common.save}
           </Button>
-        </form>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

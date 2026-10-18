@@ -775,6 +775,7 @@ export type Database = {
           setup_notes: string | null
           source: string
           stability: number | null
+          summary: string | null
           systemic_fatigue: number | null
           technical_demand: number | null
           technique_cues: string[]
@@ -806,6 +807,7 @@ export type Database = {
           setup_notes?: string | null
           source?: string
           stability?: number | null
+          summary?: string | null
           systemic_fatigue?: number | null
           technical_demand?: number | null
           technique_cues?: string[]
@@ -837,6 +839,7 @@ export type Database = {
           setup_notes?: string | null
           source?: string
           stability?: number | null
+          summary?: string | null
           systemic_fatigue?: number | null
           technical_demand?: number | null
           technique_cues?: string[]
@@ -2132,38 +2135,112 @@ export type Database = {
       workout_plans: {
         Row: {
           active: boolean
+          ai_inputs: Json | null
           created_at: string
           deleted_at: string | null
           id: string
           name: string
           notes: string | null
           objective: string | null
+          origin: string
           updated_at: string
           user_id: string
         }
         Insert: {
           active?: boolean
+          ai_inputs?: Json | null
           created_at?: string
           deleted_at?: string | null
           id?: string
           name: string
           notes?: string | null
           objective?: string | null
+          origin?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           active?: boolean
+          ai_inputs?: Json | null
           created_at?: string
           deleted_at?: string | null
           id?: string
           name?: string
           notes?: string | null
           objective?: string | null
+          origin?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      workout_session_exercises: {
+        Row: {
+          created_at: string
+          id: string
+          original_exercise_id: string
+          performed_exercise_id: string
+          plan_exercise_id: string | null
+          reason: string | null
+          session_id: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_exercise_id: string
+          performed_exercise_id: string
+          plan_exercise_id?: string | null
+          reason?: string | null
+          session_id: string
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_exercise_id?: string
+          performed_exercise_id?: string
+          plan_exercise_id?: string | null
+          reason?: string | null
+          session_id?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_session_exercises_original_exercise_id_fkey"
+            columns: ["original_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_session_exercises_performed_exercise_id_fkey"
+            columns: ["performed_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_session_exercises_plan_exercise_id_fkey"
+            columns: ["plan_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plan_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_session_exercises_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "workout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_sessions: {
         Row: {

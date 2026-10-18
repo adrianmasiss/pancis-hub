@@ -1,0 +1,103 @@
+/* Cuestionario de «Generar con IA» y el aviso de rutina de IA. */
+/* minmax(0, 1fr) y min-width: 0: sin esto, el control de objetivos (que
+   no cabe y se desliza) ensancha el diálogo entero y lo corta a la derecha. */
+.generate-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+.generate-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+/* Cuatro objetivos no caben en un móvil: el control se desliza. */
+.generate-field .segmented {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.generate-chips {
+  display: grid;
+  gap: 8px;
+}
+.generate-chips {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.generate-chips legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.generate-chips > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.generate-chips button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--v11-line, var(--border));
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 100ms ease-out;
+}
+.generate-chips button:active {
+  transform: scale(0.96);
+}
+.generate-chips button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 14%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.generate-chips button:disabled {
+  opacity: 0.4;
+}
+.generate-chips button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ai-notice {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.ai-notice svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--primary);
+}
+.ai-notice strong {
+  font-weight: 650;
+}
+
+/* En el pie del cuestionario: una línea más discreta sobre el botón. */
+.ai-notice-compact {
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.ai-notice-compact svg {
+  margin-top: 2px;
+}

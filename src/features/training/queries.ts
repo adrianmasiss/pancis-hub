@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { todayLocalISO } from "@/lib/dates";
+import { localDateOf, todayLocalISO, weekBoundsISO } from "@/lib/dates";
 import {
   applyExerciseDaySwaps,
   type DaySwapOrigin,
@@ -24,11 +24,15 @@ import {
   type RecordEvent,
 } from "@/features/training/lib/stats";
 
+/** Quién escribió la rutina: el coach (importada o a mano) o la IA. */
+export type PlanOrigin = "coach" | "ia";
+
 export type PlanSummary = {
   id: string;
   name: string;
   objective: string | null;
   active: boolean;
+  origin: PlanOrigin;
   dayCount: number;
 };
 
@@ -68,6 +72,7 @@ export type PlanDetail = {
   name: string;
   objective: string | null;
   active: boolean;
+  origin: PlanOrigin;
   days: PlanDayView[];
 };
 
@@ -136,6 +141,11 @@ export type TrainingOverview = {
   history: Record<string, ExerciseHistory>;
   /** La marca personal más reciente, si la hubo. */
   latestRecord: RecordEvent | null;
+  /**
+   * Los días del plan ya entrenados esta semana (lunes a domingo, en la zona
+   * del usuario): id del día → fecha YYYY-MM-DD de la última vez.
+   */
+  doneThisWeek: Record<string, string>;
 };
 
 function mapPlanExercises(
@@ -215,14 +225,51 @@ async function getExerciseDaySwaps(
     }));
 }
 
+/**
+ * Lo que de verdad se hizo en cada sesión cuando no fue el ejercicio de la
+ * plantilla, con la misma forma que una sustitución del día: así la vista lo
+ * superpone igual («en lugar de X») y la plantilla sigue intacta.
+ */
+async function getSessionSwaps(
+  sessionIds: string[],
+  date: string,
+): Promise<Map<string, ExerciseDaySwapRecord[]>> {
+  const bySession = new Map<string, ExerciseDaySwapRecord[]>();
+  if (sessionIds.length === 0) return bySession;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_session_exercises")
+    .select(
+      "session_id, plan_exercise_id, performed_exercise_id, reason, source, exercise_catalog!workout_session_exercises_performed_exercise_id_fkey(name, primary_muscle, equipment)",
+    )
+    .in("session_id", sessionIds);
+  for (const row of data ?? []) {
+    if (!row.plan_exercise_id || !row.exercise_catalog) continue;
+    const list = bySession.get(row.session_id) ?? [];
+    list.push({
+      planExerciseId: row.plan_exercise_id,
+      date,
+      substituteExerciseId: row.performed_exercise_id,
+      substituteName: row.exercise_catalog.name,
+      substitutePrimaryMuscle: row.exercise_catalog.primary_muscle,
+      substituteEquipment: row.exercise_catalog.equipment,
+      reason: row.reason,
+      source: row.source === "sugerencia" ? "asistente" : "usuario",
+    });
+    bySession.set(row.session_id, list);
+  }
+  return bySession;
+}
+
 const PLAN_SELECT =
-  "id, name, objective, active, workout_plan_days(id, day_index, name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment)))";
+  "id, name, objective, active, origin, workout_plan_days(id, day_index, name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment)))";
 
 type PlanRow = {
   id: string;
   name: string;
   objective: string | null;
   active: boolean;
+  origin: string;
   workout_plan_days: {
     id: string;
     day_index: number;
@@ -237,6 +284,7 @@ function mapPlanDetail(plan: PlanRow): PlanDetail {
     name: plan.name,
     objective: plan.objective,
     active: plan.active,
+    origin: plan.origin === "ia" ? "ia" : "coach",
     days: [...plan.workout_plan_days]
       .sort((a, b) => a.day_index - b.day_index)
       .map((day) => ({
@@ -260,6 +308,30 @@ function withDaySwaps(
     days: plan.days.map((day) => ({
       ...day,
       exercises: applyExerciseDaySwaps(day.exercises, swaps, date),
+    })),
+  };
+}
+
+/**
+ * El día que se está entrenando muestra lo que dice su sesión; los demás,
+ * las sustituciones anotadas para hoy.
+ */
+function withLiveSwaps(
+  plan: PlanDetail,
+  daySwaps: ExerciseDaySwapRecord[],
+  liveSwaps: ExerciseDaySwapRecord[],
+  liveDayId: string | null,
+  date: string,
+): PlanDetail {
+  return {
+    ...plan,
+    days: plan.days.map((day) => ({
+      ...day,
+      exercises: applyExerciseDaySwaps(
+        day.exercises,
+        day.id === liveDayId ? liveSwaps : daySwaps,
+        date,
+      ),
     })),
   };
 }
@@ -317,7 +389,13 @@ export async function getSessionDetail(
   // La sesion se lee con las sustituciones del dia en que empezo, no las de
   // hoy: revisar el lunes una sesion del sabado debe mostrar lo que se hizo.
   const sessionDate = session.started_at.slice(0, 10);
-  const daySwaps = await getExerciseDaySwaps(userId, sessionDate);
+  const [daySwaps, sessionSwaps] = await Promise.all([
+    getExerciseDaySwaps(userId, sessionDate),
+    getSessionSwaps([session.id], sessionDate),
+  ]);
+  /* Las sesiones nuevas guardan su propio cambio; las de antes de que
+     existiera, sólo la sustitución del día. */
+  const swapsDeLaSesion = sessionSwaps.get(session.id) ?? daySwaps;
 
   return {
     id: session.id,
@@ -332,7 +410,7 @@ export async function getSessionDetail(
           typeof mapPlanExercises
         >[0],
       ),
-      daySwaps,
+      swapsDeLaSesion,
       sessionDate,
     ),
     sets: [...(session.workout_sets ?? [])]
@@ -360,10 +438,20 @@ export async function getSessionDetail(
  */
 export async function getTrainingOverview(
   userId: string,
-  date: string = todayLocalISO(),
+  {
+    date = todayLocalISO(),
+    timezone = "America/Costa_Rica",
+  }: { date?: string; timezone?: string } = {},
 ): Promise<TrainingOverview> {
   const supabase = await createClient();
   const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
+  /* La semana se decide en la zona del usuario. Se pide un día de margen
+     antes del lunes (en UTC el lunes local puede empezar el domingo) y se
+     filtra después por fecha local. */
+  const week = weekBoundsISO(date);
+  const weekSince = new Date(
+    Date.parse(`${week.start}T00:00:00Z`) - 86400000,
+  ).toISOString();
 
   const [
     plansResult,
@@ -372,10 +460,11 @@ export async function getTrainingOverview(
     sessionsResult,
     setsResult,
     daySwaps,
+    weekResult,
   ] = await Promise.all([
     supabase
       .from("workout_plans")
-      .select("id, name, objective, active, workout_plan_days(id)")
+      .select("id, name, objective, active, origin, workout_plan_days(id)")
       .eq("user_id", userId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false }),
@@ -415,7 +504,28 @@ export async function getTrainingOverview(
       .order("created_at", { ascending: false })
       .limit(1000),
     getExerciseDaySwaps(userId, date),
+    supabase
+      .from("workout_sessions")
+      .select("workout_plan_day_id, completed_at")
+      .eq("user_id", userId)
+      .not("completed_at", "is", null)
+      .not("workout_plan_day_id", "is", null)
+      .gte("completed_at", weekSince)
+      .order("completed_at", { ascending: true }),
   ]);
+
+  const liveSwaps = inProgressResult.data?.workout_plan_day_id
+    ? ((await getSessionSwaps([inProgressResult.data.id], date)).get(
+        inProgressResult.data.id,
+      ) ?? [])
+    : [];
+
+  const doneThisWeek: Record<string, string> = {};
+  for (const row of weekResult.data ?? []) {
+    const day = localDateOf(row.completed_at!, timezone);
+    if (day >= week.start && day <= week.end && row.workout_plan_day_id)
+      doneThisWeek[row.workout_plan_day_id] = day;
+  }
 
   const allSets: LoggedSet[] = (setsResult.data ?? []).map((set) => ({
     exerciseId: set.exercise_id,
@@ -445,12 +555,15 @@ export async function getTrainingOverview(
       name: plan.name,
       objective: plan.objective,
       active: plan.active,
+      origin: plan.origin === "ia" ? "ia" : "coach",
       dayCount: (plan.workout_plan_days ?? []).length,
     })),
     activePlan: activePlanResult.data
-      ? withDaySwaps(
+      ? withLiveSwaps(
           mapPlanDetail(activePlanResult.data as unknown as PlanRow),
           daySwaps,
+          liveSwaps,
+          inProgressResult.data?.workout_plan_day_id ?? null,
           date,
         )
       : null,
@@ -503,6 +616,7 @@ export async function getTrainingOverview(
     muscleSets7d: [...muscleFrequency(recentSets).entries()],
     history: Object.fromEntries(exerciseHistory(datedSets)),
     latestRecord: latestRecord(datedSets),
+    doneThisWeek,
   };
 }
 
@@ -794,16 +908,21 @@ export type LogSet = {
   isWarmup: boolean;
   weightKg: number | null;
   repetitions: number | null;
+  rir: number | null;
   createdAt: string;
 };
 
 export type LogSession = {
   id: string;
   startedAt: string;
+  completedAt: string | null;
   durationMinutes: number | null;
   planName: string | null;
   dayName: string | null;
+  dayIndex: number | null;
   sets: LogSet[];
+  /** Ejercicio realizado → el de la rutina al que reemplazó en esa sesión. */
+  replaced: Record<string, string>;
 };
 
 /**
@@ -819,16 +938,35 @@ export async function getTrainingLog(userId: string): Promise<LogSession[]> {
   const { data } = await supabase
     .from("workout_sessions")
     .select(
-      "id, started_at, completed_at, workout_plans(name), workout_plan_days(name), workout_sets(exercise_id, set_number, is_warmup, weight_kg, repetitions, created_at, exercise_catalog(name, primary_muscle, equipment))",
+      "id, started_at, completed_at, workout_plans(name), workout_plan_days(name, day_index), workout_sets(exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, created_at, exercise_catalog(name, primary_muscle, equipment))",
     )
     .eq("user_id", userId)
     .not("completed_at", "is", null)
     .order("started_at", { ascending: false })
     .limit(300);
 
+  /* Qué reemplazó a qué, por sesión: el historial lo marca al lado de cada
+     ejercicio. */
+  const { data: cambios } = await supabase
+    .from("workout_session_exercises")
+    .select(
+      "session_id, performed_exercise_id, exercise_catalog!workout_session_exercises_original_exercise_id_fkey(name)",
+    )
+    .eq("user_id", userId);
+  const replaced = new Map<string, Record<string, string>>();
+  for (const c of cambios ?? []) {
+    if (!c.exercise_catalog) continue;
+    const porSesion = replaced.get(c.session_id) ?? {};
+    porSesion[c.performed_exercise_id] = c.exercise_catalog.name;
+    replaced.set(c.session_id, porSesion);
+  }
+
   return (data ?? []).map((session) => ({
     id: session.id,
     startedAt: session.started_at,
+    completedAt: session.completed_at,
+    dayIndex: session.workout_plan_days?.day_index ?? null,
+    replaced: replaced.get(session.id) ?? {},
     durationMinutes: session.completed_at
       ? Math.max(
           1,
@@ -856,6 +994,7 @@ export async function getTrainingLog(userId: string): Promise<LogSession[]> {
         isWarmup: set.is_warmup,
         weightKg: set.weight_kg !== null ? Number(set.weight_kg) : null,
         repetitions: set.repetitions,
+        rir: set.rir !== null ? Number(set.rir) : null,
         createdAt: set.created_at,
       })),
   }));

@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Timer, X } from "lucide-react";
+import { SubstituteExercise } from "./substitute-exercise";
 import { ExerciseDetailSheet } from "./exercise-detail-sheet";
 import { QuantityStepper } from "@/features/foods/components/quantity-stepper";
 import type { MeasureUnit } from "@/features/foods/lib/units";
@@ -380,6 +381,7 @@ export function LiveExerciseRow({
           <strong>{e.name}</strong>
           <small>
             {[
+              e.daySwap ? `En lugar de ${e.daySwap.name}` : null,
               last?.weightKg ? kg(last.weightKg) : null,
               `${e.sets ?? "—"} × ${reps(e)}`,
               descanso(e.restSeconds),
@@ -516,6 +518,7 @@ export function LiveExerciseRow({
           </ol>
           {e.notes && <p className="today-row-notes">{e.notes}</p>}
           <div className="today-row-help">
+            <SubstituteExercise exercise={e} live />
             <ExerciseDetailSheet
               planExerciseId={e.daySwap ? undefined : e.id}
               exerciseId={e.exerciseId}

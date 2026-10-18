@@ -578,6 +578,28 @@
   color: var(--primary);
   text-decoration: underline;
 }
+.training-routine-groups {
+  display: grid;
+  gap: 32px;
+}
+.training-routine-group {
+  display: grid;
+  gap: 14px;
+}
+.training-routine-group > h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.training-routine-group > h3 span {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
 .training-routine-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

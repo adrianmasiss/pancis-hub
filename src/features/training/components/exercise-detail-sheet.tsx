@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Info } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   getCatalogExerciseDetail,
   getExerciseDetail,
@@ -21,7 +20,8 @@ import {
 import { RESISTANCE_PROFILE_DESCRIPTIONS } from "@/features/training/lib/biomechanics";
 import { formatPrescription } from "@/features/training/lib/prescription";
 import { messages } from "@/i18n/es-419";
-import { cn } from "@/lib/utils";
+import { rotuloCatalogo } from "@/features/training/lib/library-groups";
+import "./exercise-detail.css";
 
 const t = messages.training.biomechanics;
 
@@ -32,8 +32,120 @@ function scoreTone(score: number): string {
   return "text-destructive";
 }
 
-/** Fotograma del movimiento con su etiqueta de fase. */
-function ExerciseImage({
+/** Rotulo pequeno de bloque, el mismo para todo lo que hay en la ficha. */
+function Block({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="xd-block">
+      <h3 className="label-micro">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+const numberFmt = new Intl.NumberFormat("es-CR", { maximumFractionDigits: 1 });
+const dateFmt = new Intl.DateTimeFormat("es-CR", { dateStyle: "medium" });
+
+/**
+ * Lo que se lee entre series: los dos fotogramas, como se hace, que trabaja y
+ * en que fijarse. Nada mas a la vista; lo tecnico queda plegado debajo.
+ */
+function DetailBody({ detail }: { detail: ExerciseDetail }) {
+  const { exercise } = detail;
+  // Sin resumen escrito, la ejecucion ya es el "como se hace": se usa aqui y
+  // no se repite en el detalle tecnico.
+  const howTo = detail.summary ?? detail.executionNotes;
+  const executionInTechnical = detail.summary ? detail.executionNotes : null;
+  const cues = exercise.techniqueCues.slice(0, 3);
+
+  return (
+    <>
+      {exercise.imageUrl ? (
+        <figure
+          className="xd-frames"
+          data-single={!exercise.imageEndUrl ? "" : undefined}
+        >
+          <Frame
+            src={exercise.imageUrl}
+            alt={`${exercise.name} — ${t.startPosition}`}
+            label={t.startPosition}
+          />
+          {exercise.imageEndUrl ? (
+            <Frame
+              src={exercise.imageEndUrl}
+              alt={`${exercise.name} — ${t.endPosition}`}
+              label={t.endPosition}
+            />
+          ) : null}
+        </figure>
+      ) : null}
+
+      {howTo ? (
+        <Block title={t.howTo}>
+          <p className="xd-lead">{howTo}</p>
+        </Block>
+      ) : null}
+
+      <Block title={t.worksTitle}>
+        <dl className="xd-muscles">
+          <div>
+            <dt>{t.primaryShort}</dt>
+            <dd className="xd-muscle-primary">
+              {rotuloCatalogo(exercise.primaryMuscle)}
+            </dd>
+          </div>
+          {exercise.secondaryMuscles.length > 0 ? (
+            <div>
+              <dt>{t.secondaryShort}</dt>
+              <dd>
+                {exercise.secondaryMuscles
+                  .map((m) => rotuloCatalogo(m))
+                  .join(" · ")}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+      </Block>
+
+      {cues.length > 0 ? (
+        <Block title={t.keyPoints}>
+          <ol className="xd-cues">
+            {cues.map((cue, i) => (
+              <li key={cue}>
+                <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                {cue}
+              </li>
+            ))}
+          </ol>
+        </Block>
+      ) : null}
+
+      {detail.personalBest ? (
+        <Block title={t.personalBest}>
+          <p className="xd-best">
+            <strong>{numberFmt.format(detail.personalBest.weightKg)}</strong>
+            <small>kg</small>
+            {detail.personalBest.repetitions ? (
+              <span> × {detail.personalBest.repetitions}</span>
+            ) : null}
+            <em>{dateFmt.format(new Date(detail.personalBest.date))}</em>
+          </p>
+        </Block>
+      ) : null}
+
+      <TechnicalDetail detail={detail} execution={executionInTechnical} />
+
+      {exercise.imageUrl ? <p className="xd-credit">{t.imageCredit}</p> : null}
+    </>
+  );
+}
+
+function Frame({
   src,
   alt,
   label,
@@ -43,42 +155,149 @@ function ExerciseImage({
   label: string;
 }) {
   return (
-    <div className="space-y-1">
+    <div className="xd-frame">
       {/* eslint-disable-next-line @next/next/no-img-element -- storage propio, sin next/image en el resto del proyecto */}
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        className="bg-muted aspect-square w-full rounded-lg object-cover"
-      />
-      <p className="text-muted-foreground text-center text-xs">{label}</p>
+      <img src={src} alt={alt} loading="lazy" />
+      <figcaption>{label}</figcaption>
     </div>
   );
 }
 
-function Section({
-  title,
-  children,
+/**
+ * Biomecanica, esquema sugerido y valoracion: valiosos para quien los busca,
+ * ruido para quien solo quiere saber como se hace. Se pliegan en un solo
+ * desplegable, cerrado por defecto.
+ */
+function TechnicalDetail({
+  detail,
+  execution,
 }: {
-  title: string;
-  children: React.ReactNode;
+  detail: ExerciseDetail;
+  execution: string | null;
 }) {
-  return (
-    <section className="space-y-1">
-      <h3 className="text-sm font-medium">{title}</h3>
-      {children}
-    </section>
-  );
-}
+  const [open, setOpen] = useState(false);
+  const { exercise } = detail;
+  const panelId = "xd-technical";
 
-function BulletList({ items }: { items: string[] }) {
-  if (items.length === 0) return null;
   return (
-    <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
+    <section className="xd-tech" data-open={open ? "" : undefined}>
+      <button
+        type="button"
+        className="xd-tech-toggle"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>
+          <strong>{t.technicalTitle}</strong>
+          <small>{t.technicalHint}</small>
+        </span>
+        <ChevronDown aria-hidden="true" className="size-4" />
+      </button>
+
+      <div className="xd-tech-panel" id={panelId} inert={!open}>
+        <div>
+          <div className="xd-tech-inner">
+            {exercise.movementPattern || exercise.joints.length > 0 ? (
+              <Block title={t.movement}>
+                <p className="xd-text">
+                  {[exercise.movementPattern, exercise.joints.join(", ")]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </Block>
+            ) : null}
+
+            {exercise.resistanceProfile ? (
+              <Block title={t.resistanceProfile}>
+                <p className="xd-text">
+                  {RESISTANCE_PROFILE_DESCRIPTIONS[exercise.resistanceProfile]}
+                  {exercise.hardestPoint ? (
+                    <>
+                      {" "}
+                      <span className="text-foreground">
+                        {t.hardestPoint}:
+                      </span>{" "}
+                      {exercise.hardestPoint}
+                    </>
+                  ) : null}
+                </p>
+              </Block>
+            ) : null}
+
+            {detail.setupNotes ? (
+              <Block title={t.setup}>
+                <p className="xd-text">{detail.setupNotes}</p>
+              </Block>
+            ) : null}
+
+            {execution ? (
+              <Block title={t.execution}>
+                <p className="xd-text">{execution}</p>
+              </Block>
+            ) : null}
+
+            {exercise.commonErrors.length > 0 ? (
+              <Block title={t.commonErrors}>
+                <ul className="xd-list">
+                  {exercise.commonErrors.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </Block>
+            ) : null}
+
+            {/*
+              Requisito 13: la recomendacion se muestra APARTE y nunca
+              modifica la rutina por su cuenta.
+            */}
+            {detail.prescription ? (
+              <Block title={t.prescriptionTitle}>
+                <p className="xd-scheme">
+                  {formatPrescription(detail.prescription)}
+                </p>
+                <ul className="xd-list">
+                  {detail.prescription.reasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+                <p className="xd-text">
+                  <span className="text-foreground">{t.progressionLabel}:</span>{" "}
+                  {detail.prescription.progression}
+                </p>
+                <p className="xd-note">{t.prescriptionNote}</p>
+              </Block>
+            ) : null}
+
+            {detail.ratings ? (
+              <Block title={t.ratingsTitle}>
+                <ul className="xd-ratings">
+                  {detail.ratings.map((rating) => (
+                    <li key={rating.dimension}>
+                      <p>
+                        <span>{t.dimensions[rating.dimension]}</span>
+                        <strong className={scoreTone(rating.score)}>
+                          {rating.score}
+                          <small>/10</small>
+                        </strong>
+                      </p>
+                      {/* Nunca se muestra la nota sin explicar de donde sale. */}
+                      <small>{rating.reason}</small>
+                    </li>
+                  ))}
+                </ul>
+              </Block>
+            ) : null}
+
+            {detail.prescription === null || detail.ratings === null ? (
+              <p className="xd-note">{t.withoutBiomechanics}</p>
+            ) : (
+              <p className="xd-note">{t.disclaimer}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -124,7 +343,7 @@ export function ExerciseDetailSheet({
   };
 
   return (
-    <Sheet
+    <Dialog
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
@@ -132,7 +351,7 @@ export function ExerciseDetailSheet({
         else setDetail(null);
       }}
     >
-      <SheetTrigger asChild>
+      <DialogTrigger asChild>
         <Button
           variant="ghost"
           size={triggerLabel ? "sm" : "icon"}
@@ -145,189 +364,44 @@ export function ExerciseDetailSheet({
           <Info className="size-4" aria-hidden="true" />
           {triggerLabel}
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{exerciseName}</SheetTitle>
-          <SheetDescription>{t.detailDescription}</SheetDescription>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent className="xd-sheet max-w-[480px]">
+        <DialogHeader className="xd-head">
+          <p className="label-micro" aria-hidden={detail === null}>
+            {detail
+              ? [
+                  rotuloCatalogo(detail.exercise.primaryMuscle),
+                  detail.exercise.equipment
+                    ? rotuloCatalogo(detail.exercise.equipment)
+                    : null,
+                  detail.exercise.isUnilateral ? t.unilateral : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : " "}
+          </p>
+          <DialogTitle className="xd-title">{exerciseName}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t.detailDescription}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="space-y-4 overflow-y-auto px-4 pb-6">
+        <div className="xd-body">
           {detail === null ? (
-            <p className="text-muted-foreground text-sm">
-              {messages.common.loading}
-            </p>
+            <div
+              className="xd-loading"
+              role="status"
+              aria-label={messages.common.loading}
+            >
+              <span className="xd-skel xd-skel-figure" />
+              <span className="xd-skel" />
+              <span className="xd-skel xd-skel-short" />
+            </div>
           ) : (
-            <>
-              {detail.exercise.imageUrl ? (
-                <figure className="space-y-1">
-                  <div className="grid grid-cols-2 gap-2">
-                    <ExerciseImage
-                      src={detail.exercise.imageUrl}
-                      alt={`${detail.exercise.name} — ${t.startPosition}`}
-                      label={t.startPosition}
-                    />
-                    {detail.exercise.imageEndUrl ? (
-                      <ExerciseImage
-                        src={detail.exercise.imageEndUrl}
-                        alt={`${detail.exercise.name} — ${t.endPosition}`}
-                        label={t.endPosition}
-                      />
-                    ) : null}
-                  </div>
-                  <figcaption className="text-muted-foreground text-xs">
-                    {t.imageCredit}
-                  </figcaption>
-                </figure>
-              ) : null}
-
-              <div className="flex flex-wrap gap-1.5">
-                <Badge variant="secondary" className="font-normal">
-                  {detail.exercise.primaryMuscle}
-                </Badge>
-                {detail.exercise.movementPattern ? (
-                  <Badge variant="outline" className="font-normal">
-                    {detail.exercise.movementPattern}
-                  </Badge>
-                ) : null}
-                {detail.exercise.equipment ? (
-                  <Badge variant="outline" className="font-normal">
-                    {detail.exercise.equipment}
-                  </Badge>
-                ) : null}
-                {detail.exercise.isUnilateral ? (
-                  <Badge variant="outline" className="font-normal">
-                    {t.unilateral}
-                  </Badge>
-                ) : null}
-              </div>
-
-              {detail.exercise.secondaryMuscles.length > 0 ? (
-                <Section title={t.secondaryMuscles}>
-                  <p className="text-muted-foreground text-xs">
-                    {detail.exercise.secondaryMuscles.join(", ")}
-                  </p>
-                </Section>
-              ) : null}
-
-              {detail.exercise.joints.length > 0 ? (
-                <Section title={t.joints}>
-                  <p className="text-muted-foreground text-xs">
-                    {detail.exercise.joints.join(", ")}
-                  </p>
-                </Section>
-              ) : null}
-
-              {detail.exercise.resistanceProfile ? (
-                <Section title={t.resistanceProfile}>
-                  <p className="text-muted-foreground text-xs">
-                    {
-                      RESISTANCE_PROFILE_DESCRIPTIONS[
-                        detail.exercise.resistanceProfile
-                      ]
-                    }
-                  </p>
-                  {detail.exercise.hardestPoint ? (
-                    <p className="text-muted-foreground text-xs">
-                      <span className="font-medium">{t.hardestPoint}:</span>{" "}
-                      {detail.exercise.hardestPoint}
-                    </p>
-                  ) : null}
-                </Section>
-              ) : null}
-
-              {detail.setupNotes ? (
-                <Section title={t.setup}>
-                  <p className="text-muted-foreground text-xs">
-                    {detail.setupNotes}
-                  </p>
-                </Section>
-              ) : null}
-
-              {detail.executionNotes ? (
-                <Section title={t.execution}>
-                  <p className="text-muted-foreground text-xs">
-                    {detail.executionNotes}
-                  </p>
-                </Section>
-              ) : null}
-
-              {/*
-                Requisito 13: la recomendacion se muestra APARTE y nunca
-                modifica la rutina por su cuenta.
-              */}
-              {detail.prescription === null || detail.ratings === null ? (
-                <p className="text-muted-foreground border-hairline rounded-lg border p-3 text-xs">
-                  {t.withoutBiomechanics}
-                </p>
-              ) : null}
-
-              {detail.prescription ? (
-                <Section title={t.prescriptionTitle}>
-                  <p className="text-lg font-semibold tabular-nums">
-                    {formatPrescription(detail.prescription)}
-                  </p>
-                  <ul className="text-muted-foreground list-disc space-y-0.5 pl-4 text-xs">
-                    {detail.prescription.reasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                  <p className="text-muted-foreground text-xs">
-                    <span className="font-medium">{t.progressionLabel}:</span>{" "}
-                    {detail.prescription.progression}
-                  </p>
-                  <p className="text-muted-foreground text-xs italic">
-                    {t.prescriptionNote}
-                  </p>
-                </Section>
-              ) : null}
-
-              {detail.ratings ? (
-                <Section title={t.ratingsTitle}>
-                  <ul className="space-y-2">
-                    {detail.ratings.map((rating) => (
-                      <li
-                        key={rating.dimension}
-                        className="rounded-lg border p-2.5"
-                      >
-                        <p className="flex items-baseline justify-between gap-2 text-sm">
-                          <span>{t.dimensions[rating.dimension]}</span>
-                          <span
-                            className={cn(
-                              "font-semibold tabular-nums",
-                              scoreTone(rating.score),
-                            )}
-                          >
-                            {rating.score}/10
-                          </span>
-                        </p>
-                        {/* Nunca se muestra la nota sin explicar de donde sale. */}
-                        <p className="text-muted-foreground text-xs">
-                          {rating.reason}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </Section>
-              ) : null}
-
-              {detail.exercise.techniqueCues.length > 0 ? (
-                <Section title={t.cues}>
-                  <BulletList items={detail.exercise.techniqueCues} />
-                </Section>
-              ) : null}
-
-              {detail.exercise.commonErrors.length > 0 ? (
-                <Section title={t.commonErrors}>
-                  <BulletList items={detail.exercise.commonErrors} />
-                </Section>
-              ) : null}
-
-              <p className="text-muted-foreground text-xs">{t.disclaimer}</p>
-            </>
+            <DetailBody detail={detail} />
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

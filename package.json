@@ -18,6 +18,7 @@
     "import:exercise-images": "node --env-file=.env.local scripts/import-exercise-images.mjs",
     "fondos": "node scripts/fondos-acceso.mjs",
     "eval:copiloto": "node scripts/evaluar-copiloto.mjs",
+    "resumir:ejercicios": "node --env-file=.env.local scripts/resumir-ejercicios.mjs",
     "ejercicios": "node --env-file=.env.local scripts/importar-ejercicios.mjs",
     "alimentos": "node --env-file=.env.local scripts/sembrar-alimentos.mjs",
     "traducir": "node --env-file=.env.local scripts/traducir-alimentos.mjs",

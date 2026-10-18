@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { todayInTimezone } from "@/lib/dates";
+import { localDateOf, todayInTimezone, weekBoundsISO } from "@/lib/dates";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -29,5 +29,38 @@ describe("todayInTimezone", () => {
     vi.setSystemTime(new Date("2026-08-11T05:00:00Z"));
 
     expect(todayInTimezone("Marte/Olympus")).toBe("2026-08-11");
+  });
+});
+
+describe("weekBoundsISO", () => {
+  it("va de lunes a domingo", () => {
+    // 2026-10-14 es miércoles.
+    expect(weekBoundsISO("2026-10-14")).toEqual({
+      start: "2026-10-12",
+      end: "2026-10-18",
+    });
+  });
+
+  it("el domingo cierra su semana, no abre la siguiente", () => {
+    expect(weekBoundsISO("2026-10-18").start).toBe("2026-10-12");
+    expect(weekBoundsISO("2026-10-19").start).toBe("2026-10-19");
+  });
+
+  it("cruza meses y años", () => {
+    expect(weekBoundsISO("2027-01-01")).toEqual({
+      start: "2026-12-28",
+      end: "2027-01-03",
+    });
+  });
+});
+
+describe("localDateOf", () => {
+  it("fecha la sesión en la zona del usuario, no en UTC", () => {
+    expect(localDateOf("2026-10-13T04:00:00Z", "America/Costa_Rica")).toBe(
+      "2026-10-12",
+    );
+    expect(localDateOf("2026-10-13T04:00:00Z", "Marte/Olympus")).toBe(
+      "2026-10-13",
+    );
   });
 });
