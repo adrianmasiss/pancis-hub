@@ -43,7 +43,9 @@ button.alt-row.alt-row::after {
   background: color-mix(in oklab, var(--foreground) 8%, transparent);
   pointer-events: none;
 }
-li + li > button.alt-row.alt-row:not([data-featured], [aria-pressed="true"])::after {
+li
+  + li
+  > button.alt-row.alt-row:not([data-featured], [aria-pressed="true"])::after {
   display: block;
 }
 button.alt-row.alt-row[data-featured] {
