@@ -8,13 +8,17 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FormField } from "@/components/shared/form-field";
+import {
+  ChoicePills,
+  FileField,
+  FormGroup,
+  MetricField,
+} from "@/components/shared/form-kit";
 import { SelectField } from "@/components/shared/select-field";
 import { uploadProgressPhoto } from "@/features/progress/actions";
 import { PHOTO_VIEWS } from "@/features/progress/schemas";
@@ -43,6 +47,8 @@ export function PhotoUploadDialog({
   measurements?: { id: string; measuredAt: string }[];
 }) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<(typeof PHOTO_VIEWS)[number]>("frontal");
+  const [hasFile, setHasFile] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -54,6 +60,7 @@ export function PhotoUploadDialog({
       else {
         toast.success(messages.progress.photos.uploaded);
         setOpen(false);
+        setHasFile(false);
       }
     });
   };
@@ -71,59 +78,68 @@ export function PhotoUploadDialog({
           <DialogTitle>{t.upload}</DialogTitle>
           <DialogDescription>{t.privacyNote}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="photo-file">{t.upload}</Label>
-            <Input
-              id="photo-file"
-              name="file"
-              type="file"
-              required
-              accept="image/jpeg,image/png,image/webp"
+        <form id="photo-form" onSubmit={onSubmit} className="grid gap-3">
+          <FileField
+            name="file"
+            accept="image/jpeg,image/png,image/webp"
+            label={t.choose}
+            help={t.fileHelp}
+            onFile={(file) => setHasFile(Boolean(file))}
+          />
+          <FormGroup title={t.details}>
+            <ChoicePills
+              name="viewType"
+              label={t.viewType}
+              options={PHOTO_VIEWS.map((v) => ({ value: v, label: t[v] }))}
+              value={view}
+              onChange={setView}
             />
-            <p className="text-muted-foreground text-xs">{t.fileHelp}</p>
-          </div>
-          <SelectField
-            label={t.viewType}
-            name="viewType"
-            options={PHOTO_VIEWS.map((view) => ({
-              value: view,
-              label: t[view],
-            }))}
-          />
-          {/* Opcional a propósito: una foto sin báscula delante sigue
-              valiendo. Si se elige medición, la fecha la fija el servidor a
-              partir de ella, así que el campo de fecha sólo manda cuando la
-              foto va suelta. */}
-          {measurements.length > 0 ? (
-            <SelectField
-              label={`Medición (${messages.common.optional.toLowerCase()})`}
-              name="measurementId"
-              options={[
-                { value: "", label: "Sin medición" },
-                ...measurements.map((m) => ({
-                  value: m.id,
-                  label: fecha(m.measuredAt),
-                })),
-              ]}
+            {/* Opcional a propósito: una foto sin báscula delante sigue
+                valiendo. Si se elige medición, la fecha la fija el servidor a
+                partir de ella, así que el campo de fecha sólo manda cuando la
+                foto va suelta. */}
+            <div className="pc-metrics" data-pair="">
+              <MetricField
+                label={t.date}
+                type="date"
+                name="capturedAt"
+                required
+                defaultValue={todayLocalISO()}
+              />
+              {measurements.length > 0 ? (
+                <SelectField
+                  label={t.measurement}
+                  name="measurementId"
+                  className="pc-metric"
+                  options={[
+                    { value: "", label: t.noMeasurement },
+                    ...measurements.map((m) => ({
+                      value: m.id,
+                      label: fecha(m.measuredAt),
+                    })),
+                  ]}
+                />
+              ) : null}
+            </div>
+            <MetricField
+              type="text"
+              label={t.notes}
+              name="notes"
+              maxLength={200}
+              placeholder={messages.common.optional}
             />
-          ) : null}
-          <FormField
-            label={t.date}
-            name="capturedAt"
-            type="date"
-            required
-            defaultValue={todayLocalISO()}
-          />
-          <FormField
-            label={`${t.notes} (${messages.common.optional.toLowerCase()})`}
-            name="notes"
-            maxLength={200}
-          />
-          <Button type="submit" className="w-full" disabled={pending}>
+          </FormGroup>
+        </form>
+        <DialogFooter>
+          <Button
+            type="submit"
+            form="photo-form"
+            className="w-full"
+            disabled={pending || !hasFile}
+          >
             {pending ? messages.common.loading : messages.common.save}
           </Button>
-        </form>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

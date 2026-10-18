@@ -438,7 +438,7 @@ test("registrar entrenamiento y peso", async ({ page }) => {
   // Peso
   await page.goto("/progreso");
   await page.getByRole("button", { name: "Registrar medición" }).click();
-  await page.getByLabel("Peso (kg)").fill("67.8");
+  await page.getByLabel("Peso", { exact: true }).fill("67.8");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByText("Medición guardada.")).toBeVisible();
 });
@@ -460,8 +460,8 @@ test("composición corporal con dos InBody", async ({ page }) => {
 
   await page.getByRole("button", { name: "Registrar medición" }).click();
   await page.getByLabel("Fecha").fill(baselineDate);
-  await page.getByLabel("Fuente").selectOption("inbody");
-  await page.getByLabel("Peso (kg)").fill("80");
+  await page.getByRole("button", { name: "InBody", exact: true }).click();
+  await page.getByLabel("Peso", { exact: true }).fill("80");
   await page.getByLabel(/Grasa corporal/).fill("24");
   await page.getByLabel(/Masa muscular/).fill("34");
   await page.getByRole("button", { name: "Guardar" }).click();
@@ -469,8 +469,8 @@ test("composición corporal con dos InBody", async ({ page }) => {
 
   // Medicion actual: menos grasa y mas musculo.
   await page.getByRole("button", { name: "Registrar medición" }).click();
-  await page.getByLabel("Fuente").selectOption("inbody");
-  await page.getByLabel("Peso (kg)").fill("80");
+  await page.getByRole("button", { name: "InBody", exact: true }).click();
+  await page.getByLabel("Peso", { exact: true }).fill("80");
   await page.getByLabel(/Grasa corporal/).fill("20");
   await page.getByLabel(/Masa muscular/).fill("36");
   await page.getByRole("button", { name: "Guardar" }).click();
@@ -549,7 +549,9 @@ test("ficha biomecánica y sustitución explicada", async ({ page }) => {
     page.getByRole("img", { name: /Sentadilla con barra — Fin/ }),
   ).toBeVisible();
 
-  await expect(page.getByText("Articulaciones involucradas")).toBeVisible();
+  // Lo tecnico va plegado bajo «Detalle técnico».
+  await page.getByRole("button", { name: /Detalle técnico/ }).click();
+  await expect(page.getByText("Movimiento", { exact: true })).toBeVisible();
   await expect(page.getByText("Curva de resistencia")).toBeVisible();
   await expect(page.getByText("Errores comunes")).toBeVisible();
   await expect(page.getByText("Valoración para tu contexto")).toBeVisible();
@@ -585,6 +587,7 @@ test("esquema sugerido y análisis de la rutina", async ({ page }) => {
   await page
     .getByRole("button", { name: /Ficha del ejercicio — Sentadilla con barra/ })
     .click();
+  await page.getByRole("button", { name: /Detalle técnico/ }).click();
   await expect(page.getByText("Esquema sugerido")).toBeVisible();
   // No es "4x12 para todo": a un compuesto le toca rango bajo y descanso largo.
   await expect(page.getByText(/RIR \d · \d+s/)).toBeVisible();
@@ -753,12 +756,22 @@ test("importar una rutina escrita", async ({ page }) => {
   await expect(page.getByText("Esto entendimos")).toBeVisible();
   await expect(page.getByText("2 días · 4 ejercicios")).toBeVisible();
   await expect(page.getByText(/no existen en el catálogo/)).toBeVisible();
-  await expect(page.getByText(/RIR 2/).first()).toBeVisible();
-  // 3min se interpreta como 180 segundos.
-  await expect(page.getByText(/180s/).first()).toBeVisible();
+  // Lo entendido se puede corregir antes de guardar: RIR 2, y 3min se
+  // interpreta como 180 segundos.
+  await expect(
+    page.getByRole("spinbutton", { name: "RIR" }).first(),
+  ).toHaveValue("2");
+  // El día 2 no tiene nada que corregir y llega plegado.
+  await page.getByRole("button", { name: /Torso/ }).click();
+  await expect(
+    page.getByRole("spinbutton", { name: "Desc. (s)" }).nth(3),
+  ).toHaveValue("180");
 
   await page.getByLabel("Nombre de la rutina").fill("Rutina importada");
-  await page.getByRole("button", { name: "Crear rutina" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Crear rutina" })
+    .click();
   await expect(page.getByText("Rutina importada.")).toBeVisible();
   await expect(page).toHaveURL(/\/entrenamiento\/rutinas\//, {
     timeout: 20_000,

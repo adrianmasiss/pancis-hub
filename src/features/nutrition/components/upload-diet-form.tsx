@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { DropZone } from "@/components/shared/form-kit";
+import "./upload-diet-form.css";
 import { DietReviewEditor } from "@/features/nutrition/components/diet-review-editor";
 import {
   parseDietPlanImage,
@@ -52,8 +52,10 @@ export function UploadDietForm() {
   const [reviewKey, setReviewKey] = useState(0);
   const [error, setError] = useState("");
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
+  const handleFileChange = (
+    selectedFile: File | null,
+    input: HTMLInputElement | null,
+  ) => {
     setParsedData(null);
     setError("");
 
@@ -63,13 +65,13 @@ export function UploadDietForm() {
     }
     if (!SUPPORTED_DIET_FILE_TYPES.has(selectedFile.type)) {
       setFile(null);
-      event.target.value = "";
+      if (input) input.value = "";
       setError(t.errors.unsupportedFormat);
       return;
     }
     if (selectedFile.size > MAX_DIET_FILE_SIZE_BYTES) {
       setFile(null);
-      event.target.value = "";
+      if (input) input.value = "";
       setError(t.errors.fileTooLarge);
       return;
     }
@@ -107,35 +109,40 @@ export function UploadDietForm() {
 
   return (
     <div className="space-y-6">
-      <Section title={t.uploadTitle} description={t.uploadDescription}>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="diet-file">{t.fileLabel}</Label>
-          <Input
-            id="diet-file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            onChange={handleFileChange}
-          />
-        </div>
+      <Section title={t.uploadTitle}>
+        <DropZone
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          title={t.dropTitle}
+          hint={t.dropHint}
+          file={file}
+          busy={isLoading}
+          busyLabel={t.analyzing}
+          onFile={handleFileChange}
+          onClear={() => handleFileChange(null, null)}
+        />
         {error ? (
-          <p className="text-destructive mt-4 text-sm">{error}</p>
+          <p className="diet-upload-error" role="alert">
+            {error}
+          </p>
         ) : null}
         {/* La accion prominente de esta pantalla: subir la dieta es a lo
             unico que se entra aqui. */}
-        <Button
-          variant="brand"
-          size="lg"
-          className="mt-5"
-          onClick={handleParse}
-          disabled={!file || isLoading}
-        >
-          {isLoading ? (
-            <NewtonsCradle size={24} />
-          ) : (
-            <Brain className="size-4" />
-          )}
-          {isLoading ? t.analyzing : t.analyze}
-        </Button>
+        <div className="diet-upload-actions">
+          <p>{t.analyzeHint}</p>
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={handleParse}
+            disabled={!file || isLoading}
+          >
+            {isLoading ? (
+              <NewtonsCradle size={24} />
+            ) : (
+              <Brain className="size-4" />
+            )}
+            {isLoading ? t.analyzing : t.analyze}
+          </Button>
+        </div>
       </Section>
 
       {parsedData ? (
