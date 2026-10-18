@@ -1,0 +1,510 @@
+/* Kit de formulario (ver form-kit.tsx). Vive dentro del diálogo de la casa
+   y usa su misma línea fina y su mismo hundido. */
+
+.pc-group {
+  --pc-line: var(
+    --v11-line,
+    color-mix(in oklch, var(--foreground) 9%, transparent)
+  );
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--foreground) 3.5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--pc-line);
+}
+.pc-group-head {
+  display: grid;
+  gap: 3px;
+}
+.pc-group-head h3 {
+  margin: 0;
+}
+.pc-group-head p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+/* Plegable: la cabecera es el botón entero. */
+.pc-group[data-collapsible] {
+  gap: 0;
+  padding: 0;
+}
+.pc-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  text-align: left;
+  transition: background-color 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-group-toggle > span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+.pc-group-toggle strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.pc-group-toggle small {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.pc-group-toggle em {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 9%, transparent);
+}
+.pc-group-toggle svg {
+  flex: none;
+  color: var(--muted-foreground);
+  transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-group[data-open] .pc-group-toggle svg {
+  transform: rotate(180deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-group-toggle:hover {
+    background: color-mix(in oklch, var(--foreground) 3%, transparent);
+  }
+}
+.pc-group-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.pc-group-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-group[data-open] .pc-group-panel {
+  grid-template-rows: 1fr;
+}
+.pc-group-panel > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.pc-group-body {
+  display: grid;
+  gap: 14px;
+  padding: 2px 16px 16px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-group[data-open] .pc-group-body {
+  opacity: 1;
+  transform: none;
+  transition-delay: 60ms;
+}
+
+/* Rejilla de cifras: dos columnas, tres si hay sitio. */
+.pc-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.pc-metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  min-width: 0;
+}
+.pc-metric > label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.pc-metric-box {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--pc-line, var(--border));
+  transition:
+    box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-metric-box:focus-within {
+  background: var(--card);
+  box-shadow:
+    inset 0 0 0 1.5px var(--primary),
+    0 0 0 4px color-mix(in oklch, var(--primary) 16%, transparent);
+}
+.pc-metric-box input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  -moz-appearance: textfield;
+}
+.pc-metric-box input::-webkit-outer-spin-button,
+.pc-metric-box input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.pc-metric-box input::placeholder {
+  font-weight: 400;
+  color: var(--subtle-foreground);
+}
+.pc-metric-box > span {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+/* El dato principal del formulario (el peso) manda un poco más. */
+.pc-metric[data-lead] .pc-metric-box {
+  height: 52px;
+}
+.pc-metric[data-lead] .pc-metric-box input {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+/* Archivo: una fila con icono, nombre y, si hay archivo, quitarlo. */
+.pc-file {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pc-file > label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--pc-line, var(--border));
+  outline: 1px dashed color-mix(in oklch, var(--foreground) 18%, transparent);
+  outline-offset: -1px;
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    outline-color 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-file[data-filled] > label {
+  outline-style: solid;
+  outline-color: color-mix(in oklch, var(--primary) 45%, transparent);
+  padding-right: 52px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-file > label:hover {
+    background-color: color-mix(in oklch, var(--foreground) 4%, transparent);
+    outline-color: color-mix(in oklch, var(--foreground) 30%, transparent);
+  }
+}
+.pc-file input:focus-visible + label {
+  outline: 2px solid var(--primary);
+}
+.pc-file-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+.pc-file-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.pc-file-text strong {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-file-text small {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.pc-file-clear {
+  position: absolute;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.pc-file-clear:active {
+  transform: scale(0.94);
+}
+
+/* Pastillas de elección (fuente de la medición, etc.). */
+.pc-choice {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pc-choice legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.pc-choice > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pc-choice button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--pc-line, var(--border));
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 100ms ease-out;
+}
+.pc-choice button:active {
+  transform: scale(0.96);
+}
+.pc-choice button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 14%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.pc-choice button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-group-panel,
+  .pc-group-body,
+  .pc-group-toggle svg {
+    transition-duration: 1ms;
+  }
+  .pc-group-body {
+    transform: none;
+  }
+}
+
+.pc-textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 14px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--pc-line, var(--border));
+  outline: none;
+  transition: box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-textarea:focus {
+  background: var(--card);
+  box-shadow:
+    inset 0 0 0 1.5px var(--primary),
+    0 0 0 4px color-mix(in oklch, var(--primary) 16%, transparent);
+}
+.pc-form-note {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  text-wrap: pretty;
+}
+.pc-metric-box input[type="date"] {
+  font-size: 14px;
+  font-weight: 500;
+  color-scheme: inherit;
+}
+.pc-metric-box input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* Dos campos que van juntos (peso y fecha): dos columnas siempre; la fecha
+   pide un poco más de ancho para no cortarse. */
+.pc-metrics[data-pair] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+}
+.pc-metrics[data-pair] .pc-metric:not([data-lead]) .pc-metric-box {
+  height: 52px;
+}
+
+/* El marco dibuja el foco; el contorno global del campo sobraría. */
+html[data-pc] .pc-metric-box input:focus-visible,
+html[data-pc] .pc-textarea:focus-visible {
+  outline: none;
+}
+
+/* Texto libre (nombres, notas): mismo campo, peso de lectura, no de cifra. */
+.pc-metric-box input:not([type="number"]):not([type="date"]) {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* Select nativo con la flecha de la casa (el del sistema no respeta el radio
+   ni el color en oscuro). */
+.pc-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.pc-metric > .pc-select,
+.pc-metric .pc-select {
+  height: 52px;
+  border-color: transparent;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--pc-line, var(--border));
+}
+
+/* Un SelectField dentro de la rejilla trae su `space-y-2`: aquí manda el gap
+   del campo, para que los rótulos de la fila queden a la misma altura. */
+.pc-metric > * {
+  margin-block: 0 !important;
+}
+.pc-metric > label,
+.pc-metric > [data-slot="label"] {
+  line-height: 1.3;
+}
+.pc-metric .pc-select {
+  padding-left: 14px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Zona de subida (DropZone): el archivo como entrada principal. */
+.pc-drop-wrap {
+  position: relative;
+}
+.pc-drop {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 26px 20px 22px;
+  border-radius: 22px;
+  text-align: center;
+  background:
+    radial-gradient(
+      90% 120% at 50% 0%,
+      color-mix(in oklch, var(--primary) 10%, transparent),
+      transparent 70%
+    ),
+    color-mix(in oklch, var(--foreground) 3%, transparent);
+  outline: 1.5px dashed color-mix(in oklch, var(--foreground) 20%, transparent);
+  outline-offset: -1.5px;
+  transition:
+    outline-color 200ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 200ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 120ms ease-out;
+}
+.pc-drop strong {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pc-drop small {
+  max-width: 44ch;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.pc-drop-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 14%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--primary) 26%, transparent);
+  transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-drop:hover:not(:disabled) {
+    outline-color: color-mix(in oklch, var(--primary) 55%, transparent);
+  }
+  .pc-drop:hover:not(:disabled) .pc-drop-icon {
+    transform: translateY(-2px);
+  }
+}
+.pc-drop:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.pc-drop:disabled {
+  cursor: progress;
+}
+.pc-drop:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+.pc-drop[data-over] {
+  outline-color: var(--primary);
+  background-color: color-mix(in oklch, var(--primary) 8%, transparent);
+}
+.pc-drop[data-filled] {
+  outline-style: solid;
+  outline-color: color-mix(in oklch, var(--primary) 45%, transparent);
+}
+.pc-drop[data-filled] strong {
+  max-width: calc(100% - 40px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-drop-clear {
+  top: 12px;
+  right: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-drop,
+  .pc-drop-icon {
+    transition: none;
+  }
+}

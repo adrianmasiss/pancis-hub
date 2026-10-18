@@ -1,0 +1,217 @@
+/* ---------------------------------------------------------------------------
+   Diálogo de la casa: el mismo material que la tarjeta de foco (la ficha de
+   alimento). El fondo se difumina en vez de oscurecerse, la tarjeta llega con
+   opacidad, escala y desenfoque juntos, lleva el filo giratorio, y el pie con
+   la acción queda fijo abajo aunque el formulario sea largo.
+
+   Sólo fija lo que es material (superficie, radio, sombra, relleno, motion).
+   El ancho y el alto los sigue poniendo cada diálogo con sus utilidades.
+--------------------------------------------------------------------------- */
+.pc-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: color-mix(in oklch, #05060a 46%, transparent);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+.pc-dialog-overlay[data-state="open"] {
+  animation: pc-dialog-overlay-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-dialog-overlay[data-state="closed"] {
+  animation: pc-dialog-overlay-out 200ms ease-in forwards;
+}
+@keyframes pc-dialog-overlay-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0) saturate(100%);
+  }
+}
+@keyframes pc-dialog-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* `.pc-live-edge` pone `position: relative`; aquí manda `fixed`. */
+.pc-dialog.pc-live-edge {
+  position: fixed;
+}
+.pc-dialog {
+  --live-edge-opacity: 0.5;
+  gap: 20px;
+  padding: 26px 24px 24px;
+  border-radius: 28px;
+  color: var(--popover-foreground);
+  font-size: 14px;
+  background:
+    radial-gradient(
+      130% 90% at 100% 0%,
+      color-mix(in oklch, var(--primary) 9%, transparent),
+      transparent 60%
+    ),
+    color-mix(in oklch, var(--card) 90%, transparent);
+  backdrop-filter: blur(26px) saturate(150%);
+  box-shadow:
+    inset 0 0 0 1px var(--v11-line),
+    0 50px 120px -40px rgb(0 0 0 / 0.75),
+    var(--v11-shadow);
+  outline: none;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.pc-dialog[data-state="open"] {
+  animation: pc-dialog-in 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-dialog[data-state="closed"] {
+  animation: pc-dialog-out 200ms ease-in forwards;
+}
+@keyframes pc-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    filter: blur(6px);
+  }
+}
+@keyframes pc-dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    filter: blur(3px);
+  }
+}
+
+/* Encabezado: deja sitio al botón de cerrar y da al título el peso de la
+   ficha, no el de una etiqueta. */
+.pc-dialog [data-slot="dialog-header"] {
+  gap: 6px;
+  padding-right: 44px;
+}
+.pc-dialog [data-slot="dialog-title"] {
+  font-family: var(--font-sans);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.026em;
+  text-wrap: balance;
+}
+.pc-dialog [data-slot="dialog-description"] {
+  max-width: 58ch;
+  font-size: 14px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.pc-dialog-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pc-dialog-close:hover {
+  background: color-mix(in oklch, var(--foreground) 15%, transparent);
+}
+.pc-dialog-close:active {
+  transform: scale(0.94);
+}
+.pc-dialog-close:focus-visible {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 2px;
+}
+
+/* Con pie, el relleno inferior lo pone el pie: si no, queda un hueco
+   debajo del botón al final del desplazamiento. */
+.pc-dialog:has(> [data-slot="dialog-footer"]) {
+  padding-bottom: 0;
+}
+
+/* Pie: pegado abajo mientras se desplaza el formulario, sobre un vidrio que
+   deja intuir lo que pasa por debajo. */
+.pc-dialog [data-slot="dialog-footer"] {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 4px -24px 0;
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--v11-line);
+  border-radius: 0 0 28px 28px;
+  background: color-mix(in oklch, var(--card) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Agrupar campos: un panel hundido con rótulo pequeño, como los bloques de
+   la ficha de alimento. Opcional; lo usan los formularios largos. */
+.pc-dialog-group {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--foreground) 3.5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--v11-line);
+}
+.pc-dialog-group > .label-micro {
+  margin: 0 0 -4px;
+}
+
+@media (max-width: 600px) {
+  .pc-dialog {
+    padding: 22px 18px 20px;
+    border-radius: 24px;
+  }
+  .pc-dialog [data-slot="dialog-title"] {
+    font-size: 19px;
+  }
+  .pc-dialog-close {
+    top: 14px;
+    right: 14px;
+  }
+  .pc-dialog [data-slot="dialog-footer"] {
+    bottom: 0;
+    margin: 4px -18px 0;
+    padding: 12px 18px 18px;
+    border-radius: 0 0 24px 24px;
+  }
+  .pc-dialog-group {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-dialog[data-state="open"] {
+    animation: pc-dialog-overlay-in 160ms ease-out;
+  }
+  .pc-dialog[data-state="closed"] {
+    animation: pc-dialog-overlay-out 160ms ease-in forwards;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .pc-dialog-overlay {
+    backdrop-filter: none;
+    background: rgb(5 6 10 / 0.86);
+  }
+  .pc-dialog,
+  .pc-dialog [data-slot="dialog-footer"] {
+    backdrop-filter: none;
+    background: var(--card);
+  }
+}
+
+/* Los formularios aún sin kit (Label + Input de shadcn) leen como los del
+   kit: rótulo pequeño y apagado encima de un campo que manda. */
+.pc-dialog [data-slot="label"] {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
