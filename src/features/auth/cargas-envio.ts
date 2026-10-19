@@ -15,8 +15,8 @@
 export type CargaEnvio = { slug: string; rotulo: string };
 
 export const cargasDelEnvio: CargaEnvio[] = [
-  { slug: "actual", rotulo: "Actual" },
   { slug: "puntos", rotulo: "Solo puntos" },
+  { slug: "actual", rotulo: "Con fondo" },
   { slug: "pantalla", rotulo: "Pantalla de carga" },
 ];
 

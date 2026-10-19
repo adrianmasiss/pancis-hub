@@ -33,7 +33,7 @@ export default function AccesoLayout({
       <link
         rel="preload"
         as="image"
-        href="/acceso/fondos/00-actual.webp"
+        href="/acceso/fondos/imagen-4.webp"
         type="image/webp"
       />
       <LoginStage>{children}</LoginStage>

@@ -4664,22 +4664,33 @@ html[data-pc-mode="light"] .nutrition-period > [aria-current] {
 .assistant-fab {
   background: color-mix(in oklch, var(--card) 72%, transparent);
   backdrop-filter: blur(20px) saturate(150%);
-  animation: copilot-breathe 3.6s ease-in-out infinite;
+  isolation: isolate;
   transition:
     filter 160ms ease-out,
     transform 180ms var(--pc-spring);
 }
 
+/* Paint the halo once; opacity can animate without repainting its shadow. */
+.assistant-fab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 16px 46px -12px
+    color-mix(in oklch, var(--primary) 85%, transparent);
+  animation: copilot-breathe 3.6s ease-in-out infinite;
+}
+
 @keyframes copilot-breathe {
   0%,
   100% {
-    box-shadow: 0 10px 28px -14px
-      color-mix(in oklch, var(--primary) 55%, transparent);
+    opacity: 0.4;
   }
 
   50% {
-    box-shadow: 0 16px 46px -12px
-      color-mix(in oklch, var(--primary) 85%, transparent);
+    opacity: 1;
   }
 }
 
@@ -4711,14 +4722,15 @@ html[data-pc-mode="light"] .nutrition-period > [aria-current] {
   }
 }
 
-[data-motion-paused] :is(.copilot-ring, .assistant-fab),
+[data-motion-paused] .copilot-ring,
+[data-motion-paused] .assistant-fab::before,
 [data-motion-paused] .pc-live-edge::after {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .copilot-ring,
-  .assistant-fab,
+  .assistant-fab::before,
   .pc-live-edge::after {
     animation: none;
   }
@@ -4738,19 +4750,7 @@ html[data-pc-mode="light"] .nutrition-period > [aria-current] {
   }
 }
 
-/* Slow autonomous highlight around the main sheet, independent of the mouse. */
-@property --stage-x {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 6%;
-}
-
-@property --stage-y {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 0%;
-}
-
+/* Static highlight avoids repainting the entire sheet on every frame. */
 .app-stage {
   position: relative;
 }
@@ -4765,7 +4765,7 @@ html[data-pc-mode="light"] .nutrition-period > [aria-current] {
   pointer-events: none;
   opacity: 0.7;
   background: radial-gradient(
-    260px circle at var(--stage-x) var(--stage-y),
+    260px circle at 6% 0%,
     white,
     color-mix(in oklab, var(--pc-brand-to) 88%, white) 16%,
     color-mix(in oklab, var(--primary) 36%, transparent) 42%,
@@ -4775,40 +4775,6 @@ html[data-pc-mode="light"] .nutrition-period > [aria-current] {
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: stage-edge-orbit 18s linear infinite;
-}
-
-@keyframes stage-edge-orbit {
-  0%,
-  100% {
-    --stage-x: 6%;
-    --stage-y: 0%;
-  }
-
-  25% {
-    --stage-x: 100%;
-    --stage-y: 8%;
-  }
-
-  50% {
-    --stage-x: 94%;
-    --stage-y: 100%;
-  }
-
-  75% {
-    --stage-x: 0%;
-    --stage-y: 92%;
-  }
-}
-
-[data-motion-paused] .app-stage::before {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-stage::before {
-    animation: none;
-  }
 }
 
 /* El reflejo del cursor en el heroe se fue con la capa: ahora usa el mismo
@@ -6396,7 +6362,7 @@ html[data-pc] .login-stage .login-sheet {
       rgb(6 6 6 / 18%) 46%
     ),
     linear-gradient(0deg, rgb(6 6 6 / 76%) 0%, transparent 30%),
-    var(--login-foto, url("/acceso/fondos/00-actual.webp")) center 54% / cover
+    var(--login-foto, url("/acceso/fondos/imagen-4.webp")) center 54% / cover
       no-repeat,
     #060606;
 }
@@ -6496,7 +6462,7 @@ html[data-pc] .login-stage .login-sheet {
      gradiente, porque el gradiente negro que se quiere comparar no necesita
      archivo ninguno. */
   background:
-    var(--login-carga, url("/acceso/carga/malla.webp")) center / cover no-repeat,
+    var(--login-carga, radial-gradient(120% 90% at 50% 34%, #17171a 0%, #0d0d0f 46%, #050506 100%)) center / cover no-repeat,
     #070707;
   animation: login-loading-bg-out 3s linear both;
 }
@@ -6833,7 +6799,7 @@ html[data-pc] .field-shell > input:-webkit-autofill:active {
    Dos candidatos, y los dos viven aqui: el formulario no cambia ni una linea
    para probarlos. El unico gancho es `aria-busy` en el boton, que el envio ya
    publica —lo necesita un lector de pantalla—, mas el atributo que pone el
-   selector en `<html>`. Sin atributo no existe ninguna de las dos reglas.
+   selector en `<html>`. Sin atributo se usa la variante de solo puntos.
 
    1. SOLO PUNTOS. El boton se sigue encogiendo, pero pierde el disco: fondo y
       sombra fuera, y los puntos toman el acento en vez de la tinta del boton
@@ -6844,10 +6810,10 @@ html[data-pc] .field-shell > input:-webkit-autofill:active {
       La especificidad es larga a la fuerza: la regla del boton ocupado es
       `.login-sheet button[type="submit"][aria-busy="true"]:disabled`, y para
       ganarle sin `!important` hay que sumar el atributo de `<html>`. */
-html[data-carga-envio="puntos"]
+html:is(:not([data-carga-envio]), [data-carga-envio="puntos"])
   .login-sheet
   button[type="submit"][aria-busy="true"],
-html[data-carga-envio="puntos"]
+html:is(:not([data-carga-envio]), [data-carga-envio="puntos"])
   .login-sheet
   button[type="submit"][aria-busy="true"]:disabled {
   background: none;
@@ -6859,7 +6825,7 @@ html[data-carga-envio="puntos"]
    cargador se fija punto a punto en `.login-sheet button[aria-busy] .dot::after`
    —con `--primary-foreground`, la tinta que va SOBRE el disco naranja—, y sin
    disco eso es negro sobre negro. Medido: los cuatro salian `rgb(9, 9, 9)`. */
-html[data-carga-envio="puntos"]
+html:is(:not([data-carga-envio]), [data-carga-envio="puntos"])
   .login-sheet
   button[type="submit"][aria-busy="true"]
   .newtons-cradle__dot::after {
@@ -6889,7 +6855,7 @@ html[data-carga-envio="pantalla"]
   justify-content: center;
   gap: 18px;
   background:
-    var(--login-carga, url("/acceso/carga/malla.webp")) center / cover no-repeat,
+    var(--login-carga, radial-gradient(120% 90% at 50% 34%, #17171a 0%, #0d0d0f 46%, #050506 100%)) center / cover no-repeat,
     #070707;
   animation: login-sending-in 220ms var(--pc-ease-out, ease-out) both;
 }
@@ -7093,9 +7059,8 @@ html[data-carga-envio="pantalla"]
 /* ==========================================================================
    EL FONDO DEL SISTEMA
 
-   La capa que el selector pinta detras de la app entera. Vacia por omision:
-   sin `--app-fondo` elegido, `none` no dibuja nada y el lienzo se ve como
-   siempre —el resplandor del handoff y el color de la paleta—.
+   La capa que el selector pinta detras de la app entera. Usa Imagen 4 por
+   omision; el selector puede sustituirla o desactivarla con `none`.
 
    Va DESPUES de `.app-ambient` en el arbol y con el mismo nivel de apilado, y
    eso es lo que la pone delante: dos hermanos con `z-index: 0` los ordena el
@@ -7110,7 +7075,7 @@ html[data-carga-envio="pantalla"]
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--app-fondo, none) center / cover no-repeat;
+  background: var(--app-fondo, url("/acceso/fondos/imagen-4.webp")) center / cover no-repeat;
 }
 
 /* ==========================================================================
@@ -7296,7 +7261,7 @@ html[data-carga-envio="pantalla"]
   justify-content: center;
   gap: 16px;
   background:
-    var(--login-carga, url("/acceso/carga/malla.webp")) center / cover no-repeat,
+    var(--login-carga, radial-gradient(120% 90% at 50% 34%, #17171a 0%, #0d0d0f 46%, #050506 100%)) center / cover no-repeat,
     #070707;
   animation: app-loading-in 160ms var(--pc-ease-out, ease-out) both;
 }
