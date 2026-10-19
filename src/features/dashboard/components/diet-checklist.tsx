@@ -1,10 +1,9 @@
 "use client";
-
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Check, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { MacroChip } from "@/components/shared/macro-chip";
 import { formatHouseholdEquivalence } from "@/features/foods/lib/equivalence";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
@@ -278,18 +277,15 @@ function MealStop({
                 })}
               </ul>
 
-              <Button
-                variant={meal.loggedToday ? "secondary" : "default"}
-                size="sm"
+              <ActionButton
+                family="add"
+                loading={pending}
                 className="w-full"
                 disabled={pending || meal.loggedToday}
                 onClick={onLog}
               >
-                {meal.loggedToday ? (
-                  <Check className="size-4" aria-hidden="true" />
-                ) : null}
-                {pending ? t.logging : meal.loggedToday ? t.logged : t.logMeal}
-              </Button>
+                {meal.loggedToday ? t.logged : t.logMeal}
+              </ActionButton>
             </div>
           </div>
         </div>

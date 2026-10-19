@@ -112,7 +112,9 @@ export function CompositionChart({
               wrapperStyle={{ fontSize: 12 }}
               iconType="plainline"
               formatter={(value: string) => (
-                <span style={{ color: "var(--muted-foreground)" }}>{value}</span>
+                <span style={{ color: "var(--muted-foreground)" }}>
+                  {value}
+                </span>
               )}
             />
             <Line

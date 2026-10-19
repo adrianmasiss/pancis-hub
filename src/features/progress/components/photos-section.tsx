@@ -1,9 +1,9 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Camera, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,10 +69,7 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
       action={
         <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline">
-              <Camera className="size-4" aria-hidden="true" />
-              {t.upload}
-            </Button>
+            <ActionButton family="add">{t.upload}</ActionButton>
           </DialogTrigger>
           <DialogContent className="max-w-sm">
             <DialogHeader>
@@ -111,9 +108,15 @@ export function PhotosSection({ photos }: { photos: PhotoViewItem[] }) {
                 name="notes"
                 maxLength={200}
               />
-              <Button type="submit" className="w-full" disabled={pending}>
-                {pending ? messages.common.loading : messages.common.save}
-              </Button>
+              <ActionButton
+                family="save"
+                loading={pending}
+                className="w-full"
+                type="submit"
+                disabled={pending}
+              >
+                {messages.common.save}
+              </ActionButton>
             </form>
           </DialogContent>
         </Dialog>

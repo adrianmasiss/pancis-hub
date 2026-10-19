@@ -1,5 +1,5 @@
+import { ActionLink } from "@/components/ui/action";
 import Link from "next/link";
-import { MoreHorizontal } from "lucide-react";
 import { formatNumber } from "@/lib/format/number";
 
 type Props = {
@@ -68,13 +68,12 @@ export function V11NutritionHeroCard({
             {registeredCount} registradas · {pendingCount}{" "}
             {pendingCount === 1 ? "pendiente" : "pendientes"}
           </span>
-          <Link
+          <ActionLink
+            family="edit"
+            compact
             href="/nutricion/dieta"
-            className="nutrition-options"
             aria-label="Editar plan de alimentación"
-          >
-            <MoreHorizontal className="size-4" />
-          </Link>
+          ></ActionLink>
         </div>
       </div>
       <div className="nutrition-summary-body">

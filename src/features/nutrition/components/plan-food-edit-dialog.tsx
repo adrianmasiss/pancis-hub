@@ -1,8 +1,8 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Minus, PencilLine, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Minus, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -92,13 +92,12 @@ export function PlanFoodEditDialog({
   return (
     <Dialog open={open} onOpenChange={reset}>
       <DialogTrigger asChild>
-        <button
+        <ActionButton
+          family="edit"
+          compact
           type="button"
-          className="plan-food-action"
           aria-label={`Editar — ${item.foodName}`}
-        >
-          <PencilLine size={15} aria-hidden="true" />
-        </button>
+        ></ActionButton>
       </DialogTrigger>
       <DialogContent className="plan-food-dialog sm:max-w-[420px]">
         <DialogHeader className="plan-food-dialog-head">
@@ -251,14 +250,15 @@ export function PlanFoodEditDialog({
             </Button>
           )}
           {canResize && (
-            <Button
-              variant="brand"
+            <ActionButton
+              family="save"
+              loading={pending}
               onClick={save}
               disabled={!changed || pending}
               aria-busy={pending}
             >
-              {pending ? "Guardando…" : "Guardar"}
-            </Button>
+              {"Guardar"}
+            </ActionButton>
           )}
         </DialogFooter>
       </DialogContent>

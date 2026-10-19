@@ -1,9 +1,9 @@
 "use client";
-
 import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState, useTransition } from "react";
 import { Sparkles, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MacroChip } from "@/components/shared/macro-chip";
@@ -269,17 +269,17 @@ export function SwapQuestionPanel({
           ) : null}
 
           {canApply ? (
-            <Button
+            <ActionButton
+              family="save"
+              icon="confirm"
+              loading={applying}
+              className="self-start"
               type="button"
-              variant="outline"
-              size="sm"
               onClick={apply}
               disabled={applying}
-              className="self-start"
             >
-              {applying ? <NewtonsCradle size={24} /> : null}
               {t.applyForToday}
-            </Button>
+            </ActionButton>
           ) : null}
         </div>
       ) : null}

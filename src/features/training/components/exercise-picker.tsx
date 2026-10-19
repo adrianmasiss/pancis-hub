@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { ArrowLeftRight, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,11 +21,14 @@ const t = messages.training;
 type ExercisePickerProps = {
   onSelect: (exercise: CatalogExercise) => void | Promise<void>;
   triggerLabel?: string;
+  /** «swap»: pastilla discreta para cambiar uno ya elegido (la revision). */
+  triggerVariant?: "add" | "swap";
 };
 
 export function ExercisePicker({
   onSelect,
   triggerLabel,
+  triggerVariant = "add",
 }: ExercisePickerProps) {
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -60,10 +63,17 @@ export function ExercisePicker({
       }}
     >
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="size-4" aria-hidden="true" />
-          {triggerLabel ?? t.addExercise}
-        </Button>
+        {triggerVariant === "swap" ? (
+          <button type="button" className="exercise-picker-swap">
+            <ArrowLeftRight size={13} aria-hidden="true" />
+            {triggerLabel ?? t.addExercise}
+          </button>
+        ) : (
+          <Button variant="outline" size="sm">
+            <Plus className="size-4" aria-hidden="true" />
+            {triggerLabel ?? t.addExercise}
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>

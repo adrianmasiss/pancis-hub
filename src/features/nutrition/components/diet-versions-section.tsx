@@ -66,6 +66,7 @@ export function DietVersionsSection({
 
   return (
     <VersionsCard
+      actionFamilies
       labels={t}
       versions={items}
       pendingLines={pendingLines(initial.pendingChanges)}

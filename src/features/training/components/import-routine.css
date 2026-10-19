@@ -1,0 +1,299 @@
+/* Importar rutina: dos pasos en el mismo diálogo. Primero el origen (el
+   archivo del coach como camino principal, el texto como alternativa) y luego
+   la revisión editable, día a día, con «Crear rutina» fijo abajo. */
+
+/* --- Paso 1: origen (la zona de subida es DropZone, del kit) ------- */
+/* «o pégala como texto», entre dos filetes. */
+.ir-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+  font-size: 12px;
+  color: var(--subtle-foreground);
+}
+.ir-or::before,
+.ir-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--v11-line);
+}
+.ir-text {
+  min-height: 116px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* --- Paso 2: revisión -------------------------------------------------- */
+.ir-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  margin: -4px 0 6px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+.ir-back:hover {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+.ir-alerts {
+  display: grid;
+  gap: 6px;
+  padding: 11px 13px;
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--caution) 12%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--caution) 32%, transparent);
+}
+.ir-alerts p {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+.ir-alerts svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--caution);
+}
+
+.ir-name .pc-metric-box input {
+  font-size: 15px;
+}
+
+.ir-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ir-ex {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--v11-line);
+}
+.ir-ex[data-incomplete] {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--caution) 55%, transparent);
+}
+.ir-ex[data-unmatched] {
+  opacity: 0.72;
+}
+.ir-ex-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ir-ex-num {
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.ir-ex-name {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.ir-ex-name strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ir-ex-name small {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.ir-ex-name .ir-ex-miss {
+  color: var(--destructive);
+}
+
+/* Cinco cifras en una fila: rótulo micro arriba, número debajo. */
+.ir-nums {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.ir-num {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.ir-num > span {
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ir-num input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--v11-line);
+  outline: none;
+  -moz-appearance: textfield;
+  transition: box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ir-num input::-webkit-outer-spin-button,
+.ir-num input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.ir-num input::placeholder {
+  font-weight: 400;
+  color: var(--subtle-foreground);
+}
+.ir-num input:focus {
+  box-shadow:
+    inset 0 0 0 1.5px var(--primary),
+    0 0 0 3px color-mix(in oklch, var(--primary) 16%, transparent);
+}
+.ir-num[data-invalid] input {
+  box-shadow: inset 0 0 0 1.5px var(--caution);
+}
+html[data-pc] .ir-num input:focus-visible,
+html[data-pc] .ir-notes:focus-visible {
+  outline: none;
+}
+
+.ir-notes {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--foreground);
+  background: transparent;
+  box-shadow: inset 0 -1px 0 var(--v11-line);
+  outline: none;
+  transition: box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ir-notes::placeholder {
+  color: var(--subtle-foreground);
+}
+.ir-notes:focus {
+  box-shadow: inset 0 -1.5px 0 var(--primary);
+}
+
+.ir-plain {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.ir-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Móvil: series y reps en una fila de tres; RIR y descanso, dos mitades. */
+@media (max-width: 520px) {
+  .ir-nums {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .ir-num {
+    grid-column: span 2;
+  }
+  .ir-num:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+}
+
+/* DialogHeader es flex en columna: sin esto la pastilla se estira. */
+.ir-back {
+  align-self: flex-start;
+}
+
+/* Renombrar el día: una línea discreta, no otro campo grande que repita el
+   título del grupo. */
+.ir-dayname {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--v11-line);
+}
+.ir-dayname span {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.ir-dayname input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.ir-dayname:focus-within {
+  border-bottom-color: var(--primary);
+}
+html[data-pc] .ir-dayname input:focus-visible {
+  outline: none;
+}
+
+/* Cambiar el ejercicio elegido (revisión de la importación): una pastilla
+   discreta, no un botón con contorno que compita con el nombre. */
+.exercise-picker-swap {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 7%, transparent);
+  transition:
+    background-color 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 100ms ease-out;
+}
+.exercise-picker-swap:hover {
+  background: color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+.exercise-picker-swap:active {
+  transform: scale(0.96);
+}
+.exercise-picker-swap:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

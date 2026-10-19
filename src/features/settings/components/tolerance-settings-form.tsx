@@ -1,11 +1,10 @@
 "use client";
-
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { toOptionalNumber } from "@/lib/forms";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { updateToleranceSettings } from "@/features/settings/actions";
@@ -74,9 +73,14 @@ export function ToleranceSettingsForm({
           <p className="text-muted-foreground max-w-[62ch] text-xs text-pretty">
             {t.fiberNote}
           </p>
-          <Button type="submit" disabled={pending}>
-            {pending ? messages.common.loading : t.save}
-          </Button>
+          <ActionButton
+            family="save"
+            loading={pending}
+            type="submit"
+            disabled={pending}
+          >
+            {t.save}
+          </ActionButton>
         </form>
       </div>
     </Section>

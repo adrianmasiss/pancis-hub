@@ -1,11 +1,10 @@
 "use client";
-
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toOptionalNumber } from "@/lib/forms";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { SelectField } from "@/components/shared/select-field";
@@ -82,9 +81,14 @@ export function ProfileSettingsForm({
             error={errors.timezone?.message}
             {...form.register("timezone")}
           />
-          <Button type="submit" disabled={pending}>
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+          <ActionButton
+            family="save"
+            loading={pending}
+            type="submit"
+            disabled={pending}
+          >
+            {messages.common.save}
+          </ActionButton>
         </form>
       </div>
     </Section>

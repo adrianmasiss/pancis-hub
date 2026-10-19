@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { ChefHat } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   FocusCard,
   FocusCardContent,
@@ -106,14 +104,12 @@ export function RecipeSwapSheet({
         nunca se cargarian.
       */}
       <FocusCardTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground size-8"
+        <ActionButton
+          family="edit"
+          icon="swap"
+          compact
           aria-label={`${t.trigger} — ${mealName}`}
-        >
-          <ChefHat className="size-4" />
-        </Button>
+        ></ActionButton>
       </FocusCardTrigger>
 
       <FocusCardContent>
@@ -185,14 +181,16 @@ export function RecipeSwapSheet({
 
                       <CompatibilityScore score={match.compatibility} />
 
-                      <Button
-                        size="sm"
+                      <ActionButton
+                        family="save"
+                        icon="confirm"
+                        loading={pending}
                         className="w-full"
                         disabled={pending}
                         onClick={() => confirm(match.recipe.id, match.servings)}
                       >
-                        {pending ? messages.common.loading : t.confirm}
-                      </Button>
+                        {t.confirm}
+                      </ActionButton>
                     </li>
                   ))}
                 </ul>

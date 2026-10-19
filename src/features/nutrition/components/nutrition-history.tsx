@@ -1,3 +1,4 @@
+import { ActionLink } from "@/components/ui/action";
 import Link from "next/link";
 import { CalendarOff } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -165,9 +166,9 @@ export async function NutritionHistory({
             title={`Sin registros en estos ${period} días`}
             description="La tendencia se dibuja con lo que registras cada día. Los días sin registro quedan en blanco: no se cuentan como cero calorías, porque no sabemos qué comiste."
             action={
-              <Link href="/nutricion" className="v11-button">
+              <ActionLink family="add" href="/nutricion">
                 Registrar el día de hoy
-              </Link>
+              </ActionLink>
             }
           />
         )}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ActionLink } from "@/components/ui/action";
 import { V11Card, V11CardHead } from "@/components/shared/v11-card";
 export type MacroItem = {
   key: string;
@@ -21,9 +21,9 @@ export function V11MacrosCard({
       <V11CardHead
         title="Macros del día"
         aside={
-          <Link href={logMealHref} className="v11-chip-link">
+          <ActionLink family="add" href={logMealHref}>
             Registrar comida
-          </Link>
+          </ActionLink>
         }
       />
       <ul className="macro-rows">

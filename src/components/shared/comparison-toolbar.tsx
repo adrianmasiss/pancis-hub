@@ -1,8 +1,8 @@
 "use client";
-
+import { ActionButton } from "@/components/ui/action";
 import "./pill-controls.css";
 import type { ReactNode } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { SegmentedControl } from "./segmented-control";
 
 export type ComparisonMode<T extends string> = {
@@ -71,14 +71,13 @@ export function ComparisonToolbar<T extends string>({
 /** The round add button; also used as the food dialog's trigger. */
 export function AddFoodButton(props: React.ComponentProps<"button">) {
   return (
-    <button
+    <ActionButton
+      family="add"
+      compact
       type="button"
-      className="cmp-add"
       aria-label="Agregar alimento"
       title="Agregar alimento"
       {...props}
-    >
-      <Plus size={19} strokeWidth={1.75} aria-hidden="true" />
-    </button>
+    ></ActionButton>
   );
 }

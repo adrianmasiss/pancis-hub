@@ -1,13 +1,8 @@
+import { ActionLink } from "@/components/ui/action";
 import "@/features/nutrition/components/nutrition-workspace.css";
 import "@/features/nutrition/components/meal-plan.css";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { FileUp } from "lucide-react";
-import {
-  ExpandActionInner,
-  expandActionClass,
-} from "@/components/ui/expand-action";
 import { ViewHeader } from "@/components/shared/view-header";
 import { DateSelector } from "@/components/shared/date-selector";
 import { createClient } from "@/lib/supabase/server";
@@ -75,18 +70,16 @@ export default async function NutritionPage({
             <p>Tu plan diario, claro y medible</p>
           </div>
         </div>
-        {/* El circulo naranja crece y se come el rotulo al pasar por
-            encima; el nombre accesible no depende de que se vea. */}
-        <Link
-          className={expandActionClass}
+        {/* En cabeceras estrechas se muestra el + compacto; el nombre
+            accesible conserva siempre la acción completa. */}
+        <ActionLink
+          family="add"
+          compactOnMobile
           href="/nutricion/dieta"
           aria-label="Importar dieta"
         >
-          <ExpandActionInner
-            icon={<FileUp size={17} strokeWidth={2.2} />}
-            label="Importar dieta"
-          />
-        </Link>
+          Importar dieta
+        </ActionLink>
       </header>
       <NutritionNav active={active} date={date} />
       {active === "day" && diet && date !== today && (

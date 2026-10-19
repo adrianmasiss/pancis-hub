@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import "./form-kit.css";
 
 type SelectFieldProps = {
   label: string;
@@ -42,7 +43,7 @@ export function SelectField({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : help ? helpId : undefined}
         className={cn(
-          "border-input bg-background dark:bg-input/30 h-9 w-full min-w-0 rounded-md border px-3 py-1 text-sm shadow-xs outline-none",
+          "pc-select border-input bg-card/75 dark:bg-card-raised/60 h-11 w-full min-w-0 appearance-none rounded-xl border py-1 pr-10 pl-3.5 text-base outline-none md:text-sm",
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
           "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
           "disabled:cursor-not-allowed disabled:opacity-50",

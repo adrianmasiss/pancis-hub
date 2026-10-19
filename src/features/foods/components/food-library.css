@@ -1087,6 +1087,7 @@
 }
 .library-food-actions {
   display: flex;
+  align-items: center;
   gap: 6px;
   margin-top: 10px;
 }
@@ -1097,8 +1098,10 @@
 }
 .library-detail-button {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  /* Mismo alto que «Usar en mi dieta» (la variable del botón de acción) y
+     centrado con él: los dos botones de la fila quedan a la misma altura. */
+  width: var(--pc-action-height, 44px);
+  height: var(--pc-action-height, 44px);
   display: grid;
   place-items: center;
   border-radius: 999px;

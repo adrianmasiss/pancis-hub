@@ -1,8 +1,8 @@
 "use client";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { animate, useReducedMotion } from "motion/react";
-import { ArrowLeftRight, Flame } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Flame } from "lucide-react";
+import { ActionButton } from "@/components/ui/action";
 import {
   FocusCard,
   FocusCardContent,
@@ -436,15 +436,15 @@ function FoodDetailBody({
       </div>
 
       <div className="food-detail-footer">
-        <Button
-          variant="brand"
-          size="lg"
+        <ActionButton
+          family="edit"
+          icon="swap"
           className="w-full"
           disabled={!food.canUse}
           onClick={onUse}
         >
-          <ArrowLeftRight size={16} /> Usar en mi dieta
-        </Button>
+          Usar en mi dieta
+        </ActionButton>
         {!food.canUse && (
           <p className="food-detail-note">
             {food.source.includes("IA")

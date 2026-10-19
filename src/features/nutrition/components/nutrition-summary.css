@@ -1,0 +1,690 @@
+/* ---------------------------------------------------------------------------
+   Resumen del día de Nutrición (variante C, elegida oct 2026).
+
+   Calorías al frente (con el agua debajo) y los macros como lista. El color
+   de cada macro vive sólo en su punto y su barra. Movimiento:
+   - al entrar, las dos tarjetas suben 8px con un fundido y las barras crecen
+     una tras otra (60ms entre filas);
+   - al registrar, las barras se alargan con la curva de la casa y las cifras
+     cuentan hasta el valor nuevo;
+   - el vaso que se llena rebota apenas.
+   Con movimiento reducido todo aparece en su sitio.
+--------------------------------------------------------------------------- */
+
+.ns {
+  --ns-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ns-line: var(--v11-line);
+  --ns-water: #5cc8ff;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.6fr);
+  gap: 12px;
+}
+
+.ns > .ns-shell {
+  animation: ns-rise 520ms var(--ns-ease) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes ns-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ── Negro sólido con borde especular (oct 2026) ──────────────────────────
+   Dos placas negras planas. El borde no es un contorno: es un filete de 1px
+   que capta la luz arriba, se apaga en los costados y vuelve a brillar un
+   poco abajo, sobre un marco exterior casi invisible (doble bisel, radio
+   26 fuera y 22 dentro). En calorías el filete nace naranja arriba a la
+   izquierda; el naranja, por lo demás, sólo está en sus detalles. Los datos
+   en blanco puro y lo secundario en blanco translúcido. Colores fijos a
+   propósito: la pieza es negra en los dos temas, como la pantalla. */
+.ns {
+  --ns-ink: #fff;
+  --ns-ink-2: rgb(255 255 255 / 0.66);
+  --ns-ink-3: rgb(255 255 255 / 0.46);
+  --ns-line: rgb(255 255 255 / 0.08);
+  --ns-orange: #f0793f;
+  --ns-edge: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.24) 0%,
+    rgb(255 255 255 / 0.07) 22%,
+    rgb(255 255 255 / 0.03) 60%,
+    rgb(255 255 255 / 0.09) 100%
+  );
+}
+.ns-shell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  padding: 4px;
+  border-radius: 26px;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.05),
+    rgb(255 255 255 / 0.015) 55%,
+    rgb(255 255 255 / 0.025)
+  );
+  box-shadow:
+    0 2px 6px -2px rgb(0 0 0 / 0.5),
+    0 28px 56px -32px rgb(0 0 0 / 0.95);
+}
+.ns-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--ns-edge);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.85;
+  transition: opacity 260ms var(--ns-ease);
+}
+.ns-shell[data-tone="energy"] {
+  --ns-edge: linear-gradient(
+    150deg,
+    color-mix(in oklch, var(--ns-orange) 85%, transparent) 0%,
+    color-mix(in oklch, var(--ns-orange) 28%, transparent) 18%,
+    rgb(255 255 255 / 0.05) 42%,
+    rgb(255 255 255 / 0.03) 72%,
+    rgb(255 255 255 / 0.1) 100%
+  );
+}
+/* Macros: el mismo filete, pero el naranja nace abajo a la derecha. Las dos
+   tarjetas quedan como un par: la luz entra por una esquina y sale por la
+   opuesta. */
+.ns-shell[data-tone="macros"] {
+  --ns-edge: linear-gradient(
+    150deg,
+    rgb(255 255 255 / 0.22) 0%,
+    rgb(255 255 255 / 0.06) 24%,
+    rgb(255 255 255 / 0.03) 58%,
+    color-mix(in oklch, var(--ns-orange) 28%, transparent) 82%,
+    color-mix(in oklch, var(--ns-orange) 85%, transparent) 100%
+  );
+}
+@media (hover: hover) and (pointer: fine) {
+  .ns-shell:hover::before {
+    opacity: 1;
+  }
+}
+
+.ns-core {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  color: var(--ns-ink);
+  background: #0a0a0a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    inset 0 0 0 1px rgb(255 255 255 / 0.035);
+}
+
+/* ── Rótulos ───────────────────────────────────────────────────────────── */
+.ns-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ns-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.ns-label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 16%, transparent);
+}
+.ns-chip {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+.ns-chip[data-over] {
+  color: var(--caution, #f5b544);
+  background: color-mix(in oklch, var(--caution, #f5b544) 14%, transparent);
+}
+
+/* ── Calorías ──────────────────────────────────────────────────────────── */
+.ns-energy {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 20px 22px 18px;
+}
+.ns-energy-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.ns-energy-value {
+  margin-top: 6px;
+}
+.ns-energy-value strong {
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--foreground);
+  font-feature-settings: "ss01", "tnum";
+}
+.ns-energy-value span {
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: var(--muted-foreground);
+}
+
+/* La barra: lo comido en sólido, lo pendiente del plan rayado y tenue, y
+   tres marcas finas en los cuartos para leer el avance sin un número. */
+.ns-energy-bar {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+.ns-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  transform-origin: left center;
+}
+.ns-seg[data-kind="eaten"] {
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 82%, transparent),
+    var(--primary)
+  );
+  transition: transform 700ms var(--ns-ease);
+  animation: ns-grow 900ms var(--ns-ease) 200ms backwards;
+}
+.ns-seg[data-kind="planned"] {
+  z-index: 1;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklch, var(--primary) 30%, transparent) 0 2px,
+    transparent 2px 6px
+  );
+  transition:
+    left 700ms var(--ns-ease),
+    width 700ms var(--ns-ease);
+  animation: ns-grow 900ms var(--ns-ease) 320ms backwards;
+}
+.ns-tick {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  z-index: 3;
+  width: 1px;
+  background: color-mix(in oklch, var(--background) 70%, transparent);
+}
+@keyframes ns-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.ns-energy-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.ns-energy-foot [data-over] {
+  color: var(--caution, #f5b544);
+}
+.ns-planned {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ns-planned i {
+  width: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklch, var(--primary) 55%, transparent) 0 2px,
+    color-mix(in oklch, var(--primary) 20%, transparent) 2px 4px
+  );
+}
+
+/* ── Agua ──────────────────────────────────────────────────────────────── */
+.ns-water {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ns-line);
+}
+.ns-water-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ns-water-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ns-water-value svg {
+  align-self: center;
+  margin-right: 4px;
+  color: var(--ns-water);
+}
+.ns-water-value strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.ns-water-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+.ns-water-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 120ms ease-out;
+}
+.ns-water-actions button[data-add] {
+  color: var(--ns-water);
+  background: color-mix(in oklch, var(--ns-water) 12%, transparent);
+}
+.ns-water-actions button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.ns-water-actions button:disabled {
+  opacity: 0.4;
+}
+.ns-water-actions button:focus-visible {
+  outline: 2px solid var(--ns-water);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ns-water-actions button:hover:not(:disabled) {
+    color: var(--foreground);
+    background: color-mix(in oklch, var(--foreground) 11%, transparent);
+  }
+  .ns-water-actions button[data-add]:hover:not(:disabled) {
+    color: var(--ns-water);
+    background: color-mix(in oklch, var(--ns-water) 20%, transparent);
+  }
+}
+
+/* Un vaso por cada 250 ml de la meta. */
+.ns-glasses {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ns-glasses li {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--ns-water) 14%, transparent);
+  transition: background-color 240ms ease;
+}
+.ns-glasses li[data-full] {
+  background: var(--ns-water);
+  box-shadow: 0 0 10px -2px
+    color-mix(in oklch, var(--ns-water) 70%, transparent);
+  animation: ns-fill 360ms var(--pc-ease-pop, cubic-bezier(0.34, 1.4, 0.64, 1));
+}
+@keyframes ns-fill {
+  from {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+  }
+}
+
+/* ── Macros ────────────────────────────────────────────────────────────── */
+.ns-macros-core {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 20px 10px 8px;
+}
+.ns-macros-core > .ns-head {
+  padding: 0 12px 6px;
+}
+.ns-head-note {
+  font-size: 12px;
+  color: var(--subtle-foreground);
+}
+.ns-label[data-tone="neutral"]::before {
+  background: var(--muted-foreground);
+  box-shadow: none;
+}
+.ns-macros {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ns-macro {
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr) 104px 40px;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  transition: background-color 200ms ease;
+}
+.ns-macro {
+  position: relative;
+}
+/* Filete recto con margen: un borde de la fila seguiría su esquina curva. */
+.ns-macro + .ns-macro::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: var(--ns-line);
+  transition: opacity 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ns-macro:hover {
+    background: color-mix(in oklch, var(--foreground) 3%, transparent);
+  }
+  .ns-macro:hover::before,
+  .ns-macro:hover + .ns-macro::before {
+    opacity: 0;
+  }
+}
+
+.ns-macro-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+.ns-macro-name::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--macro);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--macro) 16%, transparent);
+}
+
+.ns-macro-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--macro) 14%, transparent);
+}
+.ns-macro-bar i {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--macro) 70%, transparent),
+    var(--macro)
+  );
+  transform-origin: left center;
+  transition: transform 700ms var(--ns-ease);
+  animation: ns-grow 900ms var(--ns-ease) backwards;
+  animation-delay: calc(160ms + (var(--i, 0) - 2) * 60ms);
+}
+/* El punto de luz en la punta: dónde va el día de un vistazo. */
+.ns-macro-bar b {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 999px;
+  background: var(--macro);
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--card) 80%, transparent),
+    0 0 12px 1px color-mix(in oklch, var(--macro) 60%, transparent);
+  transform: translateY(-50%);
+  transition: left 700ms var(--ns-ease);
+  animation: ns-dot 900ms var(--ns-ease) backwards;
+  animation-delay: calc(160ms + (var(--i, 0) - 2) * 60ms);
+}
+@keyframes ns-dot {
+  from {
+    left: 0;
+    opacity: 0;
+  }
+}
+
+.ns-macro-value {
+  font-size: 12.5px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.ns-macro-value strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+.ns-macro-pct {
+  font-size: 11.5px;
+  text-align: right;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pasado de la meta: ámbar en la cifra, el % y la punta. */
+.ns-macro[data-over] .ns-macro-value strong,
+.ns-macro[data-over] .ns-macro-pct {
+  color: var(--caution, #f5b544);
+}
+.ns-macro[data-over] .ns-macro-bar b {
+  background: var(--caution, #f5b544);
+}
+
+/* ── Tableta y móvil ───────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .ns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .ns-energy {
+    padding: 18px;
+  }
+  .ns-macros-core {
+    padding: 18px 4px 4px;
+  }
+  .ns-energy-value strong {
+    font-size: 40px;
+  }
+  .ns-macro {
+    grid-template-columns: minmax(0, 1fr) auto 34px;
+    grid-template-areas:
+      "name value pct"
+      "bar bar bar";
+    row-gap: 9px;
+    column-gap: 10px;
+    padding: 12px;
+  }
+  .ns-macro-name {
+    grid-area: name;
+  }
+  .ns-macro-bar {
+    grid-area: bar;
+  }
+  .ns-macro-value {
+    grid-area: value;
+  }
+  .ns-macro-pct {
+    grid-area: pct;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns > .ns-shell,
+  .ns-seg,
+  .ns-macro-bar i,
+  .ns-macro-bar b,
+  .ns-glasses li[data-full] {
+    animation: none;
+  }
+  .ns-seg,
+  .ns-macro-bar i,
+  .ns-macro-bar b {
+    transition: none;
+  }
+}
+
+/* ── Tinta sobre negro ──────────────────────────────────────────────────── */
+.ns .ns-label {
+  color: var(--ns-ink-2);
+}
+.ns .ns-energy .ns-label {
+  color: rgb(255 255 255 / 0.86);
+}
+.ns .ns-energy-value strong,
+.ns .ns-macro-value strong,
+.ns .ns-water-value strong,
+.ns .ns-macro-name {
+  color: var(--ns-ink);
+}
+.ns .ns-energy-value span,
+.ns .ns-energy-foot,
+.ns .ns-water-value,
+.ns .ns-macro-value {
+  color: var(--ns-ink-2);
+}
+.ns .ns-head-note,
+.ns .ns-macro-pct {
+  color: var(--ns-ink-3);
+}
+.ns .ns-chip {
+  color: #160a04;
+  background: var(--ns-orange);
+}
+.ns .ns-chip[data-over],
+.ns .ns-energy-foot [data-over] {
+  color: #ffd27a;
+}
+.ns .ns-chip[data-over] {
+  color: #160a04;
+  background: #ffd27a;
+}
+
+/* La barra de calorías: naranja lo comido, rayado naranja lo pendiente. */
+.ns .ns-energy-bar {
+  background: color-mix(in oklch, var(--ns-orange) 16%, transparent);
+}
+.ns .ns-seg[data-kind="eaten"] {
+  background: var(--ns-orange);
+  box-shadow: 0 0 14px color-mix(in oklch, var(--ns-orange) 55%, transparent);
+}
+.ns .ns-seg[data-kind="planned"] {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklch, var(--ns-orange) 42%, transparent) 0 2px,
+    transparent 2px 6px
+  );
+}
+.ns .ns-tick {
+  background: rgb(0 0 0 / 0.5);
+}
+.ns .ns-planned i {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ns-orange) 0 2px,
+    color-mix(in oklch, var(--ns-orange) 25%, transparent) 2px 4px
+  );
+}
+
+/* Agua y macros sobre negro. */
+.ns .ns-water-actions button {
+  color: var(--ns-ink-2);
+  background: rgb(255 255 255 / 0.08);
+}
+.ns .ns-water-actions button[data-add] {
+  color: #8fdcff;
+  background: rgb(92 200 255 / 0.16);
+}
+.ns .ns-glasses li {
+  background: rgb(255 255 255 / 0.1);
+}
+.ns .ns-glasses li[data-full] {
+  background: var(--ns-water);
+}
+.ns .ns-macro-bar {
+  background: color-mix(in oklch, var(--macro) 18%, rgb(255 255 255 / 0.04));
+}
+.ns .ns-macro-bar b {
+  box-shadow:
+    0 0 0 2px #0a0a0a,
+    0 0 12px 1px color-mix(in oklch, var(--macro) 70%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ns .ns-macro:hover {
+    background: rgb(255 255 255 / 0.04);
+  }
+}

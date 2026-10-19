@@ -1,20 +1,21 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { FormField } from "@/components/shared/form-field";
-import { SelectField } from "@/components/shared/select-field";
+import {
+  ChoicePills,
+  FormGroup,
+  MetricField,
+} from "@/components/shared/form-kit";
 import { createRecipe, updateRecipe } from "@/features/recipes/actions";
 import type { RecipeDetail } from "@/features/recipes/queries";
 import { messages } from "@/i18n/es-419";
@@ -24,6 +25,9 @@ const NO_DIFFICULTY = "none";
 
 export function RecipeFormDialog({ recipe }: { recipe?: RecipeDetail }) {
   const [open, setOpen] = useState(false);
+  const [difficulty, setDifficulty] = useState<string>(
+    recipe?.difficulty ?? NO_DIFFICULTY,
+  );
   const [pending, startTransition] = useTransition();
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -61,96 +65,123 @@ export function RecipeFormDialog({ recipe }: { recipe?: RecipeDetail }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {recipe ? (
-          <Button variant="outline" size="sm">
-            <Pencil className="size-4" aria-hidden="true" />
-            {t.editRecipe}
-          </Button>
+          <ActionButton family="edit">{t.editRecipe}</ActionButton>
         ) : (
           // La accion prominente de Recetas. Editar, en cambio, es una accion
           // sobre una receta concreta y se queda callada.
-          <Button variant="brand" size="lg">
-            <Plus className="size-4" aria-hidden="true" />
-            {t.createRecipe}
-          </Button>
+          <ActionButton family="add">{t.createRecipe}</ActionButton>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{recipe ? t.editRecipe : t.createRecipe}</DialogTitle>
+          <DialogDescription>{t.form.hint}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <FormField
-            label={t.fields.name}
-            name="name"
-            required
-            maxLength={100}
-            defaultValue={recipe?.name ?? ""}
-          />
-          <FormField
-            label={t.fields.description}
-            name="description"
-            maxLength={500}
-            defaultValue={recipe?.description ?? ""}
-          />
-          <div className="grid grid-cols-3 gap-3">
-            <FormField
-              label={t.fields.servings}
-              name="servings"
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              min="0.5"
+        <form id="recipe-form" onSubmit={onSubmit} className="grid gap-3">
+          <FormGroup title={t.form.basics}>
+            <MetricField
+              type="text"
+              label={t.fields.name}
+              name="name"
               required
-              defaultValue={recipe?.servings ?? 2}
+              maxLength={100}
+              placeholder={t.form.namePlaceholder}
+              defaultValue={recipe?.name ?? ""}
             />
-            <FormField
-              label={t.fields.preparationMinutes}
-              name="preparationMinutes"
-              type="number"
-              inputMode="numeric"
-              min="1"
-              defaultValue={recipe?.preparationMinutes ?? ""}
+            <MetricField
+              type="text"
+              label={t.form.description}
+              name="description"
+              maxLength={500}
+              placeholder={messages.common.optional}
+              defaultValue={recipe?.description ?? ""}
             />
-            <SelectField
-              label={t.fields.difficulty}
+            <div className="pc-metrics" data-pair="">
+              <MetricField
+                label={t.fields.servings}
+                unit={t.form.servingsUnit}
+                name="servings"
+                step="0.5"
+                min="0.5"
+                required
+                defaultValue={recipe?.servings ?? 2}
+              />
+              <MetricField
+                label={t.form.time}
+                unit="min"
+                name="preparationMinutes"
+                inputMode="numeric"
+                min="1"
+                defaultValue={recipe?.preparationMinutes ?? ""}
+              />
+            </div>
+            <ChoicePills
               name="difficulty"
+              label={t.fields.difficulty}
               options={[
-                { value: NO_DIFFICULTY, label: "—" },
+                { value: NO_DIFFICULTY, label: t.form.noDifficulty },
                 { value: "facil", label: t.difficulties.facil },
                 { value: "media", label: t.difficulties.media },
                 { value: "dificil", label: t.difficulties.dificil },
               ]}
-              defaultValue={recipe?.difficulty ?? NO_DIFFICULTY}
+              value={difficulty}
+              onChange={setDifficulty}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="recipe-instructions">{t.fields.instructions}</Label>
-            <Textarea
-              id="recipe-instructions"
+          </FormGroup>
+
+          <FormGroup title={t.fields.instructions}>
+            <textarea
+              aria-label={t.fields.instructions}
               name="instructions"
               rows={5}
               maxLength={4000}
+              className="pc-textarea"
+              placeholder={t.form.stepsPlaceholder}
               defaultValue={recipe?.instructions ?? ""}
             />
-          </div>
-          <FormField
-            label={t.fields.tags}
-            name="tags"
-            help={t.fields.tagsHelp}
-            maxLength={200}
-            defaultValue={recipe?.tags.join(", ") ?? ""}
-          />
-          <FormField
-            label={t.fields.allergens}
-            name="allergens"
-            help={t.fields.allergensHelp}
-            maxLength={200}
-            defaultValue={recipe?.allergens.join(", ") ?? ""}
-          />
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+          </FormGroup>
+
+          <FormGroup
+            collapsible
+            defaultOpen={Boolean(
+              recipe?.tags.length || recipe?.allergens.length,
+            )}
+            filled={
+              (recipe?.tags.length ?? 0) + (recipe?.allergens.length ?? 0)
+            }
+            title={t.form.labels}
+            hint={t.form.labelsHint}
+          >
+            <MetricField
+              type="text"
+              label={t.fields.tags}
+              name="tags"
+              maxLength={200}
+              placeholder={t.fields.tagsHelp}
+              defaultValue={recipe?.tags.join(", ") ?? ""}
+            />
+            <MetricField
+              type="text"
+              label={t.fields.allergens}
+              name="allergens"
+              maxLength={200}
+              placeholder={t.fields.allergensHelp}
+              defaultValue={recipe?.allergens.join(", ") ?? ""}
+            />
+          </FormGroup>
         </form>
+        <DialogFooter>
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
+            type="submit"
+            form="recipe-form"
+            disabled={pending}
+          >
+            {messages.common.save}
+          </ActionButton>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

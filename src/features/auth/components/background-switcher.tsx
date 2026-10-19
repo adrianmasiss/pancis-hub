@@ -80,9 +80,18 @@ const VARIABLE = {
 
 type Cual = keyof typeof CLAVE;
 
+const FONDOS_PREDETERMINADOS = {
+  login: "imagen-4",
+  carga: "negro",
+  sistema: "imagen-4",
+};
+
 function leerSlug(cual: Cual) {
   try {
-    return localStorage.getItem(`${CLAVE[cual]}-slug`) ?? "";
+    return (
+      localStorage.getItem(`${CLAVE[cual]}-slug`) ??
+      FONDOS_PREDETERMINADOS[cual]
+    );
   } catch {
     return "";
   }
@@ -397,7 +406,7 @@ export function BackgroundSwitcher() {
      que es el lienzo de siempre: sin el no habria forma de volver atras, y sin
      punto de comparacion tampoco hay decision. */
   const fondosDelSistema: FondoCandidato[] = [
-    { slug: "ninguno", rotulo: "Ninguno", valor: "" },
+    { slug: "ninguno", rotulo: "Ninguno", valor: "none" },
     ...fondosDelLogin,
   ];
   const grupos: { cual: Cual; titulo: string; lista: FondoCandidato[] }[] = [

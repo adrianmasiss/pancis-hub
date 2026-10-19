@@ -480,6 +480,9 @@
 }
 .compact-actions > button {
   flex: 1;
+  min-width: 0;
+}
+.compact-actions > button:not(.pc-action) {
   min-height: 40px;
   border-radius: 999px;
   font-size: 12px;
@@ -626,7 +629,7 @@
 .compact-step > * {
   min-width: 0;
 }
-.compact-actions > button {
+.compact-actions > button:not(.pc-action) {
   min-width: 0;
   white-space: normal;
   padding-inline: 8px;
@@ -642,7 +645,7 @@
   min-width: 0;
 }
 @media (max-width: 600px) {
-  .compact-actions > button {
+  .compact-actions > button:not(.pc-action) {
     font-size: 11px;
   }
 }

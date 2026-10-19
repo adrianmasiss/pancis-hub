@@ -1,10 +1,9 @@
 "use client";
-
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { updateUsername } from "@/features/settings/actions";
@@ -75,9 +74,14 @@ export function UsernameCard({ username }: { username: string | null }) {
           error={form.formState.errors.username?.message}
           {...form.register("username")}
         />
-        <Button type="submit" disabled={pending || sinCambio}>
-          {pending ? messages.common.loading : messages.settings.usernameSave}
-        </Button>
+        <ActionButton
+          family="save"
+          loading={pending}
+          type="submit"
+          disabled={pending || sinCambio}
+        >
+          {messages.settings.usernameSave}
+        </ActionButton>
       </form>
     </Section>
   );

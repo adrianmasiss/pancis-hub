@@ -1,18 +1,16 @@
 "use client";
-
 import { useOptimistic, useState, useTransition } from "react";
 import {
-  ArrowLeftRight,
+  Apple,
   Check,
   ChevronDown,
+  Moon,
   RotateCcw,
   Sun,
-  Moon,
   Utensils,
-  Apple,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { DietItemSwapSheet } from "@/features/dashboard/components/diet-item-swap-sheet";
 import { UndoDaySwapButton } from "./undo-day-swap-button";
 import { MealCompareSheet } from "./meal-compare-sheet";
@@ -429,17 +427,15 @@ export function PlanMealCard({
                 Registrada
               </span>
             ) : (
-              <Button
-                size="sm"
-                variant={featured ? "brand" : "default"}
-                className="nutrition-register-button"
+              <ActionButton
+                family="add"
+                loading={pending}
                 onClick={onLog}
                 disabled={pending || meal.items.length === 0}
                 aria-label={`Marcar como comida — ${title}`}
               >
-                <Check size={16} aria-hidden="true" />
-                {pending ? "Registrando…" : "Registrar"}
-              </Button>
+                Registrar comida
+              </ActionButton>
             ))}
           {comparison ? (
             <MealCompareSheet
@@ -449,16 +445,15 @@ export function PlanMealCard({
             />
           ) : null}
           {!done && (
-            <Button
-              variant="outline"
-              size="sm"
+            <ActionButton
+              family="edit"
+              icon="swap"
               onClick={() => setOpen(true)}
               aria-label={`Sustituir alimentos — ${title}`}
               disabled={meal.items.length === 0}
             >
-              <ArrowLeftRight size={16} aria-hidden="true" />
               Sustituir
-            </Button>
+            </ActionButton>
           )}
         </div>
       </div>

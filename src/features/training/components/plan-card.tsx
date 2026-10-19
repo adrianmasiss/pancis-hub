@@ -27,6 +27,9 @@ import {
   setActivePlan,
 } from "@/features/training/actions";
 import type { PlanSummary } from "@/features/training/queries";
+import { OBJETIVOS } from "@/features/training/lib/routine-generation";
+import { AiNotice } from "./ai-notice";
+import "./generate-routine.css";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.training;
@@ -120,8 +123,12 @@ export function PlanCard({ plan }: { plan: PlanSummary }) {
       </div>
 
       {plan.objective ? (
-        <p className="text-muted-foreground mt-3 text-sm">{plan.objective}</p>
+        <p className="text-muted-foreground mt-3 text-sm">
+          {OBJETIVOS.find((o) => o.id === plan.objective)?.label ??
+            plan.objective}
+        </p>
       ) : null}
+      {plan.origin === "ia" && <AiNotice className="mt-3" />}
 
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent className="max-w-sm">

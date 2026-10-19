@@ -12,6 +12,9 @@ import { RoutineAnalysisSection } from "@/features/training/components/routine-a
 import { listPlanVersions } from "@/features/training/version-actions";
 import { getPlanDetail, getRoutineAnalysis } from "@/features/training/queries";
 import { createClient } from "@/lib/supabase/server";
+import { OBJETIVOS } from "@/features/training/lib/routine-generation";
+import { AiNotice } from "@/features/training/components/ai-notice";
+import "@/features/training/components/generate-routine.css";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.training;
@@ -41,7 +44,12 @@ export default async function PlanEditorPage({
     <>
       <ViewHeader
         title={plan.name}
-        description={plan.objective ?? undefined}
+        description={
+          plan.objective
+            ? (OBJETIVOS.find((o) => o.id === plan.objective)?.label ??
+              plan.objective)
+            : undefined
+        }
         actions={
           <>
             {plan.active ? <Badge>{t.activeBadge}</Badge> : null}
@@ -55,6 +63,7 @@ export default async function PlanEditorPage({
         }
       />
       <div className="space-y-4">
+        {plan.origin === "ia" && <AiNotice />}
         {plan.days.map((day) => (
           <PlanDayCard key={day.id} day={day} />
         ))}

@@ -22,6 +22,9 @@ import {
 import { CreatePlanDialog } from "./create-plan-dialog";
 import { ExerciseDetailSheet } from "./exercise-detail-sheet";
 import { StartSessionButton } from "./start-session-button";
+import { SubstituteExercise } from "./substitute-exercise";
+import { AiNotice } from "./ai-notice";
+import "./generate-routine.css";
 import { ModelCredit } from "./model-credit";
 import { LiveExerciseRow, SessionClock, TimerProvider } from "./live-session";
 import {
@@ -448,7 +451,7 @@ export function TrainingToday({
               }
             >
               <Check size={17} strokeWidth={2.4} aria-hidden="true" />
-              {finishing ? "Guardando…" : "Terminar entrenamiento"}
+              {finishing ? "Guardando…" : "Finalizar entrenamiento"}
             </button>
           ) : enCurso ? (
             <Link
@@ -463,7 +466,8 @@ export function TrainingToday({
               className="today-cta"
               planId={plan?.id}
               planDayId={day?.id}
-              label={plan ? "Empezar entrenamiento" : "Iniciar sesión libre"}
+              label={plan ? "Iniciar entrenamiento" : "Iniciar sesión libre"}
+              doneOn={day ? overview.doneThisWeek[day.id] : undefined}
             />
           )}
           {enCurso && !live && (
@@ -493,6 +497,7 @@ export function TrainingToday({
             </button>
           )}
           {!plan && !enCurso && <CreatePlanDialog />}
+          {plan?.origin === "ia" && !live && <AiNotice />}
           {plan && !live && (
             <Link
               className="today-plan"
@@ -510,7 +515,9 @@ export function TrainingToday({
           <DayCard
             key={d.id}
             index={i}
-            name={d.name ?? `Día ${i + 1}`}
+            dayIndex={d.dayIndex}
+            name={d.name}
+            doneOn={overview.doneThisWeek[d.id]}
             exercises={d.exercises}
             selected={d.id === day?.id}
             open={openDay === d.id}
@@ -572,7 +579,9 @@ export function TrainingToday({
  */
 function DayCard({
   index,
+  dayIndex,
   name,
+  doneOn,
   exercises,
   selected,
   open,
@@ -580,7 +589,11 @@ function DayCard({
   children,
 }: {
   index: number;
-  name: string;
+  dayIndex: number;
+  /** El enfoque que le puso el coach («Espalda y bíceps»), si lo tiene. */
+  name: string | null;
+  /** Fecha en que se completó esta semana, si ya se hizo. */
+  doneOn?: string;
   exercises: PlanExerciseView[];
   selected: boolean;
   open: boolean;
@@ -590,13 +603,21 @@ function DayCard({
   const panelId = useId();
   const series = exercises.reduce((t, e) => t + (e.sets ?? 0), 0);
   const musculos = musculosDelDia(exercises);
-  const letra =
-    name.replace(/^d[ií]a\s+/i, "").slice(0, 2) || String(index + 1);
+  const numero = dayIndex || index + 1;
+  /* Un nombre que sólo repite «Día 2» no es un enfoque: entonces el título
+     son los músculos que trabaja. */
+  const enfoque =
+    name && !/^d[ií]a\s*\d+$/i.test(name.trim())
+      ? name
+      : musculos.length
+        ? capital(enumerar(musculos.slice(0, 3)))
+        : `Día ${numero}`;
   return (
     <section
       className="today-day"
       data-open={open ? "" : undefined}
       data-selected={selected ? "" : undefined}
+      data-done={doneOn ? "" : undefined}
     >
       <button
         type="button"
@@ -607,14 +628,13 @@ function DayCard({
         onClick={onChoose}
       >
         <span className="today-day-badge" aria-hidden="true">
-          {letra}
+          {doneOn ? <Check size={16} strokeWidth={2.6} /> : numero}
         </span>
         <span className="today-day-name">
-          <strong>
-            {musculos.length ? capital(enumerar(musculos.slice(0, 3))) : name}
-          </strong>
+          <strong>{enfoque}</strong>
           <small>
-            {name} · {exercises.length}{" "}
+            Día {numero}
+            {doneOn ? " · hecho esta semana" : ""} · {exercises.length}{" "}
             {exercises.length === 1 ? "ejercicio" : "ejercicios"} · {series}{" "}
             series · ≈ {estimatedMinutes(exercises)} min
           </small>
@@ -671,8 +691,7 @@ function ExerciseRow({
         <span className="today-row-name">
           <strong>{e.name}</strong>
           <small>
-            {meta.join(" · ")}
-            {e.daySwap ? " · sustituido hoy" : ""}
+            {e.daySwap ? `En lugar de ${e.daySwap.name}` : meta.join(" · ")}
           </small>
         </span>
         <span className="today-row-dose">
@@ -744,6 +763,7 @@ function ExerciseRow({
             </p>
           )}
           <div className="today-row-help">
+            <SubstituteExercise exercise={e} live={false} />
             <ExerciseDetailSheet
               planExerciseId={e.daySwap ? undefined : e.id}
               exerciseId={e.exerciseId}

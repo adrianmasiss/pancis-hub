@@ -1,8 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { FormField } from "@/components/shared/form-field";
 import { Label } from "@/components/ui/label";
@@ -118,9 +117,15 @@ export function WellbeingForm({ today }: { today: WellbeingEntry | null }) {
             }
           />
 
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? messages.common.loading : t.save}
-          </Button>
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
+            type="submit"
+            disabled={pending}
+          >
+            {t.save}
+          </ActionButton>
         </form>
       </div>
     </Section>

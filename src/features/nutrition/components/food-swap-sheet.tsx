@@ -1,9 +1,8 @@
 "use client";
-
 import { useCallback, useState, useTransition } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   FocusCard,
   FocusCardContent,
@@ -93,14 +92,12 @@ export function FoodSwapSheet({
       }}
     >
       <FocusCardTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="text-muted-foreground size-8"
+        <ActionButton
+          family="edit"
+          icon="swap"
+          compact
           aria-label={`${t.trigger} — ${item.foodName}`}
-        >
-          <ArrowLeftRight className="size-4" />
-        </Button>
+        ></ActionButton>
       </FocusCardTrigger>
       <FocusCardContent className="nutrition-swap-sheet compact-nutrition-focus swap-workbench-focus">
         <FocusCardHeader>
@@ -141,14 +138,16 @@ export function FoodSwapSheet({
             >
               {picked && (
                 <div className="compact-confirmation">
-                  <Button
-                    className="compact-primary"
-                    variant="brand"
+                  <ActionButton
+                    family="save"
+                    className="w-full"
+                    icon="confirm"
+                    loading={pending}
                     onClick={confirm}
                     disabled={pending}
                   >
-                    {pending ? messages.common.loading : "Aplicar intercambio"}
-                  </Button>
+                    {"Aplicar intercambio"}
+                  </ActionButton>
                 </div>
               )}
             </SwapAlternativeList>

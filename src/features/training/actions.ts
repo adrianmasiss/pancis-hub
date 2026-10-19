@@ -8,6 +8,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { recordChange } from "@/lib/audit";
+import { todayInTimezone } from "@/lib/dates";
+import { FLAGS } from "@/lib/flags";
+import { shortSummary } from "@/features/training/lib/exercise-summary";
 import { type CatalogExercise } from "@/features/training/lib/alternatives";
 import {
   rateExercise,
@@ -408,7 +411,7 @@ export async function searchExercises(
 
 /** Columnas biomecanicas del catalogo, usadas por la ficha y la comparacion. */
 const BIOMECHANICS_COLUMNS =
-  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, setup_notes, execution_notes, image_url, image_end_url";
+  "id, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, joints, resistance_profile, hardest_point, stability, range_of_motion, technical_demand, systemic_fatigue, progression_ease, is_unilateral, common_errors, technique_cues, setup_notes, execution_notes, image_url, image_end_url, summary, instructions";
 
 type BiomechanicsRow = ExerciseRow & {
   image_url: string | null;
@@ -426,6 +429,8 @@ type BiomechanicsRow = ExerciseRow & {
   technique_cues: string[] | null;
   setup_notes?: string | null;
   execution_notes?: string | null;
+  summary?: string | null;
+  instructions?: string | null;
 };
 
 function toBiomechanicalExercise(row: BiomechanicsRow): BiomechanicalExercise {
@@ -546,7 +551,57 @@ export type ExerciseDetail = {
    * (requisito 13).
    */
   prescription: Prescription | null;
+  /** «Cómo se hace», en dos o tres líneas. */
+  summary: string | null;
+  /**
+   * El mayor peso que el usuario movió en este ejercicio (sin calentamiento).
+   * Nulo mientras `FLAGS.exercisePersonalBest` esté apagado.
+   */
+  personalBest: {
+    weightKg: number;
+    repetitions: number | null;
+    date: string;
+  } | null;
 };
+
+/** Mayor peso efectivo del usuario en un ejercicio, desde sus sesiones. */
+async function personalBestFor(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  exerciseId: string,
+): Promise<ExerciseDetail["personalBest"]> {
+  if (!FLAGS.exercisePersonalBest) return null;
+  const { data } = await supabase
+    .from("workout_sets")
+    .select(
+      "weight_kg, repetitions, created_at, workout_sessions!inner(user_id)",
+    )
+    .eq("workout_sessions.user_id", userId)
+    .eq("exercise_id", exerciseId)
+    .eq("is_warmup", false)
+    .not("weight_kg", "is", null)
+    .order("weight_kg", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.weight_kg != null
+    ? {
+        weightKg: Number(data.weight_kg),
+        repetitions: data.repetitions,
+        date: data.created_at,
+      }
+    : null;
+}
+
+async function fichaCorta(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  row: BiomechanicsRow,
+) {
+  return {
+    summary: shortSummary(row),
+    personalBest: await personalBestFor(supabase, userId, row.id),
+  };
+}
 
 /**
  * Ficha completa de un ejercicio del plan: datos biomecanicos mas las
@@ -574,6 +629,7 @@ export async function getExerciseDetail(
   const positionInSession = planExercise.position ?? undefined;
 
   return {
+    ...(await fichaCorta(supabase, user.id, row)),
     exercise,
     setupNotes: row.setup_notes ?? null,
     executionNotes: row.execution_notes ?? null,
@@ -619,6 +675,7 @@ export async function getCatalogExerciseDetail(
      explica por que, en vez de mostrar seises inventados. */
   if (row.resistance_profile === null) {
     return {
+      ...(await fichaCorta(supabase, user.id, row)),
       exercise,
       setupNotes: row.setup_notes ?? null,
       executionNotes: row.execution_notes ?? null,
@@ -630,6 +687,7 @@ export async function getCatalogExerciseDetail(
   const context = await getRatingContext(user.id);
 
   return {
+    ...(await fichaCorta(supabase, user.id, row)),
     exercise,
     setupNotes: row.setup_notes ?? null,
     executionNotes: row.execution_notes ?? null,
@@ -639,6 +697,51 @@ export async function getCatalogExerciseDetail(
 }
 
 // --------------------------------------------------------------- sesiones
+
+/**
+ * Lo que se sustituyó antes de empezar (anotado para hoy) pasa a la sesión
+ * al crearla: desde ahí, la sesión es la que dice qué se hizo. La plantilla
+ * no se toca. Si la copia falla, la sesión sigue: se entrena el original.
+ */
+async function carrySwapsIntoSession(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  sessionId: string,
+  planDayId: string,
+) {
+  const [{ data: profile }, { data: dayExercises }] = await Promise.all([
+    supabase.from("profiles").select("timezone").eq("id", userId).maybeSingle(),
+    supabase
+      .from("workout_plan_exercises")
+      .select("id, exercise_id")
+      .eq("workout_plan_day_id", planDayId),
+  ]);
+  const original = new Map(
+    (dayExercises ?? []).map((e) => [e.id, e.exercise_id]),
+  );
+  if (original.size === 0) return;
+  const { data: swaps } = await supabase
+    .from("exercise_day_swaps")
+    .select("plan_exercise_id, substitute_exercise_id, reason, source")
+    .eq("user_id", userId)
+    .eq("date", todayInTimezone(profile?.timezone ?? "America/Costa_Rica"))
+    .in("plan_exercise_id", [...original.keys()]);
+  const rows = (swaps ?? [])
+    .filter(
+      (s) => original.get(s.plan_exercise_id) !== s.substitute_exercise_id,
+    )
+    .map((s) => ({
+      user_id: userId,
+      session_id: sessionId,
+      plan_exercise_id: s.plan_exercise_id,
+      original_exercise_id: original.get(s.plan_exercise_id)!,
+      performed_exercise_id: s.substitute_exercise_id,
+      source: s.source === "asistente" ? "sugerencia" : "usuario",
+      reason: s.reason,
+    }));
+  if (rows.length)
+    await supabase.from("workout_session_exercises").insert(rows);
+}
 
 export async function startSession(
   input: unknown,
@@ -675,6 +778,13 @@ export async function startSession(
     .select("id")
     .single();
   if (error || !created) return fail;
+  if (parsed.data.planDayId)
+    await carrySwapsIntoSession(
+      supabase,
+      user.id,
+      created.id,
+      parsed.data.planDayId,
+    );
   revalidateTraining();
   redirect(
     parsed.data.planDayId

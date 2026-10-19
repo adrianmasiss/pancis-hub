@@ -1,6 +1,6 @@
 "use client";
 import { useDeferredValue, useId, useMemo, useState } from "react";
-import { CalendarDays, ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import {
   buildExerciseLog,
   searchExerciseLog,
@@ -16,9 +16,10 @@ import {
   musculo,
   numero,
 } from "./training-ui";
+import { TrainingCalendar } from "./training-calendar";
 import "./training-today.css";
 
-type Vista = "ejercicios" | "sesiones";
+type Vista = "calendario" | "ejercicios";
 
 /**
  * El historial de lo entrenado, como una base de datos que se consulta:
@@ -34,11 +35,15 @@ type Vista = "ejercicios" | "sesiones";
 export function TrainingHistory({
   sessions,
   muscleSets7d,
+  timezone,
+  today,
 }: {
   sessions: LogSession[];
   muscleSets7d: [string, number][];
+  timezone: string;
+  today: string;
 }) {
-  const [vista, setVista] = useState<Vista>("ejercicios");
+  const [vista, setVista] = useState<Vista>("calendario");
   const [query, setQuery] = useState("");
   const deferred = useDeferredValue(query);
   const [open, setOpen] = useState<string | null>(null);
@@ -82,7 +87,7 @@ export function TrainingHistory({
 
       <div className="hist-controls">
         <div className="hist-segments" role="tablist" aria-label="Ver por">
-          {(["ejercicios", "sesiones"] as const).map((v) => (
+          {(["calendario", "ejercicios"] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -93,7 +98,7 @@ export function TrainingHistory({
                 setOpen(null);
               }}
             >
-              {v === "ejercicios" ? "Ejercicios" : "Sesiones"}
+              {v === "ejercicios" ? "Ejercicios" : "Calendario"}
             </button>
           ))}
         </div>
@@ -148,16 +153,11 @@ export function TrainingHistory({
           )}
         </>
       ) : (
-        <ul className="hist-list">
-          {sessions.map((session) => (
-            <SessionCard
-              key={session.id}
-              session={session}
-              open={open === session.id}
-              onToggle={() => setOpen(open === session.id ? null : session.id)}
-            />
-          ))}
-        </ul>
+        <TrainingCalendar
+          sessions={sessions}
+          timezone={timezone}
+          today={today}
+        />
       )}
     </div>
   );
@@ -242,84 +242,6 @@ function ExerciseCard({
                 <time dateTime={day.date}>{capital(fecha(day.date))}</time>
                 <ul className="hist-sets">
                   {day.sets.map((set, i) => (
-                    <SetChip key={i} set={set} />
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
-    </li>
-  );
-}
-
-function SessionCard({
-  session,
-  open,
-  onToggle,
-}: {
-  session: LogSession;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const panelId = useId();
-  const effective = session.sets.filter((s) => !s.isWarmup);
-  const volume = Math.round(
-    effective.reduce((t, s) => t + (s.weightKg ?? 0) * (s.repetitions ?? 0), 0),
-  );
-  const byExercise = new Map<string, typeof session.sets>();
-  for (const set of session.sets)
-    byExercise.set(set.exerciseName, [
-      ...(byExercise.get(set.exerciseName) ?? []),
-      set,
-    ]);
-  const day = new Date(session.startedAt);
-  return (
-    <li className="today-row" data-open={open ? "" : undefined}>
-      <button
-        type="button"
-        className="today-row-head"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={onToggle}
-      >
-        <span className="today-row-icon hist-date" aria-hidden="true">
-          <b>{day.getDate()}</b>
-          <small>
-            {new Intl.DateTimeFormat("es-CR", { month: "short" }).format(day)}
-          </small>
-        </span>
-        <span className="today-row-name">
-          <strong>
-            {session.dayName ?? session.planName ?? "Sesión libre"}
-          </strong>
-          <small>
-            {capital(hace(session.startedAt))} · {effective.length} series
-            {session.durationMinutes ? ` · ${session.durationMinutes} min` : ""}
-          </small>
-        </span>
-        <span className="today-row-dose">
-          <strong>{numero(volume, 0)}</strong>
-          <small>volumen · kg</small>
-        </span>
-        <span className="today-row-chevron" aria-hidden="true">
-          <ChevronDown size={16} strokeWidth={2} />
-        </span>
-      </button>
-      <div className="today-row-panel" id={panelId}>
-        <div>
-          <p className="hist-best">
-            <CalendarDays size={14} aria-hidden="true" />{" "}
-            {capital(fecha(session.startedAt))}
-            {session.planName ? ` · ${session.planName}` : ""}
-          </p>
-          <ol className="hist-days">
-            {[...byExercise].map(([name, sets]) => (
-              <li key={name}>
-                <span className="hist-exercise">{name}</span>
-                <ul className="hist-sets">
-                  {sets.map((set, i) => (
                     <SetChip key={i} set={set} />
                   ))}
                 </ul>

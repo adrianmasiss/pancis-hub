@@ -1,11 +1,11 @@
 "use client";
-
 import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Barcode, Plus } from "lucide-react";
+import { Barcode } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -262,19 +262,16 @@ export function BarcodeScanner({
                     {messages.foods.external.alreadyInLibrary}
                   </p>
                 ) : (
-                  <Button
-                    type="button"
+                  <ActionButton
+                    family="add"
+                    loading={importing}
                     className="flex-1"
+                    type="button"
                     disabled={importing}
                     onClick={importFood}
                   >
-                    {importing ? (
-                      <NewtonsCradle size={24} />
-                    ) : (
-                      <Plus className="size-4" aria-hidden="true" />
-                    )}
                     {confirmLabel ?? messages.foods.external.importButton}
-                  </Button>
+                  </ActionButton>
                 )}
                 <Button
                   type="button"

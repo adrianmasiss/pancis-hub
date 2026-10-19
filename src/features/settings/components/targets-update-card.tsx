@@ -1,9 +1,8 @@
 "use client";
-
 import { useTransition } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { applyRecalculatedTargets } from "@/features/settings/target-actions";
 import type { TargetChange } from "@/features/onboarding/lib/target-drift";
@@ -175,14 +174,15 @@ export function TargetsUpdateCard({
             Cuando no hay desajuste, la pantalla no tiene accion prominente:
             es una pagina de formularios y ninguno manda sobre los otros.
           */}
-          <Button
-            variant="brand"
-            size="lg"
+          <ActionButton
+            family="save"
+            icon="confirm"
+            loading={pending}
             onClick={onApply}
             disabled={pending}
           >
-            {pending ? messages.common.loading : t.apply}
-          </Button>
+            {t.apply}
+          </ActionButton>
           <p className="text-muted-foreground text-xs">
             {t.weightMeasured.replace("{date}", formatDate(weightMeasuredAt))}{" "}
             {t.estimateNotice}

@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   Dialog,
   DialogContent,
@@ -51,20 +49,13 @@ export function AddMealDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {/* La accion prominente de Nutricion: es a lo que se entra. Lleva el
-            degradado del logotipo, y es la unica de la pantalla que lo lleva. */}
-        <Button
-          variant={trigger === "plan-row" ? "outline" : "brand"}
-          size="lg"
-          className={
-            trigger === "plan-row"
-              ? "border-hairline text-muted-foreground hover:border-primary/50 hover:text-foreground h-12 w-full rounded-sm border-dashed bg-transparent font-medium"
-              : "h-11 rounded-md px-5 text-[13px]"
-          }
+        {/* La misma familia de creación en la cabecera y en la fila del plan. */}
+        <ActionButton
+          family="add"
+          className={trigger === "plan-row" ? "w-full" : undefined}
         >
-          <Plus className="size-4" aria-hidden="true" />
           {t.addMeal}
-        </Button>
+        </ActionButton>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
@@ -99,9 +90,15 @@ export function AddMealDialog({
               onChange={(event) => setName(event.target.value)}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
+            type="submit"
+            disabled={pending}
+          >
+            {messages.common.save}
+          </ActionButton>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,6 @@
+import { ActionLink } from "@/components/ui/action";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { messages } from "@/i18n/es-419";
 import type { DashboardData } from "@/features/dashboard/queries";
 
@@ -89,13 +90,9 @@ export function TodayHeader({ data }: { data: DashboardData }) {
           <Search className="size-3.5" aria-hidden="true" />
           Buscar alimento
         </Link>
-        <Link
-          href="/nutricion"
-          className="bg-primary text-primary-foreground flex h-11 w-[176px] items-center justify-center gap-2 rounded-md text-[13px] font-semibold transition-transform active:translate-y-px"
-        >
-          <Plus className="size-3.5" aria-hidden="true" />
+        <ActionLink family="add" href="/nutricion">
           Registrar comida
-        </Link>
+        </ActionLink>
       </div>
     </header>
   );

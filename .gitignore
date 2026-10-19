@@ -64,3 +64,11 @@ Thumbs.db
 # para rehacer la interfaz contra su referencia, no para construir el producto.
 # Los .woff2 que la app SI usa viven en src/app/fonts/ y esos si se versionan.
 desing-reference/
+
+# Capturas de revisión visual (Playwright, impeccable): se regeneran y pesan
+# decenas de MB. El resto de .impeccable/ sí se versiona.
+output/
+.impeccable/review/
+
+# Scripts sueltos de depuración (prefijo _): no son parte del proyecto.
+scripts/_*

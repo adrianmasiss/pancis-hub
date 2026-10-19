@@ -599,7 +599,9 @@
 }
 .today-row-help {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 4px;
 }
 
 .today-empty,
@@ -667,6 +669,12 @@
 .today-day[data-selected] .today-day-badge {
   color: #1b0e06;
   background: var(--primary);
+}
+/* Hecho esta semana: el número cede su sitio a una marca, en el color de la
+   acción pero sin relleno, para no competir con el día elegido. */
+.today-day[data-done]:not([data-selected]) .today-day-badge {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
 }
 .today-day-head:active .today-day-badge {
   transform: scale(0.92);
@@ -809,8 +817,12 @@
 
 /* ── Historial ───────────────────────────────────────────────────────── */
 /* Una sola columna: es una lista para leer y buscar, no un tablero. */
+/* Una columna: sin quitar las áreas del maniquí, la rejilla de escritorio
+   crea una columna implícita y el calendario se va a la derecha. */
 .today.hist {
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: none;
+  grid-template-areas: none;
   gap: 16px;
   max-width: 860px;
 }
@@ -1031,6 +1043,180 @@
   box-shadow: inset 0 0 0 1px
     color-mix(in oklab, var(--foreground) 12%, transparent);
 }
+/* ── Calendario del historial ─────────────────────────────────────────── */
+.hist-calendar {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .today.hist:has(.hist-calendar) {
+    max-width: 1100px;
+  }
+  .hist-calendar {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .hist-month {
+    position: sticky;
+    top: 16px;
+  }
+}
+.hist-month {
+  display: grid;
+  gap: 10px;
+  padding: 16px 16px 12px;
+  border-radius: 28px;
+  background: var(--card);
+}
+.hist-month header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  text-align: center;
+}
+.hist-month h3 {
+  display: grid;
+  gap: 2px;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.hist-month h3 span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.hist-month header button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  color: var(--foreground);
+  transition: background-color 160ms ease;
+}
+.hist-month header button:disabled {
+  opacity: 0.3;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hist-month header button:not(:disabled):hover {
+    background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  }
+}
+.hist-month table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.hist-month th {
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.hist-month td {
+  padding: 2px;
+  text-align: center;
+}
+.hist-month td button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 44px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 999px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 100ms ease-out;
+}
+.hist-month td button:active {
+  transform: scale(0.92);
+}
+.hist-month td button[data-trained] {
+  font-weight: 650;
+  color: var(--foreground);
+}
+.hist-month td button i {
+  position: absolute;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+.hist-month td button[data-today] {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+.hist-month td button[aria-pressed="true"] {
+  color: #1b0e06;
+  background: var(--primary);
+}
+.hist-month td button[aria-pressed="true"] i {
+  background: #1b0e06;
+}
+.hist-month td button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.hist-day {
+  display: grid;
+  gap: 12px;
+}
+.hist-day > h3 {
+  padding: 4px 6px 0;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.hist-session {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 28px;
+  background: var(--card);
+}
+.hist-session > header {
+  display: grid;
+  gap: 4px;
+  padding: 0 4px;
+}
+.hist-session > header strong {
+  font-size: 15px;
+  font-weight: 650;
+}
+.hist-session > header small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.hist-exercise {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.hist-swap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
 .hist-tag {
   margin-left: 5px;
   font-size: 10.5px;

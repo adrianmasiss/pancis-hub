@@ -1,11 +1,11 @@
 "use client";
-
 import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Plus, Search } from "lucide-react";
+import { Globe, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
@@ -187,22 +187,18 @@ export function ExternalFoodSearch({
                       {e.alreadyInLibrary}
                     </span>
                   ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
+                    <ActionButton
+                      family="add"
+                      compact
+                      loading={importing && importingId === food.externalId}
                       className="shrink-0"
+                      type="button"
                       disabled={importing}
                       onClick={() => importFood(food)}
                       aria-label={`${e.importButton} — ${food.name}`}
                     >
-                      {importing && importingId === food.externalId ? (
-                        <NewtonsCradle size={24} />
-                      ) : (
-                        <Plus className="size-4" aria-hidden="true" />
-                      )}
-                      <span className="hidden sm:inline">{e.importButton}</span>
-                    </Button>
+                      {e.importButton}
+                    </ActionButton>
                   )}
                 </li>
               ))}

@@ -106,8 +106,8 @@ test("modelo local, selección de músculos y sesión del día elegido", async (
       .getByRole("heading", { name: exerciseName, exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("dialog").getByText("Cargando…", { exact: true }),
-  ).toHaveCount(0, { timeout: 20000 });
+    page.getByRole("dialog").getByText("Qué trabaja", { exact: true }),
+  ).toBeVisible({ timeout: 20000 });
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
@@ -130,7 +130,7 @@ test("modelo local, selección de músculos y sesión del día elegido", async (
   await expect(turn).not.toHaveAttribute("aria-label", before ?? "");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page
-    .getByRole("button", { name: "Empezar entrenamiento", exact: true })
+    .getByRole("button", { name: "Iniciar entrenamiento", exact: true })
     .click();
   // Un día del plan se entrena aquí mismo: la tarjeta pasa a «En curso».
   await expect(page.locator(".today-eyebrow[data-live]")).toBeVisible({
@@ -167,9 +167,44 @@ test("modelo local, selección de músculos y sesión del día elegido", async (
   await page.getByRole("button", { name: "Saltar descanso" }).click();
   await expect(page.locator(".live-timer")).toHaveCount(0);
 
+  // Sustituir en la sesión: queda en la sesión y la rutina no cambia.
+  const originalName = await live.locator(".today-row-name strong").innerText();
+  await live.getByRole("button", { name: "Sustituir" }).click();
+  await page.locator(".substitute-option").first().click({ timeout: 30000 });
+  await expect(live.locator(".today-row-name small")).toContainText(
+    `En lugar de ${originalName}`,
+    { timeout: 20000 },
+  );
+  const { data: swaps } = await adminClient()
+    .from("workout_session_exercises")
+    .select("plan_exercise_id, original_exercise_id, performed_exercise_id")
+    .eq("session_id", sessions![0]!.id);
+  expect(swaps).toHaveLength(1);
+  const { data: template } = await adminClient()
+    .from("workout_plan_exercises")
+    .select("exercise_id")
+    .eq("id", swaps![0]!.plan_exercise_id!)
+    .single();
+  expect(template!.exercise_id).toBe(swaps![0]!.original_exercise_id);
+  // Lo que se registra ahora es del ejercicio realizado.
+  await live.getByRole("button", { name: /^Registrar serie/ }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await adminClient()
+            .from("workout_sets")
+            .select("id", { count: "exact", head: true })
+            .eq("session_id", sessions![0]!.id)
+            .eq("exercise_id", swaps![0]!.performed_exercise_id)
+        ).count,
+    )
+    .toBe(1);
+  await page.getByRole("button", { name: "Saltar descanso" }).click();
+
   await page.reload();
   await expect(
-    page.getByRole("button", { name: "Terminar entrenamiento" }),
+    page.getByRole("button", { name: "Finalizar entrenamiento" }),
   ).toBeVisible();
   // La página sigue siendo operativa si el archivo 3D no se puede cargar.
   await page.route("**/anatomy/muscle-body.glb", (route) => route.abort());
@@ -178,6 +213,32 @@ test("modelo local, selección de músculos y sesión del día elegido", async (
     timeout: 20000,
   });
   await expect(page.locator(".today-stats")).toBeVisible();
+
+  // Finalizar: el día queda hecho esta semana, y repetirlo pregunta antes.
+  await page.getByRole("button", { name: "Finalizar entrenamiento" }).click();
+  await expect(page.locator(".today[data-live]")).toHaveCount(0, {
+    timeout: 20000,
+  });
+  const doneDay = page.locator(".today-day[data-done]");
+  await expect(doneDay).toHaveCount(1);
+  if ((await doneDay.getAttribute("data-selected")) === null)
+    await doneDay.locator(".today-day-head").click();
+  await page
+    .getByRole("button", { name: "Iniciar entrenamiento", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Ya hiciste este día esta semana" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Cancelar" }).click();
+
+  // El historial muestra el día con la sustitución y la duración.
+  await page.goto("/entrenamiento?vista=historial");
+  await expect(page.locator(".hist-session")).toHaveCount(1);
+  await expect(page.locator(".hist-swap")).toContainText(
+    `Sustituyó a ${originalName}`,
+  );
+  await expect(page.locator(".hist-month [data-trained]")).toHaveCount(1);
+  await page.goto("/entrenamiento");
   expect(errors).toEqual([]);
   // First use keeps real actions available without a fabricated routine.
   await adminClient().from("workout_sessions").delete().eq("user_id", userId);

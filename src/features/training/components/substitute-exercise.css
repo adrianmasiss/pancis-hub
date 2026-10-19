@@ -1,0 +1,179 @@
+/* Sustituir en la sesión. Vive dentro de la tarjeta de foco (`focus-card`),
+   así que sólo pone lo propio: la lista de opciones con su parecido. */
+
+.substitute-body {
+  display: grid;
+  gap: 22px;
+  padding: 0 16px 22px;
+}
+
+.substitute-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted-foreground);
+}
+.substitute-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+.substitute-list {
+  display: grid;
+  gap: 8px;
+}
+
+.substitute-option {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-align: left;
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--v11-line, var(--border));
+  transition:
+    box-shadow 160ms ease,
+    transform 100ms ease-out;
+}
+.substitute-option:active {
+  transform: scale(0.985);
+}
+.substitute-option:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .substitute-option:hover {
+    box-shadow: inset 0 0 0 1.5px
+      color-mix(in oklab, var(--primary) 60%, transparent);
+  }
+}
+.substitute-option:disabled {
+  opacity: 0.6;
+}
+
+.substitute-option-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.substitute-option-head strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.substitute-similarity {
+  flex: none;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.substitute-similarity[data-level="alta"] {
+  color: var(--primary);
+}
+.substitute-similarity[data-level="baja"] {
+  color: var(--muted-foreground);
+}
+
+.substitute-reason {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+.substitute-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+.substitute-muscles > span + span::before {
+  content: "· ";
+}
+
+.substitute-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-bottom: 10px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--card) 92%, var(--foreground));
+  box-shadow: inset 0 0 0 1px var(--v11-line, var(--border));
+}
+.substitute-search:focus-within {
+  box-shadow: inset 0 0 0 1.5px
+    color-mix(in oklch, var(--primary) 70%, transparent);
+}
+.substitute-search input,
+.substitute-search input:focus-visible {
+  outline: none;
+}
+.substitute-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--foreground);
+}
+
+.substitute-empty {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.substitute-skeleton {
+  height: 74px;
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
+  animation: substitute-pulse 1.4s ease-in-out infinite;
+}
+@keyframes substitute-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .substitute-skeleton {
+    animation: none;
+  }
+}
+
+.substitute-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+}
+.substitute-current button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

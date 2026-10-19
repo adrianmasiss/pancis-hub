@@ -1,0 +1,136 @@
+/* Pancis action families. Only layout utilities belong at call sites. */
+.pc-action {
+  --pc-action-height: 44px;
+  --pc-action-disc: 32px;
+  --pc-action-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 1;
+  min-width: 0;
+  min-height: var(--pc-action-height);
+  max-width: 100%;
+  padding: 5px 18px 5px 5px;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  cursor: pointer;
+  isolation: isolate;
+  transition:
+    border-color 200ms,
+    background-color 200ms;
+}
+.pc-action-disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--pc-action-disc);
+  height: var(--pc-action-disc);
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.pc-action svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.pc-action-glyph,
+.pc-action-copy {
+  display: grid;
+  place-items: center;
+  transition: transform 340ms var(--pc-action-ease);
+}
+.pc-action-copy {
+  position: absolute;
+  transform: translate(-32px, 32px);
+}
+.pc-action-label {
+  min-width: 0;
+  text-align: center;
+}
+.pc-action[data-compact] {
+  width: var(--pc-action-height);
+  flex-shrink: 0;
+  padding: 5px;
+  gap: 0;
+}
+.pc-action[data-compact] .pc-action-label,
+.pc-action[data-compact] .expand-action-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pc-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.pc-action:disabled {
+  cursor: not-allowed;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
+}
+.pc-action:disabled .pc-action-disc,
+.pc-action:disabled .expand-action-icon {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .pc-action:not(:disabled):hover {
+    border-color: var(--primary);
+  }
+  .pc-action[data-family="add"]:not(:disabled):hover .pc-action-glyph {
+    transform: rotate(90deg);
+  }
+  .pc-action[data-family="edit"]:not(:disabled):hover .pc-action-glyph {
+    transform: translate(32px, -32px);
+  }
+  .pc-action[data-family="edit"]:not(:disabled):hover .pc-action-copy {
+    transform: translate(0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-action,
+  .pc-action * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Keep narrow headers legible while retaining the full accessible name. */
+@media (max-width: 400px) {
+  .pc-action[data-compact-on-mobile] {
+    width: var(--pc-action-height);
+    flex-shrink: 0;
+    padding: 5px;
+    gap: 0;
+  }
+  .pc-action[data-compact-on-mobile] .pc-action-label,
+  .pc-action[data-compact-on-mobile] .expand-action-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
