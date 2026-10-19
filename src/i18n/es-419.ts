@@ -907,6 +907,7 @@ export const messages = {
       movement: "Movimiento",
       primaryShort: "Principal",
       secondaryShort: "Apoyo",
+      modelLabel: "Maniquí con los músculos que trabaja",
       technicalTitle: "Detalle técnico",
       technicalHint: "Biomecánica, esquema sugerido y valoración",
       personalBest: "Tu mejor marca",

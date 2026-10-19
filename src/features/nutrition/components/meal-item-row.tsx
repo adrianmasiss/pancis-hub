@@ -1,8 +1,8 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MacroChip } from "@/components/shared/macro-chip";
@@ -107,16 +107,15 @@ export function MealItemRow({
         />
         <span className="text-muted-foreground text-xs">{t.grams}</span>
         {changed ? (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-8"
+          <ActionButton
+            family="save"
+            icon="confirm"
+            compact
+            loading={pending}
             disabled={pending}
             onClick={save}
             aria-label={`${messages.common.save} — ${item.foodName}`}
-          >
-            <Check className="size-4" />
-          </Button>
+          ></ActionButton>
         ) : null}
         {item.foodId ? (
           <FoodSwapSheet

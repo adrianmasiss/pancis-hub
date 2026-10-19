@@ -1,9 +1,8 @@
 "use client";
-
 import { useCallback, useState, useTransition } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   FocusCard,
   FocusCardContent,
@@ -107,31 +106,30 @@ export function DietItemSwapSheet({
         {trigger === "action" ? (
           /* Boton redondo de la fila de alimento del plan de Nutricion, junto
              a «Editar»: mismo tamano y forma que su vecino. */
-          <button
+          <ActionButton
+            family="edit"
+            icon="swap"
+            compact
             type="button"
-            className="plan-food-action"
             aria-label={`${t.trigger} — ${item.foodName}`}
-          >
-            <ArrowLeftRight size={15} aria-hidden="true" />
-          </button>
+          ></ActionButton>
         ) : trigger === "pill" ? (
-          <Button
-            variant="link"
-            className="min-h-11 shrink-0 px-2 text-sm font-medium"
+          <ActionButton
+            family="edit"
+            icon="swap"
+            className="shrink-0"
             aria-label={`${t.trigger} — ${item.foodName}`}
           >
-            <ArrowLeftRight className="size-3.5" />
             {triggerLabel ?? t.triggerShort}
-          </Button>
+          </ActionButton>
         ) : (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="text-muted-foreground size-7 shrink-0"
+          <ActionButton
+            family="edit"
+            icon="swap"
+            compact
+            className="shrink-0"
             aria-label={`${t.trigger} — ${item.foodName}`}
-          >
-            <ArrowLeftRight className="size-3.5" />
-          </Button>
+          ></ActionButton>
         )}
       </FocusCardTrigger>
       <FocusCardContent className="nutrition-swap-sheet compact-nutrition-focus swap-workbench-focus">
@@ -169,18 +167,18 @@ export function DietItemSwapSheet({
           >
             {picked && (
               <div className="compact-confirmation">
-                <Button
-                  className="compact-primary"
-                  variant="brand"
+                <ActionButton
+                  family="save"
+                  className="w-full"
+                  icon="confirm"
+                  loading={pending}
                   onClick={confirm}
                   disabled={pending}
                 >
-                  {pending
-                    ? messages.common.loading
-                    : scope === "day"
-                      ? "Sustituir solo este día"
-                      : "Sustituir en mi plan"}
-                </Button>
+                  {scope === "day"
+                    ? "Sustituir solo este día"
+                    : "Sustituir en mi plan"}
+                </ActionButton>
               </div>
             )}
           </SwapAlternativeList>

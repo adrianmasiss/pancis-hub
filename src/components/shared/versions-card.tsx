@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
 import {
@@ -62,7 +63,9 @@ export function VersionsCard({
   deltaText,
   onSave,
   onRestore,
+  actionFamilies = false,
 }: {
+  actionFamilies?: boolean;
   labels: VersionCardLabels;
   versions: VersionCardItem[];
   pendingLines: string[];
@@ -122,10 +125,16 @@ export function VersionsCard({
               placeholder={labels.reasonPlaceholder}
               onChange={(event) => setReason(event.target.value)}
             />
-            <Button type="button" disabled={pending} onClick={save}>
-              <Save className="size-4" aria-hidden="true" />
-              {labels.save}
-            </Button>
+            {actionFamilies ? (
+              <ActionButton family="save" loading={pending} onClick={save}>
+                {labels.save}
+              </ActionButton>
+            ) : (
+              <Button type="button" disabled={pending} onClick={save}>
+                <Save className="size-4" aria-hidden="true" />
+                {labels.save}
+              </Button>
+            )}
           </div>
         </div>
 

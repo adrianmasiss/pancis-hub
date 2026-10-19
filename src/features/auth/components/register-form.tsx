@@ -1,18 +1,15 @@
 "use client";
-
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AtSign, Mail, User } from "lucide-react";
-import { NewtonsCradle } from "@/components/shared/newtons-cradle";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { SocialAuthRow } from "@/features/auth/components/social-auth-row";
 import { IconField } from "@/features/auth/components/icon-field";
 import { PasswordField } from "@/features/auth/components/password-field";
 import { signUp } from "@/features/auth/actions";
 import { registerSchema, type RegisterInput } from "@/features/auth/schemas";
-import { cn } from "@/lib/utils";
 import { messages } from "@/i18n/es-419";
 
 export function RegisterForm() {
@@ -113,36 +110,16 @@ export function RegisterForm() {
           </p>
         ) : null}
 
-        <Button
+        <ActionButton
+          family="add"
+          loading={pending}
+          className="w-full"
           type="submit"
-          variant="brand"
-          size="xl"
-          className={cn(
-            "relative overflow-hidden transition-[width,border-radius] duration-[var(--pc-dur-surface,260ms)] ease-[var(--pc-spring)]",
-            pending ? "mx-auto w-14 rounded-full" : "w-full",
-          )}
-          aria-label={pending ? messages.common.loading : undefined}
           disabled={pending}
           aria-busy={pending}
         >
-          <span
-            aria-hidden={pending}
-            className={cn(
-              "transition-opacity duration-150",
-              pending && "opacity-0",
-            )}
-          >
-            {messages.auth.register.submit}
-          </span>
-          {pending && (
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 grid place-items-center"
-            >
-              <NewtonsCradle size={32} />
-            </span>
-          )}
-        </Button>
+          {messages.auth.register.submit}
+        </ActionButton>
       </form>
 
       {/* Mismo orden que Iniciar sesion: pie, divisor y terceros al final. */}

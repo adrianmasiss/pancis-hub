@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { PasswordField } from "@/features/auth/components/password-field";
 import { updatePassword } from "@/features/auth/actions";
 import {
@@ -55,17 +54,15 @@ export function UpdatePasswordForm() {
           {serverError}
         </p>
       ) : null}
-      <Button
-        type="submit"
-        variant="brand"
-        size="xl"
+      <ActionButton
+        family="save"
+        loading={pending}
         className="w-full"
+        type="submit"
         disabled={pending}
       >
-        {pending
-          ? messages.common.loading
-          : messages.auth.updatePassword.submit}
-      </Button>
+        {messages.auth.updatePassword.submit}
+      </ActionButton>
     </form>
   );
 }

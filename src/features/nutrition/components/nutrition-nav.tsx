@@ -1,5 +1,12 @@
 import "./nutrition-dashboard.css";
-import Link from "next/link";
+import {
+  ArrowLeftRight,
+  Apple,
+  History,
+  Store,
+  UtensilsCrossed,
+} from "lucide-react";
+import { IconTabs } from "@/components/ui/icon-tabs";
 
 export function NutritionNav({
   active,
@@ -14,40 +21,40 @@ export function NutritionNav({
     .join("&");
   return (
     <div className="nutrition-navigation">
-      <nav
-        className="nutrition-workspace-tabs"
-        aria-label="Secciones de nutrición"
-      >
-        <Link
-          href={`/nutricion${suffix ? `?${suffix}` : ""}`}
-          aria-current={
-            active === "day" || active === "plan" ? "page" : undefined
-          }
-        >
-          Mi plan
-        </Link>
-        <Link
-          href="/nutricion/alimentos"
-          aria-current={active === "library" ? "page" : undefined}
-        >
-          Biblioteca
-        </Link>
-        <Link
-          href={`/nutricion/comparar${compareQuery ? `?${compareQuery}` : ""}`}
-          aria-current={active === "compare" ? "page" : undefined}
-        >
-          Comparar comida
-        </Link>
-        <Link href="/asistente?q=Ayúdame%20a%20elegir%20qué%20comer%20fuera%20según%20mi%20plan">
-          Fuera
-        </Link>
-        <Link
-          href="/nutricion?vista=historial"
-          aria-current={active === "history" ? "page" : undefined}
-        >
-          Historial
-        </Link>
-      </nav>
+      <IconTabs
+        label="Secciones de nutrición"
+        items={[
+          {
+            href: `/nutricion${suffix ? `?${suffix}` : ""}`,
+            label: "Mi plan",
+            icon: UtensilsCrossed,
+            active: active === "day" || active === "plan",
+          },
+          {
+            href: "/nutricion/alimentos",
+            label: "Biblioteca",
+            icon: Apple,
+            active: active === "library",
+          },
+          {
+            href: `/nutricion/comparar${compareQuery ? `?${compareQuery}` : ""}`,
+            label: "Comparar comida",
+            icon: ArrowLeftRight,
+            active: active === "compare",
+          },
+          {
+            href: "/asistente?q=Ayúdame%20a%20elegir%20qué%20comer%20fuera%20según%20mi%20plan",
+            label: "Fuera",
+            icon: Store,
+          },
+          {
+            href: "/nutricion?vista=historial",
+            label: "Historial",
+            icon: History,
+            active: active === "history",
+          },
+        ]}
+      />
     </div>
   );
 }

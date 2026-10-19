@@ -1,10 +1,10 @@
 "use client";
-
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Link2, Link2Off, Plus, Search, Trash2 } from "lucide-react";
+import { Link2, Link2Off, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
 import { Input } from "@/components/ui/input";
@@ -531,10 +531,9 @@ export function DietReviewEditor({
                   ))}
                 </div>
 
-                <Button
+                <ActionButton
+                  family="add"
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() =>
                     updateMeal(meal.key, {
                       ...meal,
@@ -557,17 +556,16 @@ export function DietReviewEditor({
                     })
                   }
                 >
-                  <Plus className="size-4" />
                   {t.addItem}
-                </Button>
+                </ActionButton>
               </div>
             );
           })}
         </div>
 
-        <Button
+        <ActionButton
+          family="add"
           type="button"
-          variant="outline"
           onClick={() =>
             setMeals((previous) => [
               ...previous,
@@ -575,19 +573,19 @@ export function DietReviewEditor({
             ])
           }
         >
-          <Plus className="size-4" />
           {t.addMealButton}
-        </Button>
+        </ActionButton>
 
-        <Button
-          type="button"
+        <ActionButton
+          family="save"
+          loading={pending}
           className="w-full"
-          size="lg"
+          type="button"
           disabled={pending || meals.every((meal) => meal.items.length === 0)}
           onClick={onSave}
         >
-          {pending ? t.saving : t.saveDiet}
-        </Button>
+          {t.saveDiet}
+        </ActionButton>
       </div>
     </Section>
   );

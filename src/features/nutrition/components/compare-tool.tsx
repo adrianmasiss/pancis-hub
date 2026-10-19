@@ -1,9 +1,9 @@
 "use client";
-
 import { useEffect, useId, useState } from "react";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { BackArrowButton } from "@/components/shared/back-arrow-button";
 import { ComparisonToolbar } from "@/components/shared/comparison-toolbar";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { BarcodeScanner } from "@/features/foods/components/barcode-scanner";
 import { FoodFormDialog } from "@/features/foods/components/food-form-dialog";
@@ -11,7 +11,7 @@ import { searchCatalogFoodsFull, type CatalogFoodMatch } from "../ai-actions";
 import { scaleMacros, sumMacros, type MacroSet } from "../lib/macros";
 import { MacroSummary } from "./macro-comparison";
 import { MealAlternatives, type MealExploreMode } from "./meal-alternatives";
-import { mealKind, CompactStep, OptionPager } from "./compact-nutrition";
+import { CompactStep, mealKind, OptionPager } from "./compact-nutrition";
 import { SwapComparisonBoard } from "./swap-comparison-board";
 import { ComparisonChat } from "./comparison-chat";
 import type { ComparisonMeal } from "../compare-queries";
@@ -398,23 +398,23 @@ export function CompareTool({
               ) : undefined
             }
             sourcePortionControl={
-              <button
+              <ActionButton
+                family="edit"
                 type="button"
-                className="compact-text-button"
                 onClick={() => edit("A")}
               >
                 Editar ingredientes
-              </button>
+              </ActionButton>
             }
             portionControl={
               b.items.length ? (
-                <button
+                <ActionButton
+                  family="edit"
                   type="button"
-                  className="compact-text-button"
                   onClick={() => edit("B")}
                 >
                   Editar ingredientes
-                </button>
+                </ActionButton>
               ) : (
                 <span>Selecciona una opción</span>
               )
@@ -564,15 +564,15 @@ export function CompareTool({
             </div>
           )}
           <div className="compact-actions">
-            <Button
-              variant="outline"
+            <ActionButton
+              family={screen === "compose" ? "edit" : "add"}
               onClick={() => {
                 setScreen(screen === "compose" ? "ingredients" : "compose");
                 setPage(0);
               }}
             >
               {screen === "compose" ? "Editar cantidades" : "Añadir alimento"}
-            </Button>
+            </ActionButton>
             <Button
               variant="brand"
               disabled={!active.items.length}

@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, Info } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+import { encuadreDe } from "@/features/training/lib/model-regions";
+import {
+  ROTULOS,
+  resaltadoDeEjercicios,
+} from "@/features/training/lib/muscle-map";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +30,15 @@ import { rotuloCatalogo } from "@/features/training/lib/library-groups";
 import "./exercise-detail.css";
 
 const t = messages.training.biomechanics;
+
+/* `three` sólo viaja si se abre la ficha, y WebGL no existe en el servidor. */
+const MuscleModel = dynamic(
+  () => import("./muscle-model").then((m) => m.MuscleModel),
+  {
+    ssr: false,
+    loading: () => <div className="muscle-model-stage" aria-hidden="true" />,
+  },
+);
 
 /** El numero siempre va acompanado del motivo; el color no va solo. */
 function scoreTone(score: number): string {
@@ -63,6 +78,22 @@ function DetailBody({ detail }: { detail: ExerciseDetail }) {
   const executionInTechnical = detail.summary ? detail.executionNotes : null;
   const cues = exercise.techniqueCues.slice(0, 3);
 
+  /* El maniquí pequeño enciende lo que trabaja este ejercicio (principal
+     fuerte, apoyo tenue) y la cámara se acerca a los principales, del lado
+     desde el que se ven. Sin zonas en el modelo (p. ej. cardio), no sale. */
+  const resaltado = useMemo(
+    () => resaltadoDeEjercicios([exercise]),
+    [exercise],
+  );
+  const principales = useMemo(
+    () => Object.keys(resaltado).filter((m) => resaltado[m]! >= 0.75),
+    [resaltado],
+  );
+  const hasModel = principales.length > 0;
+  const [view, setView] = useState<"front" | "back">(
+    () => encuadreDe(principales)?.side ?? "front",
+  );
+
   return (
     <>
       {exercise.imageUrl ? (
@@ -92,24 +123,44 @@ function DetailBody({ detail }: { detail: ExerciseDetail }) {
       ) : null}
 
       <Block title={t.worksTitle}>
-        <dl className="xd-muscles">
-          <div>
-            <dt>{t.primaryShort}</dt>
-            <dd className="xd-muscle-primary">
-              {rotuloCatalogo(exercise.primaryMuscle)}
-            </dd>
-          </div>
-          {exercise.secondaryMuscles.length > 0 ? (
-            <div>
-              <dt>{t.secondaryShort}</dt>
-              <dd>
-                {exercise.secondaryMuscles
-                  .map((m) => rotuloCatalogo(m))
-                  .join(" · ")}
-              </dd>
+        <div className="xd-works" data-model={hasModel ? "" : undefined}>
+          {hasModel ? (
+            <div
+              className="muscle-model xd-model"
+              role="img"
+              aria-label={`${t.modelLabel}: ${principales
+                .map((m) => ROTULOS[m] ?? m)
+                .join(", ")}`}
+            >
+              <MuscleModel
+                tone="anatomia"
+                highlight={resaltado}
+                view={view}
+                focus={principales}
+                pulse
+                onViewChange={setView}
+              />
             </div>
           ) : null}
-        </dl>
+          <dl className="xd-muscles">
+            <div>
+              <dt>{t.primaryShort}</dt>
+              <dd className="xd-muscle-primary">
+                {rotuloCatalogo(exercise.primaryMuscle)}
+              </dd>
+            </div>
+            {exercise.secondaryMuscles.length > 0 ? (
+              <div>
+                <dt>{t.secondaryShort}</dt>
+                <dd className="xd-muscle-secondary">
+                  {exercise.secondaryMuscles
+                    .map((m) => rotuloCatalogo(m))
+                    .join(" · ")}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
       </Block>
 
       {cues.length > 0 ? (

@@ -515,6 +515,22 @@
   align-items: center;
   gap: 6px;
 }
+/* Las acciones de la fila (comparar, editar, quitar), más chicas que las
+   de una barra: tres de 44px no cabían en su columna y se montaban sobre
+   las kcal. A 34px queda aire entre la cifra y el primer botón. */
+.meal-row-end .pc-action {
+  --pc-action-height: 34px;
+  --pc-action-disc: 26px;
+  padding: 4px;
+}
+.meal-row-end .pc-action svg {
+  width: 14px;
+  height: 14px;
+}
+.meal-row-end > button:not(.pc-action) {
+  width: 30px;
+  height: 30px;
+}
 
 /* Rotulos de columna: una vez, arriba, alineados con las tarjetas (riel +
    borde + relleno). */

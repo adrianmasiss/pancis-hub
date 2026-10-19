@@ -1,0 +1,155 @@
+/* ---------------------------------------------------------------------------
+   Pestañas de sección con disco (Entrenamiento, Nutrición).
+
+   La activa: disco naranja y el nombre desplegado sobre una cápsula. Las
+   demás: sólo el icono; el nombre se abre al pasar el puntero o al enfocar.
+
+   El nombre se despliega con `grid-template-columns: 0fr → 1fr`, así crece
+   con su texto real y no con un ancho fijo. Al cambiar de sección, uno se
+   pliega mientras el otro se abre por el mismo camino.
+--------------------------------------------------------------------------- */
+.icon-tabs {
+  --tab-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--v11-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.icon-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.icon-tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 46px;
+  padding: 4px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  transition:
+    background-color 300ms var(--tab-ease),
+    color 200ms ease;
+}
+.icon-tab[aria-current="page"] {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 7%, transparent);
+}
+
+.icon-tab-disc {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  transition:
+    background-color 240ms var(--tab-ease),
+    color 200ms ease,
+    box-shadow 240ms var(--tab-ease),
+    transform 120ms ease-out;
+}
+.icon-tab[aria-current="page"] .icon-tab-disc {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow:
+    0 6px 16px -8px color-mix(in oklch, var(--primary) 80%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+.icon-tab:active .icon-tab-disc {
+  transform: scale(0.94);
+}
+
+/* El nombre: columna que pasa de 0fr a 1fr. Tres capas porque el relleno
+   no puede ir en la que se recorta (sumaría ancho aun plegada). */
+.icon-tab-label {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-columns 300ms var(--tab-ease),
+    opacity 160ms ease;
+}
+.icon-tab-label > span {
+  min-width: 0;
+  overflow: hidden;
+}
+.icon-tab-label > span > span {
+  display: block;
+  padding: 0 14px 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.icon-tab[aria-current="page"] .icon-tab-label {
+  grid-template-columns: 1fr;
+  opacity: 1;
+  transition:
+    grid-template-columns 300ms var(--tab-ease),
+    opacity 220ms ease 60ms;
+}
+
+/* Puntero fino: el nombre se abre tras una pausa breve (barrer la barra no
+   la hace temblar) y se cierra al instante. */
+@media (hover: hover) and (pointer: fine) {
+  .icon-tab:not([aria-current="page"]):hover {
+    color: var(--foreground);
+    background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  }
+  .icon-tab:not([aria-current="page"]):hover .icon-tab-disc {
+    background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  }
+  .icon-tab:not([aria-current="page"]):hover .icon-tab-label {
+    grid-template-columns: 1fr;
+    opacity: 1;
+    transition:
+      grid-template-columns 280ms var(--tab-ease) 120ms,
+      opacity 200ms ease 180ms;
+  }
+}
+
+/* Teclado: se abre al enfocar, sin pausa. */
+.icon-tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.icon-tab:focus-visible .icon-tab-label {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .icon-tab {
+    height: 44px;
+  }
+  .icon-tab-disc {
+    width: 36px;
+    height: 36px;
+  }
+  .icon-tab-label > span > span {
+    padding: 0 12px 0 8px;
+    font-size: 13.5px;
+  }
+}
+
+/* Sin movimiento: el nombre aparece y desaparece con un fundido corto, sin
+   deslizarse. */
+@media (prefers-reduced-motion: reduce) {
+  .icon-tab-label,
+  .icon-tab[aria-current="page"] .icon-tab-label,
+  .icon-tab:hover .icon-tab-label {
+    transition: opacity 120ms ease !important;
+  }
+  .icon-tab-disc {
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+}

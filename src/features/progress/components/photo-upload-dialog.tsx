@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Camera } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   Dialog,
   DialogContent,
@@ -68,10 +66,7 @@ export function PhotoUploadDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Camera className="size-4" aria-hidden="true" />
-          {t.upload}
-        </Button>
+        <ActionButton family="add">{t.upload}</ActionButton>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
@@ -131,14 +126,16 @@ export function PhotoUploadDialog({
           </FormGroup>
         </form>
         <DialogFooter>
-          <Button
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
             type="submit"
             form="photo-form"
-            className="w-full"
             disabled={pending || !hasFile}
           >
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+            {messages.common.save}
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

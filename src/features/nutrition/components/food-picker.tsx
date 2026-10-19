@@ -1,8 +1,8 @@
 "use client";
-
 import { useRef, useState, useTransition } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -110,10 +110,7 @@ export function FoodPicker({ mealId }: { mealId: string }) {
       }}
     >
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="size-4" aria-hidden="true" />
-          {t.addFood}
-        </Button>
+        <ActionButton family="add">{t.addFood}</ActionButton>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
@@ -189,7 +186,10 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                           ) : null}
                         </span>
                         <span className="text-muted-foreground flex items-center gap-1 text-xs whitespace-nowrap">
-                          <MacroChip type="calories" value={food.caloriesPer100g} />
+                          <MacroChip
+                            type="calories"
+                            value={food.caloriesPer100g}
+                          />
                           {t.per100g}
                         </span>
                       </button>
@@ -209,7 +209,10 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                 <div>
                   <p className="font-medium">{selected.name}</p>
                   <p className="text-muted-foreground flex items-center gap-2 text-xs">
-                    <MacroChip type="calories" value={selected.caloriesPer100g} />
+                    <MacroChip
+                      type="calories"
+                      value={selected.caloriesPer100g}
+                    />
                     <MacroChip type="protein" value={selected.proteinPer100g} />
                     <span>{t.per100g}</span>
                   </p>
@@ -271,13 +274,16 @@ export function FoodPicker({ mealId }: { mealId: string }) {
                 >
                   {messages.common.back}
                 </Button>
-                <Button
+                <ActionButton
+                  family="save"
+                  icon="confirm"
+                  loading={pending}
                   className="flex-1"
                   onClick={onConfirm}
                   disabled={pending || effectiveGrams <= 0}
                 >
-                  {pending ? messages.common.loading : messages.common.confirm}
-                </Button>
+                  {messages.common.confirm}
+                </ActionButton>
               </div>
             </div>
           )}

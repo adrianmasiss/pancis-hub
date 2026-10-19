@@ -1,8 +1,8 @@
 "use client";
-
 import { useRef, useState, useTransition } from "react";
-import { Check, Plus, Search, Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MacroChip } from "@/components/shared/macro-chip";
@@ -63,10 +63,11 @@ function IngredientRow({
           />
           <span className="text-muted-foreground text-xs">{n.grams}</span>
           {changed ? (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-8"
+            <ActionButton
+              family="save"
+              icon="confirm"
+              compact
+              loading={pending}
               disabled={pending}
               aria-label={`${messages.common.save} — ${ingredient.foodName}`}
               onClick={() =>
@@ -81,9 +82,7 @@ function IngredientRow({
                   else toast.success(t.ingredientUpdated);
                 })
               }
-            >
-              <Check className="size-4" />
-            </Button>
+            ></ActionButton>
           ) : null}
           <Button
             size="icon"
@@ -160,10 +159,7 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
       }}
     >
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="size-4" aria-hidden="true" />
-          {t.addIngredient}
-        </Button>
+        <ActionButton family="add">{t.addIngredient}</ActionButton>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
@@ -202,7 +198,10 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
                     >
                       <span>{food.name}</span>
                       <span className="text-muted-foreground flex items-center gap-1 text-xs whitespace-nowrap">
-                        <MacroChip type="calories" value={food.caloriesPer100g} />
+                        <MacroChip
+                          type="calories"
+                          value={food.caloriesPer100g}
+                        />
                         {n.per100g}
                       </span>
                     </button>
@@ -241,7 +240,10 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
                 >
                   {messages.common.back}
                 </Button>
-                <Button
+                <ActionButton
+                  family="save"
+                  icon="confirm"
+                  loading={pending}
                   className="flex-1"
                   disabled={pending || !(Number(grams) > 0)}
                   onClick={() =>
@@ -260,8 +262,8 @@ function AddIngredientSheet({ recipeId }: { recipeId: string }) {
                     })
                   }
                 >
-                  {pending ? messages.common.loading : messages.common.confirm}
-                </Button>
+                  {messages.common.confirm}
+                </ActionButton>
               </div>
             </div>
           )}

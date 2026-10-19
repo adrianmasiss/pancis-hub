@@ -1,8 +1,8 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -169,10 +169,7 @@ export function RecipeSteps({
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft.trim()) return;
-            run(
-              () => addRecipeStep({ recipeId, instruction: draft }),
-              t.added,
-            );
+            run(() => addRecipeStep({ recipeId, instruction: draft }), t.added);
             setDraft("");
           }}
         >
@@ -183,10 +180,14 @@ export function RecipeSteps({
             aria-label={t.add}
             onChange={(event) => setDraft(event.target.value)}
           />
-          <Button type="submit" variant="outline" disabled={pending}>
-            <Plus className="size-4" aria-hidden="true" />
+          <ActionButton
+            family="add"
+            loading={pending}
+            type="submit"
+            disabled={pending}
+          >
             {t.add}
-          </Button>
+          </ActionButton>
         </form>
       ) : null}
 

@@ -1,10 +1,9 @@
 "use client";
-
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { SelectField } from "@/components/shared/select-field";
 import { updateGoalSettings } from "@/features/settings/actions";
@@ -77,9 +76,14 @@ export function GoalSettingsForm({
             error={errors.activityLevel?.message}
             {...form.register("activityLevel")}
           />
-          <Button type="submit" disabled={pending}>
-            {pending ? messages.common.loading : messages.settings.saveGoals}
-          </Button>
+          <ActionButton
+            family="save"
+            loading={pending}
+            type="submit"
+            disabled={pending}
+          >
+            {messages.settings.saveGoals}
+          </ActionButton>
         </form>
       </div>
     </Section>

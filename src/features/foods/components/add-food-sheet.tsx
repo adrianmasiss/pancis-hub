@@ -1,28 +1,8 @@
-/* eslint-disable @next/next/no-img-element -- local object-URL previews and provider thumbnails */
 "use client";
 
-import "./add-food-sheet.css";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
-import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, useReducedMotion } from "motion/react";
-import {
-  Camera,
-  ImageUp,
-  PencilLine,
-  ScanBarcode,
-  ScanText,
-  Search,
-} from "lucide-react";
-import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
+/* eslint-disable @next/next/no-img-element -- local object-URL previews and provider thumbnails */
+
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import {
   FocusCardDescription,
@@ -49,8 +29,23 @@ import {
   foodFormSchema,
   type FoodFormInput,
 } from "@/features/foods/schemas";
-import { toOptionalNumber } from "@/lib/forms";
 import { messages } from "@/i18n/es-419";
+import { toOptionalNumber } from "@/lib/forms";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PencilLine, ScanBarcode, ScanText, Search } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import { useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import "./add-food-sheet.css";
 
 const t = messages.foods;
 
@@ -482,13 +477,15 @@ export function AddFoodSheet({
             )}
 
             <div className="afs-actions">
-              <button type="submit" className="afs-save" disabled={pending}>
-                {pending
-                  ? messages.common.loading
-                  : food
-                    ? messages.common.save
-                    : "Guardar alimento"}
-              </button>
+              <ActionButton
+                family="save"
+                loading={pending}
+                className="w-full"
+                type="submit"
+                disabled={pending}
+              >
+                {food ? messages.common.save : "Guardar alimento"}
+              </ActionButton>
             </div>
           </motion.form>
         )}
@@ -648,22 +645,21 @@ function LabelPane({
       <div className="afs-pane-actions">
         {state !== "reading" && (
           <>
-            <button
+            <ActionButton
+              family="add"
+              className="afs-camera-only"
               type="button"
-              className="afs-primary afs-camera-only"
               onClick={() => pick(cameraInput.current)}
             >
-              <Camera size={16} strokeWidth={1.75} aria-hidden="true" />
               {state === "idle" ? "Tomar foto" : "Otra foto"}
-            </button>
-            <button
+            </ActionButton>
+            <ActionButton
+              family="add"
               type="button"
-              className="afs-secondary"
               onClick={() => pick(fileInput.current)}
             >
-              <ImageUp size={16} strokeWidth={1.75} aria-hidden="true" />
               {state === "idle" ? "Elegir imagen" : "Otra imagen"}
-            </button>
+            </ActionButton>
           </>
         )}
         {state === "error" && (

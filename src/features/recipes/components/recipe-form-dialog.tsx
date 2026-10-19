@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   Dialog,
   DialogContent,
@@ -67,17 +65,11 @@ export function RecipeFormDialog({ recipe }: { recipe?: RecipeDetail }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {recipe ? (
-          <Button variant="outline" size="sm">
-            <Pencil className="size-4" aria-hidden="true" />
-            {t.editRecipe}
-          </Button>
+          <ActionButton family="edit">{t.editRecipe}</ActionButton>
         ) : (
           // La accion prominente de Recetas. Editar, en cambio, es una accion
           // sobre una receta concreta y se queda callada.
-          <Button variant="brand" size="lg">
-            <Plus className="size-4" aria-hidden="true" />
-            {t.createRecipe}
-          </Button>
+          <ActionButton family="add">{t.createRecipe}</ActionButton>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
@@ -179,14 +171,16 @@ export function RecipeFormDialog({ recipe }: { recipe?: RecipeDetail }) {
           </FormGroup>
         </form>
         <DialogFooter>
-          <Button
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
             type="submit"
             form="recipe-form"
-            className="w-full"
             disabled={pending}
           >
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+            {messages.common.save}
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

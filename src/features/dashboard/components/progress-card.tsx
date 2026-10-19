@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ActionLink } from "@/components/ui/action";
 import { Section } from "@/components/shared/section";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MetricCard } from "@/components/shared/metric-card";
@@ -74,9 +73,9 @@ export function ProgressCard({ data }: { data: DashboardData }) {
             icon={TrendingUp}
             className="py-8"
             action={
-              <Button asChild size="sm" variant="outline">
-                <Link href="/progreso">{t.logWeight}</Link>
-              </Button>
+              <ActionLink family="add" href="/progreso">
+                {t.logWeight}
+              </ActionLink>
             }
           />
         )}

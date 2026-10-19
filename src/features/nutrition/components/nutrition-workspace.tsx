@@ -1,5 +1,5 @@
 "use client";
-
+import { ActionLink } from "@/components/ui/action";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, UtensilsCrossed } from "lucide-react";
@@ -147,9 +147,9 @@ export function NutritionWorkspace({
                 title="Aún no tienes un plan"
                 description="Estás registrando comidas sueltas, y eso ya alimenta el resumen de arriba. Al subir tu dieta esta columna se llena con las comidas del día y sus sustitutos."
                 action={
-                  <Link href="/nutricion/dieta" className="v11-button">
+                  <ActionLink family="add" href="/nutricion/dieta">
                     Importar mi dieta
-                  </Link>
+                  </ActionLink>
                 }
               />
             ) : planMeals.length === 0 ? (
@@ -244,19 +244,22 @@ export function NutritionWorkspace({
               </p>
             ) : null}
           </section>
-          {diet && (
-            <Link
-              className="nutrition-edit-plan"
-              href={
-                mode === "day"
-                  ? `/nutricion?vista=plan&fecha=${day.date}`
-                  : `/nutricion?fecha=${day.date}`
-              }
-            >
-              {mode === "day" ? "Editar plan habitual" : "Volver al día"}
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </Link>
-          )}
+          {diet &&
+            (mode === "day" ? (
+              <ActionLink
+                family="edit"
+                href={`/nutricion?vista=plan&fecha=${day.date}`}
+              >
+                Editar plan habitual
+              </ActionLink>
+            ) : (
+              <Link
+                className="nutrition-edit-plan"
+                href={`/nutricion?fecha=${day.date}`}
+              >
+                Volver al día <ArrowUpRight size={14} aria-hidden="true" />
+              </Link>
+            ))}
         </div>
       </div>
     </>

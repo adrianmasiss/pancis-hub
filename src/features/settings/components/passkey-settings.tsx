@@ -1,8 +1,8 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import type { PasskeyListItem } from "@supabase/supabase-js";
 import { Fingerprint, Trash2 } from "lucide-react";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { usePasskeySupport } from "@/features/auth/use-passkey-support";
 import { createClient } from "@/lib/supabase/client";
@@ -152,15 +152,15 @@ export function PasskeySettings() {
         )
       )}
       {supported ? (
-        <Button
-          variant="outline"
+        <ActionButton
+          family="add"
+          loading={busy}
           disabled={busy || loading}
           aria-busy={busy}
           onClick={() => update()}
         >
-          <Fingerprint aria-hidden="true" />
-          {busy ? "Procesando…" : "Agregar llave de acceso"}
-        </Button>
+          {"Agregar llave de acceso"}
+        </ActionButton>
       ) : (
         <p className="text-muted-foreground text-sm">
           Para crear una llave, usa un navegador compatible desde una conexión

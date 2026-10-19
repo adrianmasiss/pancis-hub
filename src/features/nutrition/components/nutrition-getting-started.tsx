@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ActionLink } from "@/components/ui/action";
 import { UtensilsCrossed } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AddMealDialog } from "./add-meal-dialog";
@@ -22,9 +22,9 @@ export function NutritionGettingStarted({ date }: { date: string }) {
       title="Todavía no tienes un plan"
       description="Cuando subas tu dieta, aquí verás cada comida del día con su hora, sus macros y los sustitutos que cuadran con tu meta. Si no tienes un plan escrito, empieza registrando una comida: el resumen del día funciona igual."
       action={
-        <Link href="/nutricion/dieta" className="v11-button">
+        <ActionLink family="add" href="/nutricion/dieta">
           Importar mi dieta
-        </Link>
+        </ActionLink>
       }
       secondaryAction={<AddMealDialog date={date} />}
       suggestionsLabel="Mientras tanto"

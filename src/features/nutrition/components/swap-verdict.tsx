@@ -1,8 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import type { MacroSet } from "@/features/nutrition/lib/macros";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
@@ -218,15 +217,17 @@ export function SwapVerdict({
         </button>
 
         {!confirmationInFooter && (
-          <Button
+          <ActionButton
+            family="save"
+            icon="confirm"
+            loading={pending}
+            className="shrink-0"
             type="button"
-            variant="brand"
             onClick={onConfirm}
             disabled={pending}
-            className="shrink-0"
           >
-            {pending ? messages.common.loading : (confirmLabel ?? v.confirm)}
-          </Button>
+            {confirmLabel ?? v.confirm}
+          </ActionButton>
         )}
       </div>
 

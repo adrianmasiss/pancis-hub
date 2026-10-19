@@ -1,8 +1,8 @@
 "use client";
-
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/shared/section";
 import { removeAvatar, uploadAvatar } from "@/features/settings/actions";
@@ -73,15 +73,15 @@ export function AvatarUpload({ displayName, avatarUrl }: AvatarUploadProps) {
           </AvatarFallback>
         </Avatar>
         <div className="flex gap-2">
-          <Button
+          <ActionButton
+            family="add"
+            loading={pending}
             type="button"
-            variant="outline"
-            size="sm"
             disabled={pending}
             onClick={() => inputRef.current?.click()}
           >
             {t.avatarUpload}
-          </Button>
+          </ActionButton>
           {preview ? (
             <Button
               type="button"

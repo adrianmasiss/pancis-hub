@@ -1,14 +1,8 @@
 "use client";
-
 import { useMemo, useState, useTransition } from "react";
-import {
-  CalendarPlus,
-  Copy,
-  ListChecks,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
+import { Copy, ListChecks, MoreVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -83,10 +77,9 @@ export function RecipeActions({ recipe }: { recipe: RecipeDetail }) {
       {/* La accion prominente de una receta: a lo que se entra es a meterla
           en el plan. La lista de compras y editar son acciones reales pero
           secundarias, y por eso no llevan el degradado. */}
-      <Button variant="brand" size="lg" onClick={() => setPlanOpen(true)}>
-        <CalendarPlus className="size-4" aria-hidden="true" />
+      <ActionButton family="add" onClick={() => setPlanOpen(true)}>
         {t.addToPlan}
-      </Button>
+      </ActionButton>
       <Button variant="outline" size="sm" onClick={() => setListOpen(true)}>
         <ListChecks className="size-4" aria-hidden="true" />
         {t.shoppingList}
@@ -158,9 +151,16 @@ export function RecipeActions({ recipe }: { recipe: RecipeDetail }) {
               required
               defaultValue={1}
             />
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? messages.common.loading : messages.common.confirm}
-            </Button>
+            <ActionButton
+              family="save"
+              icon="confirm"
+              loading={pending}
+              className="w-full"
+              type="submit"
+              disabled={pending}
+            >
+              {messages.common.confirm}
+            </ActionButton>
           </form>
         </DialogContent>
       </Dialog>

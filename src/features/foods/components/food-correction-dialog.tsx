@@ -1,8 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { PencilRuler } from "lucide-react";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -81,14 +80,11 @@ export function FoodCorrectionDialog({ food }: { food: LibraryFood }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground size-8"
+        <ActionButton
+          family="edit"
+          compact
           aria-label={`${t.trigger} — ${food.name}`}
-        >
-          <PencilRuler className="size-4" />
-        </Button>
+        ></ActionButton>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] max-w-md overflow-y-auto">
         <DialogHeader>
@@ -148,9 +144,15 @@ export function FoodCorrectionDialog({ food }: { food: LibraryFood }) {
           <p className="text-muted-foreground text-xs">{t.emptyNotice}</p>
 
           <div className="flex gap-2">
-            <Button type="submit" className="flex-1" disabled={pending}>
-              {pending ? messages.common.loading : t.save}
-            </Button>
+            <ActionButton
+              family="save"
+              loading={pending}
+              className="flex-1"
+              type="submit"
+              disabled={pending}
+            >
+              {t.save}
+            </ActionButton>
             {food.isCorrected ? (
               <Button
                 type="button"

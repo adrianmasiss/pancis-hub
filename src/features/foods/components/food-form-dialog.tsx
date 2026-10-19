@@ -1,8 +1,6 @@
 "use client";
-
 import { useState } from "react";
-import { Pencil, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { AddFoodButton } from "@/components/shared/comparison-toolbar";
 import {
   FocusCard,
@@ -12,10 +10,6 @@ import {
 import type { LibraryFood } from "@/features/foods/queries";
 import { AddFoodSheet } from "@/features/foods/components/add-food-sheet";
 import { messages } from "@/i18n/es-419";
-import {
-  ExpandActionInner,
-  expandActionClass,
-} from "@/components/ui/expand-action";
 
 const t = messages.foods;
 
@@ -30,7 +24,7 @@ export function FoodFormDialog({
   onCreated,
 }: {
   food?: LibraryFood;
-  /** `expand`: la capsula que se expande de la cabecera de la Biblioteca. */
+  /** `expand`: alias conservado para la cápsula de creación de la Biblioteca. */
   trigger?: "default" | "expand" | "icon";
   onCreated?: (name: string) => void;
 }) {
@@ -39,32 +33,19 @@ export function FoodFormDialog({
     <FocusCard open={open} onOpenChange={setOpen}>
       <FocusCardTrigger asChild>
         {food ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
+          <ActionButton
+            family="edit"
+            compact
             aria-label={`${t.editFood} — ${food.name}`}
-          >
-            <Pencil className="size-4" />
-          </Button>
+          ></ActionButton>
         ) : trigger === "icon" ? (
           <AddFoodButton />
         ) : trigger === "expand" ? (
-          <button
-            type="button"
-            className={expandActionClass}
-            aria-label={t.createFood}
-          >
-            <ExpandActionInner
-              icon={<Plus size={17} strokeWidth={2.4} />}
-              label={t.createFood}
-            />
-          </button>
-        ) : (
-          <Button size="sm">
-            <Plus className="size-4" aria-hidden="true" />
+          <ActionButton family="add" type="button" aria-label={t.createFood}>
             {t.createFood}
-          </Button>
+          </ActionButton>
+        ) : (
+          <ActionButton family="add">{t.createFood}</ActionButton>
         )}
       </FocusCardTrigger>
       <FocusCardContent

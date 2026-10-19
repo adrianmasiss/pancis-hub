@@ -411,3 +411,45 @@
     backdrop-filter: none;
   }
 }
+
+/* Qué trabaja con el maniquí: una figura pequeña a la izquierda, acercada a
+   los principales, y la lista a la derecha. Es para ubicar la zona de un
+   vistazo, no para explorar el cuerpo: por eso es estrecha y alta. */
+.xd-works[data-model] {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+.muscle-model.xd-model {
+  height: auto;
+  min-height: 176px;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--xd-line);
+}
+.xd-works[data-model] .xd-muscles {
+  align-content: center;
+}
+.xd-works[data-model] .xd-muscles > div {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+}
+.xd-muscle-secondary::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 999px;
+  vertical-align: 0.12em;
+  background: color-mix(in oklch, var(--primary) 45%, transparent);
+}
+@media (max-width: 420px) {
+  .xd-works[data-model] {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+  .muscle-model.xd-model {
+    min-height: 150px;
+  }
+}

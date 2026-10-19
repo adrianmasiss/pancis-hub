@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import {
   Dialog,
   DialogContent,
@@ -84,22 +82,16 @@ export function MeasurementFormDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {measurement ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
+          <ActionButton
+            family="edit"
+            compact
             aria-label={`${t.editMeasurement} — ${measurement.measuredAt}`}
-          >
-            <Pencil className="size-4" />
-          </Button>
+          ></ActionButton>
         ) : (
           // La accion prominente de Progreso: registrar una medicion es a lo
           // unico que se entra aqui; lo demas es lectura. Dentro de la tabla
           // este mismo dialogo es solo un lapiz, y ese no es prominente.
-          <Button variant="brand" size="lg">
-            <Plus className="size-4" aria-hidden="true" />
-            {t.addMeasurement}
-          </Button>
+          <ActionButton family="add">{t.addMeasurement}</ActionButton>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
@@ -237,14 +229,16 @@ export function MeasurementFormDialog({
         </form>
 
         <DialogFooter>
-          <Button
+          <ActionButton
+            family="save"
+            loading={pending}
+            className="w-full"
             type="submit"
             form="measurement-form"
-            className="w-full"
             disabled={pending}
           >
-            {pending ? messages.common.loading : messages.common.save}
-          </Button>
+            {messages.common.save}
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,11 +1,9 @@
 "use client";
-
-import { NewtonsCradle } from "@/components/shared/newtons-cradle";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Input } from "@/components/ui/input";
 import { FoodThumbnail } from "@/components/shared/food-thumbnail";
 import { MacroChip } from "@/components/shared/macro-chip";
@@ -162,22 +160,18 @@ export function PantryAdd() {
                     {n.per100g}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
+                <ActionButton
+                  family="add"
+                  compact
+                  loading={pending && addingId === food.id}
                   className="shrink-0"
+                  type="button"
                   disabled={pending}
                   onClick={() => add(food.id)}
                   aria-label={`${t.addButton} — ${food.name}`}
                 >
-                  {pending && addingId === food.id ? (
-                    <NewtonsCradle size={24} />
-                  ) : (
-                    <Plus className="size-4" aria-hidden="true" />
-                  )}
-                  <span className="hidden sm:inline">{t.addButton}</span>
-                </Button>
+                  {t.addButton}
+                </ActionButton>
               </li>
             ))}
           </ul>

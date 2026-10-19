@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import {
   Check,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -237,38 +237,38 @@ export function MealCard({
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant={meal.status === "planificada" ? "default" : "outline"}
-          disabled={pending || meal.items.length === 0}
-          onClick={() =>
-            run(
-              () =>
-                updateMealStatus({
-                  mealId: meal.id,
-                  status:
-                    meal.status === "completada" ||
-                    meal.status === "completada_con_cambios"
-                      ? "planificada"
-                      : "completada",
-                }),
-              t.statusUpdated,
-            )
-          }
-        >
-          {meal.status === "completada" ||
-          meal.status === "completada_con_cambios" ? (
-            <>
-              <Undo2 className="size-4" />
-              Deshacer registro
-            </>
-          ) : (
-            <>
-              <Check className="size-4" />
-              Registrar como comida
-            </>
-          )}
-        </Button>
+        {meal.status === "completada" ||
+        meal.status === "completada_con_cambios" ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending || meal.items.length === 0}
+            onClick={() =>
+              run(
+                () =>
+                  updateMealStatus({ mealId: meal.id, status: "planificada" }),
+                t.statusUpdated,
+              )
+            }
+          >
+            <Undo2 className="size-4" /> Deshacer registro
+          </Button>
+        ) : (
+          <ActionButton
+            family="add"
+            loading={pending}
+            disabled={pending || meal.items.length === 0}
+            onClick={() =>
+              run(
+                () =>
+                  updateMealStatus({ mealId: meal.id, status: "completada" }),
+                t.statusUpdated,
+              )
+            }
+          >
+            Registrar como comida
+          </ActionButton>
+        )}
       </div>
       <div className="space-y-3">
         {meal.items.length > 0 ? (
@@ -306,9 +306,9 @@ export function MealCard({
               rows={2}
             />
             {notes !== (meal.notes ?? "") ? (
-              <Button
-                size="sm"
-                variant="outline"
+              <ActionButton
+                family="save"
+                loading={pending}
                 disabled={pending}
                 onClick={() =>
                   run(
@@ -318,7 +318,7 @@ export function MealCard({
                 }
               >
                 {t.saveNotes}
-              </Button>
+              </ActionButton>
             ) : null}
           </div>
         ) : null}

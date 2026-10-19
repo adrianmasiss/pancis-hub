@@ -100,7 +100,7 @@ test("compara, sustituye solo un día, registra y conserva el plan habitual", as
   await expect(overview.locator(".nutrition-energy-value strong")).toHaveText(
     "0",
   );
-  await expect(overview.locator(".nutrition-stat")).toHaveCount(4);
+  await expect(overview.locator(".ns-macro")).toHaveCount(4);
   await expect(
     page.getByRole("region", { name: "Primeros pasos en nutrición" }),
   ).toHaveCount(0);
@@ -336,7 +336,7 @@ test("compara, sustituye solo un día, registra y conserva el plan habitual", as
   await expect(
     page.getByRole("region", { name: "Ejemplo interactivo de un plan" }),
   ).toHaveCount(0);
-  await expect(overview.locator(".nutrition-stat")).toHaveCount(4);
+  await expect(overview.locator(".ns-macro")).toHaveCount(4);
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page

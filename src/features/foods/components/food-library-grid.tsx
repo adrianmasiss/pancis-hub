@@ -1,9 +1,9 @@
 "use client";
 import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Bookmark, Check, Heart, Info } from "lucide-react";
+import { Bookmark, Check, Heart, Info } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import type { DietTemplateView } from "@/features/dashboard/queries";
 import type { LibraryCardFood } from "../library-types";
 import { toggleFavoriteFood } from "../actions";
@@ -75,26 +75,40 @@ function FoodCard({
         <span className="library-food-category">
           {messages.foods.groups[food.group]}
         </span>
-        <button
-          type="button"
-          className="library-save"
-          onClick={save}
-          disabled={pending || saved || !food.canUse}
-          aria-pressed={food.local ? favorite : saved}
-          aria-label={
-            food.local
-              ? `${favorite ? "Quitar de favoritos" : "Guardar favorito"} — ${food.name}`
-              : `Guardar alimento — ${food.name}`
-          }
-        >
-          {saved ? (
-            <Check size={18} />
-          ) : food.local ? (
-            <Heart size={18} fill={favorite ? "currentColor" : "none"} />
-          ) : (
-            <Bookmark size={18} />
-          )}
-        </button>
+        {food.local ? (
+          <button
+            type="button"
+            className="library-save"
+            onClick={save}
+            disabled={pending || saved || !food.canUse}
+            aria-pressed={food.local ? favorite : saved}
+            aria-label={
+              food.local
+                ? `${favorite ? "Quitar de favoritos" : "Guardar favorito"} — ${food.name}`
+                : `Guardar alimento — ${food.name}`
+            }
+          >
+            {saved ? (
+              <Check size={18} />
+            ) : food.local ? (
+              <Heart size={18} fill={favorite ? "currentColor" : "none"} />
+            ) : (
+              <Bookmark size={18} />
+            )}
+          </button>
+        ) : (
+          <span className="absolute top-2 right-2">
+            <ActionButton
+              family="add"
+              compact
+              loading={pending}
+              onClick={save}
+              disabled={pending || saved || !food.canUse}
+              aria-label={`Guardar alimento — ${food.name}`}
+              aria-pressed={saved}
+            />
+          </span>
+        )}
       </div>
       <div className="library-food-body">
         <h3 title={food.name}>{food.name}</h3>
@@ -142,16 +156,14 @@ function FoodCard({
             fuentes, ajustes). La fibra salió de la tarjeta: es dato de
             consulta, no de decisión, y la ficha ya la tiene. */}
         <div className="library-food-actions">
-          <Button
-            className="library-use-button"
-            variant="outline"
+          <ActionButton
+            family="edit"
+            icon="swap"
             disabled={!food.canUse}
             onClick={onUse}
           >
-            {/* En móvil se ve «Usar»; el resto sigue en el nombre accesible. */}
-            <ArrowLeftRight size={15} /> Usar
-            <span className="library-use-rest"> en mi dieta</span>
-          </Button>
+            Usar en mi dieta
+          </ActionButton>
           <button
             type="button"
             className="library-detail-button"

@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Dumbbell, Sparkles } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  ClipboardList,
+  Dumbbell,
+  Sparkles,
+} from "lucide-react";
+import { IconTabs } from "@/components/ui/icon-tabs";
 import "@/features/training/components/training-workspace.css";
 import "@/features/training/components/training-today.css";
 import "@/features/nutrition/components/nutrition-workspace.css";
@@ -41,10 +47,10 @@ export const metadata: Metadata = { title: t.title };
    «Hoy» es qué voy a hacer; «Historial», qué hice y con cuánto peso. La
    biblioteca es el catálogo entero, para explorar o aprender un ejercicio. */
 const VISTAS = [
-  { id: "hoy", label: "Entrenar" },
-  { id: "historial", label: "Historial" },
-  { id: "rutinas", label: "Rutinas" },
-  { id: "biblioteca", label: "Biblioteca" },
+  { id: "hoy", label: "Entrenar", icon: Dumbbell },
+  { id: "historial", label: "Historial", icon: CalendarDays },
+  { id: "rutinas", label: "Rutinas", icon: ClipboardList },
+  { id: "biblioteca", label: "Biblioteca", icon: BookOpen },
 ] as const;
 type Vista = (typeof VISTAS)[number]["id"];
 
@@ -131,20 +137,17 @@ export default async function TrainingPage({
           </div>
         </div>
       </header>
-      <nav className="training-tabs" aria-label="Secciones de entrenamiento">
-        {VISTAS.map((v) => (
-          <Link
-            key={v.id}
-            href={
-              v.id === "hoy" ? "/entrenamiento" : `/entrenamiento?vista=${v.id}`
-            }
-            aria-current={vista === v.id ? "page" : undefined}
-            scroll={false}
-          >
-            {v.label}
-          </Link>
-        ))}
-      </nav>
+      <IconTabs
+        label="Secciones de entrenamiento"
+        scroll={false}
+        items={VISTAS.map((v) => ({
+          href:
+            v.id === "hoy" ? "/entrenamiento" : `/entrenamiento?vista=${v.id}`,
+          label: v.label,
+          icon: v.icon,
+          active: vista === v.id,
+        }))}
+      />
 
       {vista === "hoy" && (
         <TrainingToday overview={overview} initialDayId={nextDay?.id} />

@@ -4,21 +4,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
+import { ActionButton } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   FocusCard,
   FocusCardContent,
+  FocusCardDescription,
   FocusCardHeader,
   FocusCardTitle,
-  FocusCardDescription,
 } from "@/components/ui/focus-card";
 import type { DietTemplateView } from "@/features/dashboard/queries";
 import type { LibraryCardFood } from "../library-types";
 import { importExternalFood } from "../external-actions";
 import {
-  previewLibrarySwap,
   confirmLibrarySwap,
+  previewLibrarySwap,
   type LibrarySwapPreview,
 } from "../library-swap-actions";
 import { undoDietItemDaySwap } from "@/features/nutrition/day-swap-actions";
@@ -285,13 +286,15 @@ export function LibrarySwapSheet({
                   </p>
                 </div>
               )}
-              <Button
-                variant="brand"
+              <ActionButton
+                family="save"
+                icon="confirm"
+                loading={pending}
                 disabled={!preview || loading || pending}
                 onClick={confirm}
               >
-                {pending ? "Procesando…" : "Confirmar cambio solo para hoy"}
-              </Button>
+                {"Confirmar cambio solo para hoy"}
+              </ActionButton>
             </>
           )}
         </div>

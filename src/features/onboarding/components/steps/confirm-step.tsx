@@ -129,6 +129,7 @@ export function ConfirmStep({ data, onBack }: ConfirmStepProps) {
         </p>
       ) : null}
       <StepNavigation
+        confirm
         onBack={onBack}
         submitLabel={messages.onboarding.finish}
         pending={pending}

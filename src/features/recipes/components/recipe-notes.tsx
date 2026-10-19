@@ -1,8 +1,7 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateRecipeNotes } from "@/features/recipes/step-actions";
@@ -32,7 +31,8 @@ export function RecipeNotes({
   const [mealPrep, setMealPrep] = useState(mealPrepNotes ?? "");
   const [pending, startTransition] = useTransition();
 
-  const dirty = storage !== (storageNotes ?? "") || mealPrep !== (mealPrepNotes ?? "");
+  const dirty =
+    storage !== (storageNotes ?? "") || mealPrep !== (mealPrepNotes ?? "");
 
   if (!canEdit) {
     if (!storageNotes && !mealPrepNotes) return null;
@@ -79,9 +79,9 @@ export function RecipeNotes({
         />
       </div>
       {dirty ? (
-        <Button
-          size="sm"
-          variant="outline"
+        <ActionButton
+          family="save"
+          loading={pending}
           disabled={pending}
           onClick={() =>
             startTransition(async () => {
@@ -95,8 +95,8 @@ export function RecipeNotes({
             })
           }
         >
-          {pending ? messages.common.loading : t.save}
-        </Button>
+          {t.save}
+        </ActionButton>
       ) : null}
     </section>
   );
