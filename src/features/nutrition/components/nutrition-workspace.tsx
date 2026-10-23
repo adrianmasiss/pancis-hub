@@ -30,6 +30,10 @@ export function NutritionWorkspace({
 }) {
   const planMeals = diet?.meals ?? [];
   const pendingMeals = planMeals.filter((meal) => !meal.loggedToday);
+  /* La comida que toca: en telefono es la unica que llega desplegada. Hoy es
+     la primera sin registrar; en el plan habitual, la primera del dia. */
+  const focusMealId =
+    mode === "plan" ? planMeals[0]?.id : pendingMeals[0]?.id;
   /* Solo las que NO salen del plan: las que si, ya tienen su fila arriba
      marcada «Registrada», y mostrarlas otra vez aqui seria contar dos veces
      la misma comida. */
@@ -224,9 +228,12 @@ export function NutritionWorkspace({
                 <ol className="nutrition-plan-list nutrition-meal-table">
                   {planMeals.map((meal) => (
                     <PlanMealCard
-                      key={`${mode}-${day.date}-${meal.id}`}
+                      /* Con el foco en la llave, registrar una comida pliega
+                         esa y despliega la siguiente: la ruta avanza sola. */
+                      key={`${mode}-${day.date}-${meal.id}-${meal.id === focusMealId}`}
                       meal={meal}
                       compact
+                      focus={meal.id === focusMealId}
                       date={day.date}
                       mode={mode}
                       comparison={comparison}

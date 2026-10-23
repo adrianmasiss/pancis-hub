@@ -1,0 +1,1062 @@
+/*
+  Movil (menos de 768px): la app con su propio acomodo.
+
+  Todo lo de aqui vive dentro de `max-width: 767px`, salvo lo que oculta en
+  escritorio una pieza que solo existe para el telefono. Escritorio no se toca
+  desde este archivo: si una regla de aqui se nota por encima de 767px, es un
+  error.
+
+  Se carga el ultimo (layout.tsx) para ganar a las hojas de cada pantalla sin
+  subir la especificidad mas de lo necesario. Donde una regla ajena ya trae
+  `html[data-pc]` o doble clase, la de aqui la iguala con `html .app-shell`.
+
+  Las decisiones, contra las referencias que trajo el usuario (oct 2026):
+  - Un marco menos: el escenario pasa a hoja de borde a borde y las tarjetas
+    son la primera superficie, no la tercera.
+  - Cifras de metrica en tarjetas compactas, dos por fila donde caben.
+  - Lo que toca hoy, desplegado; lo demas, en su cabecera.
+  - Un solo rotulo de pagina por pantalla, con la misma escala en todas.
+*/
+
+/* Piezas que solo existen en telefono: el conmutador de alimentos de cada
+   comida, la fila tocable de cada alimento y la meta dentro del anillo de
+   ingesta. */
+.meal-foods-toggle,
+.meal-food-hit,
+.intake-ring-of {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* ── Estructura ────────────────────────────────────────────────────── */
+
+  /* El escenario deja de flotar con margen: sube como una hoja desde abajo,
+     con las esquinas de arriba y sin canto lateral. Son 16px de ancho util
+     mas en cada pantalla. */
+  html .app-shell .app-canvas {
+    padding: 4px 0 0;
+    gap: 4px;
+  }
+
+  html .app-shell .app-topbar {
+    padding: 0 16px;
+  }
+
+  html .app-shell .app-stage {
+    border-width: 1px 0 0;
+    border-radius: 28px 28px 0 0;
+    box-shadow: none;
+  }
+
+  html .app-shell .app-stage::before {
+    display: none;
+  }
+
+  /* La capsula flota a 12px del borde y mide 64px: el ultimo contenido
+     tiene que poder subir por encima de ella. */
+  html .app-shell .app-content {
+    padding: 22px 16px calc(104px + env(safe-area-inset-bottom));
+    gap: 18px;
+  }
+
+  /* Tarjetas: un poco menos de relleno y de radio que en escritorio. */
+  html .app-shell .v11-card {
+    border-radius: 22px;
+  }
+
+  /* ── Oscuro: negro puro y tarjetas planas ──────────────────────────── */
+
+  /* Referencias del usuario (oct 2026): la pantalla es negra de borde a
+     borde y las tarjetas son la unica superficie, gris carbon con un canto
+     fino. Sin foto de fondo, sin resplandor, sin vidrio ni filete
+     especular: en un telefono el escenario con margen solo restaba ancho.
+     Solo en oscuro; el claro conserva su hoja. */
+  html.dark body,
+  html.dark .app-shell {
+    --m-surface: #141414;
+    --m-raised: #1d1d1d;
+    --m-line: rgb(255 255 255 / 0.08);
+    background: #000;
+  }
+
+  html.dark .app-shell :is(.app-ambient, .app-fondo) {
+    display: none;
+  }
+
+  html.dark .app-shell .app-canvas {
+    padding-top: 0;
+    gap: 0;
+  }
+
+  html.dark .app-shell .app-stage,
+  html[data-pc].dark .app-shell .app-stage {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  html.dark .app-shell .app-stage .app-content :is(
+      .v11-card,
+      .meal-card,
+      .ns-shell,
+      .today-day
+    ),
+  html.dark
+    .app-shell
+    .app-stage
+    .app-content
+    .nutrition-home-card.v11-card:not(.nutrition-table-panel) {
+    border: 1px solid var(--m-line);
+    border-radius: 22px;
+    background: var(--m-surface);
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  html.dark .app-shell .app-stage .app-content :is(
+      .v11-card,
+      .ns-shell
+    )::before {
+    display: none;
+  }
+
+  /* El resumen de Nutricion: la cascara deja de ser marco de la tarjeta. */
+  html.dark .app-shell .app-stage .app-content .ns-shell {
+    padding: 0;
+  }
+
+  html.dark .app-shell .app-stage .app-content .ns-core {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Lo que va dentro de una tarjeta sube un escalon, no lleva otro marco. */
+  html.dark .app-shell .app-stage .app-content :is(.ns-macro, .today-row) {
+    background: var(--m-raised);
+    box-shadow: none;
+  }
+
+  /* El dia abierto de Entrenamiento y la comida que toca conservan su canto
+     naranja: es el «aqui estas» de la lista. */
+  html.dark .app-shell .app-stage .app-content .today-day[data-selected],
+  html.dark .app-shell .app-stage .app-content .meal-stop[data-foods-open="true"] .meal-card {
+    border-color: color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+
+  /* Ningun rotulo por debajo de 11px en telefono: los de 10px se median en
+     cada pantalla (oct 2026). */
+  html .app-shell :is(
+      .label-micro,
+      .ns-label,
+      .meal-card-eyebrow,
+      .meal-food-extras,
+      .today-stats dt,
+      .range-caption,
+      .range-caption *,
+      .progress-segment-badge,
+      .assistant-prompts > button > span
+    ) {
+    font-size: 11px;
+  }
+
+  /* Controles tactiles: los de 30px suben a 36 como minimo. */
+  html .app-shell .ns-water-actions button {
+    min-width: 36px;
+    height: 36px;
+  }
+
+  html .app-shell .body-view-toggle button {
+    min-height: 36px;
+  }
+
+  html .app-shell :is(.nutrition-panel-tools, .meal-card-foot) button {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  html .app-shell .meal-row-end .omit-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* ── Rotulo de pagina ──────────────────────────────────────────────── */
+
+  /* La marca ya esta en la barra de arriba: en cada seccion sobraba. */
+  .nutrition-dashboard-brand .brand-artwork,
+  .training-brand .brand-artwork {
+    display: none;
+  }
+
+  html .app-shell .view-header h1,
+  html .app-shell .nutrition-dashboard-brand h1,
+  html .app-shell .training-brand h1,
+  html .app-shell .progress-header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  html .app-shell .training-brand p,
+  html .app-shell .progress-header p {
+    font-size: 13px;
+  }
+
+  /* ── Hoy ───────────────────────────────────────────────────────────── */
+
+  /* Dos columnas: la lectura del copiloto y las tarjetas largas a todo el
+     ancho; ingesta y sueno, que son una cifra cada una, lado a lado. */
+  html .app-shell .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  html .app-shell .dashboard-grid > * {
+    grid-column: 1 / -1;
+  }
+
+  html .app-shell .dashboard-grid > .day-reading {
+    order: 1;
+  }
+
+  html .app-shell .dashboard-grid > .intake-card {
+    order: 2;
+    grid-column: auto;
+  }
+
+  html .app-shell .dashboard-grid > .sleep-card {
+    order: 3;
+    grid-column: auto;
+  }
+
+  html .app-shell .dashboard-grid > .macros-card {
+    order: 4;
+  }
+
+  html .app-shell .dashboard-grid > .activity-card {
+    order: 5;
+  }
+
+  html .app-shell .dashboard-grid > .v11-card:not(.day-reading) {
+    padding: 18px;
+  }
+
+  html .app-shell .day-reading {
+    padding: 20px 18px 52px;
+  }
+
+  html .app-shell .day-reading h2 {
+    margin-top: 14px;
+    font-size: 21px;
+  }
+
+  html .app-shell .day-reading > p {
+    font-size: 13.5px;
+  }
+
+  /* Ingesta en media tarjeta: el anillo se encoge y las dos cifras se
+     apilan, rotulo a la izquierda y valor a la derecha. */
+  html .app-shell .intake-ring {
+    width: 108px;
+    height: 108px;
+    margin-top: 14px;
+  }
+
+  html .app-shell .intake-ring strong {
+    font-size: 24px;
+  }
+
+  html .app-shell .intake-ring span {
+    font-size: 10.5px;
+  }
+
+  html .app-shell .intake-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+
+  html .app-shell .intake-stats > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  html .app-shell .intake-stats p {
+    margin-top: 0;
+    font-size: 15px;
+  }
+
+  /* Sueno en media tarjeta: misma escala de cifra que ingesta. */
+  html .app-shell .sleep-card > div:nth-child(2) {
+    margin-block: 18px 8px;
+  }
+
+  html .app-shell .sleep-card > div:nth-child(2) > p:first-child {
+    font-size: 28px;
+  }
+
+  html .app-shell .sleep-card > div:nth-child(2) > p:last-child {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  /* La semana: barras mas bajas, el dato es la forma y no la altura. */
+  html .app-shell .activity-card > div:nth-child(2) {
+    height: 112px;
+    margin-top: 24px;
+  }
+
+  html .app-shell .activity-card > div:nth-child(2) > div > div:first-child {
+    height: 72px;
+  }
+
+  html .app-shell .activity-card > div:nth-child(3) {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+
+  /* ── Nutricion ─────────────────────────────────────────────────────── */
+
+  /* Macros del dia en rejilla de 2x2 en vez de cuatro filas a todo el
+     ancho: la misma lectura en la mitad de alto. */
+  html .app-shell .ns-macros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 6px;
+  }
+
+  html .app-shell .ns-macro {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name pct"
+      "value value"
+      "bar bar";
+    row-gap: 8px;
+    column-gap: 6px;
+    padding: 12px;
+    border-radius: 16px;
+    background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  }
+
+  html .app-shell .ns-macro + .ns-macro::before {
+    display: none;
+  }
+
+  html .app-shell .ns-macro-value {
+    justify-self: start;
+  }
+
+  /* El plan deja de ser una tarjeta con tarjetas dentro: cada comida es la
+     tarjeta. Cinco clases: nutrition-workspace.css pinta este panel con
+     `html[data-pc] … .nutrition-home-card.v11-card` y carga despues. */
+  html .app-shell .nutrition-workspace .nutrition-table-panel.nutrition-home-card.v11-card {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  html .app-shell .nutrition-workspace .nutrition-table-panel::before {
+    display: none;
+  }
+
+  html .app-shell .nutrition-workspace .nutrition-meals-panel > .nutrition-panel-heading,
+  html .app-shell .nutrition-workspace .nutrition-meals-panel > .nutrition-scope {
+    padding-inline: 2px;
+  }
+
+  html .app-shell .nutrition-workspace .nutrition-meal-table {
+    gap: 10px;
+  }
+}
+
+/* La comida, a partir del acomodo de telefono de meal-plan.css (600px). */
+@media (max-width: 600px) {
+  /* Cabecera de la comida, como una tarjeta de metrica: titulo e
+     interruptor; debajo las kcal en grande con el conmutador; y los cuatro
+     macros en mosaicos con su NOMBRE, no solo una letra. La letra suelta
+     (P, C, G, F) obligaba a recordar que G es grasa y no glucosa. */
+  html .app-shell .meal-row.meal-row-head {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      "title title title end"
+      "kcal kcal kcal toggle"
+      "p c g f";
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 12px;
+  }
+
+  html .app-shell .meal-row-head > .meal-row-title {
+    grid-area: title;
+    min-width: 0;
+  }
+
+  html .app-shell .meal-row-head > .meal-row-end {
+    grid-area: end;
+    justify-self: end;
+  }
+
+  html .app-shell .meal-row-head > .meal-cell[data-macro="proteinG"] {
+    grid-area: p;
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="carbohydrateG"] {
+    grid-area: c;
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="fatG"] {
+    grid-area: g;
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="fiberG"] {
+    grid-area: f;
+  }
+
+  /* Las kcal: la cifra que manda, contenida (22px), y su barra de la meta
+     diaria debajo, a lo ancho. */
+  html .app-shell .meal-row-head > .meal-cell-kcal {
+    grid-area: kcal;
+    justify-items: start;
+    gap: 8px;
+  }
+
+  html .app-shell .meal-row-head > .meal-cell-kcal .meal-cell-value {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  html .app-shell .meal-row-head > .meal-cell-kcal .meal-cell-unit {
+    font-size: 13px;
+  }
+
+  html .app-shell .meal-row-head > .meal-cell-kcal .meal-cell-bar {
+    max-width: 220px;
+  }
+
+  /* Mosaico de macro: nombre con su punto de color, cifra y barra. */
+  html .app-shell .meal-row-head > .meal-cell:not(.meal-cell-kcal) {
+    justify-items: start;
+    align-content: start;
+    gap: 6px;
+    padding: 9px 10px 10px;
+    border-radius: 14px;
+    background: color-mix(in oklch, var(--foreground) 5%, transparent);
+  }
+
+  html .app-shell .meal-row-head > .meal-cell:not(.meal-cell-kcal)::before {
+    padding-left: 11px;
+    background: radial-gradient(
+        circle at 3px 50%,
+        var(--macro) 3px,
+        transparent 3.5px
+      )
+      no-repeat;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+  }
+  /* Texto alternativo vacio: el nombre ya lo dice el `sr-only` de la cifra. */
+  html .app-shell .meal-row-head > .meal-cell[data-macro="proteinG"]::before {
+    content: "Proteína" / "";
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="carbohydrateG"]::before {
+    content: "Carbos" / "";
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="fatG"]::before {
+    content: "Grasas" / "";
+  }
+  html .app-shell .meal-row-head > .meal-cell[data-macro="fiberG"]::before {
+    content: "Fibra" / "";
+  }
+
+  /* El color va en el punto del nombre y en la barra; la letra sobra. */
+  html .app-shell .meal-row-head .meal-cell-short {
+    display: none;
+  }
+
+  html .app-shell .meal-row-head > .meal-cell:not(.meal-cell-kcal) .meal-cell-value {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  html .app-shell .meal-row-head .meal-cell-bar {
+    height: 4px;
+  }
+
+  /* El conmutador cierra la fila de cifras, a la derecha. */
+  html .app-shell .meal-foods-toggle {
+    grid-area: toggle;
+    justify-self: end;
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: -4px -6px -4px 0;
+    border-radius: 50%;
+    color: var(--muted-foreground);
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease;
+  }
+
+  html .app-shell .meal-foods-toggle:active {
+    background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  }
+
+  html .app-shell .meal-foods-toggle svg {
+    transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html .app-shell .meal-foods-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+
+  html .app-shell .meal-foods-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+
+  /* Las comidas que no tocan se leen en segundo plano; la que toca, con el
+     canto del acento. */
+  html .app-shell .meal-stop[data-foods-open="true"] .meal-card {
+    border-color: color-mix(in oklch, var(--primary) 38%, var(--meal-line));
+  }
+
+  /* Acciones de cada alimento: neutras. Con dos discos naranjas por fila la
+     pantalla llevaba veinte acentos; la regla es tres. El naranja queda para
+     el interruptor y las acciones de la pagina. */
+  html .app-shell .meal-row-food .meal-row-end .pc-action {
+    border-color: var(--meal-line);
+    background: transparent;
+  }
+
+  html .app-shell .meal-row-food .meal-row-end .pc-action-disc {
+    background: transparent;
+    color: var(--foreground);
+  }
+
+  /* Con un marco menos el nombre ya cabe: vuelve a una linea. */
+  html .app-shell .meal-row-food > .meal-row-title {
+    min-width: calc(100% - 124px);
+  }
+}
+
+@media (max-width: 767px) {
+  /* ── Entrenamiento ─────────────────────────────────────────────────── */
+
+  /* El maniqui cede alto para que «Iniciar entrenamiento» se vea sin
+     quedar bajo la capsula de navegacion. */
+  html .app-shell .today-model {
+    height: clamp(260px, 36vh, 340px);
+  }
+
+  /* ── Progreso ──────────────────────────────────────────────────────── */
+
+  html .app-shell .progress-workspace .progress-body-model {
+    height: 420px;
+  }
+}
+
+/*
+  Menos carga (oct 2026). El usuario veia las pantallas cargadas al lado de
+  sus referencias, que siguen tres reglas: cada tarjeta dice UNA cosa
+  (rotulo, cifra con unidad y como mucho una linea o un chip), no hay
+  parrafos que expliquen, y hay una accion por tarjeta o ninguna. Lo que se
+  quita aqui sigue en escritorio, o a un toque.
+*/
+@media (max-width: 767px) {
+  /* ── Hoy ───────────────────────────────────────────────────────────── */
+
+  /* Copiloto: el titular y sus dos botones. El parrafo es lo que cuenta
+     «¿Por que?». */
+  html .app-shell .day-reading > p {
+    display: none;
+  }
+
+  /* Sin el parrafo, los botones suben bajo el titular (eran 56px de aire). */
+  html .app-shell .day-reading > div:nth-of-type(2) {
+    margin-top: 22px;
+  }
+
+  /* Ingesta: el anillo con «0 de 2,091 kcal» y nada mas. El chip de % y
+     las cifras de abajo repetian lo mismo. */
+  html .app-shell .intake-card > :first-child .rounded-full,
+  html .app-shell .intake-stats,
+  html .app-shell .intake-ring > div > span:not(.intake-ring-of) {
+    display: none;
+  }
+
+  html .app-shell .intake-ring {
+    width: 124px;
+    height: 124px;
+    margin-top: 16px;
+    margin-bottom: 4px;
+  }
+
+  html .app-shell .intake-ring .intake-ring-of {
+    display: block;
+    font-size: 11px;
+    color: var(--muted-foreground);
+  }
+
+  /* Sueno: la cifra y su linea. Sin chip ni onda. */
+  html .app-shell .sleep-card > div:first-child > span,
+  html .app-shell .sleep-card > div:last-child {
+    display: none;
+  }
+
+  html .app-shell .sleep-card {
+    justify-content: flex-start;
+  }
+
+  html .app-shell .sleep-card > div:nth-child(2) {
+    margin-block: auto 0;
+  }
+
+  /* Macros del dia: cuatro mosaicos de 2x2, nombre y cifra; la barra queda
+     como un hilo. «Registrar comida» pasa a su disco. */
+  html .app-shell .macros-card .pc-action {
+    width: 44px;
+    padding: 5px;
+    gap: 0;
+  }
+
+  html .app-shell .macros-card .pc-action-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html .app-shell .macro-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  html .app-shell .macro-row {
+    grid-template-columns: 7px minmax(0, 1fr);
+    grid-template-areas:
+      "dot name"
+      "value value"
+      "track track";
+    gap: 8px 7px;
+    padding: 12px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--m-raised, color-mix(in oklch, var(--foreground) 5%, transparent));
+  }
+
+  html .app-shell .macro-dot {
+    grid-area: dot;
+  }
+
+  html .app-shell .macro-name {
+    grid-area: name;
+    font-size: 12.5px;
+    color: var(--muted-foreground);
+  }
+
+  html .app-shell .macro-row strong {
+    grid-area: value;
+    font-size: 17px;
+  }
+
+  /* «de 126» en la fila de la cifra, al otro extremo. */
+  html .app-shell .macro-target {
+    grid-area: value;
+    justify-self: end;
+    align-self: center;
+  }
+
+  html .app-shell .macro-track {
+    grid-area: track;
+    height: 3px;
+  }
+
+  html .app-shell .macro-track i {
+    display: none;
+  }
+
+  /* Adherencia: 28 puntos en dos filas, como la racha de la referencia. La
+     leyenda sobra: el chip ya dice «28 dias · 92 % de media». */
+  html .app-shell .adherence-days {
+    grid-template-columns: repeat(14, minmax(0, 1fr));
+    gap: 7px 6px;
+  }
+
+  html .app-shell .adherence-days > * {
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 999px;
+  }
+
+  html .app-shell .activity-card > div:nth-child(3) > div:last-child {
+    display: none;
+  }
+
+  /* ── Nutricion ─────────────────────────────────────────────────────── */
+
+  /* «0 comidas registradas» repetia «0 de 5 completadas». */
+  html .app-shell .nutrition-summary-caption {
+    display: none;
+  }
+
+  /* «Solo hoy. Marca cada comida…»: el selector Hoy | Plan habitual ya lo
+     dice. En el plan habitual el aviso se queda: ahi se edita la plantilla
+     de todos los dias. */
+  html .app-shell .nutrition-scope[data-mode="day"] .nutrition-panel-description {
+    display: none;
+  }
+
+  /* Calorias: cifra, barra y lo que falta. Los vasos y «en tu plan»
+     sobraban. */
+  html .app-shell :is(.ns-glasses, .ns-planned) {
+    display: none;
+  }
+
+  /* ── Progreso ──────────────────────────────────────────────────────── */
+
+  /* Las cinco cifras esenciales del InBody como mosaicos de metrica: nombre,
+     cifra con unidad y su estado en palabra. La pista y el rango numerico
+     siguen en escritorio. */
+  html .app-shell .progress-ranges {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  html .app-shell .progress-ranges > li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--m-raised, color-mix(in oklch, var(--foreground) 5%, transparent));
+  }
+
+  html .app-shell .progress-ranges > li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  html .app-shell .progress-range-name {
+    font-size: 12.5px;
+    color: var(--muted-foreground);
+  }
+
+  html .app-shell .progress-ranges .range-bar {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  html .app-shell .progress-ranges .range-value {
+    font-size: 20px;
+  }
+
+  html .app-shell .progress-ranges .range-track,
+  html .app-shell .progress-ranges .range-caption > span {
+    display: none;
+  }
+
+  html .app-shell .progress-ranges .range-caption {
+    font-size: 11px;
+  }
+
+  /* Cambio desde la medicion anterior: el nombre y su diferencia. Las dos
+     barras de antes y despues eran el grueso de la tarjeta. */
+  html .app-shell .progress-compare-bars {
+    display: none;
+  }
+
+  html .app-shell .progress-compare-list {
+    gap: 0;
+  }
+
+  html .app-shell .progress-compare-list > li {
+    padding-block: 12px;
+  }
+
+  html .app-shell .progress-compare-list > li + li {
+    border-top: 1px solid var(--m-line, var(--v11-line));
+  }
+}
+
+/* Los alimentos, a partir del acomodo de telefono de meal-plan.css. */
+@media (max-width: 600px) {
+  /* Cada alimento es una fila: nombre, gramos y sus kcal a la derecha. Los
+     macros por alimento ya estan sumados en los mosaicos de la comida, y el
+     sodio y el azucar se ven al editar. */
+  html .app-shell .meal-row-food > .meal-cell:not(.meal-cell-kcal),
+  html .app-shell .meal-food-copy .meal-food-extras {
+    display: none;
+  }
+
+  html .app-shell .meal-row.meal-row-food {
+    position: relative;
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  html .app-shell .meal-row-food > .meal-row-title {
+    order: 1;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  html .app-shell .meal-row-food > .meal-cell-kcal {
+    order: 2;
+    margin: 0;
+  }
+
+  html .app-shell .meal-row-food > .meal-cell-kcal .meal-cell-value {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* Toda la fila se toca: abre sus acciones debajo, con su nombre. */
+  html .app-shell .meal-food-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    border-radius: 14px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease;
+  }
+
+  html .app-shell .meal-food-hit:active {
+    background: color-mix(in oklch, var(--foreground) 5%, transparent);
+  }
+
+  html .app-shell .meal-food-hit:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  html .app-shell .meal-row-food > .meal-row-end {
+    display: none;
+  }
+
+  html .app-shell .meal-food[data-actions-open] .meal-row-food > .meal-row-end {
+    order: 3;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 0 2px 50px;
+  }
+
+  /* En la bandeja las acciones llevan su nombre: ya no compiten por sitio. */
+  html .app-shell .meal-row-food .meal-row-end .pc-action[data-compact] {
+    width: auto;
+    padding: 3px 14px 3px 3px;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  html .app-shell .meal-row-food .meal-row-end .pc-action[data-compact] :is(
+      .pc-action-label,
+      .expand-action-text
+    ) {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  /* Los botones solo traen `aria-label`; el rotulo visible se pone aqui,
+     con texto alternativo vacio para no leerlo dos veces. */
+  html .app-shell .meal-row-food .pc-action[aria-label^="Intercambiar"] .pc-action-label::after {
+    content: "Sustituir" / "";
+  }
+
+  html .app-shell .meal-row-food .pc-action[aria-label^="Editar"] .pc-action-label::after {
+    content: "Editar" / "";
+  }
+
+  /* Omitir se queda en su disco, apartado a la derecha: es la que quita. */
+  html .app-shell .meal-row-food .meal-row-end .omit-button {
+    margin-left: auto;
+  }
+
+  /* Comida suelta y alimentos omitidos: su boton de restaurar sigue a la
+     vista, es estado, no menu. */
+  html .app-shell .meal-food[data-omitted] .meal-row-food > .meal-row-end {
+    display: flex;
+    order: 3;
+  }
+}
+
+/*
+  Movimiento (oct 2026). El usuario pidio animaciones mas notables en el
+  telefono. Pasaron el filtro de find-animation-opportunities solo las que
+  tienen un porque: el despliegue de una comida y la bandeja de un alimento
+  (cambio de estado que antes aparecia de golpe), la respuesta al tocar una
+  fila, y la entrada de cada pantalla, que se ve varias veces al dia y puede
+  llevar algo mas de cuerpo que en escritorio sin frenar nada. Se quedaron
+  fuera las cifras que cuentan hacia arriba y la grafica de peso que se
+  dibuja: son datos que se leen.
+
+  Solo `transform`, `opacity` y filas de rejilla. Curvas del sistema:
+  cajon `cubic-bezier(0.32, 0.72, 0, 1)` y `--pc-ease-out`.
+*/
+@media (max-width: 767px) {
+  /* Entrada de pantalla: las tarjetas suben 18px desde un 98 % con algo mas
+     de recorrido y escalonado que en escritorio (que sube 8px en 200ms). */
+  html .app-shell .enter-card {
+    animation: movil-subir 460ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  /* Las comidas entran en cascada, como las tarjetas de Hoy. */
+  html .app-shell .meal-stop {
+    animation: movil-subir 460ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  html .app-shell .meal-stop:nth-child(2) { animation-delay: 60ms; }
+  html .app-shell .meal-stop:nth-child(3) { animation-delay: 120ms; }
+  html .app-shell .meal-stop:nth-child(4) { animation-delay: 180ms; }
+  html .app-shell .meal-stop:nth-child(5) { animation-delay: 240ms; }
+  html .app-shell .meal-stop:nth-child(n + 6) { animation-delay: 300ms; }
+
+  /* Adherencia: los puntos se encienden semana a semana. */
+  html .app-shell .adherence-days > * {
+    animation: movil-punto 380ms var(--pc-ease-pop) both;
+    animation-delay: 260ms;
+  }
+  html .app-shell .adherence-days > :nth-child(n + 8) { animation-delay: 330ms; }
+  html .app-shell .adherence-days > :nth-child(n + 15) { animation-delay: 400ms; }
+  html .app-shell .adherence-days > :nth-child(n + 22) { animation-delay: 470ms; }
+}
+
+@media (max-width: 600px) {
+  /* Despliegue de la comida: de 0fr a 1fr, con los alimentos que suben y
+     aparecen detras. Cerrar va un poco mas rapido que abrir. */
+  html .app-shell .meal-foods-panel {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 380ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html .app-shell .meal-foods-inner {
+    min-height: 0;
+    overflow: hidden;
+    transition:
+      opacity 260ms ease,
+      translate 380ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html .app-shell .meal-stop[data-foods-open="false"] .meal-foods-panel {
+    grid-template-rows: 0fr;
+    transition-duration: 280ms;
+  }
+
+  html .app-shell .meal-stop[data-foods-open="false"] .meal-foods-inner {
+    opacity: 0;
+    translate: 0 -8px;
+    transition-duration: 160ms, 280ms;
+  }
+
+  /* Plegada, nada de dentro recibe el foco ni el toque. */
+  html .app-shell .meal-stop[data-foods-open="false"] .meal-foods-inner {
+    visibility: hidden;
+    transition-property: opacity, translate, visibility;
+    transition-delay: 0s, 0s, 280ms;
+  }
+
+  /* La bandeja de un alimento sale de su fila. */
+  html .app-shell .meal-food[data-actions-open] .meal-row-food > .meal-row-end {
+    transition:
+      opacity 220ms var(--pc-ease-out),
+      translate 260ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @starting-style {
+    html .app-shell .meal-food[data-actions-open] .meal-row-food > .meal-row-end {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  /* Tocar una fila la hunde un poco: la interfaz te oyo. */
+  html .app-shell .meal-row-food {
+    transition: scale 160ms var(--pc-ease-out);
+  }
+
+  html .app-shell .meal-row-food:has(> .meal-food-hit:active) {
+    scale: 0.985;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Lo mismo para las cabeceras que se tocan en Entrenamiento y Progreso. */
+  html .app-shell :is(.today-day-head, .progress-fold > summary) {
+    transition: scale 160ms var(--pc-ease-out);
+  }
+
+  html .app-shell :is(.today-day-head, .progress-fold > summary):active {
+    scale: 0.985;
+  }
+}
+
+@keyframes movil-subir {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+    scale: 0.98;
+  }
+}
+
+@keyframes movil-punto {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+/* Movimiento reducido: sin recorridos ni escalas; solo el fundido, mas
+   corto. */
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  html .app-shell :is(.enter-card, .meal-stop, .adherence-days > *) {
+    animation: movil-fundir 200ms ease both;
+    animation-delay: 0s;
+  }
+
+  html .app-shell :is(
+      .meal-foods-panel,
+      .meal-foods-inner,
+      .meal-row-food,
+      .today-day-head,
+      .progress-fold > summary
+    ) {
+    transition-duration: 0s;
+  }
+
+  html .app-shell .meal-row-food:has(> .meal-food-hit:active),
+  html .app-shell :is(.today-day-head, .progress-fold > summary):active {
+    scale: none;
+  }
+}
+
+@keyframes movil-fundir {
+  from {
+    opacity: 0;
+  }
+}
+

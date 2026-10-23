@@ -950,11 +950,15 @@
   }
 }
 
-/* Movil: sin riel ni rotulos de columna. La cabecera pone los cuatro macros
-   en su propia fila bajo el titulo; cada alimento, sus cifras bajo el
-   nombre, con la letra del macro delante porque ya no hay columna que la
-   nombre. */
-@media (max-width: 600px) {
+/* Movil y tableta: sin riel ni rotulos de columna. La cabecera pone los
+   cuatro macros en su propia fila bajo el titulo; cada alimento, sus cifras
+   bajo el nombre, con la letra del macro delante porque ya no hay columna
+   que la nombre.
+
+   Hasta 1023px y no solo 600: en tableta, con el riel abierto, a la tabla le
+   quedan ~470px y sus columnas fijas aplastaban el titulo a una letra por
+   linea. La tabla vuelve donde cabe, en escritorio. */
+@media (max-width: 1023px) {
   .meal-legend,
   .meal-stop-rail,
   .meal-stop::before {
@@ -1021,7 +1025,7 @@
   .meal-row.meal-row-food {
     column-gap: 9px;
   }
-  .meal-row-food > .meal-cell:nth-child(2) {
+  .meal-row-food > .meal-row-title + .meal-cell {
     margin-left: 50px;
   }
   .meal-row-food > .meal-row-end:empty {
@@ -1212,8 +1216,8 @@
 
 /* Movil: la columna del nombre es estrecha por los tres botones. El nombre
    puede bajar de linea en vez de cortarse, y sodio/azucar van mas juntos
-   para caber en una. */
-@media (max-width: 600px) {
+   para caber en una. Mismo corte que el acomodo apilado de arriba. */
+@media (max-width: 1023px) {
   .meal-food-copy strong {
     white-space: normal;
     overflow: visible;

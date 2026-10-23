@@ -101,7 +101,7 @@ export function V11SleepCard({
   return (
     <V11Card
       index={index}
-      className="flex h-full flex-col justify-between p-6 sm:p-7"
+      className="sleep-card flex h-full flex-col justify-between p-6 sm:p-7"
     >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
