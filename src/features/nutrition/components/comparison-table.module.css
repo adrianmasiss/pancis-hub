@@ -1,0 +1,594 @@
+/* The comparator uses the same graphite, specular edges and nutrient accents
+   as Nutrition. Keep its layout isolated from the legacy notched cards. */
+.scene.scene.scene {
+  --table-ink: var(--foreground, #f5f5f7);
+  --table-muted: var(--muted-foreground, #a2a2aa);
+  --table-reference: #c4c4ca;
+  --table-alternative: var(--chart-1, #3ff4e5);
+  --table-curve: cubic-bezier(0.32, 0.72, 0, 1);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+  color: var(--table-ink);
+  background: transparent;
+  padding: 0;
+  isolation: isolate;
+}
+.scene.scene .column,
+.scene.scene .nutrition {
+  border-radius: 26px;
+  border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+  background:
+    radial-gradient(
+      110% 100% at 100% 0%,
+      color-mix(in oklab, var(--foreground) 4%, transparent),
+      transparent 65%
+    ),
+    #111113;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    inset 0 0 0 4px rgb(255 255 255 / 2%),
+    0 16px 36px -28px #000;
+  backdrop-filter: none;
+  transform: none;
+  animation: none;
+}
+.scene.scene .column {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+  row-gap: 0;
+  padding: 22px 24px 24px;
+  min-width: 0;
+  container-type: inline-size;
+}
+.scene.scene .column::before,
+.scene.scene .nutrition::before {
+  opacity: 0.35;
+}
+.scene.scene .column:nth-child(2)::before {
+  background: conic-gradient(
+    from 35deg,
+    transparent 0deg,
+    var(--primary) 45deg,
+    transparent 85deg,
+    transparent 180deg,
+    rgb(255 255 255 / 65%) 225deg,
+    transparent 265deg
+  );
+  opacity: 0.65;
+}
+.scene :global(.comparison-source-controls),
+.scene :global(.comparison-alternative-controls) {
+  min-height: 44px;
+  margin-bottom: 22px;
+}
+.food {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  grid-template-rows: auto minmax(122px, 1fr) auto;
+  column-gap: 18px;
+  min-width: 0;
+  align-self: stretch;
+}
+.role {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--table-muted);
+}
+.role > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--table-reference);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 5%);
+}
+.food[data-tone="alternative"] .role > span {
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.portrait {
+  display: grid;
+  place-items: center;
+  align-self: center;
+}
+.scene .portrait :global(.swap-card-media) {
+  width: 108px;
+  height: 108px;
+  margin: 0;
+  padding: 0;
+  border-radius: 20px;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+.scene .portrait :global(.swap-food-photo),
+.scene .portrait :global(.swap-food-illustration) {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  padding: 0;
+  object-fit: contain;
+}
+.scene
+  .portrait
+  :global(.swap-card-media):has(:global(.swap-food-placeholder)) {
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 5%),
+    rgb(255 255 255 / 1%)
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+.scene .portrait :global(.swap-food-placeholder) {
+  width: 28px;
+  height: 28px;
+  color: var(--table-muted);
+  opacity: 0.6;
+}
+.identity {
+  align-self: center;
+  min-width: 0;
+}
+.category {
+  color: var(--table-muted);
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+.identity h3 {
+  font-size: clamp(1.25rem, 2.1vw, 1.65rem);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.serving {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 76px;
+  margin-top: 22px;
+  padding-top: 18px;
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 7%);
+}
+.scene .portion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 16px;
+  color: var(--table-ink);
+}
+.scene .portion small {
+  display: block;
+  margin-top: 3px;
+  color: var(--table-muted);
+  font-size: 11px;
+}
+.scene .portion input {
+  width: 82px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: #09090a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 6%),
+    inset 0 0 0 1px rgb(255 255 255 / 14%);
+  color: var(--table-ink);
+  font-size: 18px;
+}
+.scene .portion input[aria-invalid="true"] {
+  outline: 2px solid var(--destructive);
+  outline-offset: 2px;
+}
+.scene .energy {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0;
+  white-space: nowrap;
+}
+.scene .energy strong {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.scene .energy > span {
+  font-size: 12px;
+  color: var(--table-muted);
+}
+.scene .discovery {
+  grid-row: 2;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--table-ink);
+  gap: 20px;
+}
+.eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--table-muted);
+}
+.scene .discovery h3 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin-top: 8px;
+}
+.scene .discovery header p {
+  font-size: 12px;
+  color: var(--table-muted);
+  margin-top: 6px;
+}
+.scene .discovery :global(.alternative-option.v11-card) {
+  border-radius: 16px;
+  background: rgb(255 255 255 / 3%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+  min-height: 76px;
+  transition:
+    transform 140ms var(--table-curve),
+    background 140ms var(--table-curve);
+}
+.scene .discovery :global(.alternative-option)::before,
+.scene .discovery :global(.alternative-option)::after {
+  display: none;
+}
+.scene .discovery :global(.alternative-list) {
+  gap: 10px;
+}
+.scene :global(.compact-filter) {
+  border-radius: 12px;
+  background: #09090a;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+}
+.scene :global(.compact-filter) :is(input, select) {
+  color: var(--table-ink);
+}
+.scene :global(.swap-reset-portion) {
+  width: 44px;
+  height: 44px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--table-muted);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+.scene :is(button, input, select, summary):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.scene button {
+  touch-action: manipulation;
+  transition: transform 140ms var(--table-curve);
+}
+.scene button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.scene button:disabled {
+  cursor: not-allowed;
+}
+.scene.scene .nutrition {
+  grid-column: 1 / -1;
+  padding: 24px 26px 14px;
+  background: #0b0b0c;
+  min-width: 0;
+}
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.summary h3 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  margin-top: 7px;
+}
+.summary p {
+  font-size: 12px;
+  color: var(--table-muted);
+  margin-top: 6px;
+}
+.summaryMark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  color: var(--primary);
+  font-size: 23px;
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--primary) 20%, transparent);
+}
+.nutrients {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.nutrients th {
+  text-align: left;
+  font-weight: 400;
+}
+.nutrients thead th {
+  padding: 0 10px 12px;
+  color: var(--table-muted);
+  font-size: 11px;
+}
+.nutrients thead th:first-child {
+  padding-left: 0;
+  width: 24%;
+}
+.nutrients thead th:last-child {
+  text-align: right;
+  padding-right: 0;
+  width: 20%;
+}
+.nutrients tbody th {
+  font-size: 13px;
+}
+.nutrients tbody th::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: var(--swap-macro);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--swap-macro) 12%, transparent);
+}
+.nutrients tbody tr {
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 6%);
+}
+.nutrients td {
+  padding: 12px 10px;
+  font-size: 15px;
+}
+.nutrients small {
+  font-size: 10px;
+  color: var(--table-muted);
+}
+.nutrients [data-side="reference"] {
+  color: var(--table-reference);
+}
+.nutrients [data-side="alternative"] {
+  color: var(--swap-macro);
+}
+.track {
+  display: block;
+  height: 3px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 7%);
+}
+.track > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  transform-origin: left;
+  border-radius: inherit;
+}
+.nutrients .difference {
+  text-align: right;
+  padding-right: 0;
+  font-size: 13px;
+}
+.scene :global(.comparison-day-slot) {
+  grid-column: 1 / -1;
+}
+.scene :global(.day-impact-card) {
+  border-radius: 22px;
+  background: #111113;
+  border-color: rgb(255 255 255 / 8%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+@container (max-width: 430px) {
+  .scene :global(.cmp-toolbar) {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .scene :global(.cmp-segmented) {
+    order: -1;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .scene :global(.cmp-segment) {
+    flex: 1;
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 8px;
+  }
+  .scene :global(.cmp-segment-label) {
+    font-size: 12px;
+    white-space: normal;
+  }
+  .food {
+    grid-template-columns: 82px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  .scene .portrait :global(.swap-card-media) {
+    width: 82px;
+    height: 82px;
+  }
+  .identity h3 {
+    font-size: 21px;
+  }
+  .scene .energy strong {
+    font-size: 28px;
+  }
+}
+@media (max-width: 767px) {
+  .scene.scene.scene {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .scene.scene .column {
+    display: flex;
+    flex-direction: column;
+    grid-row: auto;
+    padding: 20px 18px;
+    border-radius: 22px;
+  }
+  .scene :global(.comparison-source-controls):empty {
+    display: none;
+  }
+  .food {
+    grid-template-rows: auto minmax(90px, 1fr) auto;
+  }
+  .identity h3 {
+    font-size: 20px;
+  }
+  .serving {
+    margin-top: 16px;
+    min-height: 64px;
+  }
+  .scene .portion input {
+    width: 72px;
+  }
+  .scene .energy strong {
+    font-size: 25px;
+  }
+  .scene.scene .nutrition {
+    padding: 22px 16px 12px;
+    border-radius: 22px;
+  }
+  .summary {
+    margin-bottom: 20px;
+  }
+  .summary h3 {
+    font-size: 25px;
+  }
+  .summaryMark {
+    display: none;
+  }
+  .nutrients thead th {
+    font-size: 9px;
+    padding-inline: 5px;
+  }
+  .nutrients tbody th {
+    font-size: 11px;
+  }
+  .nutrients tbody th::before {
+    width: 4px;
+    height: 4px;
+    margin-right: 5px;
+    box-shadow: none;
+  }
+  .nutrients td {
+    padding: 12px 5px;
+    font-size: 13px;
+  }
+  .nutrients .difference {
+    font-size: 11px;
+  }
+  .eyebrow {
+    font-size: 9px;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .scene.scene .column:hover,
+  .scene.scene .nutrition:hover {
+    transform: none;
+  }
+  .scene .discovery :global(.alternative-option.v11-card):hover {
+    transform: translateY(-1px);
+    background: rgb(255 255 255 / 6%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene button,
+  .scene .discovery :global(.alternative-option.v11-card) {
+    transition: opacity 100ms var(--table-curve);
+  }
+  .scene button:active:not(:disabled),
+  .scene .discovery :global(.alternative-option.v11-card):hover {
+    transform: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .scene.scene.scene {
+    --table-muted: #e0e0e5;
+  }
+  .scene.scene .column,
+  .scene.scene .nutrition {
+    border-color: #aaa;
+  }
+  .scene button,
+  .scene input {
+    outline: 1px solid currentColor;
+  }
+  .track {
+    background: #555;
+  }
+}
+
+/* While browsing, the reference stays useful rather than stretching into a blank panel. */
+.scene[data-choosing="true"] .column {
+  grid-row: auto;
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+}
+.scene[data-choosing="true"] .food {
+  align-self: start;
+}
+.scene[data-choosing="true"] :global(.comparison-source-controls):empty {
+  display: none;
+}
+.scene[data-choosing="true"] .column:first-child .food {
+  grid-row: auto;
+}
+.sourceFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: end;
+  gap: 14px 20px;
+  margin-top: 24px;
+  padding-top: 20px;
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 7%);
+}
+.sourceFacts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+.sourceFacts dt {
+  font-size: 11px;
+  color: var(--table-muted);
+}
+.sourceFacts dd {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--swap-macro);
+}
+.sourceFacts small {
+  font-size: 10px;
+  color: var(--table-muted);
+}

@@ -1609,6 +1609,22 @@ export const messages = {
     itemUpdated: "Cantidad actualizada.",
     itemDeleted: "Alimento eliminado.",
     mealCreated: "Comida agregada.",
+    mealLogged: "Comida registrada. Ya suma a tu día.",
+    addMealHint:
+      "Registra algo que comiste fuera de tu plan. Suma a hoy al guardar; tu plan habitual no cambia.",
+    addMealWhat: "Qué comiste",
+    addMealSearch: "Buscar alimento: arroz, huevo, pan…",
+    addMealEmpty:
+      "Busca y toca un alimento para añadirlo. Puedes añadir varios.",
+    addMealNoResults: "No encontramos ese alimento. Prueba con otro nombre.",
+    addMealWhen: "Cuándo",
+    addMealInPlan:
+      "Tu plan ya tiene «{meal}». Esta comida se registra aparte; la del plan sigue igual.",
+    addMealNamePlaceholder: "Ej.: Café con pan",
+    addMealOnlyToday: "Solo cuenta para hoy.",
+    addMealLeft: "Te quedarán {kcal} kcal hoy",
+    addMealOver: "Te pasarás {kcal} kcal de tu meta",
+    addMealSave: "Registrar comida",
     mealDeleted: "Comida eliminada.",
     mealCopied: "Comida duplicada.",
     dayDuplicated: "Comidas del día anterior copiadas.",

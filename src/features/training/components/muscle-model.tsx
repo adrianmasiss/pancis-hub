@@ -230,7 +230,9 @@ export function MuscleModel({
     const look = new THREE.Vector3();
     const lookGoal = new THREE.Vector3();
     let visible = true;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    /* 1,5× basta para un cuerpo mate sin texto encima; a 2× en una pantalla
+       Retina se pintaban casi el doble de píxeles en cada cuadro del latido. */
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearAlpha(0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -328,8 +330,27 @@ export function MuscleModel({
       camGoal.set(x, y, z);
       lookGoal.set(x, y, 0);
     };
+    /* El latido es lento (1,8 s): a 24 fps se ve igual de suave que a 60 y
+       cuesta menos de la mitad. A 60 sólo se pinta mientras algo se mueve de
+       verdad (giro o cámara). */
+    const LATIDO_FRAME_MS = 1000 / 24;
+    let lastPaint = 0;
     const tick = (now: number) => {
       frame = 0;
+      const moving =
+        body.rotation.y !== target ||
+        !camera.position.equals(camGoal) ||
+        !look.equals(lookGoal);
+      if (
+        !moving &&
+        latest.current.pulse &&
+        visible &&
+        now - lastPaint < LATIDO_FRAME_MS
+      ) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
+      lastPaint = now;
       const snap = reduced.matches;
       const previousRotation = body.rotation.y;
       body.rotation.y = snap
@@ -484,10 +505,17 @@ normal = normalize(max(abs(det), 0.0001) * normal - sign(det) * (grain.x * r1 + 
     const observer = new ResizeObserver(resize);
     observer.observe(host);
     /* Fuera de pantalla no late: no se gasta GPU en algo que nadie ve. */
-    const onScreen = new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? true;
+    let onViewport = true;
+    const updateVisible = () => {
+      visible = onViewport && document.visibilityState === "visible";
       render();
+    };
+    const onScreen = new IntersectionObserver(([entry]) => {
+      onViewport = entry?.isIntersecting ?? true;
+      updateVisible();
     });
+    /* Con la pestaña oculta tampoco late. */
+    document.addEventListener("visibilitychange", updateVisible);
     onScreen.observe(host);
     resize();
     const raycaster = new THREE.Raycaster();
@@ -584,6 +612,7 @@ normal = normalize(max(abs(det), 0.0001) * normal - sign(det) * (grain.x * r1 + 
       cancelAnimationFrame(frame);
       observer.disconnect();
       onScreen.disconnect();
+      document.removeEventListener("visibilitychange", updateVisible);
       canvas.removeEventListener("pointerdown", down);
       canvas.removeEventListener("pointermove", move);
       canvas.removeEventListener("pointerup", up);

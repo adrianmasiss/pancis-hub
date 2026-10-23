@@ -293,18 +293,24 @@ export async function undoSessionSwap(
     parsed.data.planExerciseId,
   );
   if (!found) return { error: "No se pudo deshacer." };
-  const { error } = found.sessionId
+  /* Volver al original borra el cambio de HOY siempre, también con la sesión
+     en marcha: `startSession` copia los cambios del día a la sesión, y si
+     éste se quedara, abandonar y empezar otra sesión hoy traería de vuelta
+     el sustituto que se acaba de deshacer. */
+  const daySwap = await supabase
+    .from("exercise_day_swaps")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("plan_exercise_id", parsed.data.planExerciseId)
+    .eq("date", await hoyDelUsuario(supabase, user.id));
+  const sessionSwap = found.sessionId
     ? await supabase
         .from("workout_session_exercises")
         .delete()
         .eq("session_id", found.sessionId)
         .eq("plan_exercise_id", parsed.data.planExerciseId)
-    : await supabase
-        .from("exercise_day_swaps")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("plan_exercise_id", parsed.data.planExerciseId)
-        .eq("date", await hoyDelUsuario(supabase, user.id));
+    : { error: null };
+  const error = daySwap.error ?? sessionSwap.error;
   if (error) return { error: "No se pudo deshacer." };
   revalidatePath("/entrenamiento");
   return {};

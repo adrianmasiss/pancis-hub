@@ -4,7 +4,6 @@ import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/lib/haptics";
 import { addWater, undoLastWater } from "../water-actions";
-import { WATER_GLASS_ML } from "../lib/reference-limits";
 
 const liters = (ml: number) =>
   (ml / 1000).toLocaleString("es-419", {
@@ -28,9 +27,6 @@ export function useWater({
   const [pending, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(ml);
   const hasTarget = Boolean(targetMl && targetMl > 0);
-  const progress = hasTarget ? Math.min(100, (shown / targetMl!) * 100) : 0;
-  const glasses = Math.round(shown / WATER_GLASS_ML);
-  const left = hasTarget ? Math.max(0, targetMl! - shown) : 0;
 
   const add = (amountMl: number) =>
     startTransition(async () => {
@@ -44,7 +40,7 @@ export function useWater({
       const result = await undoLastWater({ date });
       if (result.error) toast.error(result.error);
     });
-  return { pending, shown, hasTarget, progress, glasses, left, add, undo };
+  return { pending, shown, hasTarget, add, undo };
 }
 
 export { liters as waterLiters };
