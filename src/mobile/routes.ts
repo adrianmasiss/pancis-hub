@@ -18,7 +18,7 @@ export type MobileNavItem = {
 };
 
 export const MOBILE_NAV: readonly MobileNavItem[] = [
-  { href: "/", label: "Hoy", icon: Home },
+  { href: "/", label: "Inicio", icon: Home },
   { href: "/entrenamiento", label: "Entrenar", icon: Dumbbell },
   { href: "/asistente", label: "Copiloto", icon: Sparkles },
   { href: "/nutricion", label: "Nutrición", icon: Utensils },

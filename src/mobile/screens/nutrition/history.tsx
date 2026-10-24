@@ -134,7 +134,7 @@ export function NutritionHistory({
               )}
             </>
           ) : (
-            <div className="m-card-title" style={{ fontSize: 20 }}>
+            <div className="m-card-title">
               Sin registro
             </div>
           )}

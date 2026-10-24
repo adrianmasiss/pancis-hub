@@ -174,7 +174,7 @@ html:not(.dark):has(.m-app) body {
 }
 
 .m-card-title {
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -1799,7 +1799,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   min-width: 0;
 }
 .m-day-info .m-card-title[data-size="lg"] {
-  font-size: 24px;
+  font-size: 26px;
 }
 .m-day-model {
   height: auto;

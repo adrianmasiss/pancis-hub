@@ -186,7 +186,7 @@ export function ImportRoutine({ aiEnabled }: { aiEnabled: boolean }) {
             onClick={() => fileRef.current?.click()}
           >
             <FileUp size={32} className="m-accent-text" aria-hidden="true" />
-            <span className="m-card-title" style={{ fontSize: 20 }}>
+            <span className="m-card-title">
               {pending
                 ? "Leyendo…"
                 : aiEnabled

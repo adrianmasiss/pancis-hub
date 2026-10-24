@@ -67,7 +67,7 @@ export function Routines({
               </span>
             )}
           </span>
-          <span className="m-card-title" style={{ fontSize: 20 }}>
+          <span className="m-card-title">
             {plan.name}
           </span>
           <span className="m-sub">

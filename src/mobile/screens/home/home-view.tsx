@@ -97,7 +97,7 @@ export function HomeView({
   return (
     <div className="m-screen">
       <ScreenHeader
-        title="Hoy"
+        title="Inicio"
         subtitle={`${greeting}${nombre ? `, ${nombre}` : ""} · ${fechaLarga(today)}`}
       />
       <div className="m-body m-stagger" style={{ paddingTop: 12 }}>

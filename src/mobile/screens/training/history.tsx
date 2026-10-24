@@ -93,7 +93,7 @@ export function TrainingHistory({
             {fechaLarga(selected)}
           </div>
           {day.length === 0 ? (
-            <div className="m-card-title" style={{ fontSize: 20 }}>
+            <div className="m-card-title">
               Sin entreno
             </div>
           ) : (
@@ -116,7 +116,7 @@ export function TrainingHistory({
               );
               return (
                 <div key={s.id} className="m-stack" style={{ gap: 10 }}>
-                  <div className="m-card-title" style={{ fontSize: 20 }}>
+                  <div className="m-card-title">
                     {s.dayName ??
                       (muscles.length
                         ? capital(enumerar(muscles))

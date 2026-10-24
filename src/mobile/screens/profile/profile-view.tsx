@@ -193,7 +193,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
               iniciales(s.displayName)
             )}
           </span>
-          <h1 className="m-card-title" style={{ fontSize: 24 }}>
+          <h1 className="m-card-title" data-size="lg">
             {s.displayName}
           </h1>
           <p className="m-sub">
