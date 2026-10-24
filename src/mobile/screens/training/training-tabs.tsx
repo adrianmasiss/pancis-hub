@@ -21,17 +21,19 @@ const TABS = [
 /** Encabezado y pestañas de Entrenar, comunes a sus cuatro secciones. */
 export function TrainingTabs({
   active,
+  title,
   subtitle,
   children,
 }: {
   active: (typeof TABS)[number]["id"];
+  title: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="m-screen">
       <ScreenHeader
-        title="Entrenar"
+        title={title}
         subtitle={subtitle}
         actions={
           <Link

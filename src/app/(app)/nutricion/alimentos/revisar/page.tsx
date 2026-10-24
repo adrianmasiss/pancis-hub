@@ -9,6 +9,8 @@ import { ReviewQueue } from "@/features/foods/components/review-queue";
 import { getFoodsToReview } from "@/features/foods/source-queries";
 import { DIVERGENCE_THRESHOLD } from "@/features/foods/lib/source-agreement";
 import { createClient } from "@/lib/supabase/server";
+import { isPhone } from "@/lib/device";
+import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
 
 export const metadata: Metadata = { title: "Fuentes que no coinciden" };
 
@@ -21,7 +23,7 @@ export default async function ReviewPage() {
 
   const items = await getFoodsToReview();
 
-  return (
+  const content = (
     <div className="food-library">
       <header className="library-header">
         <div className="library-brand">
@@ -57,8 +59,8 @@ export default async function ReviewPage() {
         </p>
         <p className="review-intro-note">
           Lo que elijas vale solo para ti. El catálogo es compartido y no se
-          toca, así que si el proveedor arregla su dato, los demás se
-          benefician sin que nadie tenga que deshacer nada.
+          toca, así que si el proveedor arregla su dato, los demás se benefician
+          sin que nadie tenga que deshacer nada.
         </p>
       </section>
 
@@ -78,4 +80,18 @@ export default async function ReviewPage() {
       )}
     </div>
   );
+
+  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
+  if (await isPhone()) {
+    return (
+      <MobileFormsFrame
+        title="Revisar fuentes"
+        backHref="/configuracion?vista=editar"
+        backLabel="Volver"
+      >
+        {content}
+      </MobileFormsFrame>
+    );
+  }
+  return content;
 }

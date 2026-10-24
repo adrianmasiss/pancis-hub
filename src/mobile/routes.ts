@@ -33,8 +33,10 @@ export const MOBILE_NAV: readonly MobileNavItem[] = [
 const MOBILE_READY: readonly RegExp[] = [
   /^\/$/,
   /^\/entrenamiento(\/|$)/,
-  // Solo la raiz: alimentos (alta con codigo de barras) y dieta siguen igual.
   /^\/nutricion$/,
+  // Alta de alimentos y revision de fuentes: pantallas de escritorio dentro
+  // del marco movil (MobileFormsFrame). La dieta sigue con su acomodo.
+  /^\/nutricion\/alimentos(\/|$)/,
   /^\/asistente$/,
   /^\/progreso$/,
   /^\/configuracion$/,

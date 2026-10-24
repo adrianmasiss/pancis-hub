@@ -218,11 +218,7 @@ export function NutritionToday({
           <h2 id="m-plan-title" className="m-section">
             Plan de comidas
           </h2>
-          <Link
-            href="/nutricion?vista=historial"
-            className="m-sub"
-            style={{ fontSize: 14 }}
-          >
+          <Link href="/nutricion?vista=historial" className="m-link m-press">
             Copiar de otro día
           </Link>
         </div>

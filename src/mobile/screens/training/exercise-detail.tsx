@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useOptimistic, useTransition } from "react";
-import { ChevronLeft, Dumbbell, Heart, Play } from "lucide-react";
+import { Dumbbell, Heart, Play } from "lucide-react";
 import { toggleExerciseFavorite } from "@/features/training/favorite-actions";
 import { triggerHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   reps,
 } from "@/features/training/components/training-ui";
 import { ModelDisclosure } from "@/mobile/ui/exercise-model";
+import { BackButton } from "@/mobile/ui/back-button";
 import { useUnits } from "@/mobile/units";
 
 /**
@@ -79,14 +80,7 @@ export function ExerciseDetail({
         )}
         <div className="m-active-fade" aria-hidden="true" />
         <div className="m-active-top">
-          <Link
-            href="/entrenamiento?vista=biblioteca"
-            aria-label="Volver"
-            className="m-icon-btn m-press"
-            data-glass=""
-          >
-            <ChevronLeft size={20} aria-hidden="true" />
-          </Link>
+          <BackButton fallback="/entrenamiento?vista=biblioteca" glass />
           <button
             type="button"
             className="m-icon-btn m-press"

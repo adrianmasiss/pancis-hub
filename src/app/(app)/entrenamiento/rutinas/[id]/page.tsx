@@ -16,6 +16,8 @@ import { OBJETIVOS } from "@/features/training/lib/routine-generation";
 import { AiNotice } from "@/features/training/components/ai-notice";
 import "@/features/training/components/generate-routine.css";
 import { messages } from "@/i18n/es-419";
+import { isPhone } from "@/lib/device";
+import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
 
 const t = messages.training;
 
@@ -40,7 +42,7 @@ export default async function PlanEditorPage({
   ]);
   if (!plan) notFound();
 
-  return (
+  const content = (
     <>
       <ViewHeader
         title={plan.name}
@@ -73,4 +75,18 @@ export default async function PlanEditorPage({
       </div>
     </>
   );
+
+  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
+  if (await isPhone()) {
+    return (
+      <MobileFormsFrame
+        title="Editar rutina"
+        backHref="/entrenamiento?vista=rutinas"
+        backLabel="Volver a Rutinas"
+      >
+        {content}
+      </MobileFormsFrame>
+    );
+  }
+  return content;
 }

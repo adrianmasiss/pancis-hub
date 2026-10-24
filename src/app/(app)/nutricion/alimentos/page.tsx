@@ -32,6 +32,8 @@ import { getDietPlanForDate } from "@/features/nutrition/queries";
 import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
+import { isPhone } from "@/lib/device";
+import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
 
 const t = messages.foods;
 export const metadata: Metadata = { title: "Biblioteca de alimentos" };
@@ -120,7 +122,7 @@ export default async function FoodsLibraryPage({
   );
   const deProveedores = cards.length - foods.length;
   const paginas = Math.max(1, Math.ceil(total / LIBRARY_PAGE_SIZE));
-  return (
+  const content = (
     <div className="food-library">
       <header className="library-header">
         <div className="library-brand">
@@ -324,4 +326,18 @@ export default async function FoodsLibraryPage({
       </details>
     </div>
   );
+
+  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
+  if (await isPhone()) {
+    return (
+      <MobileFormsFrame
+        title="Agregar alimentos"
+        backHref="/nutricion?vista=biblioteca"
+        backLabel="Volver a la Biblioteca"
+      >
+        {content}
+      </MobileFormsFrame>
+    );
+  }
+  return content;
 }

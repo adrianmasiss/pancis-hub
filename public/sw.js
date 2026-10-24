@@ -13,6 +13,7 @@ const PRECACHE = [
   "/logo-dark.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/icons/icon-192-app.png",
 ];
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
 const IS_LOCAL_DEV = LOCAL_HOSTNAMES.has(self.location.hostname);

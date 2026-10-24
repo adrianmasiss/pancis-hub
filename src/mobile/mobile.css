@@ -675,16 +675,16 @@ html:not(.dark) .m-seg-thumb {
 .m-stepper {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 44px;
+  gap: 2px;
+  height: 48px;
   padding: 0 4px;
   border-radius: 22px;
   background: var(--m-surface-2);
 }
 .m-stepper button {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1769,8 +1769,8 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
 }
 .m-model-tools .m-chip {
   gap: 5px;
-  height: 32px;
-  min-width: 32px;
+  height: 36px;
+  min-width: 36px;
   justify-content: center;
   color: var(--m-text);
 }
@@ -2291,7 +2291,7 @@ html:not(.dark) .m-range {
   background: var(--m-surface-2);
 }
 .m-range button {
-  height: 34px;
+  height: 40px;
   padding: 0 12px;
   border-radius: 999px;
   font-size: 13px;
@@ -2496,22 +2496,22 @@ html:not(.dark) .m-range {
   gap: 2px;
   padding: 14px 6px;
 }
-.m-set-group {
+.m-pref-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.m-set-title {
+.m-pref-title {
   padding: 0 6px;
   font-size: 12px;
 }
-.m-set-card {
+.m-pref-card {
   border-radius: 24px;
   background: var(--m-surface);
   box-shadow: var(--m-card-edge);
   overflow: hidden;
 }
-.m-set-row {
+.m-pref-row {
   min-height: 60px;
   padding: 8px 16px 8px 20px;
   display: flex;
@@ -2520,15 +2520,15 @@ html:not(.dark) .m-range {
   width: 100%;
   text-align: left;
 }
-.m-set-row + .m-set-row {
+.m-pref-row + .m-pref-row {
   border-top: 1px solid var(--m-line);
 }
-.m-set-label {
+.m-pref-label {
   flex: 1;
   font-size: 16px;
   font-weight: 700;
 }
-.m-set-value {
+.m-pref-value {
   font-size: 15px;
   font-weight: 600;
   color: var(--m-text-soft);
@@ -2552,6 +2552,15 @@ html:not(.dark) .m-range {
   transition:
     box-shadow 0.25s ease,
     transform 160ms ease;
+}
+/* El circulo se ve de 34 px pero se toca en 44. */
+.m-swatch {
+  position: relative;
+}
+.m-swatch::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
 }
 .m-swatch[aria-checked="true"] {
   box-shadow:
@@ -2676,4 +2685,24 @@ html:not(.dark) .m-range {
 }
 .m-adjust strong {
   color: var(--m-text);
+}
+
+/* Enlace de texto con area tactil de 44 px. */
+.m-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+
+/* Pantallas de escritorio dentro del marco movil: fuera lo que ya resuelve
+   el marco (su navegacion y su marca); el «volver» es el del marco. */
+.m-forms .nutrition-navigation,
+.m-forms .nutrition-workspace .icon-tabs,
+.m-forms .library-brand img,
+.m-forms .library-brand > :first-child:not(div),
+.m-forms a[href="/entrenamiento"] {
+  display: none;
 }

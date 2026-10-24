@@ -87,19 +87,19 @@ function Row({
 }) {
   const inner = (
     <>
-      <span className="m-set-label">{label}</span>
-      <span className="m-set-value">{value}</span>
+      <span className="m-pref-label">{label}</span>
+      <span className="m-pref-value">{value}</span>
       {href && (
         <ChevronRight size={18} className="m-chevron" aria-hidden="true" />
       )}
     </>
   );
   return href ? (
-    <Link href={href} className="m-set-row m-press">
+    <Link href={href} className="m-pref-row m-press">
       {inner}
     </Link>
   ) : (
-    <div className="m-set-row">{inner}</div>
+    <div className="m-pref-row">{inner}</div>
   );
 }
 
@@ -226,11 +226,11 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </div>
         </div>
 
-        <section className="m-set-group" aria-labelledby="m-p-body">
-          <h2 id="m-p-body" className="m-eyebrow m-set-title">
+        <section className="m-pref-group" aria-labelledby="m-p-body">
+          <h2 id="m-p-body" className="m-eyebrow m-pref-title">
             Datos corporales
           </h2>
-          <div className="m-set-card">
+          <div className="m-pref-card">
             <Row
               label="Estatura"
               value={
@@ -257,11 +257,11 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </div>
         </section>
 
-        <section className="m-set-group" aria-labelledby="m-p-plans">
-          <h2 id="m-p-plans" className="m-eyebrow m-set-title">
+        <section className="m-pref-group" aria-labelledby="m-p-plans">
+          <h2 id="m-p-plans" className="m-eyebrow m-pref-title">
             Objetivo y planes
           </h2>
-          <div className="m-set-card">
+          <div className="m-pref-card">
             <Row
               label="Objetivo"
               value={s.goal ?? "—"}
@@ -281,9 +281,9 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
               }
               href="/entrenamiento?vista=rutinas"
             />
-            <div className="m-set-row" style={{ alignItems: "flex-start" }}>
+            <div className="m-pref-row" style={{ alignItems: "flex-start" }}>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span className="m-set-label" style={{ display: "block" }}>
+                <span className="m-pref-label" style={{ display: "block" }}>
                   Ajuste automático por entreno
                 </span>
                 <span className="m-list-row-sub" style={{ display: "block" }}>
@@ -312,13 +312,13 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </div>
         </section>
 
-        <section className="m-set-group" aria-labelledby="m-p-look">
-          <h2 id="m-p-look" className="m-eyebrow m-set-title">
+        <section className="m-pref-group" aria-labelledby="m-p-look">
+          <h2 id="m-p-look" className="m-eyebrow m-pref-title">
             Apariencia
           </h2>
-          <div className="m-set-card">
-            <div className="m-set-row">
-              <span className="m-set-label">Tema</span>
+          <div className="m-pref-card">
+            <div className="m-pref-row">
+              <span className="m-pref-label">Tema</span>
               <div style={{ width: 210 }}>
                 <Segmented
                   label="Tema"
@@ -332,8 +332,8 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
                 />
               </div>
             </div>
-            <div className="m-set-row">
-              <span className="m-set-label">Color de acento</span>
+            <div className="m-pref-row">
+              <span className="m-pref-label">Color de acento</span>
               <div
                 className="m-swatches"
                 role="radiogroup"
@@ -353,8 +353,8 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
                 ))}
               </div>
             </div>
-            <div className="m-set-row">
-              <span className="m-set-label">Unidades</span>
+            <div className="m-pref-row">
+              <span className="m-pref-label">Unidades</span>
               <div style={{ width: 128 }}>
                 <Segmented
                   label="Unidades"
@@ -379,13 +379,13 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </p>
         </section>
 
-        <section className="m-set-group" aria-labelledby="m-p-account">
-          <h2 id="m-p-account" className="m-eyebrow m-set-title">
+        <section className="m-pref-group" aria-labelledby="m-p-account">
+          <h2 id="m-p-account" className="m-eyebrow m-pref-title">
             Cuenta y privacidad
           </h2>
-          <div className="m-set-card">
-            <div className="m-set-row">
-              <span className="m-set-label">
+          <div className="m-pref-card">
+            <div className="m-pref-row">
+              <span className="m-pref-label">
                 Recordatorios de comidas y entreno
               </span>
               <Switch
@@ -397,8 +397,8 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
             </div>
             <Row label="Fotos de progreso" value="Siempre privadas" />
             <Row label="Correo" value={s.email ?? "—"} />
-            <a href="/api/exportar" download className="m-set-row m-press">
-              <span className="m-set-label">Exportar mis datos</span>
+            <a href="/api/exportar" download className="m-pref-row m-press">
+              <span className="m-pref-label">Exportar mis datos</span>
               <Download size={18} className="m-chevron" aria-hidden="true" />
             </a>
           </div>

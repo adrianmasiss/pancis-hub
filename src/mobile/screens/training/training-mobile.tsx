@@ -31,6 +31,14 @@ function startedRecently(iso: string): boolean {
   return Date.now() - Date.parse(iso) < 2 * 60 * 1000;
 }
 
+/** Titulo de cada seccion: el mismo criterio que Nutricion. */
+const TITULOS = {
+  hoy: { title: "Entrenar", subtitle: "" },
+  rutinas: { title: "Rutinas", subtitle: "Las del coach y las creadas por IA" },
+  historial: { title: "Historial", subtitle: "Lo que entrenaste, día por día" },
+  biblioteca: { title: "Biblioteca", subtitle: "Ejercicios con su técnica" },
+} as const;
+
 /** Ids de los ejercicios favoritos del usuario. */
 async function favoriteIds(userId: string): Promise<Set<string>> {
   const supabase = await createClient();
@@ -216,7 +224,12 @@ export async function TrainingMobile({
   return (
     <TrainingTabs
       active={tab}
-      subtitle={overview.activePlan?.name ?? "Sin rutina activa"}
+      title={TITULOS[tab].title}
+      subtitle={
+        tab === "hoy"
+          ? (overview.activePlan?.name ?? "Sin rutina activa")
+          : TITULOS[tab].subtitle
+      }
     >
       {body}
     </TrainingTabs>
