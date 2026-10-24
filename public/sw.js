@@ -6,7 +6,7 @@
  * - Navegaciones: red primero; si no hay conexion, pagina /offline.
  * - Estaticos inmutables (_next/static, iconos, logos): cache primero.
  */
-const CACHE_NAME = "pancis-hub-v2";
+const CACHE_NAME = "pancis-hub-v3";
 const PRECACHE = [
   "/offline",
   "/logo.png",
