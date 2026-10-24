@@ -2,13 +2,14 @@
 import { ActionLink } from "@/components/ui/action";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, UtensilsCrossed } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PlanMealCard } from "./plan-meal-card";
 import { NutritionActionsMenu } from "./nutrition-actions-menu";
 import { LoggedMealRow } from "./logged-meal-row";
 import { NutritionGettingStarted } from "./nutrition-getting-started";
 import { AddMealDialog } from "./add-meal-dialog";
+import { SegmentedNav } from "@/components/ui/segmented-nav";
 import { NutritionOverview } from "./nutrition-overview";
 import type { DayPlan } from "../queries";
 import type { DietTemplateView } from "@/features/dashboard/queries";
@@ -29,6 +30,10 @@ export function NutritionWorkspace({
 }) {
   const planMeals = diet?.meals ?? [];
   const pendingMeals = planMeals.filter((meal) => !meal.loggedToday);
+  /* La comida que toca: en telefono es la unica que llega desplegada. Hoy es
+     la primera sin registrar; en el plan habitual, la primera del dia. */
+  const focusMealId =
+    mode === "plan" ? planMeals[0]?.id : pendingMeals[0]?.id;
   /* Solo las que NO salen del plan: las que si, ya tienen su fila arriba
      marcada «Registrada», y mostrarlas otra vez aqui seria contar dos veces
      la misma comida. */
@@ -130,12 +135,42 @@ export function NutritionWorkspace({
                 )}
               </div>
             </div>
+            {/* Hoy y el plan habitual son la misma lista en dos alcances: un
+                solo control los separa y la frase de debajo dice qué cambia
+                en cada uno. Antes era un enlace suelto al final del panel. */}
             {diet && (
-              <p className="nutrition-panel-description">
-                {mode === "day"
-                  ? "Activa cada comida al terminarla. Las barras muestran cuánto de tu meta diaria cubre cada una; cambia o ajusta cualquier alimento desde su fila."
-                  : "Compara y sustituye alimentos de tu plan habitual. Aquí los cambios se guardan para los próximos días."}
-              </p>
+              <div className="nutrition-scope" data-mode={mode}>
+                <SegmentedNav
+                  label="Qué estás viendo"
+                  items={[
+                    {
+                      href: `/nutricion?fecha=${day.date}`,
+                      label: "Hoy",
+                      active: mode === "day",
+                    },
+                    {
+                      href: `/nutricion?vista=plan&fecha=${day.date}`,
+                      label: "Plan habitual",
+                      active: mode === "plan",
+                    },
+                  ]}
+                />
+                <p className="nutrition-panel-description">
+                  {mode === "day" ? (
+                    <>
+                      <strong>Solo hoy.</strong> Marca cada comida al terminarla
+                      y cambia alimentos solo para este día. Las barras muestran
+                      cuánto de tu meta cubre cada una.
+                    </>
+                  ) : (
+                    <>
+                      <strong>La plantilla de todos los días.</strong> Lo que
+                      cambies aquí se guarda para los próximos días; lo que ya
+                      registraste no se toca.
+                    </>
+                  )}
+                </p>
+              </div>
             )}
             {!diet ? (
               /* Hay comidas sueltas registradas pero ningun plan: el resumen
@@ -193,9 +228,12 @@ export function NutritionWorkspace({
                 <ol className="nutrition-plan-list nutrition-meal-table">
                   {planMeals.map((meal) => (
                     <PlanMealCard
-                      key={`${mode}-${day.date}-${meal.id}`}
+                      /* Con el foco en la llave, registrar una comida pliega
+                         esa y despliega la siguiente: la ruta avanza sola. */
+                      key={`${mode}-${day.date}-${meal.id}-${meal.id === focusMealId}`}
                       meal={meal}
                       compact
+                      focus={meal.id === focusMealId}
                       date={day.date}
                       mode={mode}
                       comparison={comparison}
@@ -226,7 +264,25 @@ export function NutritionWorkspace({
                     a que referirse. */}
                   {mode === "day" && (
                     <li className="nutrition-add-row">
-                      <AddMealDialog date={day.date} trigger="plan-row" />
+                      <AddMealDialog
+                        date={day.date}
+                        trigger="plan-row"
+                        remainingKcal={
+                          day.targets?.calories
+                            ? day.targets.calories - day.totals.calories
+                            : null
+                        }
+                        planSlots={planMeals.map((meal) => ({
+                          mealType: meal.mealType,
+                          time: meal.scheduledTime?.slice(0, 5) ?? null,
+                          label:
+                            meal.name ||
+                            messages.nutrition.mealTypes[
+                              meal.mealType as keyof typeof messages.nutrition.mealTypes
+                            ] ||
+                            meal.mealType,
+                        }))}
+                      />
                     </li>
                   )}
                 </ol>
@@ -244,22 +300,6 @@ export function NutritionWorkspace({
               </p>
             ) : null}
           </section>
-          {diet &&
-            (mode === "day" ? (
-              <ActionLink
-                family="edit"
-                href={`/nutricion?vista=plan&fecha=${day.date}`}
-              >
-                Editar plan habitual
-              </ActionLink>
-            ) : (
-              <Link
-                className="nutrition-edit-plan"
-                href={`/nutricion?fecha=${day.date}`}
-              >
-                Volver al día <ArrowUpRight size={14} aria-hidden="true" />
-              </Link>
-            ))}
         </div>
       </div>
     </>

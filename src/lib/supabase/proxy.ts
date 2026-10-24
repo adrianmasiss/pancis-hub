@@ -10,6 +10,9 @@ const PUBLIC_PATHS = [
   "/offline",
   "/manifest.webmanifest",
   "/sw.js",
+  // El programador de recordatorios no tiene sesion: la ruta exige su
+  // propio secreto (CRON_SECRET).
+  "/api/cron",
 ];
 
 /** Rutas de autenticacion que no deben verse con sesion activa. */

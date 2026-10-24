@@ -37,6 +37,18 @@ export const createMealSchema = z.object({
   scheduledTime,
 });
 
+export const logMealSchema = createMealSchema.extend({
+  items: z
+    .array(
+      z.object({
+        foodId: z.uuid(),
+        quantityG: z.number().positive().max(5000),
+      }),
+    )
+    .min(1)
+    .max(30),
+});
+
 export const mealIdSchema = z.object({ mealId: z.uuid() });
 
 export const updateMealStatusSchema = z.object({

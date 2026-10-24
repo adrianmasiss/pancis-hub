@@ -260,3 +260,53 @@ export async function removeAvatar(): Promise<SettingsActionResult> {
   revalidatePath("/", "layout");
   return { success: true };
 }
+
+/**
+ * Solo el sistema de unidades (kg/cm o lb/in). Lo cambia el Perfil movil con
+ * un toque, sin pasar por el formulario completo.
+ */
+export async function updateUnitSystem(input: {
+  unitSystem: "metric" | "imperial";
+}): Promise<SettingsActionResult> {
+  if (input.unitSystem !== "metric" && input.unitSystem !== "imperial") {
+    return { error: messages.settings.saveFailed };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.settings.saveFailed };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ unit_system: input.unitSystem })
+    .eq("id", user.id);
+  if (error) return { error: messages.settings.saveFailed };
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
+/**
+ * Enciende o apaga el ajuste de la meta por entreno. Al elegir, deja de valer
+ * el defecto por el origen de la dieta.
+ */
+export async function updateTrainingAdjustment(input: {
+  enabled: boolean;
+}): Promise<SettingsActionResult> {
+  if (typeof input.enabled !== "boolean")
+    return { error: messages.settings.saveFailed };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.settings.saveFailed };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ training_adjustment: input.enabled })
+    .eq("id", user.id);
+  if (error) return { error: messages.settings.saveFailed };
+  revalidatePath("/nutricion");
+  revalidatePath("/");
+  return { success: true };
+}

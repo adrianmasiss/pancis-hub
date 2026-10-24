@@ -1,0 +1,36 @@
+# Recordatorios push (vista movil): llama a /api/cron/recordatorios cada
+# 15 minutos. El plan gratis de Vercel solo permite cron diario; GitHub
+# Actions lo hace gratis.
+#
+# Requiere dos secretos del repositorio (Settings → Secrets → Actions):
+#   APP_URL      la URL publica, p. ej. https://pancis-hub.vercel.app
+#   CRON_SECRET  el mismo valor que CRON_SECRET en Vercel
+#
+# GitHub puede retrasar las ejecuciones programadas unos minutos; la ruta
+# cubre una ventana de 20 min y no repite avisos, asi que no se pierden.
+name: Recordatorios
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Llamar a la ruta de recordatorios
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Faltan los secretos APP_URL o CRON_SECRET; no se envia nada."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 60 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/recordatorios"

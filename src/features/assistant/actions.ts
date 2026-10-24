@@ -34,6 +34,7 @@ import {
   deterministicProvider,
 } from "@/features/assistant/lib/rules";
 import type {
+  AssistantOption,
   AssistantContext,
   AssistantReply,
   ExerciseAlternativeSuggestion,
@@ -41,10 +42,14 @@ import type {
   PrescriptionSuggestion,
 } from "@/features/assistant/types";
 
+/** Foto adjunta (vista movil): data URL de imagen, ya reducida en el cliente. */
+const IMAGE_DATA_URL = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
 const askSchema = z.object({
   message: z.string().trim().min(1).max(500),
   /** Conversacion a la que encadenar. Sin esto, se abre una nueva. */
   conversationId: z.uuid().optional(),
+  image: z.string().max(6_000_000).regex(IMAGE_DATA_URL).optional(),
 });
 
 const assistantReplySchema = z.object({
@@ -55,7 +60,80 @@ const assistantReplySchema = z.object({
   alternative: z.string().min(1).optional(),
   reason: z.string().min(1),
   reevaluate: z.string().min(1),
+  /*
+   * Opciones concretas para «Usar» (agregarlas a hoy). El modelo solo da ids
+   * de la biblioteca y gramos; los macros los calcula el servidor.
+   */
+  options: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(80),
+        items: z
+          .array(
+            z.object({
+              foodId: z.string().describe("id devuelto por search_foods"),
+              grams: z.number().positive().max(2000),
+            }),
+          )
+          .min(1)
+          .max(6),
+      }),
+    )
+    .max(3)
+    .optional(),
 });
+
+type GeneratedReply = z.infer<typeof assistantReplySchema>;
+
+/**
+ * Las opciones del modelo, resueltas contra el catalogo: nombre real y macros
+ * calculados aqui (invariante 3 del toolset: el modelo nunca dicta macros).
+ * Un id que no existe o no es visible para el usuario se descarta.
+ */
+async function resolveOptions(
+  raw: GeneratedReply["options"],
+): Promise<AssistantOption[] | undefined> {
+  if (!raw?.length) return undefined;
+  const ids = [
+    ...new Set(raw.flatMap((o) => o.items.map((i) => i.foodId))),
+  ].filter((id) => z.uuid().safeParse(id).success);
+  if (ids.length === 0) return undefined;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("foods")
+    .select("id, name, calories, protein_g, carbohydrate_g, fat_g")
+    .in("id", ids)
+    .is("deleted_at", null);
+  const foods = new Map((data ?? []).map((f) => [f.id, f]));
+  const options = raw
+    .map((option) => {
+      const items = option.items.flatMap((item) => {
+        const food = foods.get(item.foodId);
+        return food ? [{ food, grams: Math.round(item.grams) }] : [];
+      });
+      if (items.length === 0) return null;
+      const sum = (
+        key: "calories" | "protein_g" | "carbohydrate_g" | "fat_g",
+      ) =>
+        Math.round(
+          items.reduce((t, i) => t + (Number(i.food[key]) * i.grams) / 100, 0),
+        );
+      return {
+        title: option.title,
+        items: items.map((i) => ({
+          foodId: i.food.id,
+          name: i.food.name,
+          grams: i.grams,
+        })),
+        calories: sum("calories"),
+        proteinG: sum("protein_g"),
+        carbohydrateG: sum("carbohydrate_g"),
+        fatG: sum("fat_g"),
+      };
+    })
+    .filter((o): o is AssistantOption => o !== null);
+  return options.length ? options : undefined;
+}
 
 const GEMINI_ASSISTANT_SYSTEM_PROMPT = `Eres el asistente contextual de Pancis Hub, una app de nutricion, entrenamiento y progreso.
 
@@ -93,7 +171,10 @@ Debes responder en el formato estructurado solicitado:
 - action: una accion concreta y reversible.
 - alternative: una opcion alternativa si aplica.
 - reason: por que esa accion tiene sentido.
-- reevaluate: cuando revisar de nuevo.`;
+- reevaluate: cuando revisar de nuevo.
+- options (opcional): si la pregunta es QUE COMER (o hay una foto de comida), 1 a 3 opciones concretas que el usuario pueda agregar a su dia con un toque. Cada opcion: un titulo corto y sus alimentos con el id de search_foods y los gramos. NO escribas calorias ni macros: la app los calcula desde el catalogo. Si no encuentras los alimentos en la biblioteca, no inventes ids: omite options.
+
+FOTO. Si llega una imagen, describe lo que ves en el plato y estima porciones con prudencia (di que es una estimacion). Busca esos alimentos con search_foods y propon UNA opcion en "options" con lo que se ve, para que el usuario la registre si quiere.`;
 
 async function buildContext(userId: string): Promise<AssistantContext> {
   const supabase = await createClient();
@@ -116,49 +197,49 @@ async function buildContext(userId: string): Promise<AssistantContext> {
     planResult,
     dietResult,
   ] = await Promise.all([
-      supabase
-        .from("nutrition_targets")
-        .select("calories, protein_g, carbohydrate_g, fat_g")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .maybeSingle(),
-      supabase
-        .from("meals")
-        .select(
-          "status, meal_items(calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot)",
-        )
-        .eq("user_id", userId)
-        .eq("date", today)
-        .is("deleted_at", null),
-      supabase
-        .from("body_measurements")
-        .select("measured_at, weight_kg")
-        .eq("user_id", userId)
-        .gte("measured_at", since60)
-        .not("weight_kg", "is", null)
-        .order("measured_at"),
-      supabase
-        .from("daily_checkins")
-        .select("sleep_hours")
-        .eq("user_id", userId)
-        .eq("date", today)
-        .maybeSingle(),
-      supabase
-        .from("workout_plans")
-        .select("id, name")
-        .eq("user_id", userId)
-        .eq("active", true)
-        .is("deleted_at", null)
-        .maybeSingle(),
-      supabase
-        .from("diet_templates")
-        .select(
-          "name, diet_template_meals(name, meal_type, order_index, diet_template_items(quantity_g, foods(name)))",
-        )
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .maybeSingle(),
-    ]);
+    supabase
+      .from("nutrition_targets")
+      .select("calories, protein_g, carbohydrate_g, fat_g")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase
+      .from("meals")
+      .select(
+        "status, meal_items(calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot)",
+      )
+      .eq("user_id", userId)
+      .eq("date", today)
+      .is("deleted_at", null),
+    supabase
+      .from("body_measurements")
+      .select("measured_at, weight_kg")
+      .eq("user_id", userId)
+      .gte("measured_at", since60)
+      .not("weight_kg", "is", null)
+      .order("measured_at"),
+    supabase
+      .from("daily_checkins")
+      .select("sleep_hours")
+      .eq("user_id", userId)
+      .eq("date", today)
+      .maybeSingle(),
+    supabase
+      .from("workout_plans")
+      .select("id, name")
+      .eq("user_id", userId)
+      .eq("active", true)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    supabase
+      .from("diet_templates")
+      .select(
+        "name, diet_template_meals(name, meal_type, order_index, diet_template_items(quantity_g, foods(name)))",
+      )
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle(),
+  ]);
 
   const consumed = { calories: 0, proteinG: 0, carbohydrateG: 0, fatG: 0 };
   let pendingMeals = 0;
@@ -256,32 +337,52 @@ async function generateGeminiReply(input: {
   history?: { role: string; content: string }[];
   /** Herramientas que el modelo puede llamar por su cuenta. */
   tools: ReturnType<typeof buildAssistantToolset>;
-}): Promise<{ reply: AssistantReply | null; toolNames: string[] }> {
+  /** Foto adjunta, como data URL. */
+  image?: string;
+}): Promise<{ reply: GeneratedReply | null; toolNames: string[] }> {
+  const payload = JSON.stringify(
+    {
+      userMessage: input.message,
+      detectedIntent: input.intent,
+      userContext: input.context,
+      foodAlternatives: input.foodAlternatives ?? [],
+      // Resultados ya calculados por los motores deterministas: el
+      // modelo debe usarlos tal cual, no recalcularlos por su cuenta.
+      exerciseAlternatives: input.exerciseAlternatives ?? [],
+      prescription: input.prescription ?? null,
+      // Grounding: de donde salen las cifras del sistema, con su poblacion
+      // y sus limitaciones. El modelo debe apoyarse en esto y decir cuando
+      // una cifra NO viene de aqui.
+      evidenciaDisponible: input.evidence || "Sin fuentes para este tema.",
+      conversacionReciente: input.history ?? [],
+    },
+    null,
+    2,
+  );
   const { steps, text } = await generateText({
     model: getGeminiModel(),
     tools: input.tools,
     // Termina cuando entrega la respuesta, o cuando se acaba el presupuesto.
     stopWhen: [hasToolCall("responder"), stepCountIs(MAX_TOOL_STEPS)],
     system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
-    prompt: JSON.stringify(
-      {
-        userMessage: input.message,
-        detectedIntent: input.intent,
-        userContext: input.context,
-        foodAlternatives: input.foodAlternatives ?? [],
-        // Resultados ya calculados por los motores deterministas: el
-        // modelo debe usarlos tal cual, no recalcularlos por su cuenta.
-        exerciseAlternatives: input.exerciseAlternatives ?? [],
-        prescription: input.prescription ?? null,
-        // Grounding: de donde salen las cifras del sistema, con su poblacion
-        // y sus limitaciones. El modelo debe apoyarse en esto y decir cuando
-        // una cifra NO viene de aqui.
-        evidenciaDisponible: input.evidence || "Sin fuentes para este tema.",
-        conversacionReciente: input.history ?? [],
-      },
-      null,
-      2,
-    ),
+    // Con foto, el mensaje lleva la imagen al lado del contexto.
+    ...(input.image
+      ? {
+          messages: [
+            {
+              role: "user" as const,
+              content: [
+                { type: "text" as const, text: payload },
+                {
+                  type: "file" as const,
+                  data: input.image,
+                  mediaType: "image/jpeg",
+                },
+              ],
+            },
+          ],
+        }
+      : { prompt: payload }),
   });
 
   const calls = steps.flatMap((step) => step.toolCalls);
@@ -395,6 +496,7 @@ export async function askAssistant(
 
   try {
     const { reply: generated, toolNames } = await generateGeminiReply({
+      image: parsed.data.image,
       message: parsed.data.message,
       context,
       intent,
@@ -418,10 +520,13 @@ export async function askAssistant(
     }
     // Las fuentes las pone el servidor, NO el modelo: asi no puede citar algo
     // que no se le dio. Aqui ya incluyen lo que trajeron las herramientas.
-    const reply = {
-      ...(generated ?? fallbackReply),
-      sources: toReplySources(sources),
-    };
+    const reply: AssistantReply = generated
+      ? {
+          ...generated,
+          options: await resolveOptions(generated.options),
+          sources: toReplySources(sources),
+        }
+      : { ...fallbackReply, sources: toReplySources(sources) };
     const { conversationId } = await persist(
       reply,
       generated ? "gemini" : "reglas",
@@ -456,7 +561,9 @@ export async function askAssistant(
  * palabras clave y las herramientas. Preguntar por la proteina y ademas llamar
  * a `get_claim_sources` traeria a Morton dos veces.
  */
-function toReplySources(sources: ToolSource[]): NonNullable<AssistantReply["sources"]> {
+function toReplySources(
+  sources: ToolSource[],
+): NonNullable<AssistantReply["sources"]> {
   const seen = new Set<string>();
   const unique: ToolSource[] = [];
 

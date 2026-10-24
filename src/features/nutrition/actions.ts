@@ -10,6 +10,7 @@ import { scaleMacros } from "@/features/nutrition/lib/macros";
 import { rescaleExtra, scaleExtra } from "@/features/nutrition/lib/extras";
 import {
   addMealItemSchema,
+  logMealSchema,
   createMealSchema,
   duplicateDaySchema,
   itemIdSchema,
@@ -33,6 +34,9 @@ type FoodSearchResult = {
   cookedState: string | null;
   caloriesPer100g: number;
   proteinPer100g: number;
+  carbohydratePer100g: number;
+  fatPer100g: number;
+  fiberPer100g: number;
   portions: { id: string; label: string; grams: number }[];
   imageUrl: string | null;
   defaultServingAmount: number;
@@ -164,13 +168,15 @@ export async function deleteMeal(
   return { success: true };
 }
 
-export async function addMealItem(
-  input: unknown,
-): Promise<NutritionActionResult> {
-  const parsed = addMealItemSchema.safeParse(input);
-  const { supabase, user } = await requireUser();
-  if (!parsed.success || !user) return fail;
-
+/**
+ * Inserta un alimento en una comida con su snapshot de macros. Compartido
+ * por `addMealItem` y `logMeal`.
+ */
+async function insertMealItem(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  item: { mealId: string; foodId: string; quantityG: number },
+): Promise<boolean> {
   // El snapshot se calcula en servidor desde el catalogo actual, con la
   // correccion del usuario aplicada si la tiene: registrar el dato que el
   // usuario ve es lo unico coherente (requisito 7.5).
@@ -180,11 +186,11 @@ export async function addMealItem(
       .select(
         "id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g, cooked_state, sodium_mg, sugar_g",
       )
-      .eq("id", parsed.data.foodId)
+      .eq("id", item.foodId)
       .single(),
-    getUserFoodCorrections(user.id),
+    getUserFoodCorrections(userId),
   ]);
-  if (!food) return fail;
+  if (!food) return false;
 
   const corrected = applyCorrection(
     {
@@ -208,22 +214,72 @@ export async function addMealItem(
       fatG: corrected.fatG,
       fiberG: corrected.fiberG,
     },
-    parsed.data.quantityG,
+    item.quantityG,
   );
 
   const { error } = await supabase.from("meal_items").insert({
-    meal_id: parsed.data.mealId,
-    food_id: parsed.data.foodId,
-    quantity_g: parsed.data.quantityG,
+    meal_id: item.mealId,
+    food_id: item.foodId,
+    quantity_g: item.quantityG,
     calories_snapshot: snapshot.calories,
     protein_snapshot: snapshot.proteinG,
     carbohydrate_snapshot: snapshot.carbohydrateG,
     fat_snapshot: snapshot.fatG,
     fiber_snapshot: snapshot.fiberG,
-    sodium_snapshot_mg: scaleExtra(food.sodium_mg, parsed.data.quantityG),
-    sugar_snapshot_g: scaleExtra(food.sugar_g, parsed.data.quantityG),
+    sodium_snapshot_mg: scaleExtra(food.sodium_mg, item.quantityG),
+    sugar_snapshot_g: scaleExtra(food.sugar_g, item.quantityG),
   });
-  if (error) return fail;
+  return !error;
+}
+
+export async function addMealItem(
+  input: unknown,
+): Promise<NutritionActionResult> {
+  const parsed = addMealItemSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return fail;
+  if (!(await insertMealItem(supabase, user.id, parsed.data))) return fail;
+  revalidatePath("/nutricion");
+  revalidatePath("/");
+  return { success: true };
+}
+
+/**
+ * Registrar lo que se comió en un solo paso: la comida, sus alimentos y su
+ * estado «completada», para que sume al día desde el primer momento. Antes
+ * «Agregar comida» creaba una comida vacía y sin registrar, y no quedaba
+ * claro que había que llenarla después ni que no contaba.
+ */
+export async function logMeal(input: unknown): Promise<NutritionActionResult> {
+  const parsed = logMealSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return fail;
+
+  const { data: meal, error } = await supabase
+    .from("meals")
+    .insert({
+      user_id: user.id,
+      date: parsed.data.date,
+      meal_type: parsed.data.mealType,
+      name: parsed.data.name || null,
+      scheduled_time: parsed.data.scheduledTime ?? null,
+      status: "completada",
+    })
+    .select("id")
+    .single();
+  if (error || !meal) return fail;
+
+  for (const item of parsed.data.items) {
+    const ok = await insertMealItem(supabase, user.id, {
+      mealId: meal.id,
+      ...item,
+    });
+    if (!ok) {
+      // Sin la mitad de los alimentos la comida mentiría: se deshace entera.
+      await supabase.from("meals").delete().eq("id", meal.id);
+      return fail;
+    }
+  }
   revalidatePath("/nutricion");
   revalidatePath("/");
   return { success: true };
@@ -415,7 +471,7 @@ export async function searchFoods(
   const { data, error } = await supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, image_url, serving_amount, serving_unit, food_portions(id, label, grams)",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, serving_amount, serving_unit, food_portions(id, label, grams)",
     )
     .ilike("name", `%${parsed.data.term}%`)
     .is("deleted_at", null)
@@ -432,6 +488,9 @@ export async function searchFoods(
       cookedState: food.cooked_state,
       caloriesPer100g: Number(food.calories),
       proteinPer100g: Number(food.protein_g),
+      carbohydratePer100g: Number(food.carbohydrate_g),
+      fatPer100g: Number(food.fat_g),
+      fiberPer100g: Number(food.fiber_g),
       portions: (food.food_portions ?? []).map((portion) => ({
         id: portion.id,
         label: portion.label,

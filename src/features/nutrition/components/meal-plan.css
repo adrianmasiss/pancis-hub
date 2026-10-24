@@ -518,10 +518,17 @@
 /* Las acciones de la fila (comparar, editar, quitar), más chicas que las
    de una barra: tres de 44px no cabían en su columna y se montaban sobre
    las kcal. A 34px queda aire entre la cifra y el primer botón. */
-.meal-row-end .pc-action {
+/* Más específico que `.pc-action.expand-action[data-compact]`, que pone 5px
+   de relleno: con él el disco de 26px y el borde daban 36px de alto en un
+   botón de 34 de ancho, y salía ovalado. 26 + 2×3 + 2×1 de borde = 34. */
+.meal-row .meal-row-end .pc-action,
+.meal-row .meal-row-end .pc-action[data-compact] {
   --pc-action-height: 34px;
   --pc-action-disc: 26px;
-  padding: 4px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 3px;
 }
 .meal-row-end .pc-action svg {
   width: 14px;
@@ -943,11 +950,15 @@
   }
 }
 
-/* Movil: sin riel ni rotulos de columna. La cabecera pone los cuatro macros
-   en su propia fila bajo el titulo; cada alimento, sus cifras bajo el
-   nombre, con la letra del macro delante porque ya no hay columna que la
-   nombre. */
-@media (max-width: 600px) {
+/* Movil y tableta: sin riel ni rotulos de columna. La cabecera pone los
+   cuatro macros en su propia fila bajo el titulo; cada alimento, sus cifras
+   bajo el nombre, con la letra del macro delante porque ya no hay columna
+   que la nombre.
+
+   Hasta 1023px y no solo 600: en tableta, con el riel abierto, a la tabla le
+   quedan ~470px y sus columnas fijas aplastaban el titulo a una letra por
+   linea. La tabla vuelve donde cabe, en escritorio. */
+@media (max-width: 1023px) {
   .meal-legend,
   .meal-stop-rail,
   .meal-stop::before {
@@ -1014,7 +1025,7 @@
   .meal-row.meal-row-food {
     column-gap: 9px;
   }
-  .meal-row-food > .meal-cell:nth-child(2) {
+  .meal-row-food > .meal-row-title + .meal-cell {
     margin-left: 50px;
   }
   .meal-row-food > .meal-row-end:empty {
@@ -1205,8 +1216,8 @@
 
 /* Movil: la columna del nombre es estrecha por los tres botones. El nombre
    puede bajar de linea en vez de cortarse, y sodio/azucar van mas juntos
-   para caber en una. */
-@media (max-width: 600px) {
+   para caber en una. Mismo corte que el acomodo apilado de arriba. */
+@media (max-width: 1023px) {
   .meal-food-copy strong {
     white-space: normal;
     overflow: visible;
@@ -1220,5 +1231,64 @@
   .meal-food-extras > span {
     gap: 4px;
     white-space: nowrap;
+  }
+}
+
+/* El encabezado del plan («Mi plan de comidas» y su explicación) iba a 24px
+   del borde, el relleno del panel; con esquinas de 24px de radio el título
+   quedaba pegado a la curva. Sólo el encabezado gana aire: la tabla de
+   comidas se queda donde estaba. */
+.nutrition-workspace .nutrition-meals-panel > .nutrition-panel-heading {
+  padding: 10px 8px 0;
+}
+.nutrition-workspace .nutrition-meals-panel > .nutrition-panel-description {
+  padding-inline: 8px;
+  margin-bottom: 26px;
+}
+@media (max-width: 600px) {
+  .nutrition-workspace .nutrition-meals-panel > .nutrition-panel-heading {
+    padding: 8px 6px 0;
+  }
+  .nutrition-workspace .nutrition-meals-panel > .nutrition-panel-description {
+    padding-inline: 6px;
+    margin-bottom: 20px;
+  }
+}
+
+/* Hoy | Plan habitual: el alcance de la lista, justo bajo el título. En el
+   plan habitual la explicación lleva el acento: se está editando la
+   plantilla, no el día. */
+.nutrition-workspace .nutrition-meals-panel > .nutrition-scope {
+  display: grid;
+  gap: 10px;
+  padding-inline: 8px;
+  margin: 10px 0 26px;
+}
+.nutrition-scope > nav {
+  justify-self: start;
+  margin: 0;
+}
+.nutrition-workspace .nutrition-scope .nutrition-panel-description {
+  margin: 0;
+  padding: 0;
+}
+.nutrition-scope .nutrition-panel-description strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.nutrition-scope[data-mode="plan"] .nutrition-panel-description {
+  padding: 10px 13px;
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--primary) 9%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--primary) 28%, transparent);
+}
+.nutrition-scope[data-mode="plan"] .nutrition-panel-description strong {
+  color: var(--primary);
+}
+@media (max-width: 600px) {
+  .nutrition-workspace .nutrition-meals-panel > .nutrition-scope {
+    padding-inline: 6px;
+    margin-bottom: 20px;
   }
 }

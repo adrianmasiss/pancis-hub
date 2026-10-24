@@ -65,8 +65,15 @@ export function PlanMealCard({
   comparison,
   featured = false,
   compact = false,
+  focus = true,
   loggedMealId,
 }: {
+  /**
+   * La comida que toca. En telefono solo ella llega con sus alimentos a la
+   * vista; las demas se quedan en su cabecera y se abren a demanda. En
+   * escritorio la lista va siempre entera y esto no cambia nada.
+   */
+  focus?: boolean;
   /** Registro del dia que salio de esta comida; permite desmarcarla. */
   loggedMealId?: string;
   featured?: boolean;
@@ -81,6 +88,10 @@ export function PlanMealCard({
   comparison?: { dietMeals: ComparisonMeal[]; todayMeals: ComparisonMeal[] };
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [foodsOpen, setFoodsOpen] = useState(focus);
+  /* Telefono: las acciones de un alimento se abren al tocar su fila, de una
+     en una. En escritorio estan siempre a la vista y esto no se usa. */
+  const [actionsFor, setActionsFor] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const title =
     meal.name ||
@@ -173,6 +184,7 @@ export function PlanMealCard({
       <li
         className="meal-stop"
         data-done={shownDone}
+        data-foods-open={foodsOpen}
         aria-labelledby={`plan-comida-${meal.id}`}
       >
         <div className="meal-stop-rail" aria-hidden="true">
@@ -199,6 +211,21 @@ export function PlanMealCard({
               <h3 id={`plan-comida-${meal.id}`}>{rowTitle}</h3>
             </div>
             <MacroCells macros={meal.totals} targets={dayTargets} strong />
+            {/* Solo telefono: movil.css lo muestra; en escritorio no existe. */}
+            {meal.items.length > 0 ? (
+              <button
+                type="button"
+                className="meal-foods-toggle"
+                aria-expanded={foodsOpen}
+                aria-controls={`plan-alimentos-${meal.id}`}
+                onClick={() => setFoodsOpen((value) => !value)}
+              >
+                <span className="sr-only">
+                  {foodsOpen ? "Ocultar alimentos" : "Ver alimentos"} — {title}
+                </span>
+                <ChevronDown size={16} aria-hidden="true" />
+              </button>
+            ) : null}
             <div className="meal-row-end">
               {mode === "day" && (
                 <LogSwitch
@@ -220,114 +247,153 @@ export function PlanMealCard({
               )}
             </div>
           </header>
-          {meal.items.length > 0 ? (
-            <ul className="meal-foods" aria-label={`Alimentos — ${title}`}>
-              {meal.items.map((item) => (
-                <li
-                  key={item.id}
-                  className="meal-food"
-                  data-omitted={item.omitted || undefined}
+          {/* El panel existe para que el telefono lo despliegue con
+              animacion (filas de rejilla de 0fr a 1fr, movil.css). En
+              escritorio son dos div sin estilo. */}
+          <div className="meal-foods-panel">
+            <div className="meal-foods-inner">
+              {meal.items.length > 0 ? (
+                <ul
+                  id={`plan-alimentos-${meal.id}`}
+                  className="meal-foods"
+                  aria-label={`Alimentos — ${title}`}
                 >
-                  <div className="meal-row meal-row-food">
-                    <div className="meal-row-title">
-                      <FoodAvatar
-                        name={item.foodName}
-                        group={item.foodGroup}
-                        imageUrl={item.imageUrl}
-                      />
-                      <div className="meal-food-copy">
-                        <strong>{item.foodName}</strong>
-                        <span>
-                          {Math.round(item.quantityG)} g
-                          {item.servingEquivalence
-                            ? ` · ${item.servingEquivalence}`
-                            : ""}
-                        </span>
-                        {/* Sodio y azucar solo si el alimento los trae y
-                            no son cero: un hueco no se rellena con cero ni
-                            con guion, y «Azucar 0 g» en la pechuga es ruido. */}
-                        {(item.sodiumMg ?? 0) > 0 || (item.sugarG ?? 0) > 0 ? (
-                          <span className="meal-food-extras">
-                            {(item.sodiumMg ?? 0) > 0 ? (
-                              <span data-extra="sodium">
-                                Sodio {fmtExtra(item.sodiumMg!)} mg
+                  {meal.items.map((item) => (
+                    <li
+                      key={item.id}
+                      className="meal-food"
+                      data-omitted={item.omitted || undefined}
+                      data-actions-open={actionsFor === item.id || undefined}
+                    >
+                      <div className="meal-row meal-row-food">
+                        {editable && !item.omitted ? (
+                          <button
+                            type="button"
+                            className="meal-food-hit"
+                            aria-expanded={actionsFor === item.id}
+                            aria-controls={`plan-acciones-${item.id}`}
+                            onClick={() =>
+                              setActionsFor((open) =>
+                                open === item.id ? null : item.id,
+                              )
+                            }
+                          >
+                            <span className="sr-only">
+                              Acciones — {item.foodName}
+                            </span>
+                          </button>
+                        ) : null}
+                        <div className="meal-row-title">
+                          <FoodAvatar
+                            name={item.foodName}
+                            group={item.foodGroup}
+                            imageUrl={item.imageUrl}
+                          />
+                          <div className="meal-food-copy">
+                            <strong>{item.foodName}</strong>
+                            <span>
+                              {Math.round(item.quantityG)} g
+                              {item.servingEquivalence
+                                ? ` · ${item.servingEquivalence}`
+                                : ""}
+                            </span>
+                            {/* Sodio y azucar solo si el alimento los trae y
+                                no son cero: un hueco no se rellena con cero ni
+                                con guion, y «Azucar 0 g» en la pechuga es ruido. */}
+                            {(item.sodiumMg ?? 0) > 0 ||
+                            (item.sugarG ?? 0) > 0 ? (
+                              <span className="meal-food-extras">
+                                {(item.sodiumMg ?? 0) > 0 ? (
+                                  <span data-extra="sodium">
+                                    Sodio {fmtExtra(item.sodiumMg!)} mg
+                                  </span>
+                                ) : null}
+                                {(item.sugarG ?? 0) > 0 ? (
+                                  <span data-extra="sugar">
+                                    Azúcar {fmtExtra(item.sugarG!)} g
+                                  </span>
+                                ) : null}
                               </span>
                             ) : null}
-                            {(item.sugarG ?? 0) > 0 ? (
-                              <span data-extra="sugar">
-                                Azúcar {fmtExtra(item.sugarG!)} g
-                              </span>
+                            {item.omitted ? (
+                              <small data-tone="omitted">
+                                No lo comes hoy · no suma
+                              </small>
+                            ) : item.daySwap && mode === "day" ? (
+                              <small>
+                                {item.daySwap.originalFoodName === item.foodName
+                                  ? "Cantidad ajustada hoy"
+                                  : `En lugar de ${item.daySwap.originalFoodName}`}
+                              </small>
                             ) : null}
-                          </span>
-                        ) : null}
-                        {item.omitted ? (
-                          <small data-tone="omitted">
-                            No lo comes hoy · no suma
-                          </small>
-                        ) : item.daySwap && mode === "day" ? (
-                          <small>
-                            {item.daySwap.originalFoodName === item.foodName
-                              ? "Cantidad ajustada hoy"
-                              : `En lugar de ${item.daySwap.originalFoodName}`}
-                          </small>
-                        ) : null}
-                      </div>
-                    </div>
-                    <MacroCells macros={item.macros} />
-                    <div className="meal-row-end">
-                      {editable && item.omitted ? (
-                        <button
-                          type="button"
-                          className="meal-restore"
-                          onClick={() => restoreItem(item.id, item.foodName)}
-                          disabled={itemPending}
+                          </div>
+                        </div>
+                        <MacroCells macros={item.macros} />
+                        <div
+                          id={`plan-acciones-${item.id}`}
+                          className="meal-row-end"
                         >
-                          <RotateCcw size={14} aria-hidden="true" />
-                          Restaurar
-                        </button>
-                      ) : editable ? (
-                        <>
-                          {/* Sustituir abre la tarjeta centrada, con el
-                              resto difuminado: criterio fijo del usuario. */}
-                          <DietItemSwapSheet
-                            item={item}
-                            date={date}
-                            scope={mode}
-                            trigger="action"
-                            dayTotals={dayTotals}
-                            dayTargets={dayTargets}
-                          />
-                          <PlanFoodEditDialog
-                            item={item}
-                            date={date}
-                            mode={mode}
-                          />
-                          {mode === "day" && (
-                            <OmitFoodButton
-                              label={`No lo comí hoy — ${item.foodName}`}
+                          {editable && item.omitted ? (
+                            <button
+                              type="button"
+                              className="meal-restore"
+                              onClick={() =>
+                                restoreItem(item.id, item.foodName)
+                              }
                               disabled={itemPending}
-                              onClick={() => omitItem(item.id, item.foodName)}
-                            />
-                          )}
-                        </>
-                      ) : null}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="meal-foods-empty">Esta comida no tiene alimentos.</p>
-          )}
-          {comparison && meal.items.length > 0 ? (
-            <div className="meal-card-foot">
-              <MealCompareSheet
-                mealId={meal.id}
-                mealName={title}
-                {...comparison}
-              />
+                            >
+                              <RotateCcw size={14} aria-hidden="true" />
+                              Restaurar
+                            </button>
+                          ) : editable ? (
+                            <>
+                              {/* Sustituir abre la tarjeta centrada, con el
+                                  resto difuminado: criterio fijo del usuario. */}
+                              <DietItemSwapSheet
+                                item={item}
+                                date={date}
+                                scope={mode}
+                                trigger="action"
+                                dayTotals={dayTotals}
+                                dayTargets={dayTargets}
+                              />
+                              <PlanFoodEditDialog
+                                item={item}
+                                date={date}
+                                mode={mode}
+                              />
+                              {mode === "day" && (
+                                <OmitFoodButton
+                                  label={`No lo comí hoy — ${item.foodName}`}
+                                  disabled={itemPending}
+                                  onClick={() =>
+                                    omitItem(item.id, item.foodName)
+                                  }
+                                />
+                              )}
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="meal-foods-empty">
+                  Esta comida no tiene alimentos.
+                </p>
+              )}
+              {comparison && meal.items.length > 0 ? (
+                <div className="meal-card-foot">
+                  <MealCompareSheet
+                    mealId={meal.id}
+                    mealName={title}
+                    {...comparison}
+                  />
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </article>
       </li>
     );

@@ -25,6 +25,8 @@ import { messages } from "@/i18n/es-419";
 import "./globals.css";
 // Prueba de tipografía: quitar esta línea para volver a Karrik + Mono.
 import "./tipografia.css";
+// El ultimo: el acomodo de telefono gana a las hojas de cada pantalla.
+import "./movil.css";
 
 export const viewport: Viewport = {
   themeColor: [

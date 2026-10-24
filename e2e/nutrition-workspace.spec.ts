@@ -223,7 +223,8 @@ test("compara, sustituye solo un día, registra y conserva el plan habitual", as
   await expect(breakfast.getByText("Modificada este día")).toBeVisible();
 
   await page
-    .getByRole("link", { name: "Editar plan habitual", exact: true })
+    .getByRole("navigation", { name: "Qué estás viendo" })
+    .getByRole("link", { name: "Plan habitual", exact: true })
     .click();
   await expect(
     page
@@ -359,11 +360,14 @@ test("compara, sustituye solo un día, registra y conserva el plan habitual", as
     .click();
   const firstMealDialog = page.getByRole("dialog");
   await expect(firstMealDialog).toBeVisible();
+  // Agregar comida registra lo comido en un paso: alimento y cantidad.
+  await firstMealDialog.getByLabel(/Buscar alimento/).fill("arroz");
+  await firstMealDialog.locator(".amd-results button").first().click();
   await firstMealDialog
-    .locator("#meal-name")
+    .getByLabel("Nombre (opcional)")
     .fill("Mi primera comida sin dieta");
   await firstMealDialog
-    .getByRole("button", { name: "Guardar", exact: true })
+    .getByRole("button", { name: "Registrar comida", exact: true })
     .click();
   await expect(firstMealDialog).not.toBeVisible();
   await expect(
@@ -372,8 +376,9 @@ test("compara, sustituye solo un día, registra y conserva el plan habitual", as
   await expect(
     start.getByRole("heading", { name: "Aún no tienes una dieta" }),
   ).toBeVisible();
-  await expect(overview.locator(".nutrition-energy-value strong")).toHaveText(
-    "0",
-  );
+  // Ya registrada: suma al día.
+  await expect(
+    overview.locator(".nutrition-energy-value strong"),
+  ).not.toHaveText("0");
   expect(errors).toEqual([]);
 });

@@ -72,6 +72,11 @@ export function V11IntakeCard({
         <div>
           <strong>{formatNumber(consumed)}</strong>
           <span>kcal de hoy</span>
+          {/* Solo telefono (movil.css): la meta entra en el anillo y las
+              cifras de abajo, que la repetian, se quitan. */}
+          <span className="intake-ring-of" aria-hidden="true">
+            de {formatNumber(target)} kcal
+          </span>
         </div>
       </div>
       <div className="intake-stats">

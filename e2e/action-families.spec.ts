@@ -91,13 +91,12 @@ for (const touch of [false, true]) {
           "transform",
           touch ? "none" : "matrix(0, 1, -1, 0, 0, 0)",
         );
-        const edit = page.getByRole("link", { name: "Editar plan habitual" });
-        await fits(edit);
-        if (!touch) await edit.hover();
-        await expect(edit.locator(".pc-action-glyph")).toHaveCSS(
-          "transform",
-          touch ? "none" : "matrix(1, 0, 0, 1, 32, -32)",
-        );
+        // El plan habitual ya no es una acción suelta: es el otro alcance
+        // del selector «Hoy | Plan habitual».
+        const plan = page
+          .getByRole("navigation", { name: "Qué estás viendo" })
+          .getByRole("link", { name: "Plan habitual" });
+        await expect(plan).toBeVisible();
         await page.screenshot({
           path: test.info().outputPath(`nutrition-${theme}-${width}.png`),
           fullPage: true,
@@ -189,7 +188,14 @@ for (const touch of [false, true]) {
     else await addMeal.click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    const save = dialog.getByRole("button", { name: "Guardar", exact: true });
+    await dialog.getByLabel(/Buscar alimento/).fill("arroz");
+    const result = dialog.locator(".amd-results button").first();
+    if (touch) await result.tap();
+    else await result.click();
+    const save = dialog.getByRole("button", {
+      name: "Registrar comida",
+      exact: true,
+    });
     if (touch) await save.tap();
     else await save.click();
     await expect(dialog).toBeHidden({ timeout: 30000 });

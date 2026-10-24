@@ -29,34 +29,6 @@
   line-height: 1.55;
 }
 
-/* ── Pestañas ──────────────────────────────────────────────────────────── */
-.progress-nav {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: color-mix(in oklch, var(--card) 70%, transparent);
-  align-self: flex-start;
-}
-.progress-nav a {
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  padding-inline: 18px;
-  border-radius: 10px;
-  color: var(--muted-foreground);
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition:
-    color 180ms ease,
-    background 180ms ease;
-}
-.progress-nav a[aria-current] {
-  color: var(--primary);
-  background: color-mix(in oklch, var(--primary) 14%, transparent);
-}
-
 /* ── Escala tipográfica compartida ─────────────────────────────────────── */
 .progress-body-card h2,
 .progress-compare-card h2,
@@ -336,18 +308,10 @@
   .progress-history-card h2 {
     font-size: 19px;
   }
-  .progress-nav {
-    align-self: stretch;
-  }
-  .progress-nav a {
-    flex: 1;
-    justify-content: center;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .progress-bar,
-  .progress-nav a {
+  .progress-bar {
     transition: none;
   }
 }
@@ -369,6 +333,16 @@
 @media (max-width: 600px) {
   .progress-workspace .progress-body-model {
     height: 320px;
+  }
+}
+/* En una columna, sin pegar: el `sticky` de arriba llega despues que el
+   `static` de la adaptacion y lo anulaba, y al bajar el maniquí tapaba las
+   cifras. `relative` y no `static`: el lienzo del maniquí se posiciona
+   contra esta caja, y sin ella se salía de la tarjeta. */
+@media (max-width: 1000px) {
+  .progress-workspace .progress-body-model {
+    position: relative;
+    top: auto;
   }
 }
 /* Con el informe plegado la columna de cifras mide unos 580px: el maniquí
