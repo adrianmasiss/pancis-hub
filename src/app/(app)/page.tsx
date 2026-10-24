@@ -12,6 +12,8 @@ import {
 import { ViewHeader } from "@/components/shared/view-header";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { createClient } from "@/lib/supabase/server";
+import { isPhone } from "@/lib/device";
+import { HomeMobile } from "@/mobile/screens/home/home-mobile";
 
 /**
  * Hoy, segun el lienzo "Pancis Hub v11".
@@ -48,6 +50,18 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  // Telefono: su propia version de Hoy, con las consultas de cada modulo.
+  if (await isPhone()) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    return (
+      <HomeMobile userId={user.id} displayName={profile?.display_name ?? ""} />
+    );
+  }
 
   const data = await getDashboardData(user.id);
 

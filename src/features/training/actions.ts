@@ -42,6 +42,7 @@ import {
   planIdSchema,
   searchExercisesSchema,
   sessionIdSchema,
+  sessionPauseSchema,
   setIdSchema,
   startSessionSchema,
   substitutePlanExerciseSchema,
@@ -873,6 +874,35 @@ export async function finishSession(
   if (error) return fail;
   revalidateTraining();
   redirect("/entrenamiento");
+}
+
+/**
+ * Suma una pausa a la sesion en curso, para que su duracion no la cuente.
+ * La envia la vista movil al reanudar.
+ */
+export async function addSessionPause(
+  input: unknown,
+): Promise<TrainingActionResult> {
+  const parsed = sessionPauseSchema.safeParse(input);
+  const { supabase, user } = await requireUser();
+  if (!parsed.success || !user) return fail;
+
+  const { data: session } = await supabase
+    .from("workout_sessions")
+    .select("paused_seconds")
+    .eq("id", parsed.data.sessionId)
+    .eq("user_id", user.id)
+    .is("completed_at", null)
+    .maybeSingle();
+  if (!session) return fail;
+
+  const { error } = await supabase
+    .from("workout_sessions")
+    .update({ paused_seconds: session.paused_seconds + parsed.data.seconds })
+    .eq("id", parsed.data.sessionId)
+    .eq("user_id", user.id);
+  if (error) return fail;
+  return { success: true };
 }
 
 export async function discardSession(

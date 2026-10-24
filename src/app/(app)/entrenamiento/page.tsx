@@ -37,6 +37,8 @@ import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { todayInTimezone } from "@/lib/dates";
 import { hasGeminiApiKey } from "@/lib/ai/google";
+import { isPhone } from "@/lib/device";
+import { TrainingMobile } from "@/mobile/screens/training/training-mobile";
 
 const t = messages.training;
 
@@ -64,6 +66,8 @@ export default async function TrainingPage({
     equipo?: string;
     coleccion?: string;
     pagina?: string;
+    paso?: string;
+    ejercicio?: string;
   }>;
 }) {
   const supabase = await createClient();
@@ -99,6 +103,19 @@ export default async function TrainingPage({
     .maybeSingle();
   const timezone = profile?.timezone ?? "America/Costa_Rica";
   const today = todayInTimezone(timezone);
+
+  // Telefono: su propia capa visual, con los mismos datos y acciones.
+  if (await isPhone()) {
+    return (
+      <TrainingMobile
+        userId={user.id}
+        today={today}
+        timezone={timezone}
+        params={params}
+      />
+    );
+  }
+
   const aiEnabled = hasGeminiApiKey();
 
   const [overview, log, library] = await Promise.all([

@@ -550,6 +550,38 @@ export type Database = {
           },
         ]
       }
+      diet_meal_day_times: {
+        Row: {
+          created_at: string
+          date: string
+          scheduled_time: string
+          template_meal_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          scheduled_time: string
+          template_meal_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          scheduled_time?: string
+          template_meal_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_meal_day_times_template_meal_id_fkey"
+            columns: ["template_meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_template_meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diet_template_items: {
         Row: {
           created_at: string
@@ -683,6 +715,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          origin: string
           target_calories: number
           target_carbs: number
           target_fat: number
@@ -695,6 +728,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          origin?: string
           target_calories?: number
           target_carbs?: number
           target_fat?: number
@@ -707,6 +741,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          origin?: string
           target_calories?: number
           target_carbs?: number
           target_fat?: number
@@ -893,6 +928,32 @@ export type Database = {
           {
             foreignKeyName: "exercise_day_swaps_substitute_exercise_id_fkey"
             columns: ["substitute_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_favorites: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_favorites_exercise_id_fkey"
+            columns: ["exercise_id"]
             isOneToOne: false
             referencedRelation: "exercise_catalog"
             referencedColumns: ["id"]
@@ -1598,12 +1659,14 @@ export type Database = {
           meals_per_day: number | null
           onboarding_completed_at: string | null
           primary_goal: string | null
+          reminders_enabled: boolean
           theme: string
           timezone: string
           tolerance_calories_pct: number
           tolerance_carbs_pct: number
           tolerance_fat_pct: number
           tolerance_protein_pct: number
+          training_adjustment: boolean | null
           training_days_per_week: number | null
           training_type: string | null
           unit_system: string
@@ -1626,12 +1689,14 @@ export type Database = {
           meals_per_day?: number | null
           onboarding_completed_at?: string | null
           primary_goal?: string | null
+          reminders_enabled?: boolean
           theme?: string
           timezone?: string
           tolerance_calories_pct?: number
           tolerance_carbs_pct?: number
           tolerance_fat_pct?: number
           tolerance_protein_pct?: number
+          training_adjustment?: boolean | null
           training_days_per_week?: number | null
           training_type?: string | null
           unit_system?: string
@@ -1654,12 +1719,14 @@ export type Database = {
           meals_per_day?: number | null
           onboarding_completed_at?: string | null
           primary_goal?: string | null
+          reminders_enabled?: boolean
           theme?: string
           timezone?: string
           tolerance_calories_pct?: number
           tolerance_carbs_pct?: number
           tolerance_fat_pct?: number
           tolerance_protein_pct?: number
+          training_adjustment?: boolean | null
           training_days_per_week?: number | null
           training_type?: string | null
           unit_system?: string
@@ -1712,6 +1779,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       recipe_ingredients: {
         Row: {
@@ -1900,6 +1994,30 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_log: {
+        Row: {
+          date: string
+          kind: string
+          ref: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          date: string
+          kind: string
+          ref: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          kind?: string
+          ref?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       research_sources: {
         Row: {
           authors: string | null
@@ -1963,6 +2081,98 @@ export type Database = {
           url?: string | null
           verified_at?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      restaurant_items: {
+        Row: {
+          calories: number | null
+          carbohydrate_g: number | null
+          created_at: string
+          created_by: string | null
+          fat_g: number | null
+          fiber_g: number | null
+          id: string
+          name: string
+          protein_g: number | null
+          restaurant_id: string
+          serving_g: number | null
+          serving_label: string | null
+          source_note: string | null
+          source_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          created_at?: string
+          created_by?: string | null
+          fat_g?: number | null
+          fiber_g?: number | null
+          id?: string
+          name: string
+          protein_g?: number | null
+          restaurant_id: string
+          serving_g?: number | null
+          serving_label?: string | null
+          source_note?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          calories?: number | null
+          carbohydrate_g?: number | null
+          created_at?: string
+          created_by?: string | null
+          fat_g?: number | null
+          fiber_g?: number | null
+          id?: string
+          name?: string
+          protein_g?: number | null
+          restaurant_id?: string
+          serving_g?: number | null
+          serving_label?: string | null
+          source_note?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_items_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          country: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2248,6 +2458,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          paused_seconds: number
           started_at: string
           updated_at: string
           user_id: string
@@ -2259,6 +2470,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paused_seconds?: number
           started_at?: string
           updated_at?: string
           user_id: string
@@ -2270,6 +2482,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paused_seconds?: number
           started_at?: string
           updated_at?: string
           user_id?: string

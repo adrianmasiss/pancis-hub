@@ -13,13 +13,23 @@ import { NutritionWorkspace } from "@/features/nutrition/components/nutrition-wo
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { getDayPlan, getDietPlanForDate } from "@/features/nutrition/queries";
 import { resolveNutritionDate } from "@/features/nutrition/lib/day-overview";
+import { isPhone } from "@/lib/device";
+import { NutritionMobile } from "@/mobile/screens/nutrition/nutrition-mobile";
 
 export const metadata: Metadata = { title: "Nutrición" };
 
 export default async function NutritionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ vista?: string; periodo?: string; fecha?: string }>;
+  searchParams: Promise<{
+    vista?: string;
+    periodo?: string;
+    fecha?: string;
+    comida?: string;
+    item?: string;
+    q?: string;
+    filtro?: string;
+  }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -34,6 +44,19 @@ export default async function NutritionPage({
     .maybeSingle();
   const today = todayInTimezone(profile?.timezone ?? "America/Costa_Rica");
   const date = resolveNutritionDate(params.fecha, today);
+
+  // Telefono: su propia capa visual, con los mismos datos y acciones.
+  if (await isPhone()) {
+    return (
+      <NutritionMobile
+        userId={user.id}
+        today={today}
+        date={date}
+        timezone={profile?.timezone ?? "America/Costa_Rica"}
+        params={params}
+      />
+    );
+  }
   const active =
     params.vista === "historial"
       ? "history"

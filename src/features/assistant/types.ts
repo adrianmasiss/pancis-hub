@@ -8,6 +8,19 @@
 export type AssistantConfidence = "baja" | "media" | "alta";
 
 /** Formato estructurado obligatorio de respuesta. */
+/**
+ * Una opcion concreta para agregar a hoy («Usar»). Los alimentos son de la
+ * biblioteca y los macros los calcula el servidor desde el catalogo.
+ */
+export type AssistantOption = {
+  title: string;
+  items: { foodId: string; name: string; grams: number }[];
+  calories: number;
+  proteinG: number;
+  carbohydrateG: number;
+  fatG: number;
+};
+
 export type AssistantReply = {
   observation: string;
   interpretation: string;
@@ -16,6 +29,8 @@ export type AssistantReply = {
   alternative?: string;
   reason: string;
   reevaluate: string;
+  /** Opciones para agregar a hoy con un toque. La vista movil las muestra. */
+  options?: AssistantOption[];
   /**
    * De donde salen las cifras que menciona la respuesta. Se resuelven desde
    * `formula_versions`, no las inventa el modelo: si esta vacio, es que la

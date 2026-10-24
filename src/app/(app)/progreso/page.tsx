@@ -17,6 +17,9 @@ import {
 import { WellbeingForm } from "@/features/progress/components/wellbeing-form";
 import { getProgressData } from "@/features/progress/queries";
 import { createClient } from "@/lib/supabase/server";
+import { isPhone } from "@/lib/device";
+import { todayInTimezone } from "@/lib/dates";
+import { ProgressMobile } from "@/mobile/screens/progress/progress-mobile";
 import { messages } from "@/i18n/es-419";
 
 const t = messages.progress;
@@ -56,6 +59,24 @@ export default async function ProgressPage({
   if (!user) redirect("/login");
 
   const params = await searchParams;
+
+  // Telefono: Resumen y Evidencia, con los mismos datos.
+  if (await isPhone()) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("timezone")
+      .eq("id", user.id)
+      .maybeSingle();
+    const timezone = profile?.timezone ?? "America/Costa_Rica";
+    return (
+      <ProgressMobile
+        userId={user.id}
+        vista={params.vista}
+        today={todayInTimezone(timezone)}
+        timezone={timezone}
+      />
+    );
+  }
   const VISTAS: ProgressView[] = ["resumen", "historial", "fotos", "bienestar"];
   const vista: ProgressView = VISTAS.includes(params.vista as ProgressView)
     ? (params.vista as ProgressView)

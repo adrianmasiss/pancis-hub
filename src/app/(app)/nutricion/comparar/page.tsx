@@ -9,6 +9,7 @@ import { getComparisonMeals } from "@/features/nutrition/compare-queries";
 import { resolveNutritionDate } from "@/features/nutrition/lib/day-overview";
 import { todayInTimezone } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
+import { isPhone } from "@/lib/device";
 
 export const metadata: Metadata = { title: "Comparar comidas" };
 
@@ -18,6 +19,8 @@ export default async function ComparePage({
   searchParams: Promise<{ fecha?: string; comida?: string; origen?: string }>;
 }) {
   const params = await searchParams;
+  // En telefono, Comparar es una pestaña de Nutricion.
+  if (await isPhone()) redirect("/nutricion?vista=comparar");
   const supabase = await createClient();
   const {
     data: { user },

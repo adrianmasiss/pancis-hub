@@ -80,6 +80,11 @@ export const logSetSchema = z.object({
 
 export const setIdSchema = z.object({ setId: z.uuid() });
 
+export const sessionPauseSchema = z.object({
+  sessionId: z.uuid(),
+  seconds: z.number().int().min(1).max(86400),
+});
+
 export const addSessionExerciseSchema = z.object({
   sessionId: z.uuid(),
   exerciseId: z.uuid(),

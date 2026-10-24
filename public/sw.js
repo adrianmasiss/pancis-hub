@@ -121,3 +121,38 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+/* Recordatorios (vista movil, oct 2026): los manda /api/cron/recordatorios. */
+self.addEventListener("push", (event) => {
+  let data = { title: "Pancis Hub", body: "", url: "/" };
+  try {
+    data = { ...data, ...event.data.json() };
+  } catch {
+    /* Sin datos legibles, el aviso generico. */
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: data.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/";
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        const abierta = clients.find((c) => "focus" in c);
+        if (abierta) {
+          abierta.navigate(url);
+          return abierta.focus();
+        }
+        return self.clients.openWindow(url);
+      }),
+  );
+});

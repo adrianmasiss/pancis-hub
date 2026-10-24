@@ -95,6 +95,8 @@ export type SessionDetail = {
   id: string;
   startedAt: string;
   completedAt: string | null;
+  /** Lo que la sesion estuvo en pausa (vista movil); no cuenta como entreno. */
+  pausedSeconds: number;
   notes: string | null;
   planName: string | null;
   dayName: string | null;
@@ -122,6 +124,22 @@ export type LiveSet = {
   weightKg: number | null;
   repetitions: number | null;
 };
+
+/**
+ * Minutos entrenados: de inicio a fin, menos lo que la sesion estuvo en
+ * pausa (la vista movil guarda las pausas; las sesiones de antes tienen 0).
+ */
+function activeMinutes(
+  startedAt: string,
+  completedAt: string,
+  pausedSeconds: number | null,
+): number {
+  const ms =
+    Date.parse(completedAt) -
+    Date.parse(startedAt) -
+    (pausedSeconds ?? 0) * 1000;
+  return Math.max(1, Math.round(ms / 60000));
+}
 
 export type TrainingOverview = {
   plans: PlanSummary[];
@@ -379,7 +397,7 @@ export async function getSessionDetail(
   const { data: session } = await supabase
     .from("workout_sessions")
     .select(
-      "id, started_at, completed_at, notes, workout_plans(name), workout_plan_days(name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment))), workout_sets(id, exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, rpe, tempo, rest_seconds, notes, created_at, exercise_catalog(name))",
+      "id, started_at, completed_at, paused_seconds, notes, workout_plans(name), workout_plan_days(name, workout_plan_exercises(id, exercise_id, position, sets, target_reps_min, target_reps_max, target_rir, target_rpe, tempo, rest_seconds, notes, exercise_catalog(name, primary_muscle, secondary_muscles, equipment))), workout_sets(id, exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, rpe, tempo, rest_seconds, notes, created_at, exercise_catalog(name))",
     )
     .eq("id", sessionId)
     .eq("user_id", userId)
@@ -401,6 +419,7 @@ export async function getSessionDetail(
     id: session.id,
     startedAt: session.started_at,
     completedAt: session.completed_at,
+    pausedSeconds: session.paused_seconds ?? 0,
     notes: session.notes,
     planName: session.workout_plans?.name ?? null,
     dayName: session.workout_plan_days?.name ?? null,
@@ -488,7 +507,7 @@ export async function getTrainingOverview(
     supabase
       .from("workout_sessions")
       .select(
-        "id, started_at, completed_at, workout_plan_day_id, workout_plans(name), workout_sets(is_warmup, weight_kg, repetitions)",
+        "id, started_at, completed_at, paused_seconds, workout_plan_day_id, workout_plans(name), workout_sets(is_warmup, weight_kg, repetitions)",
       )
       .eq("user_id", userId)
       .not("completed_at", "is", null)
@@ -592,13 +611,10 @@ export async function getTrainingOverview(
         repetitions: set.repetitions,
       }));
       const durationMinutes = session.completed_at
-        ? Math.max(
-            1,
-            Math.round(
-              (Date.parse(session.completed_at) -
-                Date.parse(session.started_at)) /
-                60000,
-            ),
+        ? activeMinutes(
+            session.started_at,
+            session.completed_at,
+            session.paused_seconds,
           )
         : null;
       return {
@@ -938,7 +954,7 @@ export async function getTrainingLog(userId: string): Promise<LogSession[]> {
   const { data } = await supabase
     .from("workout_sessions")
     .select(
-      "id, started_at, completed_at, workout_plans(name), workout_plan_days(name, day_index), workout_sets(exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, created_at, exercise_catalog(name, primary_muscle, equipment))",
+      "id, started_at, completed_at, paused_seconds, workout_plans(name), workout_plan_days(name, day_index), workout_sets(exercise_id, set_number, is_warmup, weight_kg, repetitions, rir, created_at, exercise_catalog(name, primary_muscle, equipment))",
     )
     .eq("user_id", userId)
     .not("completed_at", "is", null)
@@ -968,13 +984,10 @@ export async function getTrainingLog(userId: string): Promise<LogSession[]> {
     dayIndex: session.workout_plan_days?.day_index ?? null,
     replaced: replaced.get(session.id) ?? {},
     durationMinutes: session.completed_at
-      ? Math.max(
-          1,
-          Math.round(
-            (Date.parse(session.completed_at) -
-              Date.parse(session.started_at)) /
-              60000,
-          ),
+      ? activeMinutes(
+          session.started_at,
+          session.completed_at,
+          session.paused_seconds,
         )
       : null,
     planName: session.workout_plans?.name ?? null,

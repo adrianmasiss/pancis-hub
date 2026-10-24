@@ -19,10 +19,18 @@ import { countConversations } from "@/features/assistant/persistence";
 import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
+import { isPhone } from "@/lib/device";
+import { todayInTimezone } from "@/lib/dates";
+import { ProfileMobile } from "@/mobile/screens/profile/profile-mobile";
+import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
 
 export const metadata: Metadata = { title: messages.nav.settings };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vista?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,6 +38,23 @@ export default async function SettingsPage() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const phone = await isPhone();
+  const { vista } = await searchParams;
+  if (phone && vista !== "editar") {
+    const { data: tz } = await supabase
+      .from("profiles")
+      .select("timezone")
+      .eq("id", user.id)
+      .maybeSingle();
+    return (
+      <ProfileMobile
+        userId={user.id}
+        email={user.email}
+        today={todayInTimezone(tz?.timezone ?? "America/Costa_Rica")}
+      />
+    );
   }
 
   const { data: profile } = await supabase
@@ -47,7 +72,7 @@ export default async function SettingsPage() {
       countFoodsToReview(),
     ]);
 
-  return (
+  const forms = (
     <>
       <ViewHeader title={messages.nav.settings} />
       {/* Arriba del todo porque es lo unico de esta pagina que espera una
@@ -106,4 +131,7 @@ export default async function SettingsPage() {
       <AccountCard email={user.email} />
     </>
   );
+
+  // En telefono, «Editar» abre los formularios de siempre en su marco.
+  return phone ? <MobileFormsFrame>{forms}</MobileFormsFrame> : forms;
 }
