@@ -15,6 +15,13 @@
 /* ── Tokens ──────────────────────────────────────────────────────────── */
 
 .m-app {
+  /* Limite superior de todo el contenido: el safe area del sistema (isla
+     dinamica, notch o la barra de estado de la app instalada) mas 16 px de
+     aire. Con `viewport-fit=cover`; sin el, env() vale 0. */
+  --m-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  /* Con el telefono de lado, el notch queda a un costado. */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   --m-bg: #090909;
   --m-surface: #1a1a1a;
   --m-surface-2: #242427;
@@ -56,7 +63,7 @@
   --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --m-ease-bounce: cubic-bezier(0.3, 1.4, 0.5, 1);
   --m-font-ui-stack: var(--m-font-ui), system-ui, sans-serif;
-  --m-font-num-stack: var(--m-font-ui-stack);
+  --m-font-num-stack: var(--m-font-num), var(--m-font-ui-stack);
 
   position: relative;
   min-height: 100dvh;
@@ -240,7 +247,7 @@ html:not(.dark):has(.m-app) body {
 }
 
 .m-header {
-  padding: calc(14px + env(safe-area-inset-top)) 20px 4px;
+  padding: var(--m-top) 20px 4px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -831,7 +838,7 @@ html:not(.dark) .m-seg-thumb {
   right: 0;
   bottom: 0;
   z-index: 61;
-  max-height: calc(100dvh - 48px);
+  max-height: calc(100dvh - var(--m-top) - 32px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
@@ -1121,7 +1128,7 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
 }
 .m-active-top {
   position: absolute;
-  top: calc(14px + env(safe-area-inset-top));
+  top: var(--m-top);
   left: 20px;
   right: 20px;
   display: flex;
@@ -1168,19 +1175,20 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   letter-spacing: -0.02em;
 }
 .m-active-body {
-  padding: 14px 20px 0;
+  padding: 22px 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 .m-active-spacer {
   flex: 1;
-  min-height: 12px;
+  min-height: 28px;
 }
 .m-set-grid {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr) 52px 48px;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr) 48px 48px;
   gap: 8px;
+  padding: 0 8px;
   align-items: center;
   text-align: center;
 }
@@ -1190,10 +1198,27 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
+/* Cada serie es una tarjeta: la actual se aclara y lleva el acento; las
+   hechas bajan de tono para que el ojo vaya a la que toca. */
 .m-set-row {
-  height: 48px;
+  min-height: 64px;
+  padding: 8px;
+  border-radius: 24px;
+  background: var(--m-surface);
+  border: 1.5px solid transparent;
+  transition:
+    opacity 0.3s var(--m-ease),
+    background 0.3s var(--m-ease),
+    border-color 0.3s var(--m-ease);
+}
+.m-set-row[data-tone="current"] {
+  background: var(--m-surface-2);
+  border-color: var(--m-accent);
+}
+.m-set-row[data-tone="done"] {
+  opacity: 0.55;
 }
 .m-set-n {
   display: flex;
@@ -1208,9 +1233,9 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   background: var(--m-accent);
 }
 .m-set-pill {
-  height: 48px;
-  border-radius: 24px;
-  background: var(--m-surface);
+  height: 46px;
+  border-radius: 23px;
+  background: var(--m-surface-2);
   color: var(--m-muted);
   display: flex;
   align-items: baseline;
@@ -1233,7 +1258,7 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   color: var(--m-text);
 }
 .m-set-row[data-tone="current"] .m-set-pill {
-  background: var(--m-surface-2);
+  background: var(--m-surface-3);
   color: var(--m-text);
 }
 .m-rest {
@@ -1258,7 +1283,7 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px calc(18px + env(safe-area-inset-bottom));
+  padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--m-line);
 }
 
@@ -1435,7 +1460,7 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
 
 /* Encabezado de paso (importar, cuestionario): volver + titulo. */
 .m-step-head {
-  padding: calc(14px + env(safe-area-inset-top)) 20px 8px;
+  padding: var(--m-top) 20px 8px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2127,6 +2152,217 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   overflow-wrap: anywhere;
 }
 
+/* Comparar (ronda oct 2026): miniaturas, veredicto, similitud, barras por
+   macro y el boton fijo sobre la barra. */
+.m-food-thumb {
+  border-radius: 14px;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+  overflow: hidden;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.m-food-thumb[data-photo] {
+  background: #fff;
+}
+.m-food-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-compare-side {
+  min-height: 0;
+}
+.m-compare-side .m-food-thumb {
+  margin: 2px 0 4px;
+}
+.m-compare-flip {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+}
+.m-compare-verdict {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--m-text-soft);
+  padding: 0 4px;
+  text-wrap: pretty;
+}
+.m-compare-verdict strong {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-compare-score {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+.m-compare-score .m-ring-center .m-num {
+  font-size: 17px;
+  font-weight: 700;
+}
+.m-compare-score-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+.m-compare-macros {
+  gap: 14px;
+}
+.m-compare-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-compare-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.m-compare-legend i {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--m-text-soft);
+}
+.m-compare-legend i[data-kind="plan"] {
+  opacity: 0.4;
+}
+.m-compare-macro {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.m-compare-macro .m-dot {
+  background: var(--c);
+}
+.m-compare-macro-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.m-compare-delta {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+}
+.m-compare-delta[data-tone="up"],
+.m-compare-delta[data-tone="down"] {
+  color: var(--m-text);
+}
+.m-compare-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 10px;
+}
+.m-compare-bar > span:first-child {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--m-surface-2);
+  overflow: hidden;
+}
+.m-compare-bar > span:first-child > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--c);
+  transition: width 0.4s var(--m-ease);
+}
+.m-compare-bar > span[data-kind="plan"] > span {
+  opacity: 0.4;
+}
+.m-compare-bar .m-num {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--m-text-soft);
+}
+.m-swap-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  border: 1.5px solid transparent;
+  text-align: left;
+  transition: border-color 0.15s var(--m-ease);
+}
+.m-swap-card[aria-checked="true"] {
+  border-color: var(--m-accent);
+}
+.m-swap-card .m-list-row-main {
+  gap: 3px;
+}
+.m-swap-card .m-split {
+  margin-top: 4px;
+  max-width: 140px;
+}
+.m-swap-card-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+}
+.m-swap-card-score .m-num {
+  font-size: 17px;
+  font-weight: 700;
+}
+.m-swap-card[aria-checked="true"] .m-swap-card-score .m-num {
+  color: var(--m-accent-ink);
+}
+.m-swap-card-score small {
+  font-size: 11px;
+  color: var(--m-muted);
+}
+.m-swap-card-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1.5px var(--m-line);
+}
+.m-swap-card[aria-checked="true"] .m-swap-card-check {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  box-shadow: none;
+}
+/* Fijo sobre la barra de pestanas mientras se baja por la comparacion. */
+.m-compare-cta {
+  position: sticky;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 5;
+  padding-top: 8px;
+}
+.m-compare-cta::before {
+  content: "";
+  position: absolute;
+  inset: -24px -20px -12px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--m-bg) 45%);
+}
+.m-compare-cta .m-btn {
+  width: 100%;
+}
+
 /* ── Copiloto ────────────────────────────────────────────────────────── */
 
 .m-copilot {
@@ -2338,6 +2574,42 @@ html:not(.dark) .m-range {
   stroke: var(--m-accent);
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
+}
+/* Progreso compacto (ronda oct 2026): la escala de Nutricion · Hoy. */
+.m-prog-summary {
+  gap: 10px;
+}
+.m-progress-weight {
+  padding: 16px;
+  gap: 10px;
+}
+.m-prog-summary .m-range button {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+.m-prog-summary .m-chart {
+  height: 110px;
+}
+.m-card.m-metric {
+  gap: 4px;
+}
+.m-metric .m-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+.m-metric-bar {
+  height: 4px;
+  margin: 4px 0 2px;
+  border-radius: 2px;
+  background: var(--m-surface-2);
+  overflow: hidden;
+}
+.m-metric-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--m-accent);
 }
 @media (prefers-reduced-motion: reduce) {
   .m-chart-line {
@@ -3152,4 +3424,1066 @@ html:not(.dark) .m-home-insight {
 .m-nutri-none {
   color: var(--m-muted);
   font-weight: 500;
+}
+.m-nutri[data-quiet] .m-nutri-row {
+  min-height: 34px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+.m-nutri[data-quiet] .m-nutri-row[data-head] {
+  min-height: 28px;
+  font-size: 11px;
+}
+/* Ficha: de donde salen las kcal (ronda oct 2026). */
+.m-macro-break {
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+}
+.m-macro-donut {
+  position: relative;
+  flex: none;
+  width: 112px;
+  height: 112px;
+}
+.m-macro-donut svg {
+  transform: rotate(-90deg);
+}
+.m-macro-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.m-macro-donut-center .m-num {
+  font-size: 24px;
+  font-weight: 700;
+}
+.m-macro-donut-center small {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-macro-legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.m-macro-legend li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 36px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.m-macro-legend-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-macro-legend-g {
+  font-size: 14px;
+  font-weight: 700;
+}
+.m-macro-legend-pct {
+  font-size: 12px;
+  color: var(--m-muted);
+  text-align: right;
+}
+
+/* ── Escaner de codigo de barras ─────────────────────────────────────── */
+
+.m-scan {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #000;
+  color: var(--m-text);
+  display: flex;
+  flex-direction: column;
+}
+.m-scan-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-scan-top {
+  position: absolute;
+  z-index: 2;
+  top: var(--m-top);
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.m-scan-frame {
+  --frame-w: min(78vw, 300px);
+  --frame-h: calc(var(--frame-w) * 0.62);
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 42%;
+  width: var(--frame-w);
+  height: var(--frame-h);
+  transform: translate(-50%, -50%);
+  border-radius: 4px;
+  /* Lo de fuera del recuadro, atenuado: la vista se va sola al codigo. */
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.55);
+  background:
+    linear-gradient(var(--m-accent), var(--m-accent)) top left / 28px 4px,
+    linear-gradient(var(--m-accent), var(--m-accent)) top left / 4px 28px,
+    linear-gradient(var(--m-accent), var(--m-accent)) top right / 28px 4px,
+    linear-gradient(var(--m-accent), var(--m-accent)) top right / 4px 28px,
+    linear-gradient(var(--m-accent), var(--m-accent)) bottom left / 28px 4px,
+    linear-gradient(var(--m-accent), var(--m-accent)) bottom left / 4px 28px,
+    linear-gradient(var(--m-accent), var(--m-accent)) bottom right / 28px 4px,
+    linear-gradient(var(--m-accent), var(--m-accent)) bottom right / 4px 28px;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.m-scan-line {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--m-accent);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--m-accent) 60%, transparent);
+  animation: m-scan-sweep 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+@keyframes m-scan-sweep {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(calc(var(--frame-h) - 12px));
+  }
+}
+.m-scan-help {
+  position: absolute;
+  z-index: 1;
+  left: 24px;
+  right: 24px;
+  top: calc(42% + min(78vw, 300px) * 0.31 + 20px);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.6);
+}
+.m-scan-center {
+  position: relative;
+  z-index: 1;
+  margin: auto 0;
+  padding: 0 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+.m-scan-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  color: var(--m-accent);
+}
+.m-scan-icon[data-tone="warn"] {
+  background: var(--m-danger-bg);
+  color: var(--m-danger-text);
+}
+.m-scan-foot {
+  position: absolute;
+  z-index: 2;
+  left: 20px;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.m-scan-foot .m-btn {
+  background: var(--m-overlay);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid var(--m-glass-line);
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-scan-line {
+    animation: none;
+    top: 50%;
+  }
+}
+
+/* ── Maniqui: silueta mientras carga ─────────────────────────────────── */
+
+.m-model-ghost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0.14;
+  transition: opacity 420ms ease-out;
+  animation: m-ghost-breathe 1.6s ease-in-out infinite alternate;
+}
+@keyframes m-ghost-breathe {
+  to {
+    opacity: 0.07;
+  }
+}
+.m-model:has([data-model-status="ready"]) .m-model-ghost {
+  opacity: 0;
+  animation: none;
+}
+.m-model .muscle-model-stage canvas {
+  transition: opacity 420ms ease-out;
+}
+.m-model [data-model-status="loading"] canvas {
+  opacity: 0;
+}
+/* El aviso de carga lo da la silueta; el texto queda para lectores. */
+.m-model [data-model-status="loading"] .muscle-model-status {
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-model-ghost {
+    animation: none;
+  }
+}
+
+/* ── Rutinas: dias desplegables ──────────────────────────────────────── */
+
+.m-routine[data-active] {
+  border-color: var(--m-accent);
+}
+.m-days {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--m-line);
+}
+.m-day-acc {
+  border-bottom: 1px solid var(--m-line);
+}
+.m-day-acc:last-child {
+  border-bottom: 0;
+}
+.m-day-acc-head {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  text-align: left;
+}
+.m-day-acc-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+  transition:
+    background 0.3s var(--m-ease),
+    color 0.3s var(--m-ease);
+}
+.m-day-acc[data-open] .m-day-acc-num {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+.m-day-acc[data-open] .m-disclosure-body {
+  grid-template-rows: 1fr;
+}
+.m-day-acc[data-open] .m-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.m-day-acc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 10px 42px;
+  display: flex;
+  flex-direction: column;
+}
+.m-day-acc-ex {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m-text);
+}
+.m-day-acc-name {
+  flex: 1;
+  min-width: 0;
+}
+.m-day-acc-scheme {
+  flex: none;
+  font-size: 13px;
+  color: var(--m-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Detalle de ejercicio: esquema, musculos y enfasis ───────────────── */
+
+.m-ex-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.m-ex-stat {
+  padding: 12px 6px 10px;
+  border-radius: 18px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.m-ex-stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.m-ex-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+  line-height: 1.2;
+}
+.m-ex-stats-note {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-ex-muscle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-ex-muscle-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-muscle[data-secondary] {
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+  box-shadow: inset 0 0 0 1px var(--m-line);
+}
+.m-ex-cues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-ex-cues li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--m-text-soft);
+}
+.m-ex-cues svg {
+  flex: none;
+  margin-top: 2px;
+  padding: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  color: var(--m-accent);
+}
+
+/* ── Acciones destructivas ───────────────────────────────────────────── */
+
+.m-sheet-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+.m-sheet-icon[data-tone="danger"] {
+  background: rgb(255 90 78 / 0.14);
+  color: #ff5a4e;
+}
+/* Rojo solido con tinta oscura: 6:1 de contraste (blanco daria 3:1). */
+.m-btn[data-variant="destructive"] {
+  height: 52px;
+  font-size: 16px;
+  background: #ff5a4e;
+  color: #111113;
+}
+html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
+  background: #d93a2f;
+  color: #fff;
+}
+/* Dentro de una hoja el resplandor del boton principal se leia como una
+   sombra suelta: ahi va plano. */
+.m-sheet .m-btn[data-variant="primary"] {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.m-sheet .m-btn:not([data-variant]) {
+  background: var(--m-surface-2);
+  box-shadow: none;
+}
+
+/* ── Cuestionario IA: una pregunta por pantalla ──────────────────────── */
+
+.m-q-viewport {
+  position: relative;
+  overflow-x: clip;
+  flex: 1;
+}
+.m-q-option {
+  width: 100%;
+  min-height: 60px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  transition: border-color 0.2s var(--m-ease);
+}
+.m-q-option[aria-checked="true"],
+.m-q-option[aria-pressed="true"] {
+  border-color: var(--m-accent);
+}
+.m-q-option:disabled {
+  opacity: 0.4;
+}
+.m-q-option-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.m-q-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.5px var(--m-line);
+  color: var(--m-on-accent);
+  transition: background 0.2s var(--m-ease);
+}
+.m-q-option[aria-checked="true"] .m-q-check,
+.m-q-option[aria-pressed="true"] .m-q-check {
+  background: var(--m-accent);
+  box-shadow: none;
+}
+.m-q-day {
+  height: 96px;
+  border-radius: 22px;
+  background: var(--m-surface);
+  border: 1.5px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-q-day .m-num {
+  font-size: 34px;
+  line-height: 1;
+  color: var(--m-text);
+}
+.m-q-day[aria-checked="true"] {
+  border-color: var(--m-accent);
+  background: color-mix(in srgb, var(--m-accent) 10%, var(--m-surface));
+}
+.m-q-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px;
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-q-summary li + li {
+  border-top: 1px solid var(--m-line);
+}
+.m-q-summary-row {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+/* ── Plan de comidas desplegable ─────────────────────────────────────── */
+
+.m-plan-sum {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-plan-meal {
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-plan-meal-head {
+  min-height: 68px;
+  padding: 8px 8px 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.m-plan-meal-toggle {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  padding: 4px 0 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.m-plan-meal-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.m-plan-meal-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-split {
+  display: flex;
+  gap: 2px;
+  width: 96px;
+  height: 4px;
+  margin-top: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--m-surface-2);
+}
+.m-split > span {
+  flex-basis: 0;
+  border-radius: 2px;
+}
+.m-plan-meal-kcal {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.m-plan-meal-kcal .m-num {
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.m-plan-meal-kcal small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-plan-meal[data-done] .m-plan-meal-title,
+.m-plan-meal[data-done] .m-plan-meal-kcal .m-num {
+  color: var(--m-text-soft);
+}
+.m-plan-meal[data-open] .m-disclosure-body {
+  grid-template-rows: 1fr;
+}
+.m-plan-meal[data-open] .m-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.m-plan-meal-body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* Ingredientes como tabla: nombre y cuatro columnas numericas alineadas. */
+.m-ing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px repeat(3, 34px);
+  gap: 6px;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+.m-ing > :not(:first-child) {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+}
+.m-ing-head {
+  padding: 10px 0 6px;
+  border-top: 1px solid var(--m-line);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-ing-head > :not(:first-child) {
+  font-size: 11px;
+  font-weight: 700;
+}
+.m-ing-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.m-ing-list .m-ing {
+  padding: 8px 0;
+}
+.m-ing-list .m-ing + .m-ing {
+  border-top: 1px solid var(--m-line);
+}
+.m-ing-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 0;
+}
+.m-ing-name small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-ing-total {
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--m-line);
+  font-size: 13px;
+  font-weight: 700;
+}
+.m-plan-meal-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-plan-meal-actions .m-btn:not([data-variant]) {
+  background: var(--m-surface-2);
+  font-size: 14px;
+}
+
+/* ── Agua ────────────────────────────────────────────────────────────── */
+
+.m-water {
+  --m-water: #5aa9e6;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-water-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.m-water-label svg {
+  color: var(--m-water);
+}
+.m-water[data-done] {
+  --m-water: var(--m-positive);
+}
+.m-water[data-done] .m-water-label {
+  color: var(--m-positive);
+}
+.m-water-tank {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--m-water) 12%, var(--m-surface-2));
+  overflow: hidden;
+}
+.m-water-fill {
+  position: relative;
+  height: 100%;
+  min-width: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--m-water) 70%, transparent),
+    var(--m-water)
+  );
+  box-shadow: 0 0 14px color-mix(in srgb, var(--m-water) 55%, transparent);
+  border-radius: 7px 0 0 7px;
+  transition:
+    width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.4s ease;
+}
+/* La ola: el borde del agua se mueve arriba y abajo, como liquido. */
+.m-water-wave {
+  position: absolute;
+  top: 0;
+  right: -9px;
+  width: 10px;
+  height: 300%;
+  fill: var(--m-water);
+  animation: m-wave 1.6s linear infinite;
+}
+@keyframes m-wave {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-66.6%);
+  }
+}
+.m-water[data-done] .m-water-wave {
+  display: none;
+}
+.m-water[data-done] .m-water-fill {
+  border-radius: 7px;
+}
+.m-water-btn {
+  background: color-mix(in srgb, #5aa9e6 14%, var(--m-surface-2));
+  font-size: 14px;
+  gap: 4px;
+}
+.m-water-btn svg {
+  color: #5aa9e6;
+}
+.m-water[data-festejo] .m-water-tank {
+  animation: m-water-pop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+@keyframes m-water-pop {
+  40% {
+    transform: scaleY(1.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-water-fill {
+    transition: none;
+  }
+  .m-water-wave,
+  .m-water[data-festejo] .m-water-tank {
+    animation: none;
+  }
+}
+
+/* ── Evidencia: biblioteca y lectura (ronda oct 2026) ───────────────── */
+
+.m-ev-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -20px;
+  padding: 0 20px 2px;
+  scrollbar-width: none;
+}
+.m-ev-filters::-webkit-scrollbar {
+  display: none;
+}
+.m-ev-filters .m-chip-toggle {
+  flex: none;
+}
+.m-ev-card {
+  position: relative;
+  gap: 6px;
+  padding-right: 40px;
+}
+.m-ev-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-ev-meta .m-tag {
+  letter-spacing: 0;
+  text-transform: none;
+}
+.m-ev-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.m-ev-source {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+.m-ev-summary {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--m-text-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.m-ev-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-ev-chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--m-muted);
+}
+.m-reader {
+  padding: 8px 20px calc(32px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 680px;
+}
+.m-reader-title {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.m-reader-source {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+.m-reader-key {
+  padding: 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--m-accent) 9%, var(--m-surface));
+  box-shadow: inset 3px 0 0 var(--m-accent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.m-reader-key[data-empty] {
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  color: var(--m-text-soft);
+}
+.m-reader-key ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  list-style: disc;
+}
+.m-reader-key li::marker {
+  color: var(--m-accent);
+}
+.m-reader-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 65ch;
+}
+.m-reader-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-reader-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-reader-facts dd {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.m-based-on {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.m-based-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--m-surface-2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+.m-based-chip svg {
+  flex: none;
+  color: var(--m-accent-ink);
+}
+.m-based-chip strong {
+  font-weight: 700;
+  color: var(--m-text);
+}
+.m-evidence-link {
+  text-decoration: underline;
+  text-decoration-color: var(--m-line);
+  text-underline-offset: 3px;
+}
+
+/* ── Perfil › Notificaciones (ronda oct 2026) ───────────────────────── */
+
+.m-notif-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+}
+.m-notif-icon[data-on] {
+  background: color-mix(in srgb, var(--m-accent) 18%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-notif-icon[data-tone="warn"] {
+  background: rgb(255 90 78 / 0.14);
+  color: #ff5a4e;
+}
+.m-sheet-icon[data-tone="accent"] {
+  background: color-mix(in srgb, var(--m-accent) 18%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-notif-cta {
+  gap: 12px;
+}
+.m-notif-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--m-text-soft);
+}
+.m-notif-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.m-notif-steps[data-plain] li {
+  align-items: flex-start;
+}
+.m-notif-steps[data-plain] li svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--m-accent-ink);
+}
+.m-notif-steps strong {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-pref-card[data-dim] {
+  opacity: 0.6;
+}
+.m-notif-type + .m-notif-type {
+  border-top: 1px solid var(--m-line);
+}
+.m-notif-type-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+.m-notif-type-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-notif-type-text .m-pref-label {
+  font-size: 15px;
+}
+.m-notif-hint {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-notif-type[data-off] .m-notif-icon {
+  opacity: 0.6;
+}
+.m-notif-type-body {
+  padding: 0 16px 14px 62px;
+}
+.m-notif-type-body .m-seg-label {
+  font-size: 12px;
+}
+.m-notif-when {
+  display: flex;
+  gap: 8px;
+}
+.m-notif-time {
+  display: block;
+}
+.m-notif-time .m-input {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 15px;
+  font-family: var(--m-font-num-stack);
+  font-variant-numeric: tabular-nums;
 }

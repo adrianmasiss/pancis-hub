@@ -20,6 +20,8 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
 import { isPhone } from "@/lib/device";
+import { parseNotificationPrefs } from "@/features/reminders/prefs";
+import { NotificationsScreen } from "@/mobile/screens/profile/notifications";
 import { todayInTimezone } from "@/lib/dates";
 import { ProfileMobile } from "@/mobile/screens/profile/profile-mobile";
 import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
@@ -42,6 +44,19 @@ export default async function SettingsPage({
 
   const phone = await isPhone();
   const { vista } = await searchParams;
+  if (phone && vista === "notificaciones") {
+    const { data: n } = await supabase
+      .from("profiles")
+      .select("reminders_enabled, notification_prefs")
+      .eq("id", user.id)
+      .maybeSingle();
+    return (
+      <NotificationsScreen
+        enabled={n?.reminders_enabled ?? false}
+        prefs={parseNotificationPrefs(n?.notification_prefs)}
+      />
+    );
+  }
   if (phone && vista !== "editar") {
     const { data: tz } = await supabase
       .from("profiles")

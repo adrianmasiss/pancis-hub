@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ListChecks } from "lucide-react";
 import { ScreenHeader } from "@/mobile/shell/screen-header";
 import { ModuleTabs } from "@/mobile/shell/module-tabs";
+import { PreloadModel } from "@/mobile/ui/preload-model";
 
 const TABS = [
   { id: "hoy", label: "Hoy", href: "/entrenamiento?vista=hoy" },
@@ -32,6 +33,7 @@ export function TrainingTabs({
 }) {
   return (
     <div className="m-screen">
+      <PreloadModel />
       <ScreenHeader
         title={title}
         subtitle={subtitle}

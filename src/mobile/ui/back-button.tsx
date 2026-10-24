@@ -1,7 +1,36 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+
+/**
+ * Si en esta carga de la pagina ya hubo una navegacion dentro de la app.
+ * Vive en el modulo: una recarga o una entrada directa lo devuelven a false.
+ *
+ * Antes se decidia con `document.referrer`, pero tras navegar en el cliente
+ * llega vacio (y en la app instalada siempre): «Volver» caia en `push` al
+ * respaldo, una ida al servidor de ~800 ms. `router.back()` reusa la cache
+ * de atras/adelante de Next y vuelve al instante.
+ */
+let navegoDentro = false;
+
+/** Lo monta el armazon movil: marca la primera navegacion en el cliente. */
+export function NavTracker() {
+  const pathname = usePathname();
+  const search = useSearchParams().toString();
+  const first = useRef(`${pathname}?${search}`);
+  useEffect(() => {
+    if (`${pathname}?${search}` !== first.current) navegoDentro = true;
+  }, [pathname, search]);
+  return null;
+}
+
+/** Vuelve a la pantalla anterior de la app o, si no la hay, a `fallback`. */
+export function goBack(router: ReturnType<typeof useRouter>, fallback: string) {
+  if (navegoDentro && window.history.length > 1) router.back();
+  else router.push(fallback);
+}
 
 /**
  * «Volver» que regresa a donde estabas (si llegaste desde la app) y, si la
@@ -24,13 +53,7 @@ export function BackButton({
       aria-label={label}
       className="m-icon-btn m-press"
       data-glass={glass ? "" : undefined}
-      onClick={() => {
-        const desdeLaApp =
-          window.history.length > 1 &&
-          document.referrer.startsWith(window.location.origin);
-        if (desdeLaApp) router.back();
-        else router.push(fallback);
-      }}
+      onClick={() => goBack(router, fallback)}
     >
       <ChevronLeft size={20} aria-hidden="true" />
     </button>

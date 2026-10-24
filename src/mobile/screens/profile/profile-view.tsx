@@ -19,10 +19,6 @@ import {
   updateTrainingAdjustment,
   updateUnitSystem,
 } from "@/features/settings/actions";
-import {
-  disableReminders,
-  enableReminders,
-} from "@/features/reminders/actions";
 import { toast } from "sonner";
 
 export type ProfileSummary = {
@@ -113,52 +109,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
   const { theme, setTheme } = useTheme();
   const u = useUnits();
   const [ajuste, setAjuste] = useState(s.trainingAdjustment);
-  const [recordatorios, setRecordatorios] = useState(s.remindersEnabled);
 
-  /* Recordatorios: permiso del navegador, suscripcion push del service
-     worker y guardado. El service worker solo existe en la app publicada
-     (en desarrollo se desregistra): ahi se avisa en vez de colgarse. */
-  const toggleRecordatorios = (v: boolean) =>
-    startTransition(async () => {
-      if (!v) {
-        const reg = await navigator.serviceWorker?.getRegistration();
-        await (await reg?.pushManager.getSubscription())?.unsubscribe();
-        const r = await disableReminders();
-        if (r.error) toast.error(r.error);
-        else setRecordatorios(false);
-        return;
-      }
-      const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (
-        !("Notification" in window) ||
-        !("serviceWorker" in navigator) ||
-        !key
-      ) {
-        toast.error("Este navegador no admite notificaciones.");
-        return;
-      }
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (!reg) {
-        toast.error(
-          "Las notificaciones funcionan en la app publicada. En el iPhone, agrégala a la pantalla de inicio primero.",
-        );
-        return;
-      }
-      if ((await Notification.requestPermission()) !== "granted") {
-        toast.error("Sin permiso para notificaciones.");
-        return;
-      }
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: key,
-      });
-      const r = await enableReminders(sub.toJSON());
-      if (r.error) toast.error(r.error);
-      else {
-        setRecordatorios(true);
-        toast.success("Te avisaremos a la hora de tus comidas y del entreno.");
-      }
-    });
   const [pending, startTransition] = useTransition();
 
   const pickAccent = (id: MobileAccent) => {
@@ -389,17 +340,20 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
             Cuenta y privacidad
           </h2>
           <div className="m-pref-card">
-            <div className="m-pref-row">
-              <span className="m-pref-label">
-                Recordatorios de comidas y entreno
+            <Link
+              href="/configuracion?vista=notificaciones"
+              className="m-pref-row m-press"
+            >
+              <span className="m-pref-label">Notificaciones</span>
+              <span className="m-pref-value">
+                {s.remindersEnabled ? "Activadas" : "Apagadas"}
               </span>
-              <Switch
-                label="Recordatorios de comidas y entreno"
-                checked={recordatorios}
-                disabled={pending}
-                onCheckedChange={(v) => toggleRecordatorios(v)}
+              <ChevronRight
+                size={18}
+                className="m-chevron"
+                aria-hidden="true"
               />
-            </div>
+            </Link>
             <Row label="Fotos de progreso" value="Siempre privadas" />
             <Row label="Correo" value={s.email ?? "—"} />
             <a href="/api/exportar" download className="m-pref-row m-press">

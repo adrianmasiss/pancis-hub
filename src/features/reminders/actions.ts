@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { notificationPrefsSchema } from "./prefs";
 
 const FALLO = "No se pudieron guardar los recordatorios.";
 
@@ -55,6 +56,23 @@ export async function disableReminders(): Promise<{ error?: string }> {
   const { error } = await supabase
     .from("profiles")
     .update({ reminders_enabled: false })
+    .eq("id", user.id);
+  return error ? { error: FALLO } : {};
+}
+
+/** Guarda que avisos quiere y a que hora (Perfil › Notificaciones). */
+export async function saveNotificationPrefs(
+  input: unknown,
+): Promise<{ error?: string }> {
+  const parsed = notificationPrefsSchema.safeParse(input);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!parsed.success || !user) return { error: FALLO };
+  const { error } = await supabase
+    .from("profiles")
+    .update({ notification_prefs: parsed.data })
     .eq("id", user.id);
   return error ? { error: FALLO } : {};
 }

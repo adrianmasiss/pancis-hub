@@ -3,12 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Segmented } from "@/mobile/ui/controls";
 
-/** Resumen / Evidencia, en la URL para que «atras» vuelva. */
-export function ProgressSegment({
-  active,
-}: {
-  active: "resumen" | "evidencia";
-}) {
+/** Resumen / Fotos, en la URL para que «atras» vuelva. */
+export function ProgressSegment({ active }: { active: "resumen" | "fotos" }) {
   const router = useRouter();
   return (
     <Segmented
@@ -16,14 +12,13 @@ export function ProgressSegment({
       tone="accent"
       value={active}
       onChange={(v) =>
-        router.push(
-          v === "evidencia" ? "/progreso?vista=evidencia" : "/progreso",
-          { scroll: false },
-        )
+        router.push(v === "fotos" ? "/progreso?vista=fotos" : "/progreso", {
+          scroll: false,
+        })
       }
       options={[
         { value: "resumen", label: "Resumen" },
-        { value: "evidencia", label: "Evidencia" },
+        { value: "fotos", label: "Fotos" },
       ]}
     />
   );

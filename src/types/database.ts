@@ -1664,6 +1664,7 @@ export type Database = {
           id: string
           locale: string
           meals_per_day: number | null
+          notification_prefs: Json
           onboarding_completed_at: string | null
           primary_goal: string | null
           reminders_enabled: boolean
@@ -1694,6 +1695,7 @@ export type Database = {
           id: string
           locale?: string
           meals_per_day?: number | null
+          notification_prefs?: Json
           onboarding_completed_at?: string | null
           primary_goal?: string | null
           reminders_enabled?: boolean
@@ -1724,6 +1726,7 @@ export type Database = {
           id?: string
           locale?: string
           meals_per_day?: number | null
+          notification_prefs?: Json
           onboarding_completed_at?: string | null
           primary_goal?: string | null
           reminders_enabled?: boolean
@@ -2028,6 +2031,7 @@ export type Database = {
       research_sources: {
         Row: {
           authors: string | null
+          body: string | null
           conflicts_of_interest: string | null
           created_at: string
           doi: string | null
@@ -2037,11 +2041,14 @@ export type Database = {
           is_open_access: boolean
           is_retracted: boolean
           journal: string | null
+          key_points: string[] | null
           limitations: string | null
           pmid: string | null
           population: string | null
           source_type: string
+          summary: string | null
           title: string
+          topic: string | null
           updated_at: string
           url: string | null
           verified_at: string | null
@@ -2049,6 +2056,7 @@ export type Database = {
         }
         Insert: {
           authors?: string | null
+          body?: string | null
           conflicts_of_interest?: string | null
           created_at?: string
           doi?: string | null
@@ -2058,11 +2066,14 @@ export type Database = {
           is_open_access?: boolean
           is_retracted?: boolean
           journal?: string | null
+          key_points?: string[] | null
           limitations?: string | null
           pmid?: string | null
           population?: string | null
           source_type: string
+          summary?: string | null
           title: string
+          topic?: string | null
           updated_at?: string
           url?: string | null
           verified_at?: string | null
@@ -2070,6 +2081,7 @@ export type Database = {
         }
         Update: {
           authors?: string | null
+          body?: string | null
           conflicts_of_interest?: string | null
           created_at?: string
           doi?: string | null
@@ -2079,11 +2091,14 @@ export type Database = {
           is_open_access?: boolean
           is_retracted?: boolean
           journal?: string | null
+          key_points?: string[] | null
           limitations?: string | null
           pmid?: string | null
           population?: string | null
           source_type?: string
+          summary?: string | null
           title?: string
+          topic?: string | null
           updated_at?: string
           url?: string | null
           verified_at?: string | null

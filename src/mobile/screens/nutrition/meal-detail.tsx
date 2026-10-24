@@ -4,14 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeftRight,
-  Check,
-  ChevronLeft,
-  Clock,
-  Plus,
-  RotateCcw,
-} from "lucide-react";
+import { ArrowLeftRight, Check, Clock, Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
 import { deleteMeal } from "@/features/nutrition/actions";
@@ -22,6 +15,7 @@ import {
 import type { DietTemplateMealView } from "@/features/dashboard/queries";
 import { triggerHaptic } from "@/lib/haptics";
 import { Stepper } from "@/mobile/ui/controls";
+import { BackButton } from "@/mobile/ui/back-button";
 import { ExtraSheet } from "./extra-sheet";
 import { Sheet } from "@/mobile/ui/sheet";
 import {
@@ -148,13 +142,7 @@ export function MealDetail({
   return (
     <div className="m-screen" data-m-fullscreen="" style={{ paddingBottom: 0 }}>
       <div className="m-step-head">
-        <Link
-          href="/nutricion"
-          aria-label="Volver"
-          className="m-icon-btn m-press"
-        >
-          <ChevronLeft size={20} aria-hidden="true" />
-        </Link>
+        <BackButton fallback="/nutricion" />
         <div style={{ minWidth: 0 }}>
           <div className="m-sub">
             {time && <span className="m-num">{time} · </span>}

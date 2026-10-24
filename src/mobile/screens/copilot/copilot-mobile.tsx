@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { ArrowUp, Camera, Check, ChevronDown, Sparkles, X } from "lucide-react";
+import {
+  ArrowUp,
+  BookOpen,
+  Camera,
+  Check,
+  ChevronDown,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { askAssistant } from "@/features/assistant/actions";
 import { logMeal } from "@/features/nutrition/actions";
@@ -44,14 +52,17 @@ async function reducirFoto(file: File): Promise<string> {
  */
 export function CopilotMobile({
   initialMessage,
+  draft,
   today,
 }: {
   initialMessage?: string;
+  /** Texto que queda escrito sin enviar (p. ej. desde un articulo). */
+  draft?: string;
   today: string;
 }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(draft ?? "");
   const [image, setImage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const endRef = useRef<HTMLDivElement>(null);
@@ -253,6 +264,13 @@ export function CopilotMobile({
 
 const t = messages.assistant;
 
+/** «Dietary protein intake and…»: el titulo hasta ~42 letras, sin cortar palabras. */
+function tituloCorto(title: string): string {
+  if (title.length <= 42) return title;
+  const corte = title.slice(0, 42);
+  return `${corte.slice(0, corte.lastIndexOf(" ")).replace(/[,:;.]$/, "")}…`;
+}
+
 const ROLE: Record<string, { label: string; tone: "ok" | "warn" | "neutral" }> =
   {
     sustenta: { label: "Sostiene", tone: "ok" },
@@ -269,10 +287,27 @@ const ROLE: Record<string, { label: string; tone: "ok" | "warn" | "neutral" }> =
 function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
   const [open, setOpen] = useState(false);
   const sources = reply.sources ?? [];
+  const basadoEn = sources.filter((s) => !s.isProductParameter).slice(0, 3);
   return (
     <article className="m-reply">
       <p className="m-sheet-text">{reply.observation}</p>
       <p className="m-reply-action">{reply.action}</p>
+      {basadoEn.length > 0 && (
+        <div className="m-based-on">
+          {basadoEn.map((s) => (
+            <Link
+              key={s.identifier ?? s.title}
+              href={`/evidencia?ref=${encodeURIComponent(s.identifier ?? s.title)}`}
+              className="m-based-chip m-press"
+            >
+              <BookOpen size={13} aria-hidden="true" />
+              <span>
+                Basado en: <strong>{tituloCorto(s.title)}</strong>
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
       {reply.options?.map((o) => (
         <OptionCard key={o.title} option={o} today={today} />
       ))}
@@ -292,8 +327,8 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
         </div>
         {sources.length === 0 ? (
           <p className="m-sub" style={{ fontSize: 13 }}>
-            Ningún estudio de la biblioteca respalda esta respuesta: sale de
-            tus datos o es una indicación general.
+            Ningún estudio de la biblioteca respalda esta respuesta: sale de tus
+            datos o es una indicación general.
           </p>
         ) : (
           <ul className="m-evidence-list">
@@ -301,7 +336,16 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
               const role = s.role ? ROLE[s.role] : undefined;
               return (
                 <li key={s.identifier ?? s.title} className="m-evidence-item">
-                  <span className="m-evidence-title">{s.title}</span>
+                  {s.isProductParameter ? (
+                    <span className="m-evidence-title">{s.title}</span>
+                  ) : (
+                    <Link
+                      href={`/evidencia?ref=${encodeURIComponent(s.identifier ?? s.title)}`}
+                      className="m-evidence-title m-evidence-link"
+                    >
+                      {s.title}
+                    </Link>
+                  )}
                   <span className="m-evidence-meta">
                     {s.isProductParameter ? (
                       <span className="m-tag" data-tone="neutral">
@@ -326,9 +370,7 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
                       Estudiado en: {s.population}
                     </span>
                   )}
-                  {s.note && (
-                    <span className="m-evidence-note">{s.note}</span>
-                  )}
+                  {s.note && <span className="m-evidence-note">{s.note}</span>}
                 </li>
               );
             })}

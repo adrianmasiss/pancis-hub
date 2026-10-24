@@ -76,6 +76,10 @@ export function useBarcodeCamera(onCode: (code: string) => void) {
   const scanningRef = useRef(false);
   const onCodeRef = useRef(onCode);
   const [error, setError] = useState<string | null>(null);
+  /** El usuario nego el permiso (no es lo mismo que no tener camara). */
+  const [denied, setDenied] = useState(false);
+  /** La camara trasera tiene linterna controlable (Chrome en Android). */
+  const [torchAvailable, setTorchAvailable] = useState(false);
 
   useEffect(() => {
     onCodeRef.current = onCode;
@@ -95,12 +99,14 @@ export function useBarcodeCamera(onCode: (code: string) => void) {
   /** Apaga la camara. Dejarla encendida al cerrar seria un fallo grave. */
   const stop = useCallback(() => {
     scanningRef.current = false;
+    setTorchAvailable(false);
     for (const track of streamRef.current?.getTracks() ?? []) track.stop();
     streamRef.current = null;
   }, []);
 
   const start = useCallback(async () => {
     setError(null);
+    setDenied(false);
     // El polyfill se descarga aqui, no al montar: solo paga el peso quien
     // realmente abre la camara en un navegador que lo necesita.
     const DetectorConstructor = await loadDetectorConstructor();
@@ -115,6 +121,10 @@ export function useBarcodeCamera(onCode: (code: string) => void) {
         video: { facingMode: "environment" },
       });
       streamRef.current = stream;
+      const track = stream.getVideoTracks()[0];
+      const caps = track?.getCapabilities?.() as
+        (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+      setTorchAvailable(Boolean(caps?.torch));
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -139,13 +149,37 @@ export function useBarcodeCamera(onCode: (code: string) => void) {
         setTimeout(scan, 300);
       };
       void scan();
-    } catch {
+    } catch (e) {
+      setDenied(e instanceof DOMException && e.name === "NotAllowedError");
       setError(t.cameraDenied);
     }
   }, [stop]);
 
+  /** Enciende o apaga la linterna; false si el navegador no lo permite. */
+  const setTorch = useCallback(async (on: boolean) => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) return false;
+    try {
+      await track.applyConstraints({
+        advanced: [{ torch: on } as MediaTrackConstraintSet],
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
   // La camara se apaga tambien si el componente desaparece sin cerrar.
   useEffect(() => stop, [stop]);
 
-  return { videoRef, supportsCamera, error, start, stop };
+  return {
+    videoRef,
+    supportsCamera,
+    error,
+    denied,
+    torchAvailable,
+    setTorch,
+    start,
+    stop,
+  };
 }

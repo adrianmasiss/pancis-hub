@@ -74,7 +74,7 @@ export function FoodLibrary({
       </label>
 
       <div className="m-grid-3">
-        <Link href="/nutricion/alimentos" className="m-add-tile m-press">
+        <Link href="/nutricion?vista=escanear" className="m-add-tile m-press">
           <Barcode size={20} aria-hidden="true" />
           Código de barras
         </Link>

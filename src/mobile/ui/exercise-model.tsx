@@ -49,15 +49,18 @@ export function ExerciseModel({
   exercises,
   zoom = false,
   compact = false,
+  withSecondary = false,
   className,
 }: {
   exercises: ConMusculos[];
   zoom?: boolean;
   /** Columna estrecha: solo girar y el credito, sin «Secundarios». */
   compact?: boolean;
+  /** Abre con los secundarios encendidos (mas tenues que los principales). */
+  withSecondary?: boolean;
   className?: string;
 }) {
-  const [secundarios, setSecundarios] = useState(false);
+  const [secundarios, setSecundarios] = useState(withSecondary);
   const [vista, setVista] = useState<"front" | "back" | null>(null);
 
   const mapa = useMemo(
@@ -109,6 +112,19 @@ export function ExerciseModel({
         pulse
         onViewChange={setVista}
       />
+      {/* Mientras llega el modelo: la silueta del mismo cuerpo (5 KB), que
+          se funde cuando el lienzo esta listo. */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- 5 KB, local */}
+      <img
+        className="m-model-ghost"
+        src={
+          view === "back"
+            ? "/anatomy/silueta-espalda.webp"
+            : "/anatomy/silueta-frente.webp"
+        }
+        alt=""
+        aria-hidden="true"
+      />
       <div className="m-model-tools">
         {!compact && (
           <button
@@ -139,7 +155,13 @@ export function ExerciseModel({
  * El maniqui plegado: una fila «Ver musculos en 3D» que lo despliega solo si
  * se pide. Hasta abrirlo no se descarga `three` ni se crea el lienzo.
  */
-export function ModelDisclosure({ exercises }: { exercises: ConMusculos[] }) {
+export function ModelDisclosure({
+  exercises,
+  withSecondary = false,
+}: {
+  exercises: ConMusculos[];
+  withSecondary?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   return (
@@ -167,7 +189,15 @@ export function ModelDisclosure({ exercises }: { exercises: ConMusculos[] }) {
         />
       </button>
       <div className="m-disclosure-body" inert={!open}>
-        <div>{mounted && <ExerciseModel exercises={exercises} zoom />}</div>
+        <div>
+          {mounted && (
+            <ExerciseModel
+              exercises={exercises}
+              zoom
+              withSecondary={withSecondary}
+            />
+          )}
+        </div>
       </div>
     </section>
   );

@@ -29,6 +29,10 @@ import "./tipografia.css";
 import "./movil.css";
 
 export const viewport: Viewport = {
+  // Sin esto `env(safe-area-inset-*)` vale 0 en iPhone y la vista movil no
+  // puede apartarse de la isla dinamica. Solo afecta a iOS: en escritorio no
+  // hay areas seguras.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#090909" },
     { media: "(prefers-color-scheme: light)", color: "#FFF3E6" },

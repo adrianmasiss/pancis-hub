@@ -18,7 +18,7 @@ export const maxDuration = 30;
 export default async function AssistantPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; borrador?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -27,7 +27,7 @@ export default async function AssistantPage({
   if (!user) redirect("/login");
 
   // Los accesos contextuales llegan con la pregunta ya redactada.
-  const { q } = await searchParams;
+  const { q, borrador } = await searchParams;
 
   // Telefono: su propia capa visual, con la misma accion.
   if (await isPhone()) {
@@ -39,6 +39,7 @@ export default async function AssistantPage({
     return (
       <CopilotMobile
         initialMessage={q?.slice(0, 500)}
+        draft={borrador?.slice(0, 500)}
         today={todayInTimezone(profile?.timezone ?? "America/Costa_Rica")}
       />
     );

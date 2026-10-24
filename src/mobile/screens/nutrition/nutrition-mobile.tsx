@@ -11,6 +11,7 @@ import { MealDetail } from "./meal-detail";
 import { CompareFoods } from "./compare";
 import { FoodLibrary } from "./library";
 import { FoodDetail } from "./food-detail";
+import { BarcodeScannerScreen } from "./scanner";
 import { EatOut } from "./eat-out";
 import {
   getRestaurantItems,
@@ -28,6 +29,8 @@ export type NutritionParams = {
   alimento?: string;
   /** Restaurante elegido en «Comer fuera». */
   r?: string;
+  /** Historial abierto desde «Copiar de otro día». */
+  copiar?: string;
 };
 
 function fechaCorta(dateISO: string): string {
@@ -94,6 +97,9 @@ export async function NutritionMobile({
   params: NutritionParams;
 }) {
   const vista = params.vista ?? "";
+  if (vista === "escanear") {
+    return <BarcodeScannerScreen backHref="/nutricion?vista=biblioteca" />;
+  }
   if (params.alimento && /^[0-9a-f-]{36}$/i.test(params.alimento)) {
     const { foods } = await getFoodsLibraryPage(userId, {
       foodId: params.alimento,
@@ -202,6 +208,7 @@ export async function NutritionMobile({
         today={today}
         targetCalories={day.targets?.calories ?? diet?.targetCalories ?? null}
         planMealCount={planMeals.length}
+        copyMode={params.copiar === "1"}
       />
     );
   } else {

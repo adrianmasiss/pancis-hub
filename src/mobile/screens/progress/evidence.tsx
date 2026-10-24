@@ -24,7 +24,7 @@ const corta = (iso: string) =>
     .replace(".", "");
 
 /**
- * Evidencia: fotos de progreso por pose. La mas reciente contra la fecha que
+ * Fotos de progreso por pose. La mas reciente contra la fecha que
  * se elija, con un deslizador que descubre una sobre la otra. Las fotos son
  * privadas: se sirven con URL firmada y solo las ve su dueño.
  */

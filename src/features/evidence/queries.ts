@@ -248,3 +248,50 @@ export async function getEvidenceLibrary(
     spines: buildSpines(studies, constants, personal),
   };
 }
+
+/**
+ * Una fuente lista para leer en el telefono: los datos de siempre mas tema,
+ * resumen, puntos clave y texto, que llegan cuando el usuario carga sus
+ * articulos. Mientras no esten, valen null y la vista lo dice.
+ */
+export type EvidenceArticle = EvidenceStudy & {
+  url: string | null;
+  doi: string | null;
+  pmid: string | null;
+  topic: string | null;
+  summary: string | null;
+  keyPoints: string[];
+  body: string | null;
+};
+
+export async function getEvidenceArticles(): Promise<EvidenceArticle[]> {
+  const supabase = await createClient();
+  // `*` y no la lista de columnas: asi la pantalla sigue andando en una base
+  // que todavia no tiene la migracion de tema/resumen/texto.
+  const { data } = await supabase
+    .from("research_sources")
+    .select("*")
+    .eq("is_retracted", false)
+    .order("year", { ascending: false, nullsFirst: false });
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    authors: row.authors,
+    year: row.year,
+    journal: row.journal,
+    identifier: identifierOf(row.pmid, row.doi),
+    sourceType: row.source_type,
+    evidenceGrade: row.evidence_grade,
+    population: row.population,
+    limitations: row.limitations,
+    isOpenAccess: row.is_open_access,
+    url: row.url,
+    doi: row.doi,
+    pmid: row.pmid,
+    topic: row.topic ?? null,
+    summary: row.summary ?? null,
+    keyPoints: row.key_points ?? [],
+    body: row.body ?? null,
+  }));
+}

@@ -128,9 +128,13 @@ export function LoginForm() {
           aria-busy={pending}
           aria-label={pending ? messages.common.loading : undefined}
           className={cn(
-            "relative overflow-hidden transition-[width,border-radius]",
+            "relative transition-[width,border-radius]",
             "duration-[var(--pc-dur-surface,260ms)] ease-[var(--pc-spring)]",
-            pending ? "mx-auto w-14 rounded-full" : "w-full",
+            // El recorte solo hace falta para el texto mientras encoge. Con
+            // los puntos, recortaba la bola que se balancea hacia fuera.
+            pending
+              ? "mx-auto w-14 overflow-visible rounded-full"
+              : "w-full overflow-hidden",
           )}
         >
           <span

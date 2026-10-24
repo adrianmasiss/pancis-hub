@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { localDateOf } from "@/lib/dates";
+import { addDaysISO, localDateOf } from "@/lib/dates";
+import { parseNotificationPrefs } from "@/features/reminders/prefs";
 
 /*
   Recordatorios push. Lo llama un programador cada ~15 min (ver
   docs en el cierre de la tarea) con `Authorization: Bearer CRON_SECRET`.
 
-  - Comidas: cuando llega la hora de una comida del plan (con la hora movida
-    del dia, si la hay) y todavia no se registro.
-  - Entreno: a las 17:00 locales, si hay rutina y hoy no se entreno.
+  Cada tipo se enciende y se ajusta en Perfil › Notificaciones
+  (`profiles.notification_prefs`, ver src/features/reminders/prefs.ts):
+
+  - Comidas: a la hora de cada comida del plan (con la hora movida del dia,
+    si la hay), o 15/30 min antes, si todavia no se registro.
+  - Entreno: a la hora elegida (17:00 por defecto), si hay rutina y hoy no
+    se entreno.
+  - Agua: a la hora elegida, si el dia va por debajo de la meta.
+  - Resumen semanal: el dia y la hora elegidos, con entrenos y dias con
+    comidas registradas de los ultimos 7 dias.
+
+  El fin del descanso entre series no pasa por aqui: lo avisa el telefono.
 
   Cada aviso se manda una sola vez por dia (`reminder_log`). Las
   suscripciones que el navegador ya no reconoce (404/410) se borran.
@@ -17,7 +27,6 @@ import { localDateOf } from "@/lib/dates";
 
 /** Minutos hacia atras que cubre cada pasada; la bitacora evita repetir. */
 const VENTANA_MIN = 20;
-const HORA_ENTRENO = 17;
 
 function ahoraEn(timezone: string) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -66,7 +75,7 @@ export async function GET(request: Request) {
   const db = createAdminClient();
   const { data: perfiles } = await db
     .from("profiles")
-    .select("id, timezone")
+    .select("id, timezone, notification_prefs")
     .eq("reminders_enabled", true);
 
   let enviados = 0;
@@ -77,8 +86,14 @@ export async function GET(request: Request) {
       .eq("user_id", perfil.id);
     if (!subs?.length) continue;
     const { fecha, minutos } = ahoraEn(perfil.timezone ?? "America/Costa_Rica");
+    const prefs = parseNotificationPrefs(perfil.notification_prefs);
+    /** Ya es la hora `hhmm` y no han pasado mas de `ventana` minutos. */
+    const toca = (hhmm: string, ventana = VENTANA_MIN) => {
+      const diff = minutos - aMinutos(hhmm);
+      return diff >= 0 && diff <= ventana;
+    };
     const avisos: {
-      kind: "comida" | "entreno";
+      kind: "comida" | "entreno" | "agua" | "semanal";
       ref: string;
       title: string;
       body: string;
@@ -92,7 +107,7 @@ export async function GET(request: Request) {
       .eq("user_id", perfil.id)
       .eq("is_active", true)
       .maybeSingle();
-    const comidas = dieta?.diet_template_meals ?? [];
+    const comidas = prefs.comidas.on ? (dieta?.diet_template_meals ?? []) : [];
     if (comidas.length) {
       const [{ data: movidas }, { data: hechas }] = await Promise.all([
         db
@@ -117,12 +132,15 @@ export async function GET(request: Request) {
       for (const c of comidas) {
         const h = hora.get(c.id) ?? c.scheduled_time;
         if (!h || registradas.has(c.id)) continue;
-        const diff = minutos - aMinutos(h);
+        const diff = minutos - (aMinutos(h) - prefs.comidas.antes);
         if (diff < 0 || diff > VENTANA_MIN) continue;
         avisos.push({
           kind: "comida",
           ref: c.id,
-          title: `Hora de tu ${TIPOS[c.meal_type] ?? "comida"} · ${h.slice(0, 5)}`,
+          title:
+            prefs.comidas.antes > 0
+              ? `Tu ${TIPOS[c.meal_type] ?? "comida"} es a las ${h.slice(0, 5)}`
+              : `Hora de tu ${TIPOS[c.meal_type] ?? "comida"} · ${h.slice(0, 5)}`,
           body: c.name
             ? `${c.name}. Márcala cuando la comas.`
             : "Márcala cuando la comas.",
@@ -132,7 +150,7 @@ export async function GET(request: Request) {
     }
 
     // ── Entreno ──
-    if (minutos >= HORA_ENTRENO * 60 && minutos < HORA_ENTRENO * 60 + 60) {
+    if (prefs.entreno.on && toca(prefs.entreno.hora, 60)) {
       const [{ data: plan }, { data: sesiones }] = await Promise.all([
         db
           .from("workout_plans")
@@ -163,6 +181,80 @@ export async function GET(request: Request) {
           url: "/entrenamiento?vista=hoy",
         });
       }
+    }
+
+    // ── Agua ──
+    if (prefs.agua.on && toca(prefs.agua.hora)) {
+      const [{ data: meta }, { data: agua }] = await Promise.all([
+        db
+          .from("nutrition_targets")
+          .select("water_ml")
+          .eq("user_id", perfil.id)
+          .eq("status", "active")
+          .order("effective_from", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        db
+          .from("water_logs")
+          .select("amount_ml")
+          .eq("user_id", perfil.id)
+          .eq("date", fecha),
+      ]);
+      const llevas = (agua ?? []).reduce((t, w) => t + w.amount_ml, 0);
+      const objetivo = meta?.water_ml ?? null;
+      if (!objetivo || llevas < objetivo) {
+        const litros = (ml: number) =>
+          (ml / 1000).toLocaleString("es-CR", { maximumFractionDigits: 1 });
+        avisos.push({
+          kind: "agua",
+          ref: "dia",
+          title: "¿Un vaso de agua?",
+          body: objetivo
+            ? `Vas ${litros(llevas)} de ${litros(objetivo)} L hoy.`
+            : "Registra lo que llevas hoy.",
+          url: "/nutricion",
+        });
+      }
+    }
+
+    // ── Resumen semanal ──
+    const diaSemana = new Date(`${fecha}T12:00:00Z`).getUTCDay();
+    if (
+      prefs.semanal.on &&
+      diaSemana === prefs.semanal.dia &&
+      toca(prefs.semanal.hora, 60)
+    ) {
+      const desde = addDaysISO(fecha, -6);
+      const zona = perfil.timezone ?? "America/Costa_Rica";
+      const [{ data: sesiones }, { data: comidasHechas }] = await Promise.all([
+        db
+          .from("workout_sessions")
+          .select("started_at")
+          .eq("user_id", perfil.id)
+          .not("completed_at", "is", null)
+          .gte(
+            "started_at",
+            new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
+          ),
+        db
+          .from("meals")
+          .select("date")
+          .eq("user_id", perfil.id)
+          .is("deleted_at", null)
+          .gte("date", desde)
+          .lte("date", fecha),
+      ]);
+      const entrenos = (sesiones ?? []).filter(
+        (s) => localDateOf(s.started_at, zona) >= desde,
+      ).length;
+      const dias = new Set((comidasHechas ?? []).map((m) => m.date)).size;
+      avisos.push({
+        kind: "semanal",
+        ref: fecha,
+        title: "Tu semana en Pancis",
+        body: `${entrenos} ${entrenos === 1 ? "entreno" : "entrenos"} y ${dias} de 7 días con comidas registradas.`,
+        url: "/progreso",
+      });
     }
 
     for (const aviso of avisos) {

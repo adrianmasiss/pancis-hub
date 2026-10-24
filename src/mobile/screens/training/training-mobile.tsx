@@ -1,5 +1,6 @@
 import {
   getExerciseLibrary,
+  getPlanDetail,
   getSessionDetail,
   getTrainingLog,
   getTrainingOverview,
@@ -148,9 +149,36 @@ export async function TrainingMobile({
       ? vista
       : "hoy";
 
+  // Proximo dia del plan activo: el siguiente al de la ultima sesion.
+  const days = overview.activePlan?.days ?? [];
+  let nextDay = days[0] ?? null;
+  const lastDayId = overview.recentSessions[0]?.planDayId;
+  if (lastDayId) {
+    const i = days.findIndex((d) => d.id === lastDayId);
+    if (i >= 0) nextDay = days[(i + 1) % days.length] ?? nextDay;
+  }
+
   let body: React.ReactNode;
   if (tab === "rutinas") {
-    body = <Routines plans={overview.plans} aiEnabled={aiEnabled} />;
+    // Los dias de cada rutina, para desplegarlos ahi mismo. Son pocas.
+    const detalles = await Promise.all(
+      overview.plans.map((p) =>
+        p.id === overview.activePlan?.id
+          ? overview.activePlan
+          : getPlanDetail(userId, p.id, today),
+      ),
+    );
+    const planDays = Object.fromEntries(
+      detalles.flatMap((d) => (d ? [[d.id, d.days] as const] : [])),
+    );
+    body = (
+      <Routines
+        plans={overview.plans}
+        planDays={planDays}
+        todayDayId={nextDay?.id ?? null}
+        aiEnabled={aiEnabled}
+      />
+    );
   } else if (tab === "historial") {
     const log = await getTrainingLog(userId);
     body = <TrainingHistory sessions={log} today={today} timezone={timezone} />;
@@ -203,14 +231,6 @@ export async function TrainingMobile({
       />
     );
   } else {
-    // Proximo dia del plan activo: el siguiente al de la ultima sesion.
-    const days = overview.activePlan?.days ?? [];
-    let nextDay = days[0] ?? null;
-    const lastDayId = overview.recentSessions[0]?.planDayId;
-    if (lastDayId) {
-      const i = days.findIndex((d) => d.id === lastDayId);
-      if (i >= 0) nextDay = days[(i + 1) % days.length] ?? nextDay;
-    }
     body = (
       <TrainingToday
         overview={overview}

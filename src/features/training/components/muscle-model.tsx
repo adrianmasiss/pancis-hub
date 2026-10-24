@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  GLTFLoader,
+  type GLTF,
+} from "three/examples/jsm/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { downloadMuscleModel } from "@/features/training/lib/model-preload";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ROTULOS } from "../lib/muscle-map";
 import {
@@ -155,6 +160,36 @@ float surfaceDetail = surfaceNoise(vLocal * 650.0);
 float detailVisibility = 1.0 - smoothstep(0.0008, 0.003, max(length(dFdx(vLocal)), length(dFdy(vLocal))));
 diffuseColor.rgb *= 1.0 + (surfaceDetail - 0.5) * 0.055 * detailVisibility;
 `;
+
+async function cargarModelo(): Promise<GLTF> {
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  return loader.parseAsync(await downloadMuscleModel(), "/anatomy/");
+}
+
+/**
+ * La cuantizacion de Meshopt guarda las posiciones en enteros y pone la
+ * escala y el desplazamiento en el nodo. Las zonas (shader y `modelRegionAt`)
+ * se leen en el espacio de la malla original, asi que se devuelve ahi:
+ * posiciones a float con la transformacion del nodo aplicada, y nodo neutro.
+ */
+function enEspacioOriginal(mesh: THREE.Mesh) {
+  const g = mesh.geometry;
+  const pos = g.getAttribute("position");
+  if (pos.array instanceof Float32Array) return;
+  const plano = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    plano[i * 3] = pos.getX(i);
+    plano[i * 3 + 1] = pos.getY(i);
+    plano[i * 3 + 2] = pos.getZ(i);
+  }
+  g.setAttribute("position", new THREE.BufferAttribute(plano, 3));
+  mesh.updateMatrix();
+  g.applyMatrix4(mesh.matrix);
+  mesh.position.set(0, 0, 0);
+  mesh.quaternion.identity();
+  mesh.scale.set(1, 1, 1);
+  mesh.updateMatrix();
+}
 
 /** Modelo local optimizado, con render bajo demanda y una alternativa textual. */
 export function MuscleModel({
@@ -424,8 +459,7 @@ export function MuscleModel({
             material.dispose();
         }
       });
-    void new GLTFLoader()
-      .loadAsync("/anatomy/muscle-body.glb")
+    void cargarModelo()
       .then((gltf) => {
         if (disposed) {
           disposeModel(gltf.scene);
@@ -433,6 +467,7 @@ export function MuscleModel({
         }
         gltf.scene.traverse((object) => {
           if (!(object instanceof THREE.Mesh)) return;
+          enEspacioOriginal(object);
           for (const material of Array.isArray(object.material)
             ? object.material
             : [object.material])

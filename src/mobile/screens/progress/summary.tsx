@@ -60,7 +60,7 @@ export function ProgressSummary({
   }, [data.weightSeries, r.days, today]);
 
   const W = 300;
-  const H = 150;
+  const H = 110;
   const values = serie.map((p) => p.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -90,22 +90,30 @@ export function ProgressSummary({
   const cinturaPrev = anterior("waistCm", cintura);
 
   return (
-    <div className="m-body m-stagger">
-      <section className="m-card" data-glow="" aria-label="Peso">
+    <div className="m-body m-stagger m-prog-summary">
+      <section
+        className="m-card m-progress-weight"
+        data-glow=""
+        aria-label="Peso"
+      >
         <div
           className="m-row"
           style={{ justifyContent: "space-between", alignItems: "flex-start" }}
         >
           <div>
             <div className="m-stat-label">Peso</div>
-            <div className="m-stat-value" style={{ fontSize: 40 }}>
+            <div className="m-stat-value" style={{ fontSize: 32 }}>
               {data.lastWeight !== null ? u.fmtWeight(data.lastWeight) : "—"}
               <small>{u.weightUnit}</small>
             </div>
             {delta !== null && (
               <div
                 className="m-sub"
-                style={{ fontWeight: 700, color: "var(--m-text-soft)" }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--m-text-soft)",
+                }}
               >
                 {signo(u.weight(delta))} {u.weightUnit} · {r.desde}
               </div>
@@ -179,9 +187,9 @@ export function ProgressSummary({
       </section>
 
       <div className="m-grid-2">
-        <div className="m-card" data-size="sm">
+        <div className="m-card m-metric" data-size="sm">
           <span className="m-stat-label">% de grasa</span>
-          <span className="m-stat-value" style={{ fontSize: 28 }}>
+          <span className="m-stat-value">
             {grasa?.bodyFatPercentage != null
               ? `${num(grasa.bodyFatPercentage)}%`
               : "—"}
@@ -192,9 +200,9 @@ export function ProgressSummary({
               : "Sin comparación aún"}
           </span>
         </div>
-        <div className="m-card" data-size="sm">
+        <div className="m-card m-metric" data-size="sm">
           <span className="m-stat-label">Cintura</span>
-          <span className="m-stat-value" style={{ fontSize: 28 }}>
+          <span className="m-stat-value">
             {cintura?.waistCm != null ? u.fmtLength(cintura.waistCm) : "—"}
             {cintura?.waistCm != null && <small>{u.lengthUnit}</small>}
           </span>
@@ -204,7 +212,7 @@ export function ProgressSummary({
               : "Sin comparación aún"}
           </span>
         </div>
-        <div className="m-card" data-size="sm">
+        <div className="m-card m-metric" data-size="sm">
           <span
             className="m-stat-label"
             style={{
@@ -215,7 +223,7 @@ export function ProgressSummary({
           >
             {record?.exerciseName ?? "Récord de fuerza"}
           </span>
-          <span className="m-stat-value" style={{ fontSize: 28 }}>
+          <span className="m-stat-value">
             {record ? u.fmtWeight(record.weightKg) : "—"}
             {record && <small>{u.weightUnit}</small>}
           </span>
@@ -228,10 +236,11 @@ export function ProgressSummary({
               : "Aún sin marcas"}
           </span>
         </div>
-        <div className="m-card" data-size="sm">
+        <div className="m-card m-metric" data-size="sm">
           <span className="m-stat-label">Constancia</span>
-          <span className="m-stat-value" style={{ fontSize: 28 }}>
-            {constancia}%
+          <span className="m-stat-value">{constancia}%</span>
+          <span className="m-metric-bar" aria-hidden="true">
+            <span style={{ width: `${Math.min(100, constancia)}%` }} />
           </span>
           <span className="m-sub" style={{ fontSize: 12 }}>
             Entreno y comidas · 7 días

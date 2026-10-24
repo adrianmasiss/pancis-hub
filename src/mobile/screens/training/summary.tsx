@@ -88,7 +88,7 @@ export function WorkoutSummary({
     <div className="m-screen m-summary" data-m-fullscreen="">
       <div
         className="m-body m-stagger"
-        style={{ paddingTop: "calc(40px + env(safe-area-inset-top))" }}
+        style={{ paddingTop: "calc(var(--m-top) + 24px)" }}
       >
         <div className="m-summary-head">
           <span className="m-summary-check m-pop m-pulse" aria-hidden="true">

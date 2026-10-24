@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { BackButton } from "@/mobile/ui/back-button";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   useCallback,
@@ -12,17 +12,19 @@ import {
   useTransition,
 } from "react";
 import {
+  AlertTriangle,
   ArrowLeftRight,
   ArrowRight,
-  ChevronLeft,
   Dumbbell,
   Pause,
   Play,
   Plus,
   Search,
   Timer,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { notifyRestEnd } from "@/mobile/rest-notice";
 import {
   addSessionPause,
   deleteSet,
@@ -292,6 +294,7 @@ export function ActiveWorkout({
         setRest(null);
         triggerHaptic("success");
         toast("¡A la siguiente serie!");
+        void notifyRestEnd();
       },
       Math.max(0, rest.endsAt - Date.now()),
     );
@@ -368,7 +371,7 @@ export function ActiveWorkout({
   const [pauseOpen, setPauseOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [summary, setSummary] = useState(false);
-  const [discardArmed, setDiscardArmed] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
 
   const finish = () =>
     startFinish(async () => {
@@ -423,14 +426,7 @@ export function ActiveWorkout({
         )}
         <div className="m-active-fade" aria-hidden="true" />
         <div className="m-active-top">
-          <Link
-            href={backHref}
-            aria-label="Volver"
-            className="m-icon-btn m-press"
-            data-glass=""
-          >
-            <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
-          </Link>
+          <BackButton fallback={backHref} glass />
           <div
             className="m-active-clock"
             role="timer"
@@ -796,8 +792,7 @@ export function ActiveWorkout({
         open={pauseOpen}
         onOpenChange={(o) => {
           setPauseOpen(o);
-          if (!o && paused) togglePause();
-          setDiscardArmed(false);
+          if (!o && paused && !discardOpen) togglePause();
         }}
         title="Entrenamiento en pausa"
         description="El reloj y el descanso se detienen hasta que sigas."
@@ -834,16 +829,59 @@ export function ActiveWorkout({
           data-block=""
           disabled={finishing}
           onClick={() => {
-            if (!discardArmed) {
-              setDiscardArmed(true);
-              return;
-            }
-            startFinish(async () => {
-              await discardSession({ sessionId: session.id });
-            });
+            setPauseOpen(false);
+            setDiscardOpen(true);
           }}
         >
-          {discardArmed ? "Toca otra vez para descartar" : "Descartar sesión"}
+          <Trash2 size={16} aria-hidden="true" />
+          Descartar sesión
+        </button>
+      </Sheet>
+
+      {/* Descartar es irreversible: hoja propia, roja, que dice que se pierde. */}
+      <Sheet
+        open={discardOpen}
+        onOpenChange={(o) => {
+          setDiscardOpen(o);
+          if (!o && paused) togglePause();
+        }}
+        title="¿Descartar este entrenamiento?"
+        description={(() => {
+          const n = sets.filter((st) => !st.isWarmup).length;
+          return n
+            ? `Se perderán ${n === 1 ? "la serie registrada" : `las ${n} series registradas`} y el tiempo de la sesión. No se puede deshacer.`
+            : "Se perderá el tiempo de la sesión. No se puede deshacer.";
+        })()}
+        icon={
+          <span className="m-sheet-icon" data-tone="danger" aria-hidden="true">
+            <AlertTriangle size={24} />
+          </span>
+        }
+      >
+        <button
+          type="button"
+          className="m-btn m-press"
+          data-variant="destructive"
+          data-block=""
+          disabled={finishing}
+          onClick={() =>
+            startFinish(async () => {
+              await discardSession({ sessionId: session.id });
+            })
+          }
+        >
+          {finishing ? "Descartando…" : "Descartar"}
+        </button>
+        <button
+          type="button"
+          className="m-btn m-press"
+          data-block=""
+          onClick={() => {
+            setDiscardOpen(false);
+            if (paused) togglePause();
+          }}
+        >
+          Seguir entrenando
         </button>
       </Sheet>
 

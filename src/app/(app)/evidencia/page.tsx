@@ -4,12 +4,18 @@ import { EvidenceLayer } from "@/features/evidence/components/evidence-layer";
 import { EvidenceRing } from "@/features/evidence/components/evidence-ring";
 import { StudyRow } from "@/features/evidence/components/study-row";
 import { ConstantRow } from "@/features/evidence/components/constant-row";
-import { getEvidenceLibrary } from "@/features/evidence/queries";
+import {
+  getEvidenceArticles,
+  getEvidenceLibrary,
+  type EvidenceArticle,
+} from "@/features/evidence/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { ViewHeader } from "@/components/shared/view-header";
 import { isPhone } from "@/lib/device";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { BackButton } from "@/mobile/ui/back-button";
+import { EvidenceList } from "@/mobile/screens/evidence/evidence-list";
+import { EvidenceReader } from "@/mobile/screens/evidence/evidence-reader";
 
 const t = messages.evidence;
 const d = messages.dashboard.nutrition;
@@ -28,12 +34,39 @@ export const metadata: Metadata = { title: t.title };
  * `research_sources`, `formula_versions` con su union, y los objetivos del
  * propio usuario.
  */
-export default async function EvidencePage() {
+export default async function EvidencePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; ref?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Telefono: biblioteca con busqueda y vista de lectura propias.
+  if (await isPhone()) {
+    const { id, ref } = await searchParams;
+    const articles = await getEvidenceArticles();
+    const article = id
+      ? articles.find((a) => a.id === id)
+      : ref
+        ? findByReference(articles, ref)
+        : undefined;
+    if (article) return <EvidenceReader article={article} />;
+    return (
+      <div className="m-screen" data-m-fullscreen="">
+        <header className="m-step-head">
+          <BackButton fallback="/asistente" label="Volver" />
+          <h1 className="m-title" style={{ fontSize: 26 }}>
+            {messages.nav.evidence}
+          </h1>
+        </header>
+        <EvidenceList articles={articles} />
+      </div>
+    );
+  }
 
   const { studies, constants, personal, spines } = await getEvidenceLibrary(
     user.id,
@@ -110,23 +143,6 @@ export default async function EvidencePage() {
     </>
   );
 
-  // Telefono: las tres capas (la alternativa tabular), sin el anillo 3D.
-  if (await isPhone()) {
-    return (
-      <MobileFormsFrame
-        title={messages.nav.evidence}
-        backHref="/asistente"
-        backLabel="Volver"
-        smartBack
-      >
-        <div className="flex flex-col gap-10">
-          <p className="m-sub">{t.subtitle}</p>
-          {layers}
-        </div>
-      </MobileFormsFrame>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-12">
       {/* El encabezado era editorial y centrado, con la frase de portada como
@@ -157,5 +173,20 @@ export default async function EvidencePage() {
 
       {layers}
     </div>
+  );
+}
+
+/**
+ * La cita del copiloto guarda titulo e identificador («PMID …», «DOI …»), no
+ * el id de la fuente: se busca por identificador y, si no, por titulo.
+ */
+function findByReference(
+  articles: EvidenceArticle[],
+  ref: string,
+): EvidenceArticle | undefined {
+  const r = ref.trim().toLowerCase();
+  return (
+    articles.find((a) => a.identifier?.toLowerCase() === r) ??
+    articles.find((a) => a.title.toLowerCase() === r)
   );
 }

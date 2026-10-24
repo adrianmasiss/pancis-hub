@@ -80,6 +80,9 @@ function isSupabaseRequest(url) {
 function isImmutableAsset(url) {
   return (
     url.pathname.startsWith("/icons/") ||
+    // El maniqui 3D (1,3 MB): la version va en `?v=`, asi que un modelo
+    // nuevo es otra URL y no hace falta revalidar.
+    url.pathname.startsWith("/anatomy/") ||
     url.pathname === "/logo.png" ||
     url.pathname === "/logo-dark.png"
   );

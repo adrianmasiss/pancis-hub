@@ -21,6 +21,7 @@ export function Sheet({
   onOpenChange,
   title,
   description,
+  icon,
   children,
 }: {
   open: boolean;
@@ -28,6 +29,8 @@ export function Sheet({
   title: string;
   /** Texto bajo el titulo; si falta, el titulo basta como nombre accesible. */
   description?: React.ReactNode;
+  /** Va sobre el titulo (p. ej. el aviso de una accion destructiva). */
+  icon?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const reduce = useReducedMotion();
@@ -79,6 +82,7 @@ export function Sheet({
                   aria-hidden="true"
                   onPointerDown={(e) => drag.start(e)}
                 />
+                {icon}
                 <Dialog.Title className="m-sheet-title">{title}</Dialog.Title>
                 {description ? (
                   <Dialog.Description className="m-sheet-text">

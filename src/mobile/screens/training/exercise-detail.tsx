@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useOptimistic, useTransition } from "react";
-import { Dumbbell, Heart, Play } from "lucide-react";
+import { Check, Dumbbell, Heart, Play } from "lucide-react";
 import { toggleExerciseFavorite } from "@/features/training/favorite-actions";
 import { triggerHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -57,15 +57,39 @@ export function ExerciseDetail({
       const r = await toggleExerciseFavorite({ exerciseId: ex.id });
       if ("error" in r) toast.error(r.error);
     });
-  const scheme = planned
-    ? `${planned.sets ?? "—"} × ${reps(planned)}`
-    : detail.prescription
-      ? `${detail.prescription.sets} × ${detail.prescription.repsMin}–${detail.prescription.repsMax}`
+  /* Lo de la rutina manda; si el ejercicio no esta en ella, lo sugerido. */
+  const p = detail.prescription;
+  const sets = planned ? planned.sets : (p?.sets ?? null);
+  const repsTxt = planned
+    ? reps(planned)
+    : p
+      ? `${p.repsMin}–${p.repsMax}`
       : "—";
-  const rir = planned?.rir ?? detail.prescription?.rir ?? null;
-  const cues = [detail.summary, ...ex.techniqueCues.slice(0, 2)].filter(
-    Boolean,
-  );
+  const rir = planned?.rir ?? p?.rir ?? null;
+  const rest = planned?.restSeconds ?? p?.restSeconds ?? null;
+  const stats = [
+    { value: sets ?? "—", label: sets === 1 ? "serie" : "series" },
+    { value: repsTxt, label: "reps" },
+    { value: rir ?? "—", label: "RIR" },
+    {
+      value: rest
+        ? rest % 60
+          ? `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`
+          : rest / 60
+        : "—",
+      label: rest && rest % 60 === 0 ? "min descanso" : "descanso",
+    },
+  ];
+  /* Enfasis en puntos cortos: las claves de tecnica del catalogo; si no hay,
+     las frases del resumen. Nunca mas de cuatro. */
+  const cues = (
+    ex.techniqueCues.length
+      ? ex.techniqueCues
+      : (detail.summary ?? "")
+          .split(/(?<=[.!?])\s+/)
+          .map((c) => c.trim().replace(/\.$/, ""))
+          .filter(Boolean)
+  ).slice(0, 4);
 
   return (
     <div className="m-active" data-m-fullscreen="">
@@ -106,80 +130,80 @@ export function ExerciseDetail({
       </div>
 
       <div className="m-body m-stagger" style={{ paddingTop: 14, gap: 18 }}>
-        <div className="m-grid-3">
-          <div
-            className="m-card"
-            data-size="sm"
-            style={{ textAlign: "center", padding: 12 }}
-          >
-            <div className="m-stat-value">{scheme}</div>
-            <div className="m-stat-label">
-              {planned ? "En tu rutina" : "Sugerido"}
-            </div>
+        <section aria-labelledby="m-ex-scheme">
+          <h2 id="m-ex-scheme" className="sr-only">
+            {planned ? "En tu rutina" : "Sugerido"}
+          </h2>
+          <div className="m-ex-stats">
+            {stats.map((st) => (
+              <div key={st.label} className="m-ex-stat">
+                <span className="m-ex-stat-value m-num">{st.value}</span>
+                <span className="m-ex-stat-label">{st.label}</span>
+              </div>
+            ))}
           </div>
-          <div
-            className="m-card"
-            data-size="sm"
-            style={{ textAlign: "center", padding: 12 }}
-          >
-            <div className="m-stat-value">{rir ?? "—"}</div>
-            <div className="m-stat-label">RIR</div>
-          </div>
-          <div
-            className="m-card"
-            data-size="sm"
-            style={{ textAlign: "center", padding: 12 }}
-          >
-            <div className="m-stat-value">
-              {history?.last ? u.fmtWeight(history.last.weightKg) : "—"}
-              {history?.last && <small>{u.weightUnit}</small>}
-            </div>
-            <div className="m-stat-label">Última vez</div>
-          </div>
-        </div>
+          <p className="m-ex-stats-note">
+            {planned ? "Así está en tu rutina" : "Esquema sugerido"}
+            {history?.last && (
+              <>
+                {" · "}Última vez{" "}
+                <span className="m-num">
+                  {u.fmtWeight(history.last.weightKg)} {u.weightUnit}
+                </span>
+              </>
+            )}
+          </p>
+        </section>
 
         <section
           className="m-stack"
-          style={{ gap: 10 }}
+          style={{ gap: 12 }}
           aria-labelledby="m-ex-muscles"
         >
           <h2 id="m-ex-muscles" className="m-section">
             Músculos
           </h2>
-          <div className="m-muscles">
-            <span className="m-muscles-label">Principales</span>
-            <span className="m-muscle" data-primary="">
-              {capital(musculo(ex.primaryMuscle))}
-            </span>
+          <div className="m-ex-muscle-group">
+            <h3 className="m-ex-muscle-title">Principales</h3>
+            <div className="m-muscles">
+              <span className="m-muscle" data-primary="">
+                {capital(musculo(ex.primaryMuscle))}
+              </span>
+            </div>
           </div>
           {ex.secondaryMuscles.length > 0 && (
-            <div className="m-muscles">
-              <span className="m-muscles-label">Secundarios</span>
-              {ex.secondaryMuscles.map((m) => (
-                <span key={m} className="m-muscle">
-                  {capital(musculo(m))}
-                </span>
-              ))}
+            <div className="m-ex-muscle-group">
+              <h3 className="m-ex-muscle-title">Secundarios</h3>
+              <div className="m-muscles">
+                {ex.secondaryMuscles.map((m) => (
+                  <span key={m} className="m-muscle" data-secondary="">
+                    {capital(musculo(m))}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </section>
 
-        <ModelDisclosure exercises={[ex]} />
+        <ModelDisclosure exercises={[ex]} withSecondary />
 
         {cues.length > 0 && (
           <section
             className="m-stack"
-            style={{ gap: 6 }}
+            style={{ gap: 10 }}
             aria-labelledby="m-ex-tech"
           >
             <h2 id="m-ex-tech" className="m-section">
               Énfasis
             </h2>
-            {cues.map((c) => (
-              <p key={c} className="m-sheet-text">
-                {c}
-              </p>
-            ))}
+            <ul className="m-ex-cues">
+              {cues.map((c) => (
+                <li key={c}>
+                  <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                  <span>{c}</span>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
       </div>

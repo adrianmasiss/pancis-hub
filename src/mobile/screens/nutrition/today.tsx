@@ -9,20 +9,12 @@ import { deleteMeal } from "@/features/nutrition/actions";
 import type { DayPlan } from "@/features/nutrition/queries";
 import type { DietTemplateView } from "@/features/dashboard/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
-import { useWater } from "@/features/nutrition/components/use-water";
 import { Bar, Ring } from "@/mobile/ui/display";
-import { CheckCircle } from "@/mobile/ui/controls";
 import { ExtraSheet } from "./extra-sheet";
+import { PlanMeal } from "./plan-meal";
+import { WaterCard } from "./water";
 import type { TrainingAdjustment } from "@/mobile/training-adjustment";
-import {
-  MACROS,
-  addMacros,
-  gramos,
-  kcal,
-  litros,
-  mealLabel,
-  mealTypeLabel,
-} from "./format";
+import { MACROS, addMacros, gramos, kcal, mealLabel } from "./format";
 
 /**
  * Nutricion · Hoy: el anillo de kcal restantes, los cuatro macros, el agua y
@@ -49,6 +41,8 @@ export function NutritionToday({
   const meals = diet?.meals ?? [];
   const [, startTransition] = useTransition();
   const [extraOpen, setExtraOpen] = useState(false);
+  /* Una comida abierta a la vez. */
+  const [openMeal, setOpenMeal] = useState<string | null>(null);
 
   /* Lo marcado y desmarcado se ve antes de que responda el servidor. */
   const [overrides, setOverride] = useOptimistic(
@@ -75,11 +69,6 @@ export function NutritionToday({
   const restantes =
     target !== null ? Math.max(0, target - consumed.calories) : null;
   const targets = day.targets;
-  const water = useWater({
-    date,
-    ml: day.waterMl,
-    targetMl: day.waterMlTarget,
-  });
 
   const toggle = (mealId: string, done: boolean) =>
     startTransition(async () => {
@@ -167,37 +156,7 @@ export function NutritionToday({
         </div>
 
         <hr className="m-divider" />
-        <div className="m-row">
-          <div style={{ flex: 1 }}>
-            <div className="m-stat-label">Agua</div>
-            <div className="m-stat-value">
-              {litros(water.shown)}
-              {day.waterMlTarget ? (
-                <small>/ {litros(day.waterMlTarget)} L</small>
-              ) : (
-                <small>L</small>
-              )}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="soft"
-            disabled={water.pending}
-            onClick={() => water.add(250)}
-          >
-            +250 ml
-          </button>
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="soft"
-            disabled={water.pending}
-            onClick={() => water.add(500)}
-          >
-            +500 ml
-          </button>
-        </div>
+        <WaterCard date={date} ml={day.waterMl} targetMl={day.waterMlTarget} />
       </section>
 
       {adjustment && (
@@ -215,10 +174,24 @@ export function NutritionToday({
 
       <section className="m-stack" aria-labelledby="m-plan-title">
         <div className="m-row" style={{ justifyContent: "space-between" }}>
-          <h2 id="m-plan-title" className="m-section">
-            Plan de comidas
-          </h2>
-          <Link href="/nutricion?vista=historial" className="m-link m-press">
+          <div>
+            <h2 id="m-plan-title" className="m-section">
+              Plan de comidas
+            </h2>
+            {meals.length > 0 && (
+              <p className="m-plan-sum">
+                <span className="m-num">
+                  {kcal(meals.reduce((t, m) => t + m.totals.calories, 0))}
+                </span>{" "}
+                kcal en {meals.length} comidas
+              </p>
+            )}
+          </div>
+          <Link
+            href="/nutricion?vista=historial&copiar=1"
+            className="m-link m-press"
+            style={{ whiteSpace: "nowrap" }}
+          >
             Copiar de otro día
           </Link>
         </div>
@@ -237,70 +210,24 @@ export function NutritionToday({
             </Link>
           </div>
         )}
-        {meals.map((meal) => {
-          const done = isDone(meal.id, meal.loggedToday);
-          const swapped = meal.items.some((i) => i.daySwap);
-          const time = meal.scheduledTime?.slice(0, 5);
-          const foods = meal.items
-            .filter((i) => !i.omitted)
-            .map((i) => i.foodName)
-            .join(", ");
-          return (
-            <div
-              key={meal.id}
-              className="m-meal-row"
-              data-done={done ? "" : undefined}
-            >
-              <Link
-                href={`/nutricion?comida=${meal.id}${date !== today ? `&fecha=${date}` : ""}`}
-                className="m-meal-main m-press"
-              >
-                <span className="m-meal-meta">
-                  {time && <span className="m-num">{time}</span>}
-                  {time && " · "}
-                  {mealTypeLabel(meal.mealType)}
-                  {swapped && (
-                    <span
-                      className="m-tag"
-                      data-tone="warn"
-                      style={{ marginLeft: 6 }}
-                    >
-                      Ajustada hoy
-                    </span>
-                  )}
-                  {moved[meal.id] !== undefined && (
-                    <span
-                      className="m-tag"
-                      data-tone="neutral"
-                      style={{ marginLeft: 6 }}
-                    >
-                      Movida hoy
-                    </span>
-                  )}
-                </span>
-                <span className="m-list-row-title">
-                  {meal.name?.trim() || foods || mealLabel(meal.mealType)}
-                </span>
-              </Link>
-              <span className="m-num m-meal-kcal">
-                {kcal(meal.totals.calories)}
-              </span>
-              <CheckCircle
-                checked={done}
-                label={
-                  done
-                    ? `Desmarcar ${mealLabel(meal.mealType, meal.name)}`
-                    : `Marcar ${mealLabel(meal.mealType, meal.name)} como comida`
-                }
-                disabled={
-                  meal.items.length === 0 ||
-                  (meal.loggedToday && !loggedIdOf(meal.id))
-                }
-                onToggle={() => toggle(meal.id, done)}
-              />
-            </div>
-          );
-        })}
+        {meals.map((meal) => (
+          <PlanMeal
+            key={meal.id}
+            meal={meal}
+            date={date}
+            today={today}
+            open={openMeal === meal.id}
+            onOpenChange={(o) => setOpenMeal(o ? meal.id : null)}
+            done={isDone(meal.id, meal.loggedToday)}
+            canToggle={
+              meal.items.length > 0 &&
+              !(meal.loggedToday && !loggedIdOf(meal.id))
+            }
+            onToggle={() => toggle(meal.id, isDone(meal.id, meal.loggedToday))}
+            movedFrom={moved[meal.id]}
+            onAddExtra={() => setExtraOpen(true)}
+          />
+        ))}
         {offPlan.map((meal) => (
           <div key={meal.id} className="m-meal-row" data-done="">
             <div className="m-meal-main">

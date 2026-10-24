@@ -448,11 +448,11 @@ export function HomeView({
 
         {/* Accesos rapidos */}
         <nav className="m-grid-3" aria-label="Accesos rápidos">
-          <Link href="/progreso?vista=evidencia" className="m-add-tile m-press">
+          <Link href="/progreso?vista=fotos" className="m-add-tile m-press">
             <Camera size={20} aria-hidden="true" />
             Foto de progreso
           </Link>
-          <Link href="/nutricion/alimentos" className="m-add-tile m-press">
+          <Link href="/nutricion?vista=escanear" className="m-add-tile m-press">
             <Barcode size={20} aria-hidden="true" />
             Escanear
           </Link>

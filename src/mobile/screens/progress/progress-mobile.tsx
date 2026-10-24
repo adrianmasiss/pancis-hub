@@ -9,7 +9,7 @@ import { ProgressSegment } from "./segment";
 
 /**
  * Progreso en telefono: Resumen (peso, grasa, cintura, marca y constancia) y
- * Evidencia (fotos con comparador). Mismos datos que escritorio.
+ * Fotos (con comparador). Mismos datos que escritorio.
  */
 export async function ProgressMobile({
   userId,
@@ -22,11 +22,13 @@ export async function ProgressMobile({
   today: string;
   timezone: string;
 }) {
-  const evidencia = vista === "evidencia";
+  // «Evidencia» es la biblioteca de estudios (/evidencia); las fotos se
+  // llaman «Fotos». `vista=evidencia` sigue valiendo para enlaces viejos.
+  const fotos = vista === "fotos" || vista === "evidencia";
   const data = await getProgressData(userId);
 
   let body: React.ReactNode;
-  if (evidencia) {
+  if (fotos) {
     body = (
       <ProgressEvidence photos={data.photos} measurements={data.measurements} />
     );
@@ -73,13 +75,13 @@ export async function ProgressMobile({
       <ScreenHeader
         title="Progreso"
         subtitle={
-          evidencia
+          fotos
             ? "Tus fotos son privadas: solo tú las ves"
             : "Tu cuerpo y tu constancia"
         }
       />
       <div className="m-body" style={{ paddingBottom: 0 }}>
-        <ProgressSegment active={evidencia ? "evidencia" : "resumen"} />
+        <ProgressSegment active={fotos ? "fotos" : "resumen"} />
       </div>
       {body}
     </div>

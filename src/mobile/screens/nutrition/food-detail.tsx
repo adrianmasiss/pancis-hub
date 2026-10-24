@@ -11,7 +11,93 @@ import { triggerHaptic } from "@/lib/haptics";
 import { BackButton } from "@/mobile/ui/back-button";
 import { Stepper } from "@/mobile/ui/controls";
 import { foodFacts, MICROS } from "./food-facts";
-import { gramos, kcal } from "./format";
+import { MACROS, gramos, kcal } from "./format";
+
+const KCAL_POR_G = { proteinG: 4, carbohydrateG: 4, fatG: 9, fiberG: 0 };
+
+/**
+ * De donde salen las calorias: un anillo partido en los colores de cada macro,
+ * las kcal en el centro y al lado cada macro con su valor y su parte del total.
+ * La fibra no suma (o casi) kcal: va con su valor y sin porcentaje.
+ */
+function MacroBreakdown({
+  food,
+  factor,
+}: {
+  food: LibraryFood;
+  factor: number;
+}) {
+  const parts = MACROS.map((m) => {
+    const g = food[m.key] * factor;
+    return { ...m, g, kcal: g * KCAL_POR_G[m.key] };
+  });
+  const total = parts.reduce((t, p) => t + p.kcal, 0);
+  const size = 112;
+  const stroke = 12;
+  const r = (size - stroke) / 2;
+  const len = 2 * Math.PI * r;
+  const gap = total > 0 ? 3 : 0;
+  let offset = 0;
+  return (
+    <div className="m-card m-macro-break" data-size="sm">
+      <div
+        className="m-macro-donut"
+        role="img"
+        aria-label={`${kcal(food.calories * factor)} kcal`}
+      >
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            strokeWidth={stroke}
+            className="m-ring-track"
+          />
+          {total > 0 &&
+            parts
+              .filter((p) => p.kcal > 0)
+              .map((p) => {
+                const seg = (p.kcal / total) * len;
+                const el = (
+                  <circle
+                    key={p.key}
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={r}
+                    fill="none"
+                    stroke={p.color}
+                    strokeWidth={stroke}
+                    strokeDasharray={`${Math.max(0, seg - gap)} ${len}`}
+                    strokeDashoffset={-offset}
+                  />
+                );
+                offset += seg;
+                return el;
+              })}
+        </svg>
+        <span className="m-macro-donut-center">
+          <span className="m-num">{kcal(food.calories * factor)}</span>
+          <small>kcal</small>
+        </span>
+      </div>
+      <ul className="m-macro-legend">
+        {parts.map((p) => (
+          <li key={p.key}>
+            <span className="m-dot" style={{ background: p.color }} />
+            <span className="m-macro-legend-name">{p.label}</span>
+            <span className="m-num m-macro-legend-g">{gramos(p.g)} g</span>
+            <span className="m-num m-macro-legend-pct">
+              {p.key === "fiberG" || total === 0
+                ? ""
+                : `${Math.round((p.kcal / total) * 100)}%`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /**
  * Ficha de alimento, hermana del detalle de ejercicio: foto arriba, gramos
@@ -61,10 +147,9 @@ export function FoodDetail({
     });
 
   // null = el alimento no trae el dato; se dice, no se pone 0.
+  // Proteina, carbohidratos y grasas van en la tarjeta de colores; aqui el
+  // resto, mas discreto.
   const rows: { label: string; per100: number | null; suffix: string }[] = [
-    { label: "Proteína", per100: food.proteinG, suffix: "g" },
-    { label: "Carbohidratos", per100: food.carbohydrateG, suffix: "g" },
-    { label: "Grasas", per100: food.fatG, suffix: "g" },
     ...(food.micronutrients?.sat_fat_g !== undefined
       ? [
           {
@@ -74,7 +159,6 @@ export function FoodDetail({
           },
         ]
       : []),
-    { label: "Fibra", per100: food.fiberG, suffix: "g" },
     { label: "Azúcar", per100: food.sugarG ?? null, suffix: "g" },
     { label: "Sodio", per100: food.sodiumMg ?? null, suffix: "mg" },
     ...(food.micronutrients?.cholesterol_mg !== undefined
@@ -202,18 +286,24 @@ export function FoodDetail({
           <h2 id="m-food-nutri" className="m-section">
             Información nutricional
           </h2>
-          <div className="m-card m-nutri" data-size="sm">
+          <MacroBreakdown food={food} factor={f} />
+        </section>
+
+        <section
+          className="m-stack"
+          style={{ gap: 8 }}
+          aria-labelledby="m-food-more"
+        >
+          <h2 id="m-food-more" className="m-eyebrow">
+            Más detalle
+          </h2>
+          <div className="m-card m-nutri" data-size="sm" data-quiet="">
             <div className="m-nutri-row" data-head="">
               <span />
               <span>
                 {grams} {unit}
               </span>
               <span>100 {unit}</span>
-            </div>
-            <div className="m-nutri-row" data-strong="">
-              <span>Calorías</span>
-              <span>{kcal(food.calories * f)} kcal</span>
-              <span>{kcal(food.calories)}</span>
             </div>
             {rows.map((r) => (
               <div key={r.label} className="m-nutri-row">
@@ -246,10 +336,10 @@ export function FoodDetail({
             style={{ gap: 8 }}
             aria-labelledby="m-food-micros"
           >
-            <h2 id="m-food-micros" className="m-section">
+            <h2 id="m-food-micros" className="m-eyebrow">
               Vitaminas y minerales
             </h2>
-            <div className="m-card m-nutri" data-size="sm">
+            <div className="m-card m-nutri" data-size="sm" data-quiet="">
               <div className="m-nutri-row" data-head="">
                 <span />
                 <span>
