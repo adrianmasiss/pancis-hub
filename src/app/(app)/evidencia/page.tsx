@@ -8,6 +8,8 @@ import { getEvidenceLibrary } from "@/features/evidence/queries";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { ViewHeader } from "@/components/shared/view-header";
+import { isPhone } from "@/lib/device";
+import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
 
 const t = messages.evidence;
 const d = messages.dashboard.nutrition;
@@ -39,34 +41,8 @@ export default async function EvidencePage() {
 
   const fmt = (n: number) => Math.round(n).toLocaleString("es-419");
 
-  return (
-    <div className="flex flex-col gap-12">
-      {/* El encabezado era editorial y centrado, con la frase de portada como
-          `<h1>`. Pasa al bloque comun: el titulo nombra la pantalla, como en
-          el resto, y la frase baja a ser lo que siempre fue —la entradilla de
-          la pagina—, alineada a la izquierda con todo lo demas. */}
-      <ViewHeader
-        title={messages.nav.evidence}
-        meta={t.eyebrow(studies.length, constants.length)}
-      >
-        <div className="mt-4 flex flex-col gap-3">
-          <p className="page-display max-w-[24ch] text-balance">{t.headline}</p>
-          <p className="text-muted-foreground max-w-[62ch] text-[15px] leading-[1.65] text-pretty">
-            {t.subtitle}
-          </p>
-        </div>
-      </ViewHeader>
-
-      {/* El anillo es el resumen en perspectiva; las tres capas de abajo son
-          la biblioteca completa y la alternativa tabular que el handoff exige
-          para cualquier visualizacion 3D. */}
-      <div className="flex flex-col gap-3">
-        <EvidenceRing spines={spines} />
-        <p className="text-subtle-foreground mx-auto max-w-[52ch] text-center text-[12px] leading-relaxed text-pretty">
-          {t.ring.note}
-        </p>
-      </div>
-
+  const layers = (
+    <>
       <EvidenceLayer
         step={1}
         name={t.layers.evidence.name}
@@ -131,6 +107,55 @@ export default async function EvidencePage() {
           </p>
         )}
       </EvidenceLayer>
+    </>
+  );
+
+  // Telefono: las tres capas (la alternativa tabular), sin el anillo 3D.
+  if (await isPhone()) {
+    return (
+      <MobileFormsFrame
+        title={messages.nav.evidence}
+        backHref="/asistente"
+        backLabel="Volver"
+        smartBack
+      >
+        <div className="flex flex-col gap-10">
+          <p className="m-sub">{t.subtitle}</p>
+          {layers}
+        </div>
+      </MobileFormsFrame>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-12">
+      {/* El encabezado era editorial y centrado, con la frase de portada como
+          `<h1>`. Pasa al bloque comun: el titulo nombra la pantalla, como en
+          el resto, y la frase baja a ser lo que siempre fue —la entradilla de
+          la pagina—, alineada a la izquierda con todo lo demas. */}
+      <ViewHeader
+        title={messages.nav.evidence}
+        meta={t.eyebrow(studies.length, constants.length)}
+      >
+        <div className="mt-4 flex flex-col gap-3">
+          <p className="page-display max-w-[24ch] text-balance">{t.headline}</p>
+          <p className="text-muted-foreground max-w-[62ch] text-[15px] leading-[1.65] text-pretty">
+            {t.subtitle}
+          </p>
+        </div>
+      </ViewHeader>
+
+      {/* El anillo es el resumen en perspectiva; las tres capas de abajo son
+          la biblioteca completa y la alternativa tabular que el handoff exige
+          para cualquier visualizacion 3D. */}
+      <div className="flex flex-col gap-3">
+        <EvidenceRing spines={spines} />
+        <p className="text-subtle-foreground mx-auto max-w-[52ch] text-center text-[12px] leading-relaxed text-pretty">
+          {t.ring.note}
+        </p>
+      </div>
+
+      {layers}
     </div>
   );
 }

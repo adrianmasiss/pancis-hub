@@ -873,7 +873,7 @@ export async function finishSession(
     .eq("user_id", user.id);
   if (error) return fail;
   revalidateTraining();
-  redirect("/entrenamiento");
+  redirect(parsed.data.returnTo ?? "/entrenamiento");
 }
 
 /**

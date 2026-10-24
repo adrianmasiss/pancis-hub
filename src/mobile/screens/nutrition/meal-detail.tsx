@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -61,6 +62,7 @@ export function MealDetail({
   movedFrom: string | null;
 }) {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [grams, setGrams] = useState<Record<string, number>>(() =>
     Object.fromEntries(meal.items.map((i) => [i.id, i.quantityG])),
   );
@@ -292,7 +294,16 @@ export function MealDetail({
           </button>
         </div>
         {movedFrom !== null && (
-          <p className="m-sub" style={{ fontSize: 13 }}>
+          <motion.p
+            className="m-sub"
+            style={{ fontSize: 13 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: reduceMotion ? 0.15 : 0.18,
+              ease: [0.2, 0.8, 0.2, 1],
+            }}
+          >
             Hoy la moviste
             {movedFrom ? ` (en tu plan va a las ${movedFrom})` : ""}.{" "}
             <button
@@ -313,7 +324,7 @@ export function MealDetail({
             >
               Volver a su hora
             </button>
-          </p>
+          </motion.p>
         )}
       </div>
 

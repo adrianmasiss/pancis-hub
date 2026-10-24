@@ -225,9 +225,16 @@ export function NutritionToday({
         {meals.length === 0 && (
           <div className="m-card" data-size="sm">
             <p className="m-sheet-text">
-              Aún no tienes un plan activo. Puedes importarlo desde escritorio o
-              registrar lo que comas con «Extra solo hoy».
+              Aún no tienes un plan activo. Sube el de tu nutricionista (PDF o
+              foto) o registra lo que comas con «Extra solo hoy».
             </p>
+            <Link
+              href="/nutricion/dieta"
+              className="m-btn m-press"
+              data-variant="primary"
+            >
+              Subir plan de nutrición
+            </Link>
           </div>
         )}
         {meals.map((meal) => {

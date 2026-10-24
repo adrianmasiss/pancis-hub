@@ -81,6 +81,18 @@ const assistantReplySchema = z.object({
     )
     .max(3)
     .optional(),
+  /*
+   * Las fuentes que de verdad respaldan la respuesta, por su titulo exacto.
+   * Solo se muestran esas: listar todo lo que trajo el grounding ponia un
+   * estudio de testosterona debajo de una pregunta sobre ayuno.
+   */
+  citedSources: z
+    .array(z.string().min(1))
+    .max(6)
+    .optional()
+    .describe(
+      "Titulos EXACTOS de las fuentes de evidenciaDisponible o de las herramientas que respaldan lo que dices. Vacio si ninguna trata el tema.",
+    ),
 });
 
 type GeneratedReply = z.infer<typeof assistantReplySchema>;
@@ -152,8 +164,13 @@ EVIDENCIA. El payload trae "evidenciaDisponible": son las fuentes reales que sus
 - Cuando expliques de donde sale un numero del sistema, apoyate en esas fuentes y menciona la POBLACION si difiere del usuario (por ejemplo, si el estudio es en hombres jovenes y quien pregunta no lo es).
 - Cada fuente trae su "Papel en esta cifra". RESPETALO: una fuente que "matiza" o "contradice" NO se presenta como apoyo, se presenta como el limite que es, y su "Nota del revisor" es lo que hay que contar de ella. Si una fuente aparece en la lista, o la usas con su papel correcto o no la mencionas.
 - Si una fuente esta marcada como parametro de producto, NO la presentes como ciencia: es una decision de la app, di eso.
-- Si no hay fuentes para el tema, dilo con naturalidad en vez de inventar una referencia. NUNCA cites un estudio, un PMID o un DOI que no aparezca en "evidenciaDisponible".
-- Distingue siempre entre una cifra verificada del sistema y una estimacion general tuya.
+- NUNCA cites un estudio, un PMID o un DOI que no aparezca en "evidenciaDisponible" o en lo que devuelvan las herramientas.
+
+SOLO EVIDENCIA (regla del producto, no se rompe). Toda afirmacion de salud, nutricion o entrenamiento (que funciona, cuanto conviene, que es mejor, que efecto tiene) sale UNICAMENTE de "evidenciaDisponible" o de lo que devuelvan search_evidence y get_claim_sources. Nada de conocimiento general tuyo.
+- Si la pregunta es de ese tipo y el payload no trae fuentes que traten el tema, llama a search_evidence antes de responder.
+- Si tampoco hay, dilo claro en observation: "La biblioteca de evidencia de Pancis no tiene estudios sobre <tema>". No respondas igual con lo que sabes; limita la accion a lo que si sale de sus datos (su plan, sus cifras, su registro) o a consultarlo con un profesional, y pon confianza baja.
+- Los datos del propio usuario (su plan, lo que comio, sus medidas) y las cifras que calcula la app si se pueden usar: son hechos, no afirmaciones cientificas.
+- En "citedSources" pon el titulo exacto de cada fuente que respalda lo que dices. Una fuente del payload que no trata la pregunta NO se cita.
 
 HERRAMIENTAS. Tienes herramientas para consultar el catalogo, los motores de la app y la biblioteca cientifica. Usalas en vez de suponer:
 - Si te falta un dato concreto (un alimento, un ejercicio, una medida, una fuente), llamala. Es preferible una llamada mas a una respuesta vaga o inventada.
@@ -172,6 +189,7 @@ Debes responder en el formato estructurado solicitado:
 - alternative: una opcion alternativa si aplica.
 - reason: por que esa accion tiene sentido.
 - reevaluate: cuando revisar de nuevo.
+- citedSources: los titulos exactos de las fuentes que respaldan la respuesta (ver SOLO EVIDENCIA).
 - options (opcional): si la pregunta es QUE COMER (o hay una foto de comida), 1 a 3 opciones concretas que el usuario pueda agregar a su dia con un toque. Cada opcion: un titulo corto y sus alimentos con el id de search_foods y los gramos. NO escribas calorias ni macros: la app los calcula desde el catalogo. Si no encuentras los alimentos en la biblioteca, no inventes ids: omite options.
 
 FOTO. Si llega una imagen, describe lo que ves en el plato y estima porciones con prudencia (di que es una estimacion). Busca esos alimentos con search_foods y propon UNA opcion en "options" con lo que se ve, para que el usuario la registre si quiere.`;
@@ -522,9 +540,9 @@ export async function askAssistant(
     // que no se le dio. Aqui ya incluyen lo que trajeron las herramientas.
     const reply: AssistantReply = generated
       ? {
-          ...generated,
+          ...withoutCited(generated),
           options: await resolveOptions(generated.options),
-          sources: toReplySources(sources),
+          sources: toReplySources(citedOnly(sources, generated.citedSources)),
         }
       : { ...fallbackReply, sources: toReplySources(sources) };
     const { conversationId } = await persist(
@@ -552,6 +570,33 @@ export async function askAssistant(
   const reply = { ...fallbackReply, sources: toReplySources(sources) };
   const { conversationId } = await persist(reply, "reglas");
   return { reply, conversationId };
+}
+
+const plainTitle = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/**
+ * Solo las fuentes que el modelo dice usar, y solo si se le dieron: un titulo
+ * que no esta en la lista se ignora, asi que no puede colar una cita.
+ */
+function citedOnly(sources: ToolSource[], cited?: string[]): ToolSource[] {
+  if (!cited?.length) return [];
+  const wanted = cited.map(plainTitle).filter((t) => t.length > 8);
+  return sources.filter((source) => {
+    const title = plainTitle(source.title);
+    return wanted.some((w) => title.includes(w) || w.includes(title));
+  });
+}
+
+function withoutCited(reply: GeneratedReply) {
+  const { citedSources: _cited, ...rest } = reply;
+  void _cited;
+  return rest;
 }
 
 /**

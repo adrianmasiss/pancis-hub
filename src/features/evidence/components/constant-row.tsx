@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { EvidenceConstant } from "@/features/evidence/queries";
-import { formatValue } from "@/lib/evidence/format-value";
+import { formatValue, formulaLabel } from "@/lib/evidence/format-value";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +50,11 @@ export function ConstantRow({ constant }: { constant: EvidenceConstant }) {
           </span>
         </div>
 
+        {formulaLabel(constant.key) ? (
+          <p className="text-[15px] font-medium">
+            {formulaLabel(constant.key)}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           {/* La clave se muestra tal cual: es el identificador real con el que
               el asistente y el calculo la nombran, y renombrarla aqui haria

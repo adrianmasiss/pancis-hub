@@ -34,7 +34,25 @@ export type LibraryFood = {
   densityGPerMl?: number | null;
   /** Porciones caseras con su peso: las compartidas y las propias. */
   portions?: { label: string; grams: number }[];
+  /** La etiqueta no se sostiene (ver la migración de datos dudosos). */
+  dataIssue?: "macros_imposibles" | "kcal_incoherentes" | null;
+  /** Por 100 g, de USDA. Clave ausente = no medido. */
+  micronutrients?: Partial<Record<MicronutrientKey, number>> | null;
 };
+
+export type MicronutrientKey =
+  | "sat_fat_g"
+  | "cholesterol_mg"
+  | "calcium_mg"
+  | "iron_mg"
+  | "magnesium_mg"
+  | "potassium_mg"
+  | "zinc_mg"
+  | "vit_a_ug"
+  | "vit_c_mg"
+  | "vit_d_ug"
+  | "vit_b12_ug"
+  | "folate_ug";
 
 export type LibraryFilters = {
   query?: string;
@@ -130,7 +148,7 @@ export async function getFoodsLibraryPage(
   let query = supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, nutrition_basis, density_g_per_ml, food_portions(label, grams)",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, nutrition_basis, density_g_per_ml, data_issue, micronutrients, food_portions(label, grams)",
       { count: "exact" },
     )
     .is("deleted_at", null)
@@ -165,6 +183,17 @@ export async function getFoodsLibraryPage(
             `name.ilike.%${term}%,brand.ilike.%${term}%,id.in.(${aliasIds.join(",")})`,
           )
         : query.or(`name.ilike.%${term}%,brand.ilike.%${term}%`);
+  }
+  /* En «Todos» quedan fuera las etiquetas cuyos números no se sostienen, y
+     sin búsqueda también los productos de marca: son 15.000 nombres en inglés
+     que tapan los genéricos. Se encuentran buscándolos o por código de
+     barras, y lo propio del usuario se ve siempre. */
+  if (filters.view === "todos" && !filters.foodId) {
+    query = query.or(
+      filters.query
+        ? `data_issue.is.null,owner_user_id.eq.${userId}`
+        : `and(barcode.is.null,data_issue.is.null),owner_user_id.eq.${userId}`,
+    );
   }
   if (filters.group && FOOD_GROUPS.includes(filters.group)) {
     query = query.eq("food_group", filters.group);
@@ -211,6 +240,8 @@ export async function getFoodsLibraryPage(
           label: portion.label,
           grams: Number(portion.grams),
         })),
+        dataIssue: food.data_issue as LibraryFood["dataIssue"],
+        micronutrients: food.micronutrients as LibraryFood["micronutrients"],
       },
       corrections.get(food.id),
     ),

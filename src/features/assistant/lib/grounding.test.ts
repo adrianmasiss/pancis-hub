@@ -44,6 +44,15 @@ describe("detectRelevantFormulas", () => {
     expect(claves[0]).toBe("weekly_set_ranges");
   });
 
+  it("«perder grasa» no trae la grasa minima de la dieta", () => {
+    expect(
+      detectRelevantFormulas("¿sirve el ayuno intermitente para perder grasa?"),
+    ).not.toContain("min_fat_g_per_kg");
+    expect(detectRelevantFormulas("¿cuánta grasa debo comer?")).toContain(
+      "min_fat_g_per_kg",
+    );
+  });
+
   it("una pregunta sin tema reconocible no pide fuentes", () => {
     expect(detectRelevantFormulas("hola, que tal?")).toEqual([]);
     expect(detectRelevantFormulas("")).toEqual([]);

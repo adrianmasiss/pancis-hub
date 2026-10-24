@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   useCallback,
   useEffect,
@@ -181,6 +182,7 @@ export function ActiveWorkout({
 }) {
   const now = useNow();
   const u = useUnits();
+  const reduceMotion = useReducedMotion();
   const [pendingLog, startLog] = useTransition();
   const [finishing, startFinish] = useTransition();
 
@@ -374,7 +376,10 @@ export function ActiveWorkout({
         window.sessionStorage.removeItem(`pancis:m-descanso:${session.id}`);
         window.sessionStorage.removeItem(`pancis:m-pausa:${session.id}`);
       } catch {}
-      const result = await finishSession({ sessionId: session.id });
+      const result = await finishSession({
+        sessionId: session.id,
+        returnTo: "/",
+      });
       if (result && "error" in result)
         toast.error("No se pudo guardar el entrenamiento.");
     });
@@ -626,49 +631,60 @@ export function ActiveWorkout({
 
       <div className="m-active-spacer" />
 
-      {rest && (paused || restLeft > 0) && (
-        <div className="m-rest" role="timer" aria-live="polite">
-          <div style={{ flex: 1 }}>
-            <div className="m-sub" style={{ fontSize: 12 }}>
-              {paused ? "Descanso en pausa" : "Descanso"}
+      <AnimatePresence>
+        {rest && (paused || restLeft > 0) && (
+          <motion.div
+            key="rest"
+            className="m-rest"
+            role="timer"
+            aria-live="polite"
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : 4 }}
+            transition={{ duration: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+          >
+            <div style={{ flex: 1 }}>
+              <div className="m-sub" style={{ fontSize: 12 }}>
+                {paused ? "Descanso en pausa" : "Descanso"}
+              </div>
+              <div className="m-num m-rest-time">
+                {mmss(paused ? rest.endsAt - pause.since! : restLeft)}
+              </div>
             </div>
-            <div className="m-num m-rest-time">
-              {mmss(paused ? rest.endsAt - pause.since! : restLeft)}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="soft"
-            aria-label="Restar 15 segundos"
-            onClick={() => setRest({ ...rest, endsAt: rest.endsAt - 15000 })}
-          >
-            −15
-          </button>
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="soft"
-            aria-label="Sumar 15 segundos"
-            onClick={() =>
-              setRest({
-                endsAt: rest.endsAt + 15000,
-                total: rest.total + 15000,
-              })
-            }
-          >
-            +15
-          </button>
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="soft"
-            onClick={() => setRest(null)}
-          >
-            Saltar
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              className="m-btn m-press"
+              data-variant="soft"
+              aria-label="Restar 15 segundos"
+              onClick={() => setRest({ ...rest, endsAt: rest.endsAt - 15000 })}
+            >
+              −15
+            </button>
+            <button
+              type="button"
+              className="m-btn m-press"
+              data-variant="soft"
+              aria-label="Sumar 15 segundos"
+              onClick={() =>
+                setRest({
+                  endsAt: rest.endsAt + 15000,
+                  total: rest.total + 15000,
+                })
+              }
+            >
+              +15
+            </button>
+            <button
+              type="button"
+              className="m-btn m-press"
+              data-variant="soft"
+              onClick={() => setRest(null)}
+            >
+              Saltar
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="m-active-foot">
         <Ring
@@ -768,7 +784,12 @@ export function ActiveWorkout({
       )}
 
       {e && session.plannedExercises.length > 0 && (
-        <SwapSheet exercise={e} open={swapOpen} onOpenChange={setSwapOpen} />
+        <SwapSheet
+          key={e.id}
+          exercise={e}
+          open={swapOpen}
+          onOpenChange={setSwapOpen}
+        />
       )}
 
       <Sheet

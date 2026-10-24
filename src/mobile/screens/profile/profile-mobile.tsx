@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { getProgressData } from "@/features/progress/queries";
 import { addDaysISO } from "@/lib/dates";
+import { streakDays } from "@/mobile/streak";
 import { messages } from "@/i18n/es-419";
 import { ProfileView, type ProfileSummary } from "./profile-view";
 
@@ -56,18 +57,13 @@ export async function ProfileMobile({
         .maybeSingle(),
     ]);
 
-  /* Racha: dias seguidos, hasta hoy o ayer, con algo registrado (comidas o
-     entreno). Hoy sin registro todavia no la rompe. */
-  const activos = new Set<string>([
-    ...(meals.data ?? []).map((m) => m.date),
-    ...(sessions.data ?? []).map((s) => s.started_at.slice(0, 10)),
-  ]);
-  let racha = 0;
-  let dia = activos.has(today) ? today : addDaysISO(today, -1);
-  while (activos.has(dia)) {
-    racha += 1;
-    dia = addDaysISO(dia, -1);
-  }
+  const racha = streakDays(
+    [
+      ...(meals.data ?? []).map((m) => m.date),
+      ...(sessions.data ?? []).map((s) => s.started_at.slice(0, 10)),
+    ],
+    today,
+  );
 
   const pesos = progress.weightSeries;
   const goal = profile?.primary_goal as

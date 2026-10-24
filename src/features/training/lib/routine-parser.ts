@@ -84,6 +84,13 @@ const BARE_NUMBER = /^\s*(\d{1,3})\s+(?=\D)/;
    notas, no al nombre: con ellas en el nombre no se encuentra el ejercicio
    en el catálogo. */
 const CUES: RegExp[] = [
+  /* Las de cadencia completas van antes que «despacio», que se comería la
+     mitad («baja despacio 3 seg» dejaría «baja 3 seg» en el nombre). */
+  /\bbaja\s+(?:despacio\s+|lento\s+)?(?:en\s+)?\d+\s*(?:seg(?:undos)?|s)\b/gi,
+  /\bte\s+quedas\s+\d+\s*(?:seg(?:undos)?|s)(?:\s+abajo)?(?:\s+apretando\s+\p{L}+)?/giu,
+  /\bsube\s+(?:explosivo|r[aá]pido|despacio)\b/gi,
+  /\btrabaja\s+la\s+negativa\b/gi,
+  /\b\d+\s+\d+\s+y\s+\d+(?:\s+con\s+las\s+\d+)?/gi,
   /\bsosti?en[ea]r?\s+(?:siempre\s+)?\d+\s*(?:seg(?:undos)?|s)\b(?:\s+arriba)?/gi,
   /\bdespacio\b/gi,
   /\bcadencia\s+\d+\s*(?:seg(?:undos)?|s)\b/gi,
@@ -207,6 +214,9 @@ function splitSuperset(line: string): string[] {
   return parts;
 }
 
+/** «10 posterior, 10 lateral, 15 militar». */
+const CIRCUIT_LIST = /^\d+\s+\p{L}[\p{L} ]*(?:,\s*\d+\s+\p{L}[\p{L} ]*)+$/u;
+
 /** ¿Es un ejercicio aunque no traiga series? Si va numerado o con viñeta. */
 const isListed = (line: string) =>
   LIST_MARK.test(line) || BARE_NUMBER.test(line);
@@ -236,8 +246,21 @@ export function parseRoutineText(text: string): ParsedRoutine {
   const lines: string[] = [];
   for (const raw of text.split("\n")) {
     const prev = lines.at(-1);
+    const trimmed = raw.trim();
     if (prev !== undefined && /\s(?:m[aá]s|\+)\s*$/i.test(prev))
-      lines[lines.length - 1] = `${prev} ${raw.trim()}`;
+      lines[lines.length - 1] = `${prev} ${trimmed}`;
+    /* Un ejercicio numerado partido en dos renglones por el ancho de la
+       página: el segundo empieza en minúscula («seg abajo apretando…»,
+       «negativa 4x15»). Un subtítulo como «abdomen» no se une. */
+    else if (
+      prev !== undefined &&
+      /^\p{Ll}/u.test(trimmed) &&
+      isListed(prev) &&
+      !GROUP_WORDS.test(trimmed) &&
+      !DAY_PATTERN.test(trimmed) &&
+      !NOTE_PATTERN.test(trimmed)
+    )
+      lines[lines.length - 1] = `${prev} ${trimmed}`;
     else lines.push(raw);
   }
 
@@ -285,7 +308,9 @@ export function parseRoutineText(text: string): ParsedRoutine {
     }
     awaitingLabel = null;
 
-    if (/^circuito\b/i.test(line.replace(LIST_MARK, ""))) {
+    if (
+      /^circuito\b/i.test(line.replace(LIST_MARK, "").replace(BARE_NUMBER, ""))
+    ) {
       const series = line.match(SERIES_PATTERN);
       circuit = {
         sets: toNumber(series?.[1]),
@@ -305,6 +330,42 @@ export function parseRoutineText(text: string): ParsedRoutine {
 
     if (GROUP_WORDS.test(line)) {
       // Subtítulo de grupo dentro del día: no es un ejercicio.
+      continue;
+    }
+
+    /* Una frase suelta dentro de un día, sin numeración ni series, es una
+       indicación del entrenador («Todo en dropset al final de las
+       series»), no un ejercicio. Los nombres de ejercicio sin series son
+       cortos («Plancha»). */
+    if (
+      current &&
+      !isListed(line) &&
+      !hasPrescription(line) &&
+      line.split(" ").length >= 5
+    ) {
+      pushNote(current, capitalize(line));
+      continue;
+    }
+
+    /* Dentro de un circuito, «10 posterior, 10 lateral, 15 militar»: cada
+       parte es un ejercicio con sus repeticiones. */
+    if (circuit && CIRCUIT_LIST.test(line)) {
+      const parsed = line.split(",").map((part) => {
+        const [, reps, name] = part.trim().match(/^(\d+)\s+(.+)$/)!;
+        return {
+          rawName: capitalize(name!.trim()),
+          sets: circuit!.sets,
+          repsMin: Number(reps),
+          repsMax: Number(reps),
+          rir: null,
+          rpe: null,
+          restSeconds: null,
+          notes: "En circuito",
+        } satisfies ParsedExercise;
+      });
+      if (days.length === 0)
+        days.push({ name: "Dia 1", exercises: [], note: null });
+      days.at(-1)!.exercises.push(...parsed);
       continue;
     }
 

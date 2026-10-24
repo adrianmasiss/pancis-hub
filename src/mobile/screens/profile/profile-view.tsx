@@ -270,7 +270,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
             <Row
               label="Plan de nutrición"
               value={s.dietName ?? "Sin plan"}
-              href="/nutricion"
+              href="/nutricion/dieta"
             />
             <Row
               label="Rutina"
@@ -280,6 +280,11 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
                   : "Sin rutina"
               }
               href="/entrenamiento?vista=rutinas"
+            />
+            <Row
+              label="Evidencia científica"
+              value="De dónde salen tus cifras"
+              href="/evidencia"
             />
             <div className="m-pref-row" style={{ alignItems: "flex-start" }}>
               <span style={{ flex: 1, minWidth: 0 }}>

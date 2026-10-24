@@ -110,6 +110,7 @@ export async function getSwapSuggestions(
         "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)",
       )
       .is("deleted_at", null)
+      .is("data_issue", null)
       .ilike("name", `%${(parsed.data.query ?? "").replace(/[%_]/g, "")}%`)
       .order("name")
       .limit(parsed.data.query ? 100 : 1000),

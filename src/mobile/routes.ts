@@ -35,9 +35,12 @@ const MOBILE_READY: readonly RegExp[] = [
   /^\/entrenamiento(\/|$)/,
   /^\/nutricion$/,
   // Alta de alimentos y revision de fuentes: pantallas de escritorio dentro
-  // del marco movil (MobileFormsFrame). La dieta sigue con su acomodo.
+  // del marco movil (MobileFormsFrame), igual que subir el plan.
   /^\/nutricion\/alimentos(\/|$)/,
+  /^\/nutricion\/dieta$/,
   /^\/asistente$/,
+  // La biblioteca de evidencia, dentro del marco movil (sin el anillo 3D).
+  /^\/evidencia$/,
   /^\/progreso$/,
   /^\/configuracion$/,
 ];

@@ -29,6 +29,7 @@ export default async function NutritionPage({
     item?: string;
     q?: string;
     filtro?: string;
+    alimento?: string;
   }>;
 }) {
   const params = await searchParams;

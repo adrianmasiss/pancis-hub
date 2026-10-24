@@ -82,6 +82,12 @@ Si el texto expresa el alimento en porciones o unidades domesticas (ej. "3 huevo
 
 Si la dieta no da calorias/macros totales del dia, calculalos sumando los alimentos.
 
+Cuidado con estos casos (fallaron con un plan real):
+- Respeta las fracciones: "½ scoop" es la MITAD de un scoop. Un scoop de proteina en polvo pesa unos 30 g (unos 120 kcal y 24 g de proteina), asi que medio son unos 15 g.
+- El nombre del alimento es solo el alimento: "200 g de yogurt griego 12 g de prote" se llama "Yogurt griego"; lo demas va en 'serving_equivalence'.
+- Si una cantidad es evidentemente una errata de unidad ("200 mg de yogurt"), usa la unidad razonable (200 g) y deja la expresion original en 'serving_equivalence'.
+- "Al gusto" no es una cantidad: usa 50 g para verduras y condimentos y escribe "al gusto" en 'serving_equivalence'.
+
 meal_type debe ser uno de: "desayuno", "almuerzo", "cena", "snack", "otro".
 food_group debe ser uno de: ${FOOD_GROUPS.join(", ")}.`;
 
@@ -174,6 +180,7 @@ export async function searchCatalogFoodsFull(
     )
     .ilike("name", `%${term.trim()}%`)
     .is("deleted_at", null)
+    .is("data_issue", null)
     .order("name")
     .limit(15);
   if (error) return { error: t.errors.searchFailed };
@@ -221,6 +228,7 @@ export async function suggestCatalogMatches(
       "id, name, brand, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g",
     )
     .is("deleted_at", null)
+    .is("data_issue", null)
     .limit(500);
 
   const catalog: CatalogFoodMatch[] = (candidates ?? []).map((food) => ({

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatValue } from "@/lib/evidence/format-value";
+import { formatValue, formulaLabel } from "@/lib/evidence/format-value";
 import type { ToolSource } from "@/server/tools/types";
 
 /**
@@ -110,27 +110,6 @@ export async function getSourcesForFormula(key: string): Promise<{
   }
 }
 
-/** Etiquetas legibles de cada constante, para explicarlas al usuario. */
-const FORMULA_LABELS: Record<string, string> = {
-  bmr_equation: "La formula con la que estimamos tu gasto en reposo",
-  activity_factors: "El factor con el que ajustamos por tu actividad",
-  goal_adjustments: "El ajuste que aplicamos por tu objetivo",
-  safety_floor_factor: "El suelo por debajo del cual no bajamos tus calorias",
-  macro_tolerances_pct: "Cuanto puede desviarse un cambio sin avisarte",
-  compatibility_profiles: "Como puntuamos si dos alimentos se parecen",
-  protein_ranges: "Tu rango de proteina",
-  weekly_rate_band_percent: "El ritmo de cambio de peso que buscamos",
-  min_fat_g_per_kg: "Tu minimo de grasa",
-  fiber_g_per_1000_kcal: "Tu objetivo de fibra",
-  water_ml_per_kg: "La referencia de agua",
-  energy_availability_thresholds: "El minimo de energia disponible",
-  rir_by_goal: "Las repeticiones en reserva que te sugerimos",
-  min_rest_seconds: "El descanso minimo entre series",
-  weekly_set_ranges: "Los rangos de series por semana",
-  tempo_very_slow_seconds: "El limite de lentitud por repeticion",
-  frequency_is_distribution: "Como tratamos la frecuencia",
-  bia_individual_error: "El margen de error de la bioimpedancia",
-};
 
 /**
  * Valor legible: un numero, un rango o una tabla por objetivo.
@@ -173,7 +152,7 @@ export async function getFormulaExplanation(
 
     const value = formatValue(data.value, goal);
     return {
-      label: FORMULA_LABELS[key] ?? "Esta cifra",
+      label: formulaLabel(key) ?? "Esta cifra",
       value: data.unit ? `${value} ${data.unit}` : value,
       rationale: data.rationale,
       limitations: data.limitations,

@@ -145,6 +145,7 @@ export async function answerSwapQuestion(
     .select("id, name, calories, protein_g, carbohydrate_g, fat_g, fiber_g")
     .or(`owner_user_id.is.null,owner_user_id.eq.${user.id}`)
     .ilike("name", `%${toQuery.replace(/[%_]/g, "")}%`)
+    .is("data_issue", null)
     .limit(1);
 
   const match = matches?.[0];
@@ -163,7 +164,9 @@ export async function answerSwapQuestion(
         toFoodId: match.id,
         toPer100g,
         toQuantityG,
-        from: from ? { per100g: from.per100g, quantityG: from.quantityG } : undefined,
+        from: from
+          ? { per100g: from.per100g, quantityG: from.quantityG }
+          : undefined,
       }),
     };
   }
@@ -199,7 +202,9 @@ export async function answerSwapQuestion(
         toFoodId: null,
         toPer100g,
         toQuantityG,
-        from: from ? { per100g: from.per100g, quantityG: from.quantityG } : undefined,
+        from: from
+          ? { per100g: from.per100g, quantityG: from.quantityG }
+          : undefined,
         estimateNotice:
           messages.nutrition.swapQuestion.estimateNotice[object.confidence],
       }),

@@ -796,6 +796,7 @@ export type Database = {
           hardest_point: string | null
           id: string
           image_end_url: string | null
+          has_image: boolean | null
           image_url: string | null
           instructions: string | null
           is_unilateral: boolean
@@ -1200,6 +1201,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           density_g_per_ml: number | null
+          data_issue: string | null
           external_id: string | null
           external_name: string | null
           external_source: string | null
@@ -1210,6 +1212,7 @@ export type Database = {
           id: string
           image_url: string | null
           max_divergence_pct: number | null
+          micronutrients: Json | null
           name: string
           nutrition_basis: string
           owner_user_id: string | null
@@ -1232,6 +1235,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           density_g_per_ml?: number | null
+          data_issue?: string | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -1242,6 +1246,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           max_divergence_pct?: number | null
+          micronutrients?: Json | null
           name: string
           nutrition_basis?: string
           owner_user_id?: string | null
@@ -1264,6 +1269,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           density_g_per_ml?: number | null
+          data_issue?: string | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -1274,6 +1280,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           max_divergence_pct?: number | null
+          micronutrients?: Json | null
           name?: string
           nutrition_basis?: string
           owner_user_id?: string | null

@@ -6,33 +6,26 @@ import { useRouter } from "next/navigation";
 import { Barcode, Camera, PenLine, Search, Star } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteFood } from "@/features/foods/actions";
-import { logMeal } from "@/features/nutrition/actions";
 import type { LibraryFood } from "@/features/foods/queries";
-import { triggerHaptic } from "@/lib/haptics";
-import { Stepper } from "@/mobile/ui/controls";
-import { gramos, kcal, per100 } from "./format";
+import { gramos, kcal } from "./format";
 
 /**
  * Biblioteca: busqueda, alta (codigo de barras, foto de etiqueta o manual,
  * con las herramientas que ya existen) y la lista con valores por 100 g.
- * Al abrir un alimento: gramos ajustables, kcal de la porcion y «Usar hoy».
+ * Cada alimento abre su ficha (`?alimento=`), como los ejercicios.
  */
 export function FoodLibrary({
   foods,
   query,
   view,
-  date,
 }: {
   foods: LibraryFood[];
   query: string;
   view: "todos" | "favoritos";
-  date: string;
 }) {
   const router = useRouter();
   const [term, setTerm] = useState(query);
-  const [open, setOpen] = useState<string | null>(null);
-  const [grams, setGrams] = useState(100);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [favs, setFav] = useOptimistic(
     Object.fromEntries(foods.map((f) => [f.id, f.isFavorite])) as Record<
       string,
@@ -65,23 +58,6 @@ export function FoodLibrary({
       const result = await toggleFavoriteFood({ foodId: food.id });
       if ("error" in result) toast.error(result.error);
       else router.refresh();
-    });
-
-  const logToday = (food: LibraryFood) =>
-    startTransition(async () => {
-      const result = await logMeal({
-        date,
-        mealType: "snack",
-        name: food.name,
-        items: [{ foodId: food.id, quantityG: grams }],
-      });
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-      triggerHaptic("success");
-      toast.success(`${food.name} sumado a hoy.`);
-      setOpen(null);
     });
 
   return (
@@ -139,89 +115,40 @@ export function FoodLibrary({
               : "Sin resultados."}
           </p>
         )}
-        {foods.map((food) => {
-          const isOpen = open === food.id;
-          const m = per100(food, grams);
-          return (
-            <div
-              key={food.id}
-              className="m-food"
-              data-open={isOpen ? "" : undefined}
+        {foods.map((food) => (
+          <div key={food.id} className="m-food m-row">
+            <Link
+              href={`/nutricion?vista=biblioteca&alimento=${food.id}`}
+              className="m-food-main m-press"
             >
-              <div className="m-row">
-                <button
-                  type="button"
-                  className="m-food-main"
-                  aria-expanded={isOpen}
-                  onClick={() => {
-                    setOpen(isOpen ? null : food.id);
-                    setGrams(
-                      food.portions?.[0]?.grams
-                        ? Math.round(food.portions[0].grams)
-                        : 100,
-                    );
-                  }}
-                >
-                  <span className="m-list-row-title">{food.name}</span>
-                  <span className="m-list-row-sub m-num">
-                    {kcal(food.calories)} kcal · P {gramos(food.proteinG)} · C{" "}
-                    {gramos(food.carbohydrateG)} · G {gramos(food.fatG)}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="m-icon-btn m-press"
-                  style={{ background: "transparent" }}
-                  aria-pressed={favs[food.id]}
-                  aria-label={
-                    favs[food.id]
-                      ? `Quitar ${food.name} de favoritos`
-                      : `Agregar ${food.name} a favoritos`
-                  }
-                  onClick={() => toggleFav(food)}
-                >
-                  <Star
-                    size={20}
-                    strokeWidth={2}
-                    aria-hidden="true"
-                    className={favs[food.id] ? "m-accent-text" : undefined}
-                    fill={favs[food.id] ? "currentColor" : "none"}
-                  />
-                </button>
-              </div>
-              {isOpen && (
-                <div className="m-row" style={{ marginTop: 10 }}>
-                  <Stepper
-                    label={`Gramos de ${food.name}`}
-                    value={grams}
-                    step={10}
-                    min={10}
-                    max={2000}
-                    unit="g"
-                    onChange={setGrams}
-                  />
-                  <span
-                    className="m-stat-value"
-                    style={{ fontSize: 18, flex: 1 }}
-                  >
-                    {kcal(m.calories)}
-                    <small>kcal</small>
-                  </span>
-                  <button
-                    type="button"
-                    className="m-btn m-press"
-                    data-variant="primary"
-                    style={{ height: 44, padding: "0 18px", fontSize: 15 }}
-                    disabled={pending}
-                    onClick={() => logToday(food)}
-                  >
-                    Usar hoy
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+              <span className="m-list-row-title">{food.name}</span>
+              <span className="m-list-row-sub m-num">
+                {kcal(food.calories)} kcal · P {gramos(food.proteinG)} · C{" "}
+                {gramos(food.carbohydrateG)} · G {gramos(food.fatG)}
+              </span>
+            </Link>
+            <button
+              type="button"
+              className="m-icon-btn m-press"
+              style={{ background: "transparent" }}
+              aria-pressed={favs[food.id]}
+              aria-label={
+                favs[food.id]
+                  ? `Quitar ${food.name} de favoritos`
+                  : `Agregar ${food.name} a favoritos`
+              }
+              onClick={() => toggleFav(food)}
+            >
+              <Star
+                size={20}
+                strokeWidth={2}
+                aria-hidden="true"
+                className={favs[food.id] ? "m-accent-text" : undefined}
+                fill={favs[food.id] ? "currentColor" : "none"}
+              />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

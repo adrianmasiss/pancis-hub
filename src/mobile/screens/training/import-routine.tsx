@@ -67,9 +67,17 @@ export function ImportRoutine({ aiEnabled }: { aiEnabled: boolean }) {
       const form = new FormData();
       form.append("file", f);
       if (aiEnabled) {
+        // Si la IA falla con un PDF, el servidor lee su texto sin ella.
+        form.append("respaldo", "texto");
         const result = await extractRoutineWithAi(form);
         if ("error" in result) toast.error(result.error);
-        else show(result);
+        else {
+          if (result.readBy === "texto")
+            toast.info(
+              "La IA no respondió, así que se leyó el texto del PDF. Revisa las filas marcadas.",
+            );
+          show(result);
+        }
         return;
       }
       const result = await extractRoutinePdf(form);
@@ -231,7 +239,9 @@ export function ImportRoutine({ aiEnabled }: { aiEnabled: boolean }) {
             <span className="m-list-row-main">
               <span className="m-list-row-title">{file ?? "Texto pegado"}</span>
               <span className="m-list-row-sub">
-                {aiEnabled && file ? "Leída por IA · " : ""}
+                {aiEnabled && file && preview?.readBy !== "texto"
+                  ? "Leída por IA · "
+                  : ""}
                 {preview.dayCount} días · {preview.exerciseCount} ejercicios
               </span>
             </span>

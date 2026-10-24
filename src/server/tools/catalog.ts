@@ -133,6 +133,7 @@ export async function searchCatalogFoods(
     .select(FOOD_SELECT)
     .ilike("name", `%${term}%`)
     .is("deleted_at", null)
+    .is("data_issue", null)
     .limit(limit);
 
   return (data ?? []).map((row) => toEquivalenceFood(row as FoodRow));
@@ -190,6 +191,7 @@ export async function findFoodAlternatives(
         .from("foods")
         .select(FOOD_SELECT)
         .is("deleted_at", null)
+        .is("data_issue", null)
         .limit(300),
       supabase
         .from("dietary_preferences")

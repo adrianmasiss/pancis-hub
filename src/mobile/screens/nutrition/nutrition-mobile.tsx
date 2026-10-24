@@ -10,6 +10,7 @@ import { NutritionToday } from "./today";
 import { MealDetail } from "./meal-detail";
 import { CompareFoods } from "./compare";
 import { FoodLibrary } from "./library";
+import { FoodDetail } from "./food-detail";
 import { EatOut } from "./eat-out";
 import {
   getRestaurantItems,
@@ -23,6 +24,8 @@ export type NutritionParams = {
   item?: string;
   q?: string;
   filtro?: string;
+  /** Ficha de un alimento de la biblioteca. */
+  alimento?: string;
   /** Restaurante elegido en «Comer fuera». */
   r?: string;
 };
@@ -91,6 +94,15 @@ export async function NutritionMobile({
   params: NutritionParams;
 }) {
   const vista = params.vista ?? "";
+  if (params.alimento && /^[0-9a-f-]{36}$/i.test(params.alimento)) {
+    const { foods } = await getFoodsLibraryPage(userId, {
+      foodId: params.alimento,
+      view: "todos",
+      page: 1,
+      pageSize: 1,
+    });
+    if (foods[0]) return <FoodDetail food={foods[0]} date={date} />;
+  }
   const [day, planDelDia] = await Promise.all([
     getDayPlan(userId, date),
     getDietPlanForDate(userId, date, "day"),
@@ -151,14 +163,7 @@ export async function NutritionMobile({
       page: 1,
       pageSize: 40,
     });
-    body = (
-      <FoodLibrary
-        foods={foods}
-        query={params.q ?? ""}
-        view={view}
-        date={date}
-      />
-    );
+    body = <FoodLibrary foods={foods} query={params.q ?? ""} view={view} />;
   } else if (tab === "fuera") {
     title = "Comer fuera";
     subtitle = day.remaining

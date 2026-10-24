@@ -762,7 +762,10 @@ export async function getExerciseCatalog(filtros: CatalogoFiltros): Promise<{
   if (filtros.equipment) consulta = consulta.eq("equipment", filtros.equipment);
 
   const [{ data, count }, { data: vocabulario }] = await Promise.all([
-    consulta.order("name").range(desde, desde + CATALOGO_POR_PAGINA - 1),
+    consulta
+      .order("has_image", { ascending: false })
+      .order("name")
+      .range(desde, desde + CATALOGO_POR_PAGINA - 1),
     supabase
       .from("exercise_catalog")
       .select("primary_muscle, equipment")
@@ -893,7 +896,9 @@ export async function getExerciseLibrary(
     consulta = consulta.in("primary_muscle", [...filtros.muscles]);
   if (filtros.equipment) consulta = consulta.eq("equipment", filtros.equipment);
 
+  // Con foto primero: los que no la tienen no enseñan cómo se hace.
   const { data, count } = await consulta
+    .order("has_image", { ascending: false })
     .order("name")
     .range(desde, desde + CATALOGO_POR_PAGINA - 1);
 

@@ -33,6 +33,7 @@ export async function suggestFoods(input: {
       .from("foods")
       .select("id, name, brand")
       .is("deleted_at", null)
+      .is("data_issue", null)
       .order("name")
       .limit(12);
   // La tercera mira solo el catalogo propio (base y alimentos del usuario,

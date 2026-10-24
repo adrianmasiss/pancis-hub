@@ -50,9 +50,18 @@ describe("formatValue", () => {
 
   /** Sin objetivo conocido se muestran todas: es preferible a elegir una mal. */
   it("sin objetivo muestra la tabla completa", () => {
-    expect(formatValue(rangos)).toContain("perdida_grasa 1.8 a 2.4");
+    expect(formatValue(rangos)).toContain("pérdida de grasa 1.8 a 2.4");
     expect(formatValue(rangos, "objetivo_inexistente")).toContain(
       "mantenimiento 1.6 a 2",
+    );
+  });
+
+  it("una tabla dentro de otra y los null se leen", () => {
+    expect(formatValue({ comida: { proteinG: 0.3, fatG: 0.15 } })).toBe(
+      "comida (proteína 0.3, grasas 0.15)",
+    );
+    expect(formatValue({ fiber: null, protein: 10 })).toBe(
+      "fibra sin límite, proteína 10",
     );
   });
 

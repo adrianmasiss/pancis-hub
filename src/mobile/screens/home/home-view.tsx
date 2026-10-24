@@ -1,28 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
-import { ChevronRight, Play, Sparkles } from "lucide-react";
+import { useTransition } from "react";
+import {
+  Barcode,
+  Camera,
+  ChevronRight,
+  Flame,
+  MapPin,
+  Play,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
-import { logDietTemplateMeal } from "@/features/dashboard/actions";
+import { startSession } from "@/features/training/actions";
 import type { DayPlan } from "@/features/nutrition/queries";
 import type { DietTemplateView } from "@/features/dashboard/queries";
 import type { PlanDayView } from "@/features/training/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
+import { useWater } from "@/features/nutrition/components/use-water";
 import { estimatedMinutes } from "@/features/training/lib/stats";
-import { triggerHaptic } from "@/lib/haptics";
-import { ScreenHeader } from "@/mobile/shell/screen-header";
-import { CheckCircle } from "@/mobile/ui/controls";
-import { Bar, Ring, Stat } from "@/mobile/ui/display";
-import { ExerciseModel } from "@/mobile/ui/exercise-model";
+import { useMobile } from "@/mobile/shell/mobile-shell";
+import { Bar, Ring } from "@/mobile/ui/display";
+import { useUnits } from "@/mobile/units";
 import {
   MACROS,
-  addMacros,
+  gramos,
   kcal,
+  litros,
   mealLabel,
-  mealTypeLabel,
 } from "@/mobile/screens/nutrition/format";
 import { dayTitle } from "@/mobile/screens/training/today";
+import { WeekStrip, type WeekDay } from "@/mobile/screens/training/week";
+import type { Insight } from "./insight";
+
+export type WeightSummary = {
+  kg: number;
+  /** Cambio frente a hace 4 semanas, en kg; null sin medida de referencia. */
+  change4w: number | null;
+  /** -1 si el objetivo es bajar, 1 si es subir, 0 si no hay direccion. */
+  direction: -1 | 0 | 1;
+  /** Ultimas medidas, de la mas vieja a la mas nueva, para la linea. */
+  points: number[];
+};
 
 function fechaLarga(dateISO: string): string {
   const s = new Intl.DateTimeFormat("es-CR", {
@@ -31,240 +50,417 @@ function fechaLarga(dateISO: string): string {
     month: "long",
     timeZone: "UTC",
   }).format(new Date(`${dateISO}T12:00:00Z`));
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s.charAt(0).toUpperCase() + s.slice(1).replace(",", "");
 }
 
+function initials(name: string): string {
+  const parts = name.replace(/@.*/, "").trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const second =
+    parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : (parts[0]?.[1] ?? "");
+  return (first + second).toUpperCase();
+}
+
+/** La linea de tendencia del peso, en un lienzo de 134 × 44. */
+function sparkPath(points: number[]): string | null {
+  if (points.length < 2) return null;
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const span = max - min || 1;
+  return points
+    .map((v, i) => {
+      const x = ((i * 134) / (points.length - 1)).toFixed(1);
+      const y = (4 + ((max - v) / span) * 36).toFixed(1);
+      return `${i ? "L" : "M"}${x} ${y}`;
+    })
+    .join(" ");
+}
+
+/**
+ * Inicio: solo resume. Encabezado con racha; entreno de hoy con la semana y
+ * «Empezar»; nutricion (anillo, macros y la siguiente comida); agua y peso;
+ * el consejo del copiloto (por reglas, se oculta si no hay); accesos.
+ */
 export function HomeView({
-  greeting,
   extraKcal,
   displayName,
   today,
   day,
   diet,
-  planName,
+  activePlanId,
   nextDay,
   nextDayNumber,
   doneToday,
   sessionInProgress,
+  week,
+  streak,
+  weight,
+  insight,
 }: {
-  greeting: string;
   /** Kcal sumadas a la meta por el entreno de hoy (0 si no aplica). */
   extraKcal: number;
   displayName: string;
   today: string;
   day: DayPlan;
   diet: DietTemplateView | null;
-  planName: string | null;
+  activePlanId: string | null;
   nextDay: PlanDayView | null;
   nextDayNumber: number;
   doneToday: boolean;
   sessionInProgress: boolean;
+  week: WeekDay[];
+  streak: number;
+  weight: WeightSummary | null;
+  insight: Insight | null;
 }) {
-  const [pending, startTransition] = useTransition();
-  const [justLogged, setJustLogged] = useState<string | null>(null);
+  const { avatarUrl } = useMobile();
+  const u = useUnits();
+  const [starting, startTransition] = useTransition();
+  const water = useWater({
+    date: today,
+    ml: day.waterMl,
+    targetMl: day.waterMlTarget,
+  });
 
   const meals = diet?.meals ?? [];
-  const next = meals.find((m) => !m.loggedToday && m.id !== justLogged) ?? null;
-  let consumed = consumedTotals(day.meals);
-  const logged = justLogged ? meals.find((m) => m.id === justLogged) : null;
-  if (logged && !logged.loggedToday)
-    consumed = addMacros(consumed, logged.totals);
+  const next = meals.find((m) => !m.loggedToday) ?? null;
+  const consumed = consumedTotals(day.meals);
   const baseTarget = day.targets?.calories ?? diet?.targetCalories ?? null;
   const target = baseTarget !== null ? baseTarget + extraKcal : null;
   const restantes =
     target !== null ? Math.max(0, target - consumed.calories) : null;
-  const hechas = meals.filter(
-    (m) => m.loggedToday || m.id === justLogged,
-  ).length;
-
-  const logNext = () =>
-    next &&
-    startTransition(async () => {
-      setJustLogged(next.id);
-      const result = await logDietTemplateMeal({
-        templateMealId: next.id,
-        date: today,
-      });
-      if ("error" in result) {
-        setJustLogged(null);
-        toast.error(result.error);
-      } else triggerHaptic("success");
-    });
 
   const exercises = nextDay?.exercises ?? [];
   const nombre = displayName.split(/[\s@]/)[0] ?? "";
 
+  const empezar = () =>
+    startTransition(async () => {
+      const result = await startSession({
+        planId: activePlanId ?? undefined,
+        planDayId: nextDay?.id,
+      });
+      if (result && "error" in result) toast.error(result.error);
+    });
+
+  const waterTarget = day.waterMlTarget ?? 0;
+  const llenos = waterTarget
+    ? Math.min(10, Math.floor((water.shown / waterTarget) * 10))
+    : 0;
+
+  const spark = weight ? sparkPath(weight.points) : null;
+  const change = weight?.change4w ?? null;
+  const tone =
+    change === null || weight?.direction === 0 || Math.abs(change) < 0.05
+      ? undefined
+      : Math.sign(change) === weight?.direction
+        ? "positive"
+        : "caution";
+
   return (
-    <div className="m-screen">
-      <ScreenHeader
-        title="Inicio"
-        subtitle={`${greeting}${nombre ? `, ${nombre}` : ""} · ${fechaLarga(today)}`}
-      />
-      <div className="m-body m-stagger" style={{ paddingTop: 12 }}>
+    <div className="m-screen m-home">
+      <div className="m-home-glow" aria-hidden="true" />
+      <header className="m-home-head">
         <Link
-          href="/nutricion"
-          className="m-card m-press"
-          data-glow=""
-          aria-label="Nutrición de hoy"
+          href="/configuracion"
+          aria-label="Perfil y configuración"
+          className="m-home-avatar m-press"
         >
-          <div className="m-row" style={{ gap: 16 }}>
-            <Ring
-              value={target ? consumed.calories / target : 0}
-              size={104}
-              stroke={8}
-              label={
-                restantes !== null
-                  ? `${kcal(restantes)} kilocalorías restantes`
-                  : "Sin meta"
-              }
-            >
-              <span
-                className="m-num"
-                style={{ fontSize: 22, fontWeight: 700, lineHeight: 1 }}
-              >
-                {restantes !== null ? kcal(restantes) : "—"}
-              </span>
-              <span className="m-stat-label" style={{ fontSize: 11 }}>
-                restantes
-              </span>
-            </Ring>
-            <div className="m-stack" style={{ flex: 1, gap: 8 }}>
-              <span className="m-eyebrow" data-tone="accent">
-                Nutrición · {hechas} de {meals.length}
-              </span>
-              {MACROS.slice(0, 3).map((m) => {
-                const goal = day.targets?.[m.key] ?? null;
-                return (
-                  <div key={m.key} className="m-stack" style={{ gap: 4 }}>
-                    <span className="m-macro-name" style={{ fontSize: 12 }}>
-                      {m.label}
-                    </span>
-                    <Bar
-                      value={goal ? consumed[m.key] / goal : 0}
-                      color={m.color}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- URL firmada de Supabase
+            <img src={avatarUrl} alt="" />
+          ) : (
+            initials(displayName)
+          )}
         </Link>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="m-home-date">{fechaLarga(today)}</div>
+          <h1 className="m-home-hello">Hola{nombre ? `, ${nombre}` : ""}</h1>
+        </div>
+        <div
+          className="m-home-streak"
+          role="img"
+          aria-label={`Racha de ${streak} ${streak === 1 ? "día" : "días"}`}
+        >
+          <Flame
+            size={16}
+            fill="currentColor"
+            strokeWidth={0}
+            aria-hidden="true"
+          />
+          <span className="m-num">{streak}</span>
+        </div>
+      </header>
 
-        {next && (
-          <section className="m-stack" aria-labelledby="m-home-next">
-            <h2 id="m-home-next" className="m-section">
-              Lo que toca
-            </h2>
-            <div className="m-meal-row">
-              <Link
-                href={`/nutricion?comida=${next.id}`}
-                className="m-meal-main m-press"
-              >
-                <span className="m-meal-meta">
-                  {next.scheduledTime && (
-                    <span className="m-num">
-                      {next.scheduledTime.slice(0, 5)} ·{" "}
-                    </span>
-                  )}
-                  {mealTypeLabel(next.mealType)}
-                </span>
-                <span className="m-list-row-title">
-                  {next.name?.trim() ||
-                    next.items.map((i) => i.foodName).join(", ") ||
-                    mealLabel(next.mealType)}
-                </span>
-              </Link>
-              <span className="m-num m-meal-kcal">
-                {kcal(next.totals.calories)}
-              </span>
-              <CheckCircle
-                checked={false}
-                disabled={pending || next.items.length === 0}
-                label={`Marcar ${mealLabel(next.mealType, next.name)} como comida`}
-                onToggle={logNext}
-              />
-            </div>
-          </section>
-        )}
-
-        <section className="m-card" aria-labelledby="m-home-train">
+      <div className="m-body m-stagger m-home-body">
+        {/* Entreno de hoy */}
+        <section
+          className="m-card m-home-train"
+          data-glow=""
+          aria-labelledby="m-home-train"
+        >
+          <div className="m-home-row">
+            <span className="m-eyebrow" data-tone="accent">
+              {!nextDay
+                ? "Entreno"
+                : doneToday && !sessionInProgress
+                  ? "Hecho hoy"
+                  : `Entreno de hoy · Día ${nextDayNumber}`}
+            </span>
+            <Link href="/entrenamiento?vista=hoy" className="m-home-link">
+              Ver rutina
+            </Link>
+          </div>
           {nextDay ? (
-            <div className="m-day-split">
-              <div className="m-day-info">
-                <div>
-                  <div className="m-eyebrow" data-tone="accent">
-                    {doneToday ? "Hecho hoy" : `Entreno · Día ${nextDayNumber}`}
-                  </div>
-                  <h2 id="m-home-train" className="m-card-title">
-                    {dayTitle(nextDay)}
-                  </h2>
-                  {planName && <div className="m-sub">{planName}</div>}
+            <>
+              <h2 id="m-home-train" className="m-home-title">
+                {doneToday && !sessionInProgress
+                  ? "Listo por hoy"
+                  : dayTitle(nextDay)}
+              </h2>
+              <WeekStrip week={week} />
+              <div className="m-home-row" style={{ gap: 12 }}>
+                <div className="m-home-mini">
+                  {doneToday && !sessionInProgress ? (
+                    <div>
+                      <div className="m-home-mini-value">
+                        Día {nextDayNumber}
+                      </div>
+                      <div className="m-home-mini-label">
+                        Próxima: {dayTitle(nextDay)}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <div className="m-home-mini-value m-num">
+                          {exercises.length}
+                        </div>
+                        <div className="m-home-mini-label">ejercicios</div>
+                      </div>
+                      <div>
+                        <div className="m-home-mini-value m-num">
+                          ~{estimatedMinutes(exercises)}&apos;
+                        </div>
+                        <div className="m-home-mini-label">duración</div>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <Stat value={exercises.length} label="Ejercicios" />
-                <Stat
-                  value={`~${estimatedMinutes(exercises)}`}
-                  unit="min"
-                  label="Duración"
-                />
+                {sessionInProgress ? (
+                  <Link
+                    href="/entrenamiento?vista=sesion"
+                    className="m-btn m-press"
+                    data-variant="primary"
+                  >
+                    <Play size={14} fill="currentColor" aria-hidden="true" />
+                    Continuar
+                  </Link>
+                ) : doneToday ? null : (
+                  <button
+                    type="button"
+                    className="m-btn m-press"
+                    data-variant="primary"
+                    disabled={starting}
+                    onClick={empezar}
+                  >
+                    <Play size={14} fill="currentColor" aria-hidden="true" />
+                    {starting ? "Empezando…" : "Empezar"}
+                  </button>
+                )}
               </div>
-              {exercises.length > 0 && (
-                <ExerciseModel
-                  exercises={exercises}
-                  compact
-                  className="m-day-model"
-                />
-              )}
-            </div>
+            </>
           ) : (
             <>
-              <h2 id="m-home-train" className="m-card-title">
+              <h2 id="m-home-train" className="m-home-title">
                 Sin rutina activa
               </h2>
               <p className="m-sheet-text">
                 Importa la de tu coach o deja que la IA arme una.
               </p>
+              <Link
+                href="/entrenamiento?vista=rutinas"
+                className="m-btn m-press"
+                data-variant="primary"
+              >
+                Elegir rutina
+              </Link>
             </>
           )}
-          <Link
-            href={
-              sessionInProgress
-                ? "/entrenamiento?vista=sesion"
-                : nextDay
-                  ? "/entrenamiento?vista=hoy"
-                  : "/entrenamiento?vista=rutinas"
-            }
-            className="m-btn m-press"
-            data-variant="primary"
-            data-block=""
-          >
-            <Play size={16} fill="currentColor" aria-hidden="true" />
-            {sessionInProgress
-              ? "Continuar entrenamiento"
-              : nextDay
-                ? "Ir a entrenar"
-                : "Elegir rutina"}
-          </Link>
         </section>
 
+        {/* Nutricion */}
         <Link
-          href={`/asistente?q=${encodeURIComponent(
+          href="/nutricion"
+          className="m-card m-press m-home-nutri"
+          aria-label={
             restantes !== null
-              ? `¿Qué como? Me quedan ${kcal(restantes)} kcal hoy.`
-              : "¿Cómo voy hoy?",
-          )}`}
-          className="m-copilot-card m-press"
+              ? `Nutrición: ${kcal(restantes)} kilocalorías restantes`
+              : "Nutrición de hoy"
+          }
         >
-          <Sparkles size={20} aria-hidden="true" />
-          <span style={{ flex: 1 }}>
-            <span className="m-list-row-title" style={{ display: "block" }}>
-              ¿Qué como ahora?
-            </span>
-            <span className="m-copilot-sub">
-              El copiloto lo calcula con lo que te queda hoy.
+          <span className="m-home-row">
+            <span className="m-eyebrow">Nutrición</span>
+            <ChevronRight size={16} aria-hidden="true" className="m-faint" />
+          </span>
+          <span className="m-row" style={{ gap: 16 }}>
+            <Ring
+              value={target ? consumed.calories / target : 0}
+              size={92}
+              stroke={8}
+            >
+              <span className="m-num m-home-ring-value">
+                {restantes !== null ? kcal(restantes) : "—"}
+              </span>
+              <span className="m-home-ring-label">restantes</span>
+            </Ring>
+            <span className="m-stack" style={{ flex: 1, gap: 9 }}>
+              {MACROS.slice(0, 3).map((m) => {
+                const goal = day.targets?.[m.key] ?? null;
+                return (
+                  <span key={m.key} className="m-stack" style={{ gap: 4 }}>
+                    <span className="m-home-macro">
+                      <span>{m.label}</span>
+                      <span className="m-num">
+                        {gramos(consumed[m.key])}
+                        {goal ? ` / ${gramos(goal)}` : ""} g
+                      </span>
+                    </span>
+                    <Bar
+                      value={goal ? consumed[m.key] / goal : 0}
+                      color={m.color}
+                    />
+                  </span>
+                );
+              })}
             </span>
           </span>
-          <ChevronRight size={18} aria-hidden="true" />
+          {next ? (
+            <span className="m-home-next">
+              {next.scheduledTime && (
+                <span className="m-num m-home-next-time">
+                  {next.scheduledTime.slice(0, 5)}
+                </span>
+              )}
+              <span className="m-home-next-name">
+                Siguiente: {mealLabel(next.mealType, next.name)}
+              </span>
+              <span className="m-num m-home-next-time">
+                {kcal(next.totals.calories)}
+              </span>
+            </span>
+          ) : meals.length > 0 ? (
+            <span className="m-home-next">
+              <span className="m-home-next-name">Plan del día completo</span>
+            </span>
+          ) : null}
         </Link>
+
+        {/* Agua y peso */}
+        <div className="m-home-pair">
+          <section
+            className="m-card m-home-water"
+            aria-labelledby="m-home-water"
+          >
+            <h2 id="m-home-water" className="m-home-small-label">
+              Agua
+            </h2>
+            <div className="m-home-big m-num">
+              {litros(water.shown)}{" "}
+              <small>{waterTarget ? `/ ${litros(waterTarget)} L` : "L"}</small>
+            </div>
+            {waterTarget > 0 && (
+              <div className="m-home-drops" aria-hidden="true">
+                {Array.from({ length: 10 }, (_, i) => (
+                  <span key={i} data-on={i < llenos ? "" : undefined} />
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              className="m-btn m-press"
+              data-variant="soft"
+              disabled={water.pending}
+              onClick={() => water.add(250)}
+            >
+              +250 ml
+            </button>
+          </section>
+
+          <Link
+            href="/progreso"
+            className="m-card m-press m-home-weight"
+            aria-label={
+              weight
+                ? `Peso: ${u.fmtWeight(weight.kg)} ${u.weightUnit}`
+                : "Registrar peso en Progreso"
+            }
+          >
+            <span className="m-home-small-label">Peso</span>
+            {weight ? (
+              <>
+                <span className="m-home-big m-num">
+                  {u.fmtWeight(weight.kg)} <small>{u.weightUnit}</small>
+                </span>
+                {change !== null && (
+                  <span className="m-home-change" data-tone={tone}>
+                    {change > 0 ? "+" : change < 0 ? "−" : ""}
+                    {u.fmtWeight(Math.abs(change))} {u.weightUnit} en 4 sem
+                  </span>
+                )}
+                {spark && (
+                  <svg
+                    className="m-home-spark"
+                    width="100%"
+                    height="44"
+                    viewBox="0 0 134 44"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path d={spark} pathLength={1} />
+                  </svg>
+                )}
+              </>
+            ) : (
+              <span className="m-sub">Sin medidas recientes</span>
+            )}
+          </Link>
+        </div>
+
+        {/* Consejo del copiloto: se oculta si no hay nada relevante */}
+        {insight && (
+          <Link
+            href={`/asistente?q=${encodeURIComponent(insight.ask)}`}
+            className="m-home-insight m-press"
+          >
+            <span className="m-home-insight-icon" aria-hidden="true">
+              <Sparkles size={18} />
+            </span>
+            <span style={{ flex: 1 }}>
+              <span className="m-home-insight-label">Copiloto</span>
+              <span className="m-home-insight-text">{insight.text}</span>
+              <span className="m-home-insight-cta">
+                Preguntar algo
+                <ChevronRight size={14} strokeWidth={2.5} aria-hidden="true" />
+              </span>
+            </span>
+          </Link>
+        )}
+
+        {/* Accesos rapidos */}
+        <nav className="m-grid-3" aria-label="Accesos rápidos">
+          <Link href="/progreso?vista=evidencia" className="m-add-tile m-press">
+            <Camera size={20} aria-hidden="true" />
+            Foto de progreso
+          </Link>
+          <Link href="/nutricion/alimentos" className="m-add-tile m-press">
+            <Barcode size={20} aria-hidden="true" />
+            Escanear
+          </Link>
+          <Link href="/nutricion?vista=fuera" className="m-add-tile m-press">
+            <MapPin size={20} aria-hidden="true" />
+            Comer fuera
+          </Link>
+        </nav>
       </div>
     </div>
   );

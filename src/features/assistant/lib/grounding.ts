@@ -69,30 +69,65 @@ const TRIGGERS: Record<FormulaKey, string[]> = {
   ],
   safety_floor_factor: ["piso de seguridad", "minimo de calorias", "muy pocas"],
   macro_tolerances_pct: ["tolerancia", "margen", "cuanto me puedo pasar"],
-  compatibility_profiles: ["compatibilidad", "equivalencia", "que tan parecido"],
+  compatibility_profiles: [
+    "compatibilidad",
+    "equivalencia",
+    "que tan parecido",
+  ],
   protein_ranges: ["proteina", "proteinas", "gramos de proteina"],
   weekly_rate_band_percent: [
-    "deficit", "bajar de peso", "perder grasa", "adelgazar", "superavit", "subir de peso",
+    "deficit",
+    "bajar de peso",
+    "perder grasa",
+    "adelgazar",
+    "superavit",
+    "subir de peso",
   ],
-  min_fat_g_per_kg: ["grasa", "grasas", "testosterona"],
+  /*
+   * «grasa» a secas no: sale en «perder grasa», y traia un metaanalisis de
+   * testosterona a una pregunta sobre ayuno. Solo la grasa de la dieta.
+   */
+  min_fat_g_per_kg: [
+    "cuanta grasa",
+    "grasa en la dieta",
+    "grasas en la dieta",
+    "grasa minima",
+    "minimo de grasa",
+    "comer grasa",
+    "baja en grasa",
+    "grasas saludables",
+    "testosterona",
+  ],
   fiber_g_per_1000_kcal: ["fibra"],
   water_ml_per_kg: ["agua", "hidratacion", "tomar agua"],
   energy_availability_thresholds: [
-    "comer poco", "muy poco", "pocas calorias", "disponibilidad energetica", "hambre constante",
+    "comer poco",
+    "muy poco",
+    "pocas calorias",
+    "disponibilidad energetica",
+    "hambre constante",
   ],
   rir_by_goal: ["rir", "fallo", "al fallo", "rpe", "cuanto apretar"],
   min_rest_seconds: ["descanso", "descansar", "entre series"],
   weekly_set_ranges: ["volumen", "series", "cuantas series"],
-  tempo_very_slow_seconds: ["tempo", "cadencia", "velocidad de la repeticion", "lento"],
+  tempo_very_slow_seconds: [
+    "tempo",
+    "cadencia",
+    "velocidad de la repeticion",
+    "lento",
+  ],
   frequency_is_distribution: ["frecuencia", "veces por semana", "cuantos dias"],
-  bia_individual_error: ["inbody", "bioimpedancia", "grasa corporal", "masa magra", "bascula"],
+  bia_individual_error: [
+    "inbody",
+    "bioimpedancia",
+    "grasa corporal",
+    "masa magra",
+    "bascula",
+  ],
 };
 
 function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+  return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
 /**
@@ -102,10 +137,7 @@ function normalize(text: string): string {
  * una pregunta que toque cinco temas no necesita cinco bibliografias para
  * responderse bien.
  */
-export function detectRelevantFormulas(
-  message: string,
-  max = 3,
-): FormulaKey[] {
+export function detectRelevantFormulas(message: string, max = 3): FormulaKey[] {
   const text = normalize(message);
   if (text.trim().length === 0) return [];
 

@@ -86,6 +86,8 @@ export type ImportPreview = {
   unmatchedCount: number;
   /** Ejercicios a los que les falta el número de series o de repeticiones. */
   incompleteCount: number;
+  /** «texto»: la IA falló y se leyó el texto del PDF sin ella. */
+  readBy?: "texto";
 };
 
 async function matchExercises(
@@ -188,38 +190,43 @@ export async function extractRoutinePdf(
     return { error: t.pdfInvalid };
 
   try {
-    const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    const doc = await getDocument({
-      data: new Uint8Array(await file.arrayBuffer()),
-    }).promise;
-    const lines: string[] = [];
-    for (let i = 1; i <= Math.min(doc.numPages, 20); i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      const rows = new Map<number, [number, string][]>();
-      for (const item of content.items) {
-        if (!("str" in item) || !item.str.trim()) continue;
-        const y = Math.round(item.transform[5]);
-        const row = rows.get(y) ?? [];
-        row.push([item.transform[4], item.str]);
-        rows.set(y, row);
-      }
-      for (const [, row] of [...rows].sort((a, b) => b[0] - a[0]))
-        lines.push(
-          row
-            .sort((a, b) => a[0] - b[0])
-            .map(([, str]) => str)
-            .join(" ")
-            .replace(/\s+/g, " ")
-            .trim(),
-        );
-    }
-    const text = lines.join("\n").slice(0, MAX_TEXT);
+    const text = await pdfText(file);
     return text.trim() ? { text } : { error: t.pdfEmpty };
   } catch (error) {
     console.error("[rutinas] no se pudo leer el PDF", error);
     return { error: t.pdfInvalid };
   }
+}
+
+/** El texto del PDF, renglón por renglón según su altura en la página. */
+async function pdfText(file: File): Promise<string> {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const doc = await getDocument({
+    data: new Uint8Array(await file.arrayBuffer()),
+  }).promise;
+  const lines: string[] = [];
+  for (let i = 1; i <= Math.min(doc.numPages, 20); i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const rows = new Map<number, [number, string][]>();
+    for (const item of content.items) {
+      if (!("str" in item) || !item.str.trim()) continue;
+      const y = Math.round(item.transform[5]);
+      const row = rows.get(y) ?? [];
+      row.push([item.transform[4], item.str]);
+      rows.set(y, row);
+    }
+    for (const [, row] of [...rows].sort((a, b) => b[0] - a[0]))
+      lines.push(
+        row
+          .sort((a, b) => a[0] - b[0])
+          .map(([, str]) => str)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim(),
+      );
+  }
+  return lines.join("\n").slice(0, MAX_TEXT);
 }
 
 const AI_FILE_TYPES = new Set([
@@ -271,7 +278,10 @@ const extractedRoutineSchema = z.object({
 
 const EXTRACT_PROMPT = `Transcribe la rutina de entrenamiento de este archivo (lo escribió un entrenador).
 Reglas:
-- Copia los días en orden, con su nombre o enfoque tal como aparece.
+- Copia los días en orden. El nombre del día lleva el día y su enfoque si lo dice («Lunes - Pecho abdomen»).
+- Si un renglón une dos ejercicios («… más …», «… + …»), son DOS ejercicios: uno por cada uno, y en las notas de ambos «superserie».
+- Un circuito con varios movimientos («10 posterior, 10 lateral, 15 militar») son varios ejercicios, uno por movimiento, con sus repeticiones y la nota «circuito».
+- Una frase del entrenador sin series («Todo en dropset al final») es la nota del día, no un ejercicio.
 - Por cada ejercicio: nombre tal como está escrito, series, repeticiones (rango mínimo y máximo; si es un solo número, el mismo en los dos), RIR, descanso en segundos y notas.
 - No inventes ni completes datos: usa null para lo que no está escrito o no se lee. No conviertas RPE en RIR.
 - Si el archivo no es una rutina o no se puede leer, devuelve readable=false y días vacíos.
@@ -354,6 +364,17 @@ export async function extractRoutineWithAi(
     });
   } catch (error) {
     console.error("[rutinas] la IA no pudo leer el archivo", error);
+    /* La IA falló (cuota, 503), no el archivo. Si es un PDF y quien llama
+       lo pide (la vista móvil), se lee su texto sin IA en vez de decir que
+       el archivo no se lee. */
+    if (formData.get("respaldo") === "texto" && file.type === "application/pdf")
+      try {
+        const routine = parseRoutineText(await pdfText(file));
+        if (routine.days.length > 0)
+          return { ...(await matchExercises(routine)), readBy: "texto" };
+      } catch (fallbackError) {
+        console.error("[rutinas] tampoco se leyó el texto", fallbackError);
+      }
     return { error: t.unreadable };
   }
 }

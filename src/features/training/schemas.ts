@@ -63,6 +63,8 @@ export const sessionIdSchema = z.object({ sessionId: z.uuid() });
 export const finishSessionSchema = z.object({
   sessionId: z.uuid(),
   notes: z.string().trim().max(500).optional(),
+  /** A donde volver al guardar. La vista movil vuelve a Inicio. */
+  returnTo: z.enum(["/", "/entrenamiento"]).optional(),
 });
 
 export const logSetSchema = z.object({

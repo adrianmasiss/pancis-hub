@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowUp, Camera, Check, ChevronDown, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
@@ -252,11 +253,25 @@ export function CopilotMobile({
 
 const t = messages.assistant;
 
+const ROLE: Record<string, { label: string; tone: "ok" | "warn" | "neutral" }> =
+  {
+    sustenta: { label: "Sostiene", tone: "ok" },
+    matiza: { label: "Matiza", tone: "warn" },
+    contradice: { label: "Contradice", tone: "warn" },
+  };
+
+/**
+ * La respuesta: lo que ve el copiloto y la accion como titular, las opciones
+ * para «Usar», y la evidencia A LA VISTA (titulo, grado, poblacion, si
+ * sostiene o matiza y la nota del revisor). Solo aparecen las fuentes que
+ * respaldan la respuesta; sin ninguna, se dice. El razonamiento va plegado.
+ */
 function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
   const [open, setOpen] = useState(false);
-  const grounded = Boolean(reply.sources?.length);
+  const sources = reply.sources ?? [];
   return (
     <article className="m-reply">
+      <p className="m-sheet-text">{reply.observation}</p>
       <p className="m-reply-action">{reply.action}</p>
       {reply.options?.map((o) => (
         <OptionCard key={o.title} option={o} today={today} />
@@ -267,6 +282,60 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
           {reply.alternative}
         </p>
       )}
+
+      <section className="m-evidence" aria-label="Evidencia">
+        <div className="m-evidence-head">
+          <span className="m-eyebrow">Evidencia</span>
+          <Link href="/evidencia" className="m-link m-press">
+            Ver biblioteca
+          </Link>
+        </div>
+        {sources.length === 0 ? (
+          <p className="m-sub" style={{ fontSize: 13 }}>
+            Ningún estudio de la biblioteca respalda esta respuesta: sale de
+            tus datos o es una indicación general.
+          </p>
+        ) : (
+          <ul className="m-evidence-list">
+            {sources.map((s) => {
+              const role = s.role ? ROLE[s.role] : undefined;
+              return (
+                <li key={s.identifier ?? s.title} className="m-evidence-item">
+                  <span className="m-evidence-title">{s.title}</span>
+                  <span className="m-evidence-meta">
+                    {s.isProductParameter ? (
+                      <span className="m-tag" data-tone="neutral">
+                        Criterio de la app
+                      </span>
+                    ) : (
+                      s.evidenceGrade && (
+                        <span className="m-tag" data-tone="ia">
+                          Evidencia {s.evidenceGrade}
+                        </span>
+                      )
+                    )}
+                    {role && (
+                      <span className="m-tag" data-tone={role.tone}>
+                        {role.label}
+                      </span>
+                    )}
+                    {s.identifier && <span>{s.identifier}</span>}
+                  </span>
+                  {s.population && (
+                    <span className="m-evidence-note">
+                      Estudiado en: {s.population}
+                    </span>
+                  )}
+                  {s.note && (
+                    <span className="m-evidence-note">{s.note}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
       <button
         type="button"
         className="m-why m-press"
@@ -282,21 +351,12 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
       </button>
       {open && (
         <div className="m-stack" style={{ gap: 6 }}>
-          <p className="m-sheet-text">
-            {reply.observation} {reply.interpretation}
-          </p>
+          <p className="m-sheet-text">{reply.interpretation}</p>
           <p className="m-sheet-text">{reply.reason}</p>
           <p className="m-sub">{reply.reevaluate}</p>
           <p className="m-sub">
             {t.sections.confidence}: {t.confidences[reply.confidence]}
-            {grounded ? "" : ` · ${t.demoBadge}`}
           </p>
-          {reply.sources?.map((s) => (
-            <p key={s.title} className="m-sub" style={{ fontSize: 12 }}>
-              {s.title}
-              {s.evidenceGrade ? ` · evidencia ${s.evidenceGrade}` : ""}
-            </p>
-          ))}
         </div>
       )}
     </article>

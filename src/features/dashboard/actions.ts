@@ -129,6 +129,36 @@ export async function getDietItemSwapSuggestions(
     .single();
   if (!item?.foods) return { error: swapT.failed };
 
+  /*
+   * Sin busqueda, los candidatos eran los 1000 primeros por orden alfabetico
+   * de 28.000: casi todos productos de marca en ingles que empiezan por un
+   * numero («1 DOZEN FARM FRESH EGGS» como sustituto del huevo). Ahora son
+   * los genericos del mismo grupo con calorias parecidas (±50 % por 100 g),
+   * mas lo que el usuario ya usa (favoritos, recientes, despensa).
+   */
+  const CANDIDATE_COLUMNS =
+    "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)";
+  const sourceFood = item.foods as DbFood;
+  const candidateQuery = () => {
+    const base = supabase
+      .from("foods")
+      .select(CANDIDATE_COLUMNS)
+      .is("deleted_at", null)
+      .is("data_issue", null);
+    if (parsed.data.query)
+      return base
+        .ilike("name", `%${parsed.data.query.replace(/[%_]/g, "")}%`)
+        .order("name")
+        .limit(100);
+    const kcal = Number(sourceFood.calories);
+    let generic = base.is("brand", null).is("barcode", null);
+    if (sourceFood.food_group)
+      generic = generic.eq("food_group", sourceFood.food_group);
+    if (kcal > 0)
+      generic = generic.gte("calories", kcal * 0.5).lte("calories", kcal * 1.5);
+    return generic.order("name").limit(1500);
+  };
+
   const [
     candidatesResult,
     preferencesResult,
@@ -136,15 +166,7 @@ export async function getDietItemSwapSuggestions(
     recentIds,
     pantryIds,
   ] = await Promise.all([
-    supabase
-      .from("foods")
-      .select(
-        "id, name, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, image_url, food_portions(label, grams)",
-      )
-      .is("deleted_at", null)
-      .ilike("name", `%${(parsed.data.query ?? "").replace(/[%_]/g, "")}%`)
-      .order("name")
-      .limit(parsed.data.query ? 100 : 1000),
+    candidateQuery(),
     supabase
       .from("dietary_preferences")
       .select("value")
@@ -157,7 +179,21 @@ export async function getDietItemSwapSuggestions(
 
   if (candidatesResult.error || preferencesResult.error)
     return { error: "No pudimos cargar las alternativas. Inténtalo de nuevo." };
-  const candidateRows = candidatesResult.data ?? [];
+  const candidateRows = [...(candidatesResult.data ?? [])];
+  if (!parsed.data.query) {
+    const have = new Set(candidateRows.map((row) => row.id));
+    const own = [
+      ...new Set([...favoriteIds, ...recentIds, ...pantryIds]),
+    ].filter((id) => !have.has(id));
+    if (own.length) {
+      const { data } = await supabase
+        .from("foods")
+        .select(CANDIDATE_COLUMNS)
+        .in("id", own.slice(0, 300))
+        .is("deleted_at", null);
+      candidateRows.push(...(data ?? []));
+    }
+  }
   const portionsByFoodId = buildPortionsMap(candidateRows);
 
   let source = toEquivalenceFood(item.foods as DbFood);

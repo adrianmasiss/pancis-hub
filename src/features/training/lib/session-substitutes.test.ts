@@ -63,3 +63,31 @@ describe("rankSubstitutes", () => {
     ]);
   });
 });
+
+describe("rankSubstitutes y los movimientos balísticos", () => {
+  it("no cambia un peso muerto por un clean, pero sí un clean por otro", () => {
+    const pesoMuerto = ex("Peso muerto", "isquiotibiales", ["gluteos"]);
+    const candidatos = [
+      ex("One-Arm Kettlebell Clean", "isquiotibiales", ["gluteos"]),
+      ex("Romanian Deadlift", "isquiotibiales", ["gluteos"]),
+    ];
+    expect(
+      rankSubstitutes(pesoMuerto, candidatos).map((m) => m.exercise.name),
+    ).toEqual(["Romanian Deadlift"]);
+    const clean = ex("Hang Clean", "isquiotibiales", ["gluteos"]);
+    expect(
+      rankSubstitutes(clean, candidatos).map((m) => m.exercise.name),
+    ).toContain("One-Arm Kettlebell Clean");
+  });
+
+  it("no propone un estiramiento", () => {
+    const hip = ex("Hip thrust", "gluteos", ["isquiotibiales"]);
+    const candidatos = [
+      ex("Assisted lying glutes stretch", "gluteos", ["isquiotibiales"]),
+      ex("Bench hip extension", "gluteos", ["isquiotibiales"]),
+    ];
+    expect(
+      rankSubstitutes(hip, candidatos).map((m) => m.exercise.name),
+    ).toEqual(["Bench hip extension"]);
+  });
+});

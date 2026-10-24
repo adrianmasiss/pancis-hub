@@ -39,8 +39,15 @@ const plano = (s: string) =>
 /* Español de gimnasio → vocabulario del catálogo. Las frases largas van
    antes que sus palabras sueltas. */
 const FRASES: [RegExp, string][] = [
+  /* «Press plano máquina» es el press de pecho en máquina, no la banca con
+     barra: sin esto, una rutina real lo emparejó con «Press de banca». */
+  [
+    /\bpress (?:plano |de pecho )?(?:en )?maquina\b|\bpress de pecho\b/g,
+    "lever chest press",
+  ],
   [/\bpress (?:de )?banca\b|\bpress plano\b/g, "bench press"],
-  [/\bpress militar\b/g, "shoulderpress"],
+  [/\bsentadillas? sis+y\b|\bsis+y squats?\b/g, "sissysquat"],
+  [/\bpress militar\b|\bmilitar\b/g, "shoulderpress"],
   [/\bpress (?:de )?hombros?\b/g, "shoulderpress"],
   [/\bpress inclinados?\b|\bpress en banca inclinada\b/g, "incline press"],
   [/\bpress declinados?\b/g, "decline press"],
@@ -149,6 +156,7 @@ const COMPUESTOS: [RegExp, string][] = [
 /** Lo que define el ejercicio. El equipo y el agarre sólo afinan. */
 const MOVIMIENTOS = new Set([
   "benchpress",
+  "sissysquat",
   "press",
   "shoulderpress",
   "legpress",
@@ -205,7 +213,12 @@ const RUIDO = new Set([
   "power",
   "todo",
   "junto",
+  // «Máquina hummer»: la marca (Hammer Strength) mal escrita, no un agarre.
+  "hummer",
 ]);
+
+/** El equipo: afina el movimiento, pero uno distinto es otro ejercicio. */
+const EQUIPOS = new Set(["barbell", "dumbbell", "cable", "lever", "smith"]);
 
 function aplicar(texto: string, reglas: [RegExp, string][]): string {
   let out = texto;
@@ -262,6 +275,15 @@ export function matchExercise(
     if (otros.some((t) => !(t === "fly" && q.has("reardelt")))) continue;
     // Un estiramiento no es el ejercicio, aunque nombre el músculo.
     if (c.has("stretch") && !q.has("stretch")) continue;
+    /* Si el entrenador dijo el equipo, uno distinto no vale: «pull over
+       polea» no es el pullover con barra. Sin equipo en el candidato, sí. */
+    const equipoC = [...c].filter((t) => EQUIPOS.has(t));
+    if (
+      equipoC.length > 0 &&
+      [...q].some((t) => EQUIPOS.has(t)) &&
+      !equipoC.some((t) => q.has(t))
+    )
+      continue;
 
     let comunes = 0;
     for (const t of q) if (equivale(t, c)) comunes += 1;

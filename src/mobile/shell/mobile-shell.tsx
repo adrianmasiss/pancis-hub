@@ -4,7 +4,7 @@ import { createContext, useContext, type CSSProperties } from "react";
 import { usePathname } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { NavLoadingScreen } from "@/components/layout/nav-loading-screen";
-import { manrope, saira } from "@/mobile/fonts";
+import { manrope } from "@/mobile/fonts";
 import { accentVars, type MobileAccent } from "@/mobile/accent";
 import { MOBILE_PORTAL_ID, isMobileReady } from "@/mobile/routes";
 import { GlassTabBar } from "./glass-tab-bar";
@@ -71,7 +71,7 @@ export function MobileShell({
   return (
     <MobileContext.Provider value={{ ...user, accent, units }}>
       <div
-        className={`m-app ${manrope.variable} ${saira.variable}`}
+        className={`m-app ${manrope.variable}`}
         style={accentVars(accent) as CSSProperties}
       >
         <main id="contenido">{children}</main>

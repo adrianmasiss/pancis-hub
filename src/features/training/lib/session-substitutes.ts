@@ -84,6 +84,18 @@ function desempate(source: SubstituteCandidate, c: SubstituteCandidate) {
  * con su mismo nombre, y no repite nombres: el catálogo trae algunos dos
  * veces (curado e importado).
  */
+/**
+ * Movimientos olimpicos, balisticos o de lanzamiento. Comparten musculos con
+ * una bisagra o una sentadilla, pero no se cambian por ellos a mitad de una
+ * sesion: con el catalogo importado (sin patron de movimiento) el motor
+ * proponia un «Kettlebell Clean» para el peso muerto.
+ */
+const BALISTICO =
+  /\b(?:clean|snatch|jerk|swing|throw|toss|slam|jump|hop|bound|cargada|arranque|envi?on|lanzamiento|salto)s?\b/i;
+
+/** Un estiramiento nombra el musculo, pero no sustituye a un ejercicio. */
+const ESTIRAMIENTO = /\b(?:stretch|estiramiento|estirar)\w*/i;
+
 export function rankSubstitutes<T extends SubstituteCandidate>(
   source: SubstituteCandidate,
   candidates: readonly T[],
@@ -93,10 +105,14 @@ export function rankSubstitutes<T extends SubstituteCandidate>(
   }: { limit?: number; minSimilarity?: number } = {},
 ): SubstituteMatch<T>[] {
   const nombres = new Set([source.name.toLowerCase()]);
+  const fuenteBalistica = BALISTICO.test(source.name);
+  const fuenteEstiramiento = ESTIRAMIENTO.test(source.name);
   return candidates
     .filter((c) => {
       const nombre = c.name.toLowerCase();
       if (c.id === source.id || nombres.has(nombre)) return false;
+      if (!fuenteBalistica && BALISTICO.test(c.name)) return false;
+      if (!fuenteEstiramiento && ESTIRAMIENTO.test(c.name)) return false;
       nombres.add(nombre);
       return true;
     })
