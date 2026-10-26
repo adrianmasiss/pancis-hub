@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { BackButton } from "@/mobile/ui/back-button";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Download, LogOut } from "lucide-react";
-import { signOut } from "@/features/auth/actions";
+import { ChevronRight, Download, LogOut } from "lucide-react";
+import { signOutDevice } from "@/features/auth/sign-out-device";
 import { useTheme } from "@/components/theme-provider";
 import { triggerHaptic } from "@/lib/haptics";
 import {
@@ -13,6 +14,7 @@ import {
   type MobileAccent,
 } from "@/mobile/accent";
 import { useMobile } from "@/mobile/shell/mobile-shell";
+import { PasskeyRow } from "./passkeys";
 import { Segmented, Switch } from "@/mobile/ui/controls";
 import { useUnits } from "@/mobile/units";
 import {
@@ -125,9 +127,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
         className="m-step-head"
         style={{ justifyContent: "space-between" }}
       >
-        <Link href="/" aria-label="Volver" className="m-icon-btn m-press">
-          <ChevronLeft size={20} aria-hidden="true" />
-        </Link>
+        <BackButton fallback="/" />
         <span style={{ fontSize: 17, fontWeight: 800 }}>Perfil</span>
         <Link href="/configuracion?vista=editar" className="m-btn m-press">
           Editar
@@ -335,6 +335,15 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </p>
         </section>
 
+        <section className="m-pref-group" aria-labelledby="m-p-security">
+          <h2 id="m-p-security" className="m-eyebrow m-pref-title">
+            Seguridad
+          </h2>
+          <div className="m-pref-card">
+            <PasskeyRow />
+          </div>
+        </section>
+
         <section className="m-pref-group" aria-labelledby="m-p-account">
           <h2 id="m-p-account" className="m-eyebrow m-pref-title">
             Cuenta y privacidad
@@ -363,6 +372,53 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           </div>
         </section>
 
+        <section className="m-pref-group" aria-labelledby="m-p-about">
+          <h2 id="m-p-about" className="m-eyebrow m-pref-title">
+            Acerca de
+          </h2>
+          <div className="m-pref-card">
+            {/* El credito del maniqui 3D: la licencia CC BY 4.0 pide nombrar
+                al autor, enlazar la licencia y decir si se modifico. */}
+            <details className="m-about">
+              <summary className="m-pref-row m-press">
+                <span className="m-pref-label">Modelo 3D del cuerpo</span>
+                <span className="m-pref-value">CC BY 4.0</span>
+                <ChevronRight
+                  size={18}
+                  className="m-chevron"
+                  aria-hidden="true"
+                />
+              </summary>
+              <div className="m-about-body">
+                <p>
+                  Modelo «Muscle body» de{" "}
+                  <a
+                    href="https://sketchfab.com/DB3D2534"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    DB3D2534
+                  </a>
+                  , bajo licencia{" "}
+                  <a
+                    href="https://creativecommons.org/licenses/by/4.0/deed.es"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    CC BY 4.0
+                  </a>
+                  . Adaptado para Pancis Hub: geometría simplificada y
+                  materiales propios.
+                </p>
+                <p>
+                  Las zonas encendidas son una guía visual aproximada, no una
+                  segmentación anatómica exacta.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
         <button
           type="button"
           className="m-btn m-press"
@@ -370,7 +426,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
           data-block=""
           style={{ height: 52 }}
           disabled={pending}
-          onClick={() => startTransition(() => signOut())}
+          onClick={() => startTransition(() => signOutDevice())}
         >
           <LogOut size={18} aria-hidden="true" />
           Cerrar sesión

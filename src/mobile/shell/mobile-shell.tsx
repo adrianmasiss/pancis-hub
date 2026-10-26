@@ -1,14 +1,21 @@
 "use client";
 
-import { Suspense, createContext, useContext, type CSSProperties } from "react";
+import {
+  Suspense,
+  ViewTransition,
+  createContext,
+  useContext,
+  type CSSProperties,
+} from "react";
 import { usePathname } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
-import { NavLoadingScreen } from "@/components/layout/nav-loading-screen";
 import { manrope, saira } from "@/mobile/fonts";
 import { accentVars, type MobileAccent } from "@/mobile/accent";
 import { MOBILE_PORTAL_ID, isMobileReady } from "@/mobile/routes";
 import { NavTracker } from "@/mobile/ui/back-button";
+import { PasskeyOffer } from "@/mobile/screens/profile/passkeys";
 import { GlassTabBar } from "./glass-tab-bar";
+import { LiveSessionBar, type LiveSession } from "./live-session-bar";
 import "@/mobile/mobile.css";
 
 type MobileUser = {
@@ -57,11 +64,14 @@ export function MobileShell({
   children,
   accent,
   units,
+  live,
   ...user
 }: MobileUser & {
   children: React.ReactNode;
   accent: MobileAccent;
   units: UnitSystem;
+  /** La sesion de entrenamiento abierta, si la hay. */
+  live: LiveSession | null;
 }) {
   const pathname = usePathname();
 
@@ -75,11 +85,25 @@ export function MobileShell({
         className={`m-app ${manrope.variable} ${saira.variable}`}
         style={accentVars(accent) as CSSProperties}
       >
-        <main id="contenido">{children}</main>
+        <main id="contenido">
+          {/* Una por ruta: al cambiar de pantalla sale una y entra otra, y
+              mobile.css las desliza segun la direccion (nav-direction.ts).
+              Cambiar de `?vista=` no la remonta: eso lo anima cada pantalla. */}
+          <ViewTransition
+            key={pathname}
+            enter="m-page"
+            exit="m-page"
+            default="none"
+          >
+            {children}
+          </ViewTransition>
+        </main>
         {/* Las pantallas completas (la sesion en curso) la ocultan con
-            `data-m-fullscreen`, desde CSS: sin parpadeo al hidratar. */}
+            `data-m-fullscreen`, desde CSS: sin parpadeo al hidratar. Lo
+            mismo con la mini barra de la sesion abierta. */}
+        {live && <LiveSessionBar key={live.id} live={live} />}
         <GlassTabBar />
-        <NavLoadingScreen />
+        <PasskeyOffer />
         <Suspense fallback={null}>
           <NavTracker />
         </Suspense>

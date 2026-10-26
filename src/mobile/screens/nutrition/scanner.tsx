@@ -248,7 +248,7 @@ export function BarcodeScannerScreen({ backHref }: { backHref: string }) {
             Food Facts. Puedes crearlo con los datos de su etiqueta.
           </p>
           <Link
-            href="/nutricion/alimentos"
+            href="/nutricion/alimentos?metodo=foto"
             className="m-btn m-press"
             data-variant="primary"
             data-block=""
@@ -257,7 +257,7 @@ export function BarcodeScannerScreen({ backHref }: { backHref: string }) {
             Crear con foto de la etiqueta
           </Link>
           <Link
-            href="/nutricion/alimentos"
+            href="/nutricion/alimentos?metodo=manual"
             className="m-btn m-press"
             data-block=""
           >

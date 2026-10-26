@@ -38,6 +38,8 @@ export const createMealSchema = z.object({
 });
 
 export const logMealSchema = createMealSchema.extend({
+  /** Comida del plan a la que pertenece este extra. */
+  extraOfTemplateMealId: z.uuid().optional(),
   items: z
     .array(
       z.object({

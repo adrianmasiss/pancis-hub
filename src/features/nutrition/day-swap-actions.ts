@@ -129,6 +129,82 @@ export async function omitDietItemForDay(input: {
   return {};
 }
 
+/**
+ * Quitar o devolver un alimento del dia SIN perder lo que ya se cambio de el.
+ * A diferencia de `omitDietItemForDay`, que pisa la fila con el original,
+ * aqui una sustitucion previa se conserva y solo cambia `omitted`: al
+ * devolverlo vuelve con el sustituto. Si la fila era solo la omision (mismo
+ * alimento y cantidad del plan), devolverlo la borra.
+ */
+export async function setDietItemOmittedForDay(input: {
+  templateItemId: string;
+  date: string;
+  omitted: boolean;
+}): Promise<{ error?: string }> {
+  const parsed = z
+    .object({
+      templateItemId: z.uuid(),
+      date: z.iso.date(),
+      omitted: z.boolean(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { error: messages.common.genericError };
+  const { templateItemId, date, omitted } = parsed.data;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: messages.common.genericError };
+
+  // RLS limita la lectura a la dieta propia: si no aparece, no es suya.
+  const [{ data: item }, { data: swap }] = await Promise.all([
+    supabase
+      .from("diet_template_items")
+      .select("food_id, quantity_g")
+      .eq("id", templateItemId)
+      .maybeSingle(),
+    supabase
+      .from("diet_item_day_swaps")
+      .select("food_id, quantity_g, external_name")
+      .eq("user_id", user.id)
+      .eq("template_item_id", templateItemId)
+      .eq("date", date)
+      .maybeSingle(),
+  ]);
+  if (!item) return { error: messages.common.genericError };
+
+  if (!swap) {
+    // Sin cambio previo: quitarlo es lo mismo de siempre; devolverlo, nada.
+    return omitted ? omitDietItemForDay({ templateItemId, date }) : {};
+  }
+
+  const soloOmision =
+    !swap.external_name &&
+    swap.food_id === item.food_id &&
+    Number(swap.quantity_g) === Number(item.quantity_g);
+
+  const { error } =
+    !omitted && soloOmision
+      ? await supabase
+          .from("diet_item_day_swaps")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("template_item_id", templateItemId)
+          .eq("date", date)
+      : await supabase
+          .from("diet_item_day_swaps")
+          .update({ omitted })
+          .eq("user_id", user.id)
+          .eq("template_item_id", templateItemId)
+          .eq("date", date);
+  if (error) return { error: messages.common.genericError };
+
+  revalidatePath("/");
+  revalidatePath("/nutricion");
+  return {};
+}
+
 /** Deshace la sustitucion del dia y devuelve el alimento original al plan. */
 export async function undoDietItemDaySwap(input: {
   templateItemId: string;

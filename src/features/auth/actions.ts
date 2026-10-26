@@ -1,8 +1,10 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { REMEMBER_COOKIE } from "@/lib/supabase/remember";
 import { pareceCorreo } from "@/features/auth/username";
 import { messages } from "@/i18n/es-419";
 import {
@@ -114,6 +116,7 @@ async function usuarioDisponible(usuario: string): Promise<boolean> {
 export async function signIn(
   input: LoginInput,
   next?: string,
+  remember = true,
 ): Promise<AuthActionResult> {
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
@@ -124,6 +127,12 @@ export async function signIn(
   if (!email) {
     return { error: messages.auth.errors.invalidCredentials };
   }
+
+  /* La marca va ANTES de crear el cliente: es él quien decide con ella si
+     las cookies de auth caducan o mueren con el navegador. */
+  const cookieStore = await cookies();
+  if (remember) cookieStore.delete(REMEMBER_COOKIE);
+  else cookieStore.set(REMEMBER_COOKIE, "1", { path: "/", sameSite: "lax" });
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
@@ -177,8 +186,16 @@ export async function signUp(input: RegisterInput): Promise<AuthActionResult> {
   redirect("/onboarding");
 }
 
-export async function signOut(): Promise<void> {
+/**
+ * Cierra la sesion. Con `endpoint` (la suscripcion push de este dispositivo,
+ * ya dada de baja en el navegador) borra tambien su fila: si no, el telefono
+ * seguiria recibiendo los avisos de una cuenta de la que ya salio.
+ */
+export async function signOut(endpoint?: unknown): Promise<void> {
   const supabase = await createClient();
+  if (typeof endpoint === "string" && endpoint.startsWith("https://")) {
+    await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  }
   await supabase.auth.signOut();
   redirect("/login");
 }

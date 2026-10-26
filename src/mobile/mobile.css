@@ -73,6 +73,12 @@
   font-weight: 400;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+  /* Sin el retraso del doble toque para hacer zoom. */
+  touch-action: manipulation;
+}
+/* Sin rebote lateral de la pagina (el vertical de iOS se queda: es nativo). */
+html:has(.m-app) {
+  overscroll-behavior-x: none;
 }
 
 html:not(.dark) .m-app {
@@ -518,6 +524,10 @@ html:not(.dark):has(.m-app) body {
   background: color-mix(in srgb, var(--m-positive) 14%, transparent);
   color: var(--m-positive);
 }
+.m-tag[data-tone="accent"] {
+  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  color: var(--m-accent-ink);
+}
 .m-tag[data-tone="neutral"] {
   background: var(--m-surface-2);
   color: var(--m-text-soft);
@@ -586,8 +596,7 @@ html:not(.dark):has(.m-app) body {
   background: rgb(255 255 255 / 0.045);
   border: 1px solid rgb(255 255 255 / 0.07);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  /* Sin desenfoque: van sobre fondo solido, no habia nada que difuminar. */
   transition:
     transform 160ms ease,
     background-color 0.3s ease,
@@ -877,6 +886,73 @@ html:not(.dark) .m-sheet-grabber {
   color: var(--m-text-soft);
 }
 
+/* ── Mini barra de la sesion abierta (live-session-bar.tsx) ───────── */
+
+.m-live-bar {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 41;
+  height: 48px;
+  padding: 0 14px 0 16px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--m-glass-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--m-glass-line);
+  box-shadow:
+    0 10px 26px -10px rgb(0 0 0 / 0.6),
+    var(--m-glass-hi);
+  color: var(--m-text);
+  font-size: 14px;
+  animation: m-live-in 0.4s var(--m-ease) both;
+}
+.m-app:has([data-m-fullscreen]) .m-live-bar {
+  display: none;
+}
+.m-app:has(.m-live-bar):not(:has([data-m-fullscreen])) .m-screen {
+  padding-bottom: calc(168px + env(safe-area-inset-bottom));
+}
+.m-live-bar-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+.m-live-bar-text strong {
+  font-weight: 700;
+  color: var(--m-text);
+}
+.m-live-bar-time {
+  font-size: 15px;
+  color: var(--m-accent-ink);
+}
+@keyframes m-live-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-live-bar {
+    animation: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .m-live-bar {
+    background: var(--m-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* ── Barra inferior ──────────────────────────────────────────────────── */
 
 .m-tabbar-wrap {
@@ -934,10 +1010,10 @@ html:not(.dark) .m-tabbar {
   color: #b4b4ba;
   transition: color 0.3s ease;
 }
-html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
+html:not(.dark) .m-tabbar-item:not([data-active]) {
   color: #55555c;
 }
-.m-tabbar-item[aria-current="page"] {
+.m-tabbar-item[data-active] {
   color: var(--m-on-accent);
 }
 .m-tabbar-pill {
@@ -1056,22 +1132,88 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   font-weight: 600;
   color: var(--m-muted);
 }
+/* Estados explicitos (ronda oct 25): hoy = anillo en acento; entrenado =
+   relleno en acento con check; repetido = relleno con «R»; planeado = borde
+   gris; descanso = vacio y atenuado. */
 .m-week-dot {
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  border: 1.5px solid var(--m-surface-3);
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-on-accent);
+  font-family: var(--m-font-num-stack);
+  font-size: 12px;
+  font-weight: 700;
 }
-.m-week-dot[data-state="done"] {
-  background: var(--m-text);
-  border-color: var(--m-text);
+/* Area tactil de 44 px sin agrandar el punto. */
+.m-week-dot::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
 }
-.m-week-dot[data-state="today"] {
-  background: var(--m-accent);
-  border-color: var(--m-accent);
+.m-week-dot[data-state="rest"] {
+  background: var(--m-surface-2);
+  opacity: 0.55;
 }
 .m-week-dot[data-state="plan"] {
-  border-color: var(--m-muted);
+  box-shadow: inset 0 0 0 1.5px var(--m-muted);
+}
+.m-week-dot[data-state="done"],
+.m-week-dot[data-state="repeat"] {
+  background: var(--m-accent);
+}
+.m-week-dot[data-state="repeat"] {
+  background: color-mix(in srgb, var(--m-accent) 62%, var(--m-surface));
+}
+.m-week-dot[data-today] {
+  opacity: 1;
+  outline: 2px solid var(--m-accent);
+  outline-offset: 2px;
+}
+.m-week-dot[aria-pressed="true"] {
+  transform: scale(1.12);
+}
+.m-week-caption {
+  margin: 10px 0 0;
+  min-height: 18px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--m-muted);
+}
+.m-week-caption strong {
+  color: var(--m-text);
+  font-weight: 600;
+}
+.m-week-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+}
+.m-week-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.m-week-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 5px;
+}
+.m-week-legend i[data-state="done"] {
+  background: var(--m-accent);
+}
+.m-week-legend i[data-state="plan"] {
+  box-shadow: inset 0 0 0 1.5px var(--m-muted);
+}
+.m-week-legend i[data-state="rest"] {
+  background: var(--m-surface-3);
+}
+.m-week-legend i[data-today] {
+  box-shadow: 0 0 0 1.5px var(--m-accent);
 }
 
 .m-live-dot {
@@ -1285,6 +1427,278 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   gap: 12px;
   padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--m-line);
+}
+
+/* Fila deslizable (swipe-row.tsx): el basurero espera debajo, a la
+   derecha, y la serie se corre para dejarlo ver. */
+.m-swipe {
+  position: relative;
+  border-radius: 24px;
+  list-style: none;
+}
+.m-swipe > :not(.m-swipe-action, .m-swipe-alt) {
+  position: relative;
+  z-index: 1;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.m-swipe-action {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: #ff5a4e;
+  color: #111113;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 30px;
+  opacity: 0;
+  transition: opacity 0.15s var(--m-ease);
+}
+/* Solo se ve cuando la fila empieza a correrse (o con el foco). */
+.m-swipe:has(> [style*="translateX(-"]) .m-swipe-action,
+.m-swipe[data-open] .m-swipe-action,
+.m-swipe-action:focus-visible {
+  opacity: 1;
+}
+/* Con dos acciones el basurero lleva su nombre, como la otra. */
+.m-swipe-action:has(span),
+.m-swipe-alt {
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+/* El basurero ocupa toda la fila por debajo; su boton es el ultimo tramo. */
+.m-swipe-action:has(span) {
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 0 calc(100% - 84px);
+}
+.m-swipe-alt {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Se mete bajo la esquina redondeada de la fila: sin rojo asomando. */
+  padding-left: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-surface-3);
+  color: var(--m-text);
+  opacity: 0;
+  transition: opacity 0.15s var(--m-ease);
+}
+.m-swipe:has(> [style*="translateX(-"]) .m-swipe-alt,
+.m-swipe[data-open] .m-swipe-alt,
+.m-swipe-alt:focus-visible {
+  opacity: 1;
+}
+html:not(.dark) .m-app .m-swipe-action {
+  background: #d93a2f;
+  color: #fff;
+}
+/* La fila hecha se atenua por dentro y con un fondo opaco: con `opacity`
+   en la fila, el rojo de debajo se transparentaba al deslizar. */
+.m-swipe > .m-set-row[data-tone="done"] {
+  opacity: 1;
+  background: color-mix(in srgb, var(--m-surface) 55%, var(--m-bg));
+}
+.m-swipe > .m-set-row[data-tone="done"] > * {
+  opacity: 0.55;
+}
+.m-set-add {
+  height: 48px;
+  border-radius: 24px;
+  border: 1.5px dashed var(--m-line);
+  color: var(--m-text-soft);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Ruedas tipo iOS (wheel.tsx): 5 opciones a la vista, la del centro bajo
+   una banda; arriba y abajo se desvanecen. */
+.m-wheels {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 4px 0 8px;
+}
+.m-wheels-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 88px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--m-surface-2);
+  pointer-events: none;
+}
+.m-wheel-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.m-wheel-cols {
+  display: flex;
+  align-items: center;
+}
+.m-wheel {
+  width: 56px;
+  height: 200px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 80px 0;
+  box-sizing: border-box;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 35%,
+    #000 65%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 35%,
+    #000 65%,
+    transparent
+  );
+  outline: none;
+}
+.m-wheel::-webkit-scrollbar {
+  display: none;
+}
+.m-wheel:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+  border-radius: 12px;
+}
+.m-wheel-item {
+  height: 40px;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--m-muted);
+  transition: color 0.15s var(--m-ease);
+}
+.m-wheel-item[aria-selected="true"] {
+  color: var(--m-text);
+}
+.m-wheel-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-muted);
+  margin-left: 2px;
+}
+
+/* ── Editor de rutina (routine-editor.tsx) ───────────────────────────── */
+
+.m-editor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-editor-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px 12px 6px;
+  border-radius: 24px;
+  background: var(--m-surface);
+}
+.m-editor-handle {
+  flex: none;
+  width: 32px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-muted);
+  cursor: grab;
+  touch-action: none;
+}
+.m-editor-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.m-editor-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.m-btn[data-size="sm"] {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  gap: 6px;
+}
+.m-editor {
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+.m-editor-foot {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, var(--m-fade), var(--m-bg) 40%);
+}
+.m-sheet-icon[data-tone="warn"] {
+  background: var(--m-warn-bg);
+  color: var(--m-warn-text);
+}
+/* Pantalla de reemplazo: entra desde la derecha sobre el editor. */
+.m-replace {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--m-bg);
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
+}
+.m-replace-current {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.m-replace-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-replace-muscles strong {
+  color: var(--m-text-soft);
+  font-weight: 700;
+}
+.m-replace-muscles .m-chip {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
 }
 
 /* ── Opciones (cambiar solo hoy) ─────────────────────────────────────── */
@@ -1570,6 +1984,36 @@ html:not(.dark) .m-tabbar-item:not([aria-current="page"]) {
   text-align: center;
   font-family: var(--m-font-num-stack);
 }
+/* Fila importada: dudosa en amarillo, con sus «¿Quisiste decir…?». */
+.m-import-row {
+  align-items: center;
+  padding-left: 16px;
+}
+.m-import-row[data-doubt] {
+  background: color-mix(in srgb, var(--m-caution) 12%, var(--m-surface));
+  box-shadow: inset 0 0 0 1.5px
+    color-mix(in srgb, var(--m-caution) 45%, transparent);
+}
+.m-import-row .m-review-bad {
+  color: var(--m-warn-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.m-import-row .m-list-row-title.m-review-bad {
+  font-size: 15px;
+}
+.m-import-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.m-import-suggest .m-chip {
+  height: 30px;
+  font-size: 12px;
+  border-color: color-mix(in srgb, var(--m-caution) 50%, transparent);
+}
 .m-file-chip {
   display: flex;
   align-items: center;
@@ -1618,10 +2062,107 @@ textarea.m-input {
   flex-direction: column;
   gap: 6px;
 }
-.m-field > span {
+.m-field > span,
+.m-field-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--m-muted);
+}
+
+/* ── Formulario a pantalla completa (FormScreen) ─────────────────────── */
+
+.m-form {
+  padding-bottom: 0;
+}
+.m-form-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+.m-form .m-body {
+  padding-bottom: 24px;
+}
+/* Campos grandes: 52 px de alto y 16 px de letra (iOS no hace zoom). */
+.m-form .m-input {
+  height: 52px;
+  border-radius: 16px;
+}
+.m-form textarea.m-input {
+  height: auto;
+}
+.m-form select.m-input {
+  appearance: none;
+  padding-right: 40px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 17px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.m-field-optional {
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-field-hint {
+  font-size: 12px;
+  color: var(--m-muted);
+}
+.m-field-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-danger-text);
+}
+.m-field[data-invalid] .m-input {
+  box-shadow: 0 0 0 1.5px var(--m-danger-text);
+}
+.m-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+/* Dos columnas para cifras cortas (kcal, gramos). */
+.m-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.m-input-unit {
+  position: relative;
+  display: block;
+}
+.m-input-unit .m-input {
+  padding-right: 48px;
+  font-family: var(--m-font-num-stack);
+  font-variant-numeric: tabular-nums;
+}
+.m-input-unit > small {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--m-muted);
+  pointer-events: none;
+}
+.m-form-note {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--m-surface-2);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--m-text-soft);
 }
 
 /* ── Calendario ──────────────────────────────────────────────────────── */
@@ -4486,4 +5027,1105 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   font-size: 15px;
   font-family: var(--m-font-num-stack);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Agregar alimento: foto de la etiqueta ───────────────────────────── */
+
+.m-label-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.m-label-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 24px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--m-muted);
+}
+.m-label-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-label-frame[data-busy] img {
+  opacity: 0.45;
+}
+.m-label-status {
+  position: absolute;
+  inset: auto 12px 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--m-bg) 72%, transparent);
+  backdrop-filter: blur(12px);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m-text);
+  text-align: center;
+}
+
+/* ── Editar perfil ───────────────────────────────────────────────────── */
+
+.m-avatar-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.m-avatar-edit .m-profile-avatar[data-busy] img {
+  opacity: 0.5;
+}
+.m-avatar-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+.m-field-label {
+  margin: 0 0 -6px;
+}
+/* Opciones excluyentes en filas, con un punto que se llena al elegir. */
+.m-radio-list {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--m-surface-2);
+  overflow: hidden;
+}
+.m-radio-row {
+  min-height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--m-text);
+}
+.m-radio-row + .m-radio-row {
+  box-shadow: inset 0 1px 0 var(--m-line);
+}
+.m-radio-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  flex: none;
+  box-shadow: inset 0 0 0 1.5px var(--m-muted);
+  transition:
+    box-shadow 200ms cubic-bezier(0.3, 1.4, 0.5, 1),
+    background 200ms ease;
+}
+.m-radio-row[aria-checked="true"] .m-radio-dot {
+  background: var(--m-accent);
+  box-shadow:
+    inset 0 0 0 5px var(--m-accent),
+    inset 0 0 0 10px var(--m-on-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-radio-dot {
+    transition: none;
+  }
+}
+
+/* ── Diálogos de escritorio dentro de la vista móvil ─────────────────────
+   Los que aún se comparten (registrar medición, subir foto…) se montan en
+   #m-portal: toman la letra y el acento de la vista y ocupan la pantalla
+   completa, con el pie fijo sobre el área segura. */
+
+.m-app {
+  --font-sans: var(--m-font-ui-stack);
+  --primary: var(--m-accent);
+  --primary-foreground: var(--m-on-accent);
+  --ring: var(--m-accent);
+}
+.m-app .pc-dialog.pc-live-edge {
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  /* `translate: none` lo descarta el minificador; se anulan las variables
+     de las utilidades `-translate-*-1/2`. */
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  padding: var(--m-top) 20px calc(24px + env(safe-area-inset-bottom));
+  background: var(--m-bg);
+  backdrop-filter: none;
+  box-shadow: none;
+  font-family: var(--m-font-ui-stack);
+}
+.m-app .pc-dialog.pc-live-edge::before,
+.m-app .pc-dialog.pc-live-edge::after {
+  display: none;
+}
+.m-app .pc-dialog[data-state="open"] {
+  animation: m-dialog-in 360ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.m-app .pc-dialog[data-state="closed"] {
+  animation: m-dialog-out 220ms ease-in forwards;
+}
+@keyframes m-dialog-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes m-dialog-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+.m-app .pc-dialog [data-slot="dialog-header"] {
+  padding-right: 52px;
+}
+.m-app .pc-dialog [data-slot="dialog-title"] {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.m-app .pc-dialog-close {
+  top: var(--m-top);
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-app .pc-dialog:has(> [data-slot="dialog-footer"]) {
+  padding-bottom: 0;
+}
+.m-app .pc-dialog [data-slot="dialog-footer"] {
+  margin: auto -20px 0;
+  padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(to bottom, var(--m-fade), var(--m-bg) 30%);
+  backdrop-filter: none;
+}
+.m-app .pc-dialog [data-slot="dialog-footer"] button[type="submit"] {
+  height: 52px;
+  border-radius: 26px;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 12px 28px -10px
+    color-mix(in srgb, var(--m-accent) 67%, transparent);
+}
+.m-app .pc-dialog [data-slot="dialog-footer"] .pc-action-disc {
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+.m-app .pc-dialog-group {
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  border-radius: 22px;
+}
+.m-app .pc-dialog input,
+.m-app .pc-dialog select,
+.m-app .pc-dialog textarea {
+  font-size: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-app .pc-dialog[data-state="open"] {
+    animation: pc-dialog-overlay-in 160ms ease-out;
+  }
+  .m-app .pc-dialog[data-state="closed"] {
+    animation: pc-dialog-overlay-out 160ms ease-in forwards;
+  }
+}
+
+/* ── Subir plan ──────────────────────────────────────────────────────── */
+
+.m-label-frame[data-shape="wide"] {
+  aspect-ratio: 16 / 7;
+}
+.m-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  color: var(--m-accent-ink);
+}
+.m-file-chip > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-file-chip strong {
+  font-size: 15px;
+  color: var(--m-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-file-chip small {
+  font-size: 13px;
+  color: var(--m-muted);
+}
+.m-file-chip[data-busy] small {
+  animation: m-pulse-text 1.4s ease-in-out infinite;
+}
+@keyframes m-pulse-text {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-file-chip[data-busy] small {
+    animation: none;
+  }
+}
+/* El editor de revision es el de escritorio, sin el margen del marco. */
+.m-diet-review {
+  padding: 0;
+}
+.m-version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.m-version-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+.m-version-list li + li {
+  box-shadow: inset 0 1px 0 var(--m-line);
+}
+.m-version-list li > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-version-list strong {
+  font-size: 15px;
+}
+.m-version-list small {
+  font-size: 13px;
+  color: var(--m-muted);
+}
+
+/* ── Revisar fuentes ─────────────────────────────────────────────────── */
+
+.m-why {
+  align-self: stretch;
+}
+.m-why summary {
+  min-height: 24px;
+  font-weight: 700;
+  color: var(--m-text);
+  cursor: pointer;
+}
+.m-why p {
+  margin: 8px 0 0;
+}
+.m-empty {
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--m-muted);
+}
+.m-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-review-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.m-review-card > header > span:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-review-card > header strong {
+  font-size: 16px;
+}
+.m-review-card > header small {
+  font-size: 13px;
+  color: var(--m-muted);
+}
+.m-review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.m-review-table th,
+.m-review-table td {
+  padding: 8px 4px;
+  text-align: right;
+  font-family: var(--m-font-num-stack);
+  font-variant-numeric: tabular-nums;
+}
+.m-review-table thead th {
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-review-table th[scope="row"],
+.m-review-table thead th:first-child {
+  text-align: left;
+  font-family: var(--m-font-ui-stack);
+  font-weight: 600;
+}
+.m-review-table th[scope="row"] small {
+  display: block;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-review-table tbody tr {
+  box-shadow: inset 0 1px 0 var(--m-line);
+}
+.m-review-table tr[data-canonical] td {
+  color: var(--m-text);
+}
+.m-review-table tbody tr:not([data-canonical]) td {
+  color: var(--m-text-soft);
+}
+.m-review-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-review-done {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--m-positive);
+}
+
+/* ── Transicion entre pantallas (View Transitions) ───────────────────────
+   Adelante: la nueva entra desde la derecha y la vieja se corre un poco a
+   la izquierda, como en iOS. Atras, al reves. Entre pestañas, fundido. La
+   direccion la pone nav-direction.ts en <html data-m-nav>. */
+
+::view-transition-old(.m-page) {
+  animation: m-vt-out 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+::view-transition-new(.m-page) {
+  animation: m-vt-in 340ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+:root[data-m-nav="back"]::view-transition-old(.m-page) {
+  animation-name: m-vt-out-back;
+}
+:root[data-m-nav="back"]::view-transition-new(.m-page) {
+  animation-name: m-vt-in-back;
+}
+:root[data-m-nav="tab"]::view-transition-old(.m-page) {
+  animation: m-vt-fade-out 140ms ease-out both;
+}
+:root[data-m-nav="tab"]::view-transition-new(.m-page) {
+  animation: m-vt-fade-in 220ms ease-out 60ms both;
+}
+:root[data-m-nav="none"]::view-transition-old(.m-page),
+:root[data-m-nav="none"]::view-transition-new(.m-page) {
+  animation: none;
+}
+@keyframes m-vt-in {
+  from {
+    transform: translateX(28%);
+    opacity: 0;
+  }
+}
+@keyframes m-vt-out {
+  to {
+    transform: translateX(-12%);
+    opacity: 0;
+  }
+}
+@keyframes m-vt-in-back {
+  from {
+    transform: translateX(-12%);
+    opacity: 0;
+  }
+}
+@keyframes m-vt-out-back {
+  to {
+    transform: translateX(28%);
+    opacity: 0;
+  }
+}
+@keyframes m-vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes m-vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* «Volver» con router.back(): la transicion la abre nav-direction.ts a
+   mano y lo que se mueve es la pagina entera (sin la barra). */
+:root[data-m-nav="back-root"]::view-transition-old(root) {
+  animation: m-vt-out-back 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+:root[data-m-nav="back-root"]::view-transition-new(root) {
+  animation: m-vt-in-back 340ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+/* La barra no se funde: se muestra en vivo, y la pildora sigue deslizando
+   durante la transicion. */
+.m-tabbar-wrap {
+  view-transition-name: m-tabbar;
+}
+::view-transition-old(m-tabbar) {
+  display: none;
+}
+::view-transition-new(m-tabbar) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.m-page),
+  ::view-transition-new(.m-page) {
+    animation: m-vt-fade-in 120ms ease-out both;
+  }
+  ::view-transition-old(.m-page) {
+    animation-name: m-vt-fade-out;
+  }
+}
+
+/* ── Esqueletos ──────────────────────────────────────────────────────── */
+
+.m-skeleton .m-header-text {
+  display: flex;
+  flex-direction: column;
+}
+.m-sk {
+  display: block;
+  max-width: 100%;
+  border-radius: 10px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  animation: m-sk 1.4s ease-in-out infinite;
+}
+@keyframes m-sk {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-sk {
+    animation: none;
+  }
+}
+
+/* ── Perfil › Acerca de ──────────────────────────────────────────────── */
+
+.m-about > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.m-about > summary::-webkit-details-marker {
+  display: none;
+}
+.m-about[open] .m-chevron {
+  transform: rotate(90deg);
+}
+.m-about .m-chevron {
+  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.m-about-body {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--m-text-soft);
+}
+.m-about-body p {
+  margin: 0;
+}
+.m-about-body a {
+  color: var(--m-accent-ink);
+  text-decoration: underline;
+}
+
+/* ── Entrenar · Hoy › Rutinas (acordeon de rutinas) ──────────────────── */
+
+.m-routine-acc {
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-routine-acc[data-active] {
+  background: color-mix(in srgb, var(--m-accent) 7%, var(--m-surface));
+  box-shadow:
+    var(--m-card-edge),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--m-accent) 55%, transparent);
+}
+.m-routine-acc-head {
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.m-routine-acc[data-open] .m-disclosure-body {
+  grid-template-rows: 1fr;
+}
+.m-routine-acc[data-open] .m-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.m-routine-acc-body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.m-routine-day {
+  padding-top: 12px;
+  border-top: 1px solid var(--m-line);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.m-routine-ex {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Nutrición · Hoy, ronda 2 (4.1 y 4.2) ────────────────────────────── */
+
+/* Consumidas y meta: la cifra manda; «kcal» pequeño y gris. */
+.m-kcal-stat {
+  font-size: 24px;
+}
+.m-kcal-stat small {
+  font-size: 12px;
+}
+
+/* Macros en tres columnas: etiqueta, barra y valor, con las barras
+   alineadas entre filas. */
+.m-macro-grid {
+  margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 12px 12px;
+}
+.m-macro-line {
+  display: contents;
+}
+.m-macro-line dt {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.m-macro-line-bar {
+  grid-column: 2;
+  grid-row: auto;
+  margin: 0;
+}
+.m-macro-line dd.m-num {
+  grid-column: 3;
+  margin: 0;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.m-macro-line dd small {
+  font-family: var(--m-font-ui-stack);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+/* El orden del marcado (etiqueta, valor, barra) es el de lectura; la
+   grilla los pone en su columna, en la misma fila. */
+.m-macro-line > * {
+  grid-row: var(--row);
+}
+.m-macro-line:nth-child(1) { --row: 1; }
+.m-macro-line:nth-child(2) { --row: 2; }
+.m-macro-line:nth-child(3) { --row: 3; }
+.m-macro-line:nth-child(4) { --row: 4; }
+
+/* La lista del dia: cada comida es un item arrastrable. */
+.m-day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-day-item {
+  position: relative;
+  border-radius: 22px;
+}
+.m-day-item .m-plan-meal-head {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Ingredientes deslizables: sin esquinas de tarjeta y con fondo propio,
+   para que el rojo no se vea por debajo. */
+.m-ing-list > li + li {
+  border-top: 1px solid var(--m-line);
+}
+.m-ing-swipe {
+  border-radius: 0;
+}
+.m-ing-swipe > .m-ing {
+  padding: 8px 0;
+  background: var(--m-surface);
+}
+.m-ing-swipe .m-swipe-action {
+  border-radius: 12px;
+}
+.m-ing-swipe .m-swipe-alt {
+  border-radius: 12px 0 0 12px;
+}
+a.m-ing-name {
+  color: inherit;
+  text-decoration: none;
+}
+.m-ing-tag {
+  color: var(--m-accent-ink);
+  font-weight: 700;
+}
+.m-ing-swipe > .m-ing[data-extra] .m-ing-name > span:first-child::before {
+  content: "+ ";
+  color: var(--m-accent-ink);
+}
+.m-ing-hint,
+.m-ing-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+
+/* Hora, «Agregar extra» y «⋯» en una fila. */
+.m-meal-tools {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.m-meal-tools .m-btn {
+  flex: 1;
+  background: var(--m-surface-2);
+  font-size: 14px;
+}
+.m-time-chip {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--m-surface-2);
+  color: var(--m-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.m-time-chip svg {
+  color: var(--m-muted);
+}
+.m-wheel-sep {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--m-muted);
+  padding: 0 2px;
+}
+
+/* Hoja de acciones (menu «⋯»). */
+.m-action-list {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-action-row {
+  min-height: 54px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--m-text);
+}
+.m-action-row + .m-action-row {
+  border-top: 1px solid var(--m-line);
+}
+.m-action-row svg {
+  color: var(--m-text-soft);
+  flex: none;
+}
+.m-action-row[data-tone="danger"],
+.m-action-row[data-tone="danger"] svg {
+  color: var(--m-critical, #ff5a4e);
+}
+.m-action-row:disabled {
+  opacity: 0.4;
+}
+.m-recipe-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-surface-2);
+  color: var(--m-accent-ink);
+}
+
+/* Alimentos elegidos en «Nueva comida» y «Agregar extra». */
+.m-new-meal-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.m-new-meal-fields .m-field {
+  flex: 1;
+}
+.m-picked {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-picked-row {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-picked-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.m-picked-head .m-icon-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--m-surface-2);
+}
+.m-picked-kcal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.m-picked-kcal .m-num {
+  font-size: 20px;
+  font-weight: 600;
+}
+.m-picked-kcal small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+
+/* ── Comparar, ronda 2 (4.3) ─────────────────────────────────────────── */
+
+.m-compare-mode {
+  padding: 0 16px;
+  margin-bottom: 4px;
+}
+.m-pick-group {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+  margin: 0;
+}
+.m-compare-pick {
+  margin: auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m-accent-ink);
+}
+button.m-compare-side {
+  text-align: left;
+  width: 100%;
+  height: auto;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ── Ficha de alimento, ronda 2 (4.4) ────────────────────────────────── */
+
+.m-food-source {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.m-food-source-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-macro-bars {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.m-macro-bars-kcal {
+  flex: none;
+  min-width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.m-macro-bars-kcal .m-num {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+.m-macro-bars-kcal small {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-macro-bars .m-home-macro small {
+  font-family: var(--m-font-ui-stack);
+  font-size: 11px;
+  color: var(--m-muted);
+}
+.m-use-time {
+  min-width: 44px;
+  font-size: 13px;
+  color: var(--m-muted);
+}
+.m-card.m-macro-bars {
+  flex-direction: row;
+  align-items: center;
+}
+.m-macro-bars .m-home-macro {
+  gap: 8px;
+}
+.m-seg-compact {
+  flex: none;
+  width: 176px;
+}
+
+/* ── Historial, ronda 2 (4.5) ────────────────────────────────────────── */
+
+.m-hist-kcal-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.m-hist-diff {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.m-hist-diff[data-tone="ok"] {
+  color: var(--m-positive);
+}
+.m-hist-diff[data-tone="off"] {
+  color: var(--m-warn-text);
+}
+.m-hist-meal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.m-hist-foods {
+  list-style: none;
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: 18px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-hist-foods > li {
+  min-height: 52px;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-hist-foods > li + li {
+  border-top: 1px solid var(--m-line);
+}
+.m-hist-food-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.m-hist-food-name small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-hist-foods > li[data-outcome="no"] .m-hist-food-name > span {
+  color: var(--m-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ── Inicio, ronda 2 (5.1) ───────────────────────────────────────────── */
+
+/* Mas aire dentro de las tarjetas, y las de una misma fila con el mismo
+   alto (la grilla las estira; el minimo evita filas encogidas). */
+.m-card.m-home-train,
+.m-card.m-home-nutri {
+  padding: 20px;
+}
+.m-home-pair {
+  align-items: stretch;
+}
+.m-home-pair > .m-card {
+  padding: 18px;
+  min-height: 172px;
+}
+
+/* ── Barra, ronda 2 (5.2) ────────────────────────────────────────────── */
+
+/* Una sola pildora del ancho de una celda; se mueve con translateX. */
+.m-tabbar > .m-tabbar-pill {
+  inset: 6px auto 6px 6px;
+  width: calc((100% - 12px) / 5);
+  will-change: transform;
+  pointer-events: none;
+}
+.m-tabbar-icon {
+  display: inline-flex;
+}
+
+/* ── Campos, ronda 2 (5.3) ───────────────────────────────────────────── */
+
+/* Sin la apariencia nativa (ni la cruz de los buscadores ni el resaltado
+   gris al tocar): el foco lo dibuja el contenedor, con un borde de acento
+   de 1,5 px y un halo suave. */
+.m-app
+  input:not([type="range"], [type="checkbox"], [type="radio"], [type="file"]),
+.m-app textarea,
+.m-app select {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.m-app input[type="search"]::-webkit-search-cancel-button,
+.m-app input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+.m-input,
+.m-search,
+.m-composer {
+  transition:
+    box-shadow 0.18s var(--m-ease),
+    border-color 0.18s var(--m-ease);
+}
+.m-input:focus,
+.m-search:focus-within,
+.m-composer:focus-within {
+  box-shadow:
+    0 0 0 1.5px var(--m-accent),
+    0 0 0 5px color-mix(in srgb, var(--m-accent) 18%, transparent);
+}
+/* Con teclado fisico el foco se nota mas; con el dedo basta lo de arriba. */
+.m-input:focus-visible,
+.m-search:has(input:focus-visible),
+.m-composer:has(:focus-visible) {
+  box-shadow:
+    0 0 0 2px var(--m-accent),
+    0 0 0 6px color-mix(in srgb, var(--m-accent) 24%, transparent);
+}
+.m-composer:focus-within {
+  border-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-input,
+  .m-search,
+  .m-composer {
+    transition: none;
+  }
+}
+/* El contorno global de escritorio (`:focus-visible` con outline) se dibuja
+   en el contenedor aqui; dentro del campo sobraria. */
+html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
+  outline: none;
+}
+
+/* ── Seguridad, ronda 2 (5.5) ────────────────────────────────────────── */
+
+.m-pref-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
 }

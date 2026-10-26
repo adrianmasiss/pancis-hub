@@ -5,7 +5,7 @@ import { addDaysISO } from "@/lib/dates";
 import { NutritionTabs } from "./nutrition-tabs";
 import { withDayTimes } from "./day-times";
 import { getTrainingAdjustment } from "@/mobile/training-adjustment";
-import { kcal } from "./format";
+import { kcal, mealLabel } from "./format";
 import { NutritionToday } from "./today";
 import { MealDetail } from "./meal-detail";
 import { CompareFoods } from "./compare";
@@ -107,7 +107,21 @@ export async function NutritionMobile({
       page: 1,
       pageSize: 1,
     });
-    if (foods[0]) return <FoodDetail food={foods[0]} date={date} />;
+    if (foods[0]) {
+      const plan = await getDietPlanForDate(userId, date, "day");
+      const { diet } = await withDayTimes(userId, date, plan);
+      return (
+        <FoodDetail
+          food={foods[0]}
+          date={date}
+          meals={(diet?.meals ?? []).map((m) => ({
+            id: m.id,
+            name: mealLabel(m.mealType, m.name),
+            time: m.scheduledTime,
+          }))}
+        />
+      );
+    }
   }
   const [day, planDelDia] = await Promise.all([
     getDayPlan(userId, date),
@@ -209,6 +223,7 @@ export async function NutritionMobile({
         targetCalories={day.targets?.calories ?? diet?.targetCalories ?? null}
         planMealCount={planMeals.length}
         copyMode={params.copiar === "1"}
+        timezone={timezone}
       />
     );
   } else {

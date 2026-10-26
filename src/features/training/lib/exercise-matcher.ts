@@ -306,14 +306,19 @@ export function searchExerciseCatalog(
   term: string,
   catalogo: ExerciseCandidate[],
   limit = 20,
+  /** Solo candidatos con el mismo movimiento (para «¿Quisiste decir…?»). */
+  { sameMovement = false }: { sameMovement?: boolean } = {},
 ): ExerciseCandidate[] {
   const literal = plano(term);
   if (literal.length < 2) return [];
   const q = tokensDeEjercicio(term);
+  const movimientos = [...q].filter((t) => MOVIMIENTOS.has(t));
+  if (sameMovement && movimientos.length === 0) return [];
   const scored: { candidate: ExerciseCandidate; score: number }[] = [];
   for (const candidate of catalogo) {
     const nombre = plano(candidate.name);
     const c = tokensDeEjercicio(candidate.name);
+    if (sameMovement && !movimientos.some((m) => equivale(m, c))) continue;
     let score = nombre.includes(literal) ? 2 : 0;
     for (const t of q)
       if (equivale(t, c)) score += MOVIMIENTOS.has(t) ? 1.5 : 1;

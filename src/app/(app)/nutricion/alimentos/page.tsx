@@ -33,7 +33,7 @@ import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/dates";
 import { messages } from "@/i18n/es-419";
 import { isPhone } from "@/lib/device";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { AddFoodMobile } from "@/mobile/screens/nutrition/add-food";
 
 const t = messages.foods;
 export const metadata: Metadata = { title: "Biblioteca de alimentos" };
@@ -58,6 +58,7 @@ export default async function FoodsLibraryPage({
     vista?: string;
     origen?: string;
     pagina?: string;
+    metodo?: string;
   }>;
 }) {
   const db = await createClient();
@@ -66,6 +67,15 @@ export default async function FoodsLibraryPage({
   } = await db.auth.getUser();
   if (!user) redirect("/login");
   const params = await searchParams;
+  /* En el telefono esta ruta es «Agregar alimento» (foto o manual), con su
+     pantalla movil. La biblioteca movil vive en Nutricion › Biblioteca. */
+  if (await isPhone()) {
+    return (
+      <AddFoodMobile
+        method={params.metodo === "manual" ? "manual" : "foto"}
+      />
+    );
+  }
   const query = params.q?.trim().slice(0, 80) || undefined;
   const group = FOOD_GROUPS.includes(params.grupo as FoodGroup)
     ? (params.grupo as FoodGroup)
@@ -327,17 +337,5 @@ export default async function FoodsLibraryPage({
     </div>
   );
 
-  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
-  if (await isPhone()) {
-    return (
-      <MobileFormsFrame
-        title="Agregar alimentos"
-        backHref="/nutricion?vista=biblioteca"
-        backLabel="Volver a la Biblioteca"
-      >
-        {content}
-      </MobileFormsFrame>
-    );
-  }
   return content;
 }

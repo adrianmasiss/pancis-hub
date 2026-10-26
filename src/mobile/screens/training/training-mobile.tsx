@@ -158,9 +158,9 @@ export async function TrainingMobile({
     if (i >= 0) nextDay = days[(i + 1) % days.length] ?? nextDay;
   }
 
-  let body: React.ReactNode;
-  if (tab === "rutinas") {
-    // Los dias de cada rutina, para desplegarlos ahi mismo. Son pocas.
+  // Los dias de cada rutina, para desplegarlos ahi mismo (en Rutinas y en
+  // Hoy › Rutinas). Son pocas.
+  const loadPlanDays = async () => {
     const detalles = await Promise.all(
       overview.plans.map((p) =>
         p.id === overview.activePlan?.id
@@ -168,9 +168,14 @@ export async function TrainingMobile({
           : getPlanDetail(userId, p.id, today),
       ),
     );
-    const planDays = Object.fromEntries(
+    return Object.fromEntries(
       detalles.flatMap((d) => (d ? [[d.id, d.days] as const] : [])),
     );
+  };
+
+  let body: React.ReactNode;
+  if (tab === "rutinas") {
+    const planDays = await loadPlanDays();
     body = (
       <Routines
         plans={overview.plans}
@@ -237,6 +242,7 @@ export async function TrainingMobile({
         today={today}
         timezone={timezone}
         nextDayId={nextDay?.id ?? null}
+        planDays={await loadPlanDays()}
       />
     );
   }

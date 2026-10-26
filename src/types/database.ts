@@ -1463,6 +1463,7 @@ export type Database = {
           created_at: string
           date: string
           deleted_at: string | null
+          extra_of_template_meal_id: string | null
           id: string
           meal_type: string
           modified_reason: string | null
@@ -1478,6 +1479,7 @@ export type Database = {
           created_at?: string
           date: string
           deleted_at?: string | null
+          extra_of_template_meal_id?: string | null
           id?: string
           meal_type: string
           modified_reason?: string | null
@@ -1493,6 +1495,7 @@ export type Database = {
           created_at?: string
           date?: string
           deleted_at?: string | null
+          extra_of_template_meal_id?: string | null
           id?: string
           meal_type?: string
           modified_reason?: string | null
@@ -1505,6 +1508,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "meals_extra_of_template_meal_id_fkey"
+            columns: ["extra_of_template_meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_template_meals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "meals_source_template_meal_id_fkey"
             columns: ["source_template_meal_id"]

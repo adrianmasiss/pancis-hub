@@ -4,8 +4,13 @@ import {
   SkeletonCard,
   SkeletonViewHeader,
 } from "@/components/shared/loading-section";
+import { isPhone } from "@/lib/device";
+import { MobileSkeleton } from "@/mobile/ui/skeleton";
 
-export default function Loading() {
+export default async function Loading() {
+  // Telefono: el esqueleto de la vista movil, con su geometria.
+  if (await isPhone()) return <MobileSkeleton variant="nutricion" />;
+
   return (
     <LoadingShell>
       <SkeletonViewHeader actions={1} subline />

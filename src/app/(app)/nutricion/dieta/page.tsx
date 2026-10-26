@@ -8,7 +8,7 @@ import { listDietVersions } from "@/features/nutrition/version-actions";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { isPhone } from "@/lib/device";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { DietUploadMobile } from "@/mobile/screens/nutrition/diet-upload";
 
 const t = messages.nutrition.aiDiet;
 
@@ -38,23 +38,13 @@ export default async function UploadDietPage() {
     ? await listDietVersions(activeTemplate.id)
     : null;
 
-  // Telefono: el mismo formulario, dentro del marco movil con su «volver».
+  // Telefono: pantalla propia, con el mismo hook y las mismas acciones.
   if (await isPhone()) {
     return (
-      <MobileFormsFrame
-        title="Plan de nutrición"
-        backHref="/nutricion"
-        backLabel="Volver a Nutrición"
-      >
-        <p className="m-sub">{t.pageDescription}</p>
-        <UploadDietForm />
-        {activeTemplate && versions ? (
-          <DietVersionsSection
-            templateId={activeTemplate.id}
-            initial={versions}
-          />
-        ) : null}
-      </MobileFormsFrame>
+      <DietUploadMobile
+        templateId={activeTemplate?.id ?? null}
+        versions={versions}
+      />
     );
   }
 

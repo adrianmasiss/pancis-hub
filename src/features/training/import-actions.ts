@@ -7,7 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
 import { messages } from "@/i18n/es-419";
 import { loadExerciseCatalog } from "@/features/training/catalog-cache";
-import { matchExercise } from "@/features/training/lib/exercise-matcher";
+import {
+  matchExercise,
+  searchExerciseCatalog,
+} from "@/features/training/lib/exercise-matcher";
 import {
   parseRoutineText,
   summarizeRoutine,
@@ -70,6 +73,11 @@ export type ImportExercisePreview = {
   rir: number | null;
   restSeconds: number | null;
   notes: string | null;
+  /**
+   * Si no se reconocio: los mas parecidos del catalogo por nombre, para
+   * proponer «¿Quisiste decir…?» (la vista movil los ofrece).
+   */
+  suggestions?: { id: string; name: string }[];
 };
 
 export type ImportPreview = {
@@ -109,7 +117,19 @@ async function matchExercises(
         ? { candidate: forced }
         : matchExercise(exercise.rawName, catalog);
       if (!match) unmatchedCount += 1;
+      const suggestions = match
+        ? undefined
+        : searchExerciseCatalog(exercise.rawName, catalog, 8, {
+            sameMovement: true,
+          })
+            // El catalogo repite nombres (curado e importado): uno basta.
+            .filter(
+              (c, i, all) => all.findIndex((x) => x.name === c.name) === i,
+            )
+            .slice(0, 3)
+            .map((c) => ({ id: c.id, name: c.name }));
       return {
+        suggestions,
         rawName: exercise.rawName,
         matchedId: match?.candidate.id ?? null,
         matchedName: match?.candidate.name ?? null,

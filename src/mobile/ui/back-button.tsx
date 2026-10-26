@@ -3,6 +3,12 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import {
+  animateBack,
+  markNav,
+  navArrived,
+  onSystemBack,
+} from "@/mobile/nav-direction";
 
 /**
  * Si en esta carga de la pagina ya hubo una navegacion dentro de la app.
@@ -22,14 +28,28 @@ export function NavTracker() {
   const first = useRef(`${pathname}?${search}`);
   useEffect(() => {
     if (`${pathname}?${search}` !== first.current) navegoDentro = true;
+    navArrived();
   }, [pathname, search]);
+  useEffect(() => {
+    window.addEventListener("popstate", onSystemBack);
+    return () => window.removeEventListener("popstate", onSystemBack);
+  }, []);
   return null;
+}
+
+/** ¿Hay una pantalla anterior de la app a la que volver con `history`? */
+export function canGoBackInApp() {
+  return navegoDentro && window.history.length > 1;
 }
 
 /** Vuelve a la pantalla anterior de la app o, si no la hay, a `fallback`. */
 export function goBack(router: ReturnType<typeof useRouter>, fallback: string) {
-  if (navegoDentro && window.history.length > 1) router.back();
-  else router.push(fallback);
+  if (canGoBackInApp()) {
+    animateBack(() => router.back());
+  } else {
+    markNav("back");
+    router.push(fallback);
+  }
 }
 
 /**

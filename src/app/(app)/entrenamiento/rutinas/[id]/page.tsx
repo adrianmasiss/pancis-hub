@@ -17,7 +17,7 @@ import { AiNotice } from "@/features/training/components/ai-notice";
 import "@/features/training/components/generate-routine.css";
 import { messages } from "@/i18n/es-419";
 import { isPhone } from "@/lib/device";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { RoutineEditorMobile } from "@/mobile/screens/training/routine-editor";
 
 const t = messages.training;
 
@@ -35,6 +35,15 @@ export default async function PlanEditorPage({
   if (!user) redirect("/login");
 
   const { id } = await params;
+
+  // Telefono: editor propio. Sin la fecha de hoy, el plan llega tal cual
+  // esta guardado (sin los cambios de «solo hoy»).
+  if (await isPhone()) {
+    const base = await getPlanDetail(user.id, id, "1970-01-01");
+    if (!base) notFound();
+    return <RoutineEditorMobile plan={base} />;
+  }
+
   const [plan, analysis, versions] = await Promise.all([
     getPlanDetail(user.id, id),
     getRoutineAnalysis(user.id, id),
@@ -42,7 +51,7 @@ export default async function PlanEditorPage({
   ]);
   if (!plan) notFound();
 
-  const content = (
+  return (
     <>
       <ViewHeader
         title={plan.name}
@@ -75,18 +84,4 @@ export default async function PlanEditorPage({
       </div>
     </>
   );
-
-  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
-  if (await isPhone()) {
-    return (
-      <MobileFormsFrame
-        title="Editar rutina"
-        backHref="/entrenamiento?vista=rutinas"
-        backLabel="Volver a Rutinas"
-      >
-        {content}
-      </MobileFormsFrame>
-    );
-  }
-  return content;
 }

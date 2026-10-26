@@ -41,7 +41,9 @@ const logMealSchema = z.object({
  */
 export async function logDietTemplateMeal(
   input: unknown,
-): Promise<DashboardActionResult & { alreadyLogged?: boolean }> {
+): Promise<
+  DashboardActionResult & { alreadyLogged?: boolean; mealId?: string }
+> {
   const parsed = logMealSchema.safeParse(input);
   const { supabase, user } = await requireUser();
   if (!parsed.success || !user) return { error: t.logFailed };
@@ -54,11 +56,15 @@ export async function logDietTemplateMeal(
   });
   if (error || !data) return { error: t.logFailed };
 
-  const result = data as { created?: boolean };
+  const result = data as { created?: boolean; meal_id?: string };
 
   revalidatePath("/");
   revalidatePath("/nutricion");
-  return { success: true, alreadyLogged: result.created === false };
+  return {
+    success: true,
+    alreadyLogged: result.created === false,
+    mealId: result.meal_id,
+  };
 }
 
 // ------------------------------------------------- intercambio por comida

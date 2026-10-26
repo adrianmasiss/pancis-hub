@@ -141,7 +141,7 @@ export function Tag({
   tone = "neutral",
   children,
 }: {
-  tone?: "neutral" | "ok" | "warn" | "ia";
+  tone?: "neutral" | "ok" | "warn" | "ia" | "accent";
   children: ReactNode;
 }) {
   return (

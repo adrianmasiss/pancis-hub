@@ -5,6 +5,8 @@
  *   npm run ejercicios -- --seco          # solo informa
  *   npm run ejercicios -- --sin-imagenes
  *   npm run ejercicios -- --sin-traducir
+ *   npm run ejercicios -- --solo-con-fotos   # solo los 865 con traduccion
+ *                                            # revisada y fotos; no borra
  *
  * FUENTE: yuhonas/free-exercise-db, licencia Unlicense. 876 ejercicios, 873
  * con DOS fotografias cada uno —posicion inicial y final—, que es exactamente
@@ -25,6 +27,7 @@
  * external_id), la imagen se salta si ya esta subida, y la traduccion se puede
  * omitir con su bandera para volver a correrlo sin gastar llamadas.
  */
+import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
@@ -37,6 +40,14 @@ const IMAGENES =
 const SECO = process.argv.includes("--seco");
 const SIN_IMAGENES = process.argv.includes("--sin-imagenes");
 const SIN_TRADUCIR = process.argv.includes("--sin-traducir");
+const SOLO_CON_FOTOS = process.argv.includes("--solo-con-fotos");
+
+/* Traduccion revisada a mano (nombre + instrucciones) de los ejercicios con
+   fotografia. Manda sobre Gemini: lo que esta aqui no se vuelve a pedir. */
+const ARCHIVO_TRADUCCIONES = "scripts/datos/ejercicios-es.json";
+const TRADUCCIONES = JSON.parse(
+  readFileSync(new URL("./datos/ejercicios-es.json", import.meta.url), "utf8"),
+);
 
 const LOTE_ESCRITURA = 100;
 const LOTE_TRADUCCION = 15;
@@ -292,9 +303,10 @@ async function subirImagenes(supabase, filas, urlBase) {
 async function escribir(supabase, filas) {
   for (let i = 0; i < filas.length; i += LOTE_ESCRITURA) {
     const lote = filas.slice(i, i + LOTE_ESCRITURA).map((fila) => {
-      /* `_imagenes` es andamio del importador, no una columna. */
+      /* `_imagenes` y `_traducida` son andamio del importador, no columnas. */
       const copia = { ...fila };
       delete copia._imagenes;
+      delete copia._traducida;
       return copia;
     });
     const { error } = await supabase
@@ -337,6 +349,31 @@ async function main() {
   if (descartados.length) {
     console.log(
       `  descartados (musculo sin equivalencia): ${descartados.join(", ")}`,
+    );
+  }
+
+  /* La traduccion revisada va antes de la primera escritura: asi el ingles no
+     llega a la base ni un momento, y esas filas no pasan por Gemini. */
+  let revisadas = 0;
+  for (const fila of filas) {
+    const es = TRADUCCIONES[fila.external_id];
+    if (!es) continue;
+    fila.name = es.name;
+    fila.instructions = es.instructions;
+    fila._traducida = true;
+    revisadas += 1;
+  }
+  console.log(`  ${revisadas} con traduccion revisada (${ARCHIVO_TRADUCCIONES})`);
+
+  if (SOLO_CON_FOTOS) {
+    const antes = filas.length;
+    filas.splice(
+      0,
+      filas.length,
+      ...filas.filter((f) => f._traducida && f._imagenes.length >= 2),
+    );
+    console.log(
+      `  --solo-con-fotos: ${filas.length} de ${antes} (sin borrar nada)`,
     );
   }
 
@@ -383,6 +420,7 @@ async function main() {
 
     const pendientes = [];
     for (const fila of filas) {
+      if (fila._traducida) continue;
       const guardado = guardados.get(fila.external_id);
       if (guardado && guardado.name !== fila.name) {
         fila.name = guardado.name;
@@ -400,6 +438,16 @@ async function main() {
     } else {
       console.log("Traduccion: ya estaban todas.");
     }
+  }
+
+  /* Con --solo-con-fotos esta pasada es parcial a proposito: lo no tocado no
+     es "de la fuente anterior" y no se borra. */
+  if (SOLO_CON_FOTOS) {
+    const { count } = await supabase
+      .from("exercise_catalog")
+      .select("id", { count: "exact", head: true });
+    console.log(`Listo. El catalogo tiene ahora ${count} ejercicios.`);
+    return;
   }
 
   /* Lo que sobro de la fuente anterior: importado y sin tocar en esta pasada.

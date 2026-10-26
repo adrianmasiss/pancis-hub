@@ -10,7 +10,7 @@ import { getFoodsToReview } from "@/features/foods/source-queries";
 import { DIVERGENCE_THRESHOLD } from "@/features/foods/lib/source-agreement";
 import { createClient } from "@/lib/supabase/server";
 import { isPhone } from "@/lib/device";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { ReviewSourcesMobile } from "@/mobile/screens/nutrition/review-sources";
 
 export const metadata: Metadata = { title: "Fuentes que no coinciden" };
 
@@ -23,7 +23,18 @@ export default async function ReviewPage() {
 
   const items = await getFoodsToReview();
 
-  const content = (
+  // Telefono: pantalla propia, con la misma accion por fuente.
+  if (await isPhone()) {
+    return (
+      <ReviewSourcesMobile
+        items={items}
+        threshold={DIVERGENCE_THRESHOLD}
+        back="/configuracion?vista=editar"
+      />
+    );
+  }
+
+  return (
     <div className="food-library">
       <header className="library-header">
         <div className="library-brand">
@@ -80,18 +91,4 @@ export default async function ReviewPage() {
       )}
     </div>
   );
-
-  // Telefono: la misma pantalla, dentro del marco movil con su «volver».
-  if (await isPhone()) {
-    return (
-      <MobileFormsFrame
-        title="Revisar fuentes"
-        backHref="/configuracion?vista=editar"
-        backLabel="Volver"
-      >
-        {content}
-      </MobileFormsFrame>
-    );
-  }
-  return content;
 }

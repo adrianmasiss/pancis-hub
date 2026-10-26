@@ -34,8 +34,8 @@ const MOBILE_READY: readonly RegExp[] = [
   /^\/$/,
   /^\/entrenamiento(\/|$)/,
   /^\/nutricion$/,
-  // Alta de alimentos y revision de fuentes: pantallas de escritorio dentro
-  // del marco movil (MobileFormsFrame), igual que subir el plan.
+  // Alta de alimentos, revision de fuentes y subir el plan: pantallas
+  // moviles propias (FormScreen).
   /^\/nutricion\/alimentos(\/|$)/,
   /^\/nutricion\/dieta$/,
   /^\/asistente$/,

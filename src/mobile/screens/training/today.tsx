@@ -10,37 +10,21 @@ import type {
   TrainingOverview,
 } from "@/features/training/queries";
 import { estimatedMinutes } from "@/features/training/lib/stats";
-import {
-  capital,
-  enumerar,
-  hace,
-  musculosDelDia,
-} from "@/features/training/components/training-ui";
+import { hace } from "@/features/training/components/training-ui";
 import { Sheet } from "@/mobile/ui/sheet";
 import { Stat } from "@/mobile/ui/display";
 import { ExerciseModel } from "@/mobile/ui/exercise-model";
-import { WeekStrip, buildWeek } from "./week";
+import { WeekStrip } from "./week";
+import { RoutinesToday } from "./routines-today";
+import { buildWeek, dayTitle, planDaysOf } from "./week-data";
 
-/** «lun», «mié»: el dia de una fecha YYYY-MM-DD, sin pasar por la zona. */
-function diaCorto(dateISO: string): string {
-  return new Intl.DateTimeFormat("es-CR", { weekday: "short", timeZone: "UTC" })
-    .format(new Date(`${dateISO}T12:00:00Z`))
-    .replace(".", "");
-}
+export { dayTitle };
 
 function diaLargo(dateISO: string): string {
   return new Intl.DateTimeFormat("es-CR", {
     weekday: "long",
     timeZone: "UTC",
   }).format(new Date(`${dateISO}T12:00:00Z`));
-}
-
-export function dayTitle(day: PlanDayView): string {
-  const musculos = musculosDelDia(day.exercises).slice(0, 3);
-  return (
-    day.name?.trim() ||
-    (musculos.length ? capital(enumerar(musculos)) : "Día sin ejercicios")
-  );
 }
 
 /**
@@ -53,11 +37,14 @@ export function TrainingToday({
   today,
   timezone,
   nextDayId,
+  planDays,
 }: {
   overview: TrainingOverview;
   today: string;
   timezone: string;
   nextDayId: string | null;
+  /** Los dias de cada rutina, para desplegarlas en «Rutinas». */
+  planDays: Record<string, PlanDayView[]>;
 }) {
   const plan = overview.activePlan;
   const days = plan?.days ?? [];
@@ -82,6 +69,8 @@ export function TrainingToday({
     timezone,
     recentSessions: overview.recentSessions,
     doneThisWeek: overview.doneThisWeek,
+    weekSessions: overview.weekSessions,
+    planDays: planDaysOf(days),
   });
 
   const exercises = day?.exercises ?? [];
@@ -206,42 +195,16 @@ export function TrainingToday({
         </section>
       )}
 
-      {plan && days.length > 1 && (
-        <section className="m-stack" aria-labelledby="m-rest-title">
-          <h2 id="m-rest-title" className="m-section">
-            Resto de la rutina
-          </h2>
-          {days
-            .filter((d) => d.id !== day?.id)
-            .map((d) => {
-              const hecho = overview.doneThisWeek[d.id];
-              return (
-                <button
-                  key={d.id}
-                  type="button"
-                  className="m-list-row m-press"
-                  onClick={() => {
-                    if (hecho && !enCurso) setRepeat(d);
-                    else setDayId(d.id);
-                  }}
-                >
-                  <span className="m-list-row-lead">
-                    Día {days.indexOf(d) + 1}
-                  </span>
-                  <span className="m-list-row-main">
-                    <span className="m-list-row-title">{dayTitle(d)}</span>
-                  </span>
-                  <span
-                    className="m-list-row-trail"
-                    style={hecho ? { color: "var(--m-text)" } : undefined}
-                  >
-                    {hecho ? `Hecho · ${diaCorto(hecho)}` : "Pendiente"}
-                  </span>
-                </button>
-              );
-            })}
-        </section>
-      )}
+      <RoutinesToday
+        plans={overview.plans}
+        planDays={planDays}
+        todayDayId={day?.id ?? null}
+        doneThisWeek={overview.doneThisWeek}
+        onPickDay={(d) => {
+          setDayId(d.id);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
 
       <Sheet
         open={repeat !== null}

@@ -1,25 +1,65 @@
 "use client";
 
 import Link from "next/link";
-import { useOptimistic, useState, useTransition } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Reorder, useDragControls } from "motion/react";
 import { Dumbbell, Lightbulb, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
-import { deleteMeal } from "@/features/nutrition/actions";
-import type { DayPlan } from "@/features/nutrition/queries";
-import type { DietTemplateView } from "@/features/dashboard/queries";
+import { deleteMeal, updateMealTime } from "@/features/nutrition/actions";
+import { setMealTimeForDay } from "@/features/nutrition/meal-time-actions";
+import type { DayPlan, MealView } from "@/features/nutrition/queries";
+import type {
+  DietTemplateMealView,
+  DietTemplateView,
+} from "@/features/dashboard/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
 import { Bar, Ring } from "@/mobile/ui/display";
+import { useLongPressDrag } from "@/mobile/ui/use-long-press-drag";
 import { ExtraSheet } from "./extra-sheet";
-import { PlanMeal } from "./plan-meal";
+import { LooseMeal, PlanMeal } from "./plan-meal";
 import { WaterCard } from "./water";
+import { fromMinutes, toMinutes } from "./day-sheets";
 import type { TrainingAdjustment } from "@/mobile/training-adjustment";
-import { MACROS, addMacros, gramos, kcal, mealLabel } from "./format";
+import { MACROS, addMacros, gramos, kcal } from "./format";
+
+/** Una fila del dia: comida del plan o comida suelta, ordenadas por hora. */
+type Entry =
+  | {
+      key: string;
+      kind: "plan";
+      meal: DietTemplateMealView;
+      time: string | null;
+    }
+  | { key: string; kind: "suelta"; meal: MealView; time: string | null };
+
+/**
+ * La hora que le toca a una comida al soltarla entre otras dos: el punto
+ * medio, redondeado a cinco minutos si cabe. Sin vecina antes o despues,
+ * media hora antes o despues de la que queda al lado.
+ */
+export function timeBetween(
+  prev: string | null,
+  next: string | null,
+): string | null {
+  if (prev === null && next === null) return null;
+  if (prev === null) return fromMinutes(Math.max(0, toMinutes(next!) - 30));
+  if (next === null)
+    return fromMinutes(Math.min(23 * 60 + 55, toMinutes(prev) + 30));
+  const a = toMinutes(prev);
+  const b = toMinutes(next);
+  if (b - a < 2) return prev;
+  const mid = (a + b) / 2;
+  const redondo = Math.round(mid / 5) * 5;
+  return fromMinutes(redondo > a && redondo < b ? redondo : Math.floor(mid));
+}
 
 /**
  * Nutricion · Hoy: el anillo de kcal restantes, los cuatro macros, el agua y
  * el plan de comidas con su hora y su check. Marcar o desmarcar recalcula
- * todo al instante; el servidor lo confirma detras.
+ * todo al instante; el servidor lo confirma detras. Las comidas se reordenan
+ * manteniendolas presionadas: eso les da otra hora, solo hoy.
  */
 export function NutritionToday({
   day,
@@ -38,9 +78,10 @@ export function NutritionToday({
   /** Kcal extra por el entreno de hoy (ajuste encendido en Perfil). */
   adjustment?: TrainingAdjustment | null;
 }) {
+  const router = useRouter();
   const meals = diet?.meals ?? [];
   const [, startTransition] = useTransition();
-  const [extraOpen, setExtraOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
   /* Una comida abierta a la vez. */
   const [openMeal, setOpenMeal] = useState<string | null>(null);
 
@@ -49,7 +90,12 @@ export function NutritionToday({
     {} as Record<string, boolean>,
     (state, [id, value]: [string, boolean]) => ({ ...state, [id]: value }),
   );
-  const loggedIdOf = (templateMealId: string) =>
+  /* La hora nueva al soltar una comida, mientras el servidor confirma. */
+  const [times, setTime] = useOptimistic(
+    {} as Record<string, string>,
+    (state, [key, hhmm]: [string, string]) => ({ ...state, [key]: hhmm }),
+  );
+  const loggedOf = (templateMealId: string) =>
     day.meals.find((m) => m.sourceTemplateMealId === templateMealId);
   const isDone = (id: string, base: boolean) => overrides[id] ?? base;
 
@@ -58,7 +104,7 @@ export function NutritionToday({
     const now = isDone(meal.id, meal.loggedToday);
     if (now && !meal.loggedToday) consumed = addMacros(consumed, meal.totals);
     if (!now && meal.loggedToday) {
-      const logged = loggedIdOf(meal.id);
+      const logged = loggedOf(meal.id);
       if (logged) consumed = addMacros(consumed, logged.totals, -1);
     }
   }
@@ -80,14 +126,100 @@ export function NutritionToday({
         });
         if ("error" in result) toast.error(result.error);
       } else {
-        const logged = loggedIdOf(mealId);
+        const logged = loggedOf(mealId);
         if (!logged) return;
         const result = await deleteMeal({ mealId: logged.id });
         if ("error" in result) toast.error(result.error);
       }
     });
 
-  const offPlan = day.meals.filter((m) => !m.sourceTemplateMealId);
+  const ensureLogged = async (mealId: string) => {
+    const logged = loggedOf(mealId);
+    if (logged) return logged.id;
+    const r = await logDietTemplateMeal({ templateMealId: mealId, date });
+    if ("error" in r) {
+      toast.error(r.error);
+      return null;
+    }
+    return r.mealId ?? null;
+  };
+
+  const extrasOf = (templateMealId: string) =>
+    day.meals.filter((m) => m.extraOfTemplateMealId === templateMealId);
+  const loose = day.meals.filter(
+    (m) => !m.sourceTemplateMealId && !m.extraOfTemplateMealId,
+  );
+
+  /* El dia en orden de hora: lo del plan y lo agregado, juntos. */
+  const entries: Entry[] = [
+    ...meals.map((meal) => ({
+      key: `p:${meal.id}`,
+      kind: "plan" as const,
+      meal,
+      time: meal.scheduledTime?.slice(0, 5) ?? null,
+    })),
+    ...loose.map((meal) => ({
+      key: `s:${meal.id}`,
+      kind: "suelta" as const,
+      meal,
+      time: meal.scheduledTime?.slice(0, 5) ?? null,
+    })),
+  ]
+    .map((e) => ({ ...e, time: times[e.key] ?? e.time }))
+    .sort((a, b) => (a.time ?? "99").localeCompare(b.time ?? "99"));
+  const byKey = new Map(entries.map((e) => [e.key, e]));
+
+  /* Orden local mientras se arrastra; vuelve al del servidor cuando cambia. */
+  const firma = entries.map((e) => e.key).join("|");
+  const [local, setLocal] = useState({
+    firma,
+    order: entries.map((e) => e.key),
+  });
+  if (local.firma !== firma)
+    setLocal({ firma, order: entries.map((e) => e.key) });
+  const order = local.order.filter((k) => byKey.has(k));
+  /* El orden al levantar y el ultimo al mover: soltar sin cambiar de lugar
+     no debe cambiar la hora. */
+  const drag = useRef({ start: "", now: order });
+
+  const drop = (key: string) => {
+    const now = drag.current.now;
+    if (now.join("|") === drag.current.start) return;
+    const i = now.indexOf(key);
+    const timeOf = (k: string | undefined) =>
+      k === undefined ? null : (byKey.get(k)?.time ?? null);
+    const prev = now.slice(0, i).reverse().map(timeOf).find(Boolean) ?? null;
+    const next =
+      now
+        .slice(i + 1)
+        .map(timeOf)
+        .find(Boolean) ?? null;
+    const entry = byKey.get(key);
+    const hora = timeBetween(prev, next);
+    if (!entry || !hora || hora === entry.time) return;
+    startTransition(async () => {
+      setTime([key, hora]);
+      const r =
+        entry.kind === "plan"
+          ? await setMealTimeForDay({
+              templateMealId: entry.meal.id,
+              date,
+              time: hora,
+            })
+          : await updateMealTime({
+              mealId: entry.meal.id,
+              scheduledTime: hora,
+            });
+      if ("error" in r && r.error) {
+        toast.error(r.error);
+        return;
+      }
+      toast.success(
+        entry.kind === "plan" ? `Hoy a las ${hora}.` : `A las ${hora}.`,
+      );
+      router.refresh();
+    });
+  };
 
   return (
     <div className="m-body m-stagger">
@@ -116,44 +248,50 @@ export function NutritionToday({
           <div className="m-stack" style={{ gap: 14 }}>
             <div className="m-stat">
               <span className="m-stat-label">Consumidas</span>
-              <span className="m-stat-value" style={{ fontSize: 24 }}>
+              <span className="m-stat-value m-kcal-stat">
                 {kcal(consumed.calories)}
+                <small>kcal</small>
               </span>
             </div>
             <div className="m-stat">
               <span className="m-stat-label">Meta de hoy</span>
-              <span className="m-stat-value" style={{ fontSize: 24 }}>
+              <span className="m-stat-value m-kcal-stat">
                 {target !== null ? kcal(target) : "—"}
+                {target !== null && <small>kcal</small>}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="m-macros">
+        <dl className="m-macro-grid">
           {MACROS.map((m) => {
             const value = consumed[m.key];
             const goal = targets?.[m.key] ?? null;
             return (
-              <div key={m.key} className="m-macro">
-                <div className="m-macro-head">
-                  <span className="m-macro-name">
-                    <span
-                      className="m-dot"
-                      style={{ background: m.color }}
-                      aria-hidden="true"
-                    />
-                    {m.label}
-                  </span>
-                  <span className="m-num m-macro-val">
-                    {gramos(value)}
-                    {goal ? ` / ${gramos(goal)}` : ""} g
-                  </span>
-                </div>
-                <Bar value={goal ? value / goal : 0} color={m.color} />
+              <div key={m.key} className="m-macro-line">
+                <dt>
+                  <span
+                    className="m-dot"
+                    style={{ background: m.color }}
+                    aria-hidden="true"
+                  />
+                  {m.label}
+                </dt>
+                <dd className="m-num">
+                  {gramos(value)}
+                  {goal ? (
+                    <small> / {gramos(goal)} g</small>
+                  ) : (
+                    <small> g</small>
+                  )}
+                </dd>
+                <dd className="m-macro-line-bar">
+                  <Bar value={goal ? value / goal : 0} color={m.color} />
+                </dd>
               </div>
             );
           })}
-        </div>
+        </dl>
 
         <hr className="m-divider" />
         <WaterCard date={date} ml={day.waterMl} targetMl={day.waterMlTarget} />
@@ -199,7 +337,7 @@ export function NutritionToday({
           <div className="m-card" data-size="sm">
             <p className="m-sheet-text">
               Aún no tienes un plan activo. Sube el de tu nutricionista (PDF o
-              foto) o registra lo que comas con «Extra solo hoy».
+              foto) o registra lo que comas con «Nueva comida».
             </p>
             <Link
               href="/nutricion/dieta"
@@ -210,58 +348,94 @@ export function NutritionToday({
             </Link>
           </div>
         )}
-        {meals.map((meal) => (
-          <PlanMeal
-            key={meal.id}
-            meal={meal}
-            date={date}
-            today={today}
-            open={openMeal === meal.id}
-            onOpenChange={(o) => setOpenMeal(o ? meal.id : null)}
-            done={isDone(meal.id, meal.loggedToday)}
-            canToggle={
-              meal.items.length > 0 &&
-              !(meal.loggedToday && !loggedIdOf(meal.id))
-            }
-            onToggle={() => toggle(meal.id, isDone(meal.id, meal.loggedToday))}
-            movedFrom={moved[meal.id]}
-            onAddExtra={() => setExtraOpen(true)}
-          />
-        ))}
-        {offPlan.map((meal) => (
-          <div key={meal.id} className="m-meal-row" data-done="">
-            <div className="m-meal-main">
-              <span className="m-meal-meta">
-                Fuera del plan
-                <span
-                  className="m-tag"
-                  data-tone="neutral"
-                  style={{ marginLeft: 6 }}
-                >
-                  Extra
-                </span>
-              </span>
-              <span className="m-list-row-title">
-                {meal.name?.trim() ||
-                  meal.items.map((i) => i.foodName).join(", ") ||
-                  mealLabel(meal.mealType)}
-              </span>
-            </div>
-            <span className="m-num m-meal-kcal">
-              {kcal(meal.totals.calories)}
-            </span>
-          </div>
-        ))}
+        <Reorder.Group
+          as="ul"
+          axis="y"
+          values={order}
+          onReorder={(o) => {
+            drag.current.now = o;
+            setLocal((s) => ({ ...s, order: o }));
+          }}
+          className="m-day-list"
+        >
+          {order.map((key) => {
+            const entry = byKey.get(key)!;
+            return (
+              <DayItem
+                key={key}
+                value={key}
+                onLift={() =>
+                  (drag.current = { start: order.join("|"), now: order })
+                }
+                onDrop={() => drop(key)}
+              >
+                {(longPress) =>
+                  entry.kind === "plan" ? (
+                    <PlanMeal
+                      meal={
+                        times[key]
+                          ? { ...entry.meal, scheduledTime: `${times[key]}:00` }
+                          : entry.meal
+                      }
+                      date={date}
+                      today={today}
+                      open={openMeal === key}
+                      onOpenChange={(o) => setOpenMeal(o ? key : null)}
+                      done={isDone(entry.meal.id, entry.meal.loggedToday)}
+                      canToggle={
+                        entry.meal.items.some((i) => !i.omitted) &&
+                        !(entry.meal.loggedToday && !loggedOf(entry.meal.id))
+                      }
+                      onToggle={() =>
+                        toggle(
+                          entry.meal.id,
+                          isDone(entry.meal.id, entry.meal.loggedToday),
+                        )
+                      }
+                      movedFrom={
+                        moved[entry.meal.id] ??
+                        (times[key]
+                          ? (entry.meal.scheduledTime?.slice(0, 5) ?? "")
+                          : undefined)
+                      }
+                      logged={loggedOf(entry.meal.id)}
+                      extras={extrasOf(entry.meal.id)}
+                      ensureLogged={() => ensureLogged(entry.meal.id)}
+                      longPress={longPress}
+                    />
+                  ) : (
+                    <LooseMeal
+                      meal={
+                        times[key]
+                          ? { ...entry.meal, scheduledTime: `${times[key]}:00` }
+                          : entry.meal
+                      }
+                      date={date}
+                      open={openMeal === key}
+                      onOpenChange={(o) => setOpenMeal(o ? key : null)}
+                      longPress={longPress}
+                    />
+                  )
+                }
+              </DayItem>
+            );
+          })}
+        </Reorder.Group>
+        {entries.length > 1 && (
+          <p className="m-ing-hint" style={{ textAlign: "center" }}>
+            Mantén presionada una comida para moverla de hora.
+          </p>
+        )}
       </section>
 
       <div className="m-grid-2">
         <button
           type="button"
           className="m-btn m-press"
-          onClick={() => setExtraOpen(true)}
+          onClick={() => setNewOpen(true)}
         >
           <Plus size={16} aria-hidden="true" />
-          Extra solo hoy
+          Nueva comida
         </button>
         <Link
           href={`/asistente?q=${encodeURIComponent(
@@ -276,7 +450,42 @@ export function NutritionToday({
         </Link>
       </div>
 
-      <ExtraSheet open={extraOpen} onOpenChange={setExtraOpen} date={date} />
+      <ExtraSheet
+        open={newOpen}
+        onOpenChange={setNewOpen}
+        date={date}
+        destino={{ kind: "nueva" }}
+      />
     </div>
+  );
+}
+
+/** Una fila arrastrable del dia: se levanta tras mantenerla presionada. */
+function DayItem({
+  value,
+  onLift,
+  onDrop,
+  children,
+}: {
+  value: string;
+  onLift: () => void;
+  onDrop: () => void;
+  children: (longPress: ReturnType<typeof useLongPressDrag>) => React.ReactNode;
+}) {
+  const controls = useDragControls();
+  const longPress = useLongPressDrag(controls);
+  return (
+    <Reorder.Item
+      as="li"
+      value={value}
+      dragListener={false}
+      dragControls={controls}
+      className="m-day-item"
+      whileDrag={{ scale: 1.02, zIndex: 5 }}
+      onDragStart={onLift}
+      onDragEnd={onDrop}
+    >
+      {children(longPress)}
+    </Reorder.Item>
   );
 }

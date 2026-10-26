@@ -78,11 +78,17 @@ export function FoodLibrary({
           <Barcode size={20} aria-hidden="true" />
           Código de barras
         </Link>
-        <Link href="/nutricion/alimentos" className="m-add-tile m-press">
+        <Link
+          href="/nutricion/alimentos?metodo=foto"
+          className="m-add-tile m-press"
+        >
           <Camera size={20} aria-hidden="true" />
           Foto de etiqueta
         </Link>
-        <Link href="/nutricion/alimentos" className="m-add-tile m-press">
+        <Link
+          href="/nutricion/alimentos?metodo=manual"
+          className="m-add-tile m-press"
+        >
           <PenLine size={20} aria-hidden="true" />
           Manual
         </Link>

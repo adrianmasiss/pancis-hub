@@ -1,85 +1,92 @@
-import type { SessionSummary } from "@/features/training/queries";
-import { addDaysISO, localDateOf, weekBoundsISO } from "@/lib/dates";
+"use client";
 
-const LETRAS = ["L", "K", "M", "J", "V", "S", "D"];
-const NOMBRES = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-];
+import { useState } from "react";
+import { Check } from "lucide-react";
+import { triggerHaptic } from "@/lib/haptics";
+import type { WeekDay, WeekState } from "./week-data";
 
-export type WeekDay = {
-  letra: string;
-  nombre: string;
-  date: string;
-  state: "done" | "today" | "plan" | "rest";
+export type { WeekDay } from "./week-data";
+
+const ESTADO: Record<WeekState, string> = {
+  done: "Entrenado",
+  repeat: "Repetido",
+  plan: "Planeado",
+  rest: "Descanso",
 };
 
-/** La semana de lunes a domingo, con lo entrenado por fecha local. */
-export function buildWeek({
-  today,
-  timezone,
-  recentSessions,
-  doneThisWeek,
-  todayDone = false,
-}: {
-  today: string;
-  timezone: string;
-  recentSessions: SessionSummary[];
-  doneThisWeek: Record<string, string>;
-  /** En el resumen, hoy cuenta como entrenado aunque no se haya guardado. */
-  todayDone?: boolean;
-}): WeekDay[] {
-  const { start: monday } = weekBoundsISO(today);
-  const trained = new Set(
-    recentSessions
-      .filter((s) => s.completedAt)
-      .map((s) => localDateOf(s.startedAt, timezone)),
-  );
-  for (const date of Object.values(doneThisWeek)) trained.add(date);
-  return LETRAS.map((letra, i) => {
-    const date = addDaysISO(monday, i);
-    const state: WeekDay["state"] =
-      date === today && todayDone
-        ? "today"
-        : trained.has(date)
-          ? "done"
-          : date === today
-            ? "today"
-            : date > today
-              ? "plan"
-              : "rest";
-    return { letra, nombre: NOMBRES[i]!, date, state };
-  });
-}
-
-const ESTADO: Record<WeekDay["state"], string> = {
-  today: "hoy",
-  done: "entrenado",
-  plan: "por venir",
-  rest: "descanso",
-};
-
+/**
+ * Los siete dias con su estado. Tocar uno dice que paso o que toca
+ * («Lunes · Entrenado · Día 2 · Pierna»); sin tocar, una leyenda pequeña.
+ */
 export function WeekStrip({ week }: { week: WeekDay[] }) {
+  const [elegido, setElegido] = useState<string | null>(null);
+  const dia = week.find((d) => d.date === elegido) ?? null;
+
   return (
-    <ol className="m-week" aria-label="Esta semana">
-      {week.map((d) => (
-        <li key={d.date}>
-          <span className="m-week-letter" aria-hidden="true">
-            {d.letra}
+    <div className="m-week-wrap">
+      <ol className="m-week" aria-label="Esta semana">
+        {week.map((d) => {
+          const etiqueta = [
+            d.nombre,
+            d.today ? "hoy" : null,
+            ESTADO[d.state],
+            d.detail,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          return (
+            <li key={d.date}>
+              <span className="m-week-letter" aria-hidden="true">
+                {d.letra}
+              </span>
+              <button
+                type="button"
+                className="m-week-dot m-press"
+                data-state={d.state}
+                data-today={d.today ? "" : undefined}
+                aria-pressed={elegido === d.date}
+                aria-label={etiqueta}
+                onClick={() => {
+                  triggerHaptic("selection");
+                  setElegido(elegido === d.date ? null : d.date);
+                }}
+              >
+                {d.state === "done" && (
+                  <Check size={14} strokeWidth={3} aria-hidden="true" />
+                )}
+                {d.state === "repeat" && <span aria-hidden="true">R</span>}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="m-week-caption" aria-live="polite">
+        {dia ? (
+          <>
+            <strong>
+              {dia.nombre}
+              {dia.today ? " (hoy)" : ""}
+            </strong>{" "}
+            · {ESTADO[dia.state]}
+            {dia.detail ? ` · ${dia.detail}` : ""}
+          </>
+        ) : (
+          <span className="m-week-legend" aria-hidden="true">
+            <span>
+              <i data-state="done" /> Entrenado
+            </span>
+            <span>
+              <i data-state="plan" /> Planeado
+            </span>
+            <span>
+              <i data-state="rest" /> Descanso
+            </span>
+            <span>
+              <i data-today="" /> Hoy
+            </span>
           </span>
-          <span
-            className="m-week-dot"
-            data-state={d.state}
-            role="img"
-            aria-label={`${d.nombre}: ${ESTADO[d.state]}`}
-          />
-        </li>
-      ))}
-    </ol>
+        )}
+      </p>
+    </div>
   );
 }

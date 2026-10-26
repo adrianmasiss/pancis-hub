@@ -13,6 +13,7 @@ import { RememberToggle } from "@/features/auth/components/remember-toggle";
 import { IconField } from "@/features/auth/components/icon-field";
 import { PasswordField } from "@/features/auth/components/password-field";
 import { signIn } from "@/features/auth/actions";
+import { OFFER_FLAG } from "@/mobile/passkey-offer-flag";
 import { loginSchema, type LoginInput } from "@/features/auth/schemas";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
@@ -33,8 +34,16 @@ export function LoginForm() {
   const onSubmit = (data: LoginInput) => {
     if (passkeyBusy) return;
     setServerError(null);
+    // El telefono ofrecera una vez Face ID tras entrar con contraseña.
+    try {
+      localStorage.setItem(OFFER_FLAG, "1");
+    } catch {}
     startTransition(async () => {
-      const result = await signIn(data, searchParams.get("next") ?? undefined);
+      const result = await signIn(
+        data,
+        searchParams.get("next") ?? undefined,
+        rememberMe,
+      );
       if (result && "error" in result) {
         setServerError(result.error);
       }
@@ -161,6 +170,7 @@ export function LoginForm() {
         next={searchParams.get("next")}
         disabled={pending}
         onBusyChange={setPasskeyBusy}
+        remember={rememberMe}
       />
 
       <p

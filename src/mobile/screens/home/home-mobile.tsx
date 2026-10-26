@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { addDaysISO, todayInTimezone } from "@/lib/dates";
 import { getTrainingAdjustment } from "@/mobile/training-adjustment";
 import { streakDays } from "@/mobile/streak";
-import { buildWeek } from "@/mobile/screens/training/week";
+import { buildWeek, planDaysOf } from "@/mobile/screens/training/week-data";
 import { mealLabel } from "@/mobile/screens/nutrition/format";
 import { homeInsight } from "./insight";
 import { HomeView, type WeightSummary } from "./home-view";
@@ -147,6 +147,8 @@ export async function HomeMobile({
         timezone,
         recentSessions: overview.recentSessions,
         doneThisWeek: overview.doneThisWeek,
+        weekSessions: overview.weekSessions,
+        planDays: planDaysOf(overview.activePlan?.days),
       })}
       streak={streak}
       weight={weight}

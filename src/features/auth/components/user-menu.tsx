@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut } from "@/features/auth/actions";
+import { signOutDevice } from "@/features/auth/sign-out-device";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
 
@@ -160,7 +160,7 @@ export function UserMenu({
           ) : null}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void signOut()}>
+        <DropdownMenuItem onClick={() => void signOutDevice()}>
           <LogOut className="size-4" aria-hidden="true" />
           {messages.common.signOut}
         </DropdownMenuItem>

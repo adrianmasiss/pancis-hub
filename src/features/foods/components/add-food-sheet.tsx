@@ -16,6 +16,7 @@ import {
 } from "@/features/foods/external-actions";
 import type { ExternalSearchResult } from "@/features/foods/external-queries";
 import { readNutritionLabel } from "@/features/foods/label-actions";
+import { prepareImage } from "@/features/foods/lib/prepare-image";
 import {
   isValidBarcode,
   normalizeBarcode,
@@ -107,30 +108,6 @@ const METHODS = [
     icon: <PencilLine size={16} strokeWidth={1.75} aria-hidden="true" />,
   },
 ];
-
-/**
- * Shrinks the photo before it travels: a label is legible at 1600px and the
- * upload drops from several MB to a few hundred KB. Returns plain base64.
- */
-async function prepareImage(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/jpeg", 0.85),
-  );
-  if (!blob) throw new Error("encode");
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  }
-  return btoa(binary);
-}
 
 /**
  * The single way to add (or edit) a food anywhere in the app. Three ways

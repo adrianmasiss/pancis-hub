@@ -10,7 +10,8 @@ import type { ExerciseHistory } from "@/features/training/lib/stats";
 import { mmss } from "@/features/training/components/live-session";
 import { Stat } from "@/mobile/ui/display";
 import { useUnits } from "@/mobile/units";
-import { WeekStrip, buildWeek } from "./week";
+import { WeekStrip } from "./week";
+import { buildWeek } from "./week-data";
 
 type LoggedSet = {
   exerciseId: string;

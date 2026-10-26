@@ -24,7 +24,7 @@ import { parseNotificationPrefs } from "@/features/reminders/prefs";
 import { NotificationsScreen } from "@/mobile/screens/profile/notifications";
 import { todayInTimezone } from "@/lib/dates";
 import { ProfileMobile } from "@/mobile/screens/profile/profile-mobile";
-import { MobileFormsFrame } from "@/mobile/screens/profile/forms-frame";
+import { EditProfileMobile } from "@/mobile/screens/profile/edit-profile";
 
 export const metadata: Metadata = { title: messages.nav.settings };
 
@@ -87,7 +87,59 @@ export default async function SettingsPage({
       countFoodsToReview(),
     ]);
 
-  const forms = (
+  const tolerances = {
+    caloriesPct: Number(
+      profile?.tolerance_calories_pct ?? DEFAULT_TOLERANCES.caloriesPct,
+    ),
+    proteinPct: Number(
+      profile?.tolerance_protein_pct ?? DEFAULT_TOLERANCES.proteinPct,
+    ),
+    carbsPct: Number(
+      profile?.tolerance_carbs_pct ?? DEFAULT_TOLERANCES.carbsPct,
+    ),
+    fatPct: Number(profile?.tolerance_fat_pct ?? DEFAULT_TOLERANCES.fatPct),
+  };
+  const goals: GoalSettingsInput = {
+    primaryGoal:
+      (profile?.primary_goal as GoalSettingsInput["primaryGoal"]) ??
+      "recomposicion",
+    activityLevel:
+      (profile?.activity_level as GoalSettingsInput["activityLevel"]) ??
+      "moderado",
+  };
+  const profileValues = {
+    displayName: profile?.display_name ?? "",
+    heightCm: profile?.height_cm ?? 170,
+    unitSystem: (profile?.unit_system === "imperial"
+      ? "imperial"
+      : "metric") as "metric" | "imperial",
+    timezone: profile?.timezone ?? "UTC",
+  };
+
+  // En telefono, «Editar» es una pantalla propia con un solo «Guardar».
+  if (phone) {
+    return (
+      <EditProfileMobile
+        avatarUrl={avatarUrl}
+        foodsToReview={foodsToReview}
+        defaultValues={{
+          ...profileValues,
+          ...goals,
+          ...tolerances,
+          username: profile?.username ?? "",
+        }}
+        notice={
+          recalculation ? (
+            <div className="m-forms">
+              <TargetsUpdateCard recalculation={recalculation} />
+            </div>
+          ) : null
+        }
+      />
+    );
+  }
+
+  return (
     <>
       <ViewHeader title={messages.nav.settings} />
       {/* Arriba del todo porque es lo unico de esta pagina que espera una
@@ -100,41 +152,9 @@ export default async function SettingsPage({
         displayName={profile?.display_name ?? user.email ?? ""}
         avatarUrl={avatarUrl}
       />
-      <ProfileSettingsForm
-        defaultValues={{
-          displayName: profile?.display_name ?? "",
-          heightCm: profile?.height_cm ?? 170,
-          unitSystem:
-            profile?.unit_system === "imperial" ? "imperial" : "metric",
-          timezone: profile?.timezone ?? "UTC",
-        }}
-      />
-      <GoalSettingsForm
-        defaultValues={{
-          primaryGoal:
-            (profile?.primary_goal as GoalSettingsInput["primaryGoal"]) ??
-            "recomposicion",
-          activityLevel:
-            (profile?.activity_level as GoalSettingsInput["activityLevel"]) ??
-            "moderado",
-        }}
-      />
-      <ToleranceSettingsForm
-        defaultValues={{
-          caloriesPct: Number(
-            profile?.tolerance_calories_pct ?? DEFAULT_TOLERANCES.caloriesPct,
-          ),
-          proteinPct: Number(
-            profile?.tolerance_protein_pct ?? DEFAULT_TOLERANCES.proteinPct,
-          ),
-          carbsPct: Number(
-            profile?.tolerance_carbs_pct ?? DEFAULT_TOLERANCES.carbsPct,
-          ),
-          fatPct: Number(
-            profile?.tolerance_fat_pct ?? DEFAULT_TOLERANCES.fatPct,
-          ),
-        }}
-      />
+      <ProfileSettingsForm defaultValues={profileValues} />
+      <GoalSettingsForm defaultValues={goals} />
+      <ToleranceSettingsForm defaultValues={tolerances} />
       {/* Junto a las tolerancias: las dos deciden que numero de nutricion
           vale para ti. Vivia como franja en la Biblioteca. */}
       <FoodSourcesCard count={foodsToReview} />
@@ -146,7 +166,4 @@ export default async function SettingsPage({
       <AccountCard email={user.email} />
     </>
   );
-
-  // En telefono, «Editar» abre los formularios de siempre en su marco.
-  return phone ? <MobileFormsFrame>{forms}</MobileFormsFrame> : forms;
 }

@@ -22,7 +22,7 @@ export function HeaderAvatar() {
     >
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- URL firmada de Supabase
-        <img src={avatarUrl} alt="" />
+        <img src={avatarUrl} alt="" fetchPriority="low" decoding="async" />
       ) : (
         initials(displayName)
       )}

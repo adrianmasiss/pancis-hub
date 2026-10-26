@@ -5,16 +5,20 @@ import { useRouter } from "next/navigation";
 import { Fingerprint, ScanFace } from "lucide-react";
 import { usePasskeySupport } from "@/features/auth/use-passkey-support";
 import { createClient } from "@/lib/supabase/client";
+import { REMEMBER_COOKIE } from "@/lib/supabase/remember";
 import { passkeyDestination, passkeyError } from "@/features/auth/passkeys";
 
 export function PasskeyLogin({
   next,
   disabled,
   onBusyChange,
+  remember = true,
 }: {
   next: string | null;
   disabled: boolean;
   onBusyChange: (busy: boolean) => void;
+  /** «No cerrar sesión»: desmarcado, las cookies de auth mueren con el navegador. */
+  remember?: boolean;
 }) {
   const router = useRouter();
   const supported = usePasskeySupport();
@@ -34,6 +38,9 @@ export function PasskeyLogin({
     setBusy(true);
     onBusyChange(true);
     setError(null);
+    document.cookie = remember
+      ? `${REMEMBER_COOKIE}=; Path=/; Max-Age=0`
+      : `${REMEMBER_COOKIE}=1; Path=/; SameSite=Lax`;
     try {
       const { data, error } = await createClient().auth.signInWithPasskey({
         options: { signal: controller.signal },

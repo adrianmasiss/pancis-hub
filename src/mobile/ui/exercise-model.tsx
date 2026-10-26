@@ -2,13 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
-import { Box, ChevronDown, Layers, RotateCcw } from "lucide-react";
+import { Box, ChevronDown, Layers } from "lucide-react";
 import {
   ROTULOS,
   resaltadoDeEjercicios,
 } from "@/features/training/lib/muscle-map";
 import { encuadreDe } from "@/features/training/lib/model-regions";
-import { ModelCredit } from "@/features/training/components/model-credit";
 
 /* El mismo maniqui de escritorio. `three` solo viaja si se abre la pantalla,
    y WebGL no existe en el servidor. */
@@ -54,7 +53,7 @@ export function ExerciseModel({
 }: {
   exercises: ConMusculos[];
   zoom?: boolean;
-  /** Columna estrecha: solo girar y el credito, sin «Secundarios». */
+  /** Columna estrecha: sin «Secundarios». */
   compact?: boolean;
   /** Abre con los secundarios encendidos (mas tenues que los principales). */
   withSecondary?: boolean;
@@ -125,6 +124,7 @@ export function ExerciseModel({
         alt=""
         aria-hidden="true"
       />
+      {/* Girar es arrastrar; el credito CC BY vive en Perfil › Acerca de. */}
       <div className="m-model-tools">
         {!compact && (
           <button
@@ -137,15 +137,6 @@ export function ExerciseModel({
             Secundarios
           </button>
         )}
-        <button
-          type="button"
-          className="m-chip m-press"
-          aria-label={view === "front" ? "Ver de espaldas" : "Ver de frente"}
-          onClick={() => setVista(view === "front" ? "back" : "front")}
-        >
-          <RotateCcw size={13} strokeWidth={2} aria-hidden="true" />
-        </button>
-        <ModelCredit className="m-model-credit" />
       </div>
     </div>
   );

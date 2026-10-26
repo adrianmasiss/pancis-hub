@@ -6,6 +6,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
+import { MOBILE_PORTAL_ID } from "@/mobile/routes";
 import "./dialog.css";
 
 function Dialog({
@@ -53,8 +54,14 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
 }) {
+  // En la vista de telefono se monta dentro de `.m-app`, para heredar sus
+  // tokens y su letra; en escritorio ese nodo no existe y va al body.
+  const container =
+    typeof document === "undefined"
+      ? undefined
+      : document.getElementById(MOBILE_PORTAL_ID);
   return (
-    <DialogPortal>
+    <DialogPortal container={container}>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"

@@ -21,7 +21,26 @@ import {
 
 const t = messages.nutrition.recipeSwap;
 
-const mealIdSchema = z.object({ mealId: z.uuid() });
+const macro = z.number().min(0).max(100000);
+
+/* Las sugerencias se piden para una comida ya registrada (`mealId`) o para
+   una del plan que aun no lo esta: entonces llegan sus macros previstos y no
+   se registra nada solo por mirar recetas. */
+const suggestionsSchema = z.union([
+  z.object({ mealId: z.uuid() }),
+  z.object({
+    planned: z.object({
+      name: z.string().trim().min(1).max(120),
+      macros: z.object({
+        calories: macro,
+        proteinG: macro,
+        carbohydrateG: macro,
+        fatG: macro,
+        fiberG: macro,
+      }),
+    }),
+  }),
+]);
 
 const replaceSchema = z.object({
   mealId: z.uuid(),
@@ -59,22 +78,25 @@ type IngredientRow = {
 export async function getRecipeSwapSuggestions(
   input: unknown,
 ): Promise<{ error: string } | RecipeSwapSuggestions> {
-  const parsed = mealIdSchema.safeParse(input);
+  const parsed = suggestionsSchema.safeParse(input);
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!parsed.success || !user) return { error: t.failed };
+  const planned = "planned" in parsed.data ? parsed.data.planned : null;
 
   const [{ data: meal }, { data: recipes }, corrections] = await Promise.all([
-    supabase
-      .from("meals")
-      .select(
-        "name, meal_type, meal_items(calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot)",
-      )
-      .eq("id", parsed.data.mealId)
-      .eq("user_id", user.id)
-      .single(),
+    planned
+      ? { data: null }
+      : supabase
+          .from("meals")
+          .select(
+            "name, meal_type, meal_items(calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot)",
+          )
+          .eq("id", (parsed.data as { mealId: string }).mealId)
+          .eq("user_id", user.id)
+          .single(),
     supabase
       .from("recipes")
       .select(
@@ -84,17 +106,19 @@ export async function getRecipeSwapSuggestions(
       .limit(100),
     getUserFoodCorrections(user.id),
   ]);
-  if (!meal) return { error: t.failed };
+  if (!planned && !meal) return { error: t.failed };
 
-  const mealMacros = sumMacros(
-    (meal.meal_items ?? []).map((item) => ({
-      calories: Number(item.calories_snapshot),
-      proteinG: Number(item.protein_snapshot),
-      carbohydrateG: Number(item.carbohydrate_snapshot),
-      fatG: Number(item.fat_snapshot),
-      fiberG: Number(item.fiber_snapshot),
-    })),
-  );
+  const mealMacros =
+    planned?.macros ??
+    sumMacros(
+      (meal!.meal_items ?? []).map((item) => ({
+        calories: Number(item.calories_snapshot),
+        proteinG: Number(item.protein_snapshot),
+        carbohydrateG: Number(item.carbohydrate_snapshot),
+        fatG: Number(item.fat_snapshot),
+        fiberG: Number(item.fiber_snapshot),
+      })),
+    );
 
   const options: RecipeOption[] = (recipes ?? []).map((recipe) => {
     const ingredients = (recipe.recipe_ingredients ?? []) as IngredientRow[];
@@ -138,9 +162,10 @@ export async function getRecipeSwapSuggestions(
 
   return {
     mealName:
-      meal.name ||
+      planned?.name ||
+      meal!.name ||
       messages.nutrition.mealTypes[
-        meal.meal_type as keyof typeof messages.nutrition.mealTypes
+        meal!.meal_type as keyof typeof messages.nutrition.mealTypes
       ],
     mealMacros,
     matches: rankRecipeMatches(mealMacros, options),

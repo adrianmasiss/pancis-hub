@@ -164,6 +164,11 @@ export type TrainingOverview = {
    * del usuario): id del día → fecha YYYY-MM-DD de la última vez.
    */
   doneThisWeek: Record<string, string>;
+  /**
+   * Las sesiones del plan de esta semana, en orden: fecha local, dia del plan
+   * y si ese dia ya se habia hecho antes en la semana (un repetido).
+   */
+  weekSessions: { date: string; planDayId: string; repeated: boolean }[];
 };
 
 function mapPlanExercises(
@@ -540,10 +545,17 @@ export async function getTrainingOverview(
     : [];
 
   const doneThisWeek: Record<string, string> = {};
+  const weekSessions: TrainingOverview["weekSessions"] = [];
   for (const row of weekResult.data ?? []) {
     const day = localDateOf(row.completed_at!, timezone);
-    if (day >= week.start && day <= week.end && row.workout_plan_day_id)
+    if (day >= week.start && day <= week.end && row.workout_plan_day_id) {
+      weekSessions.push({
+        date: day,
+        planDayId: row.workout_plan_day_id,
+        repeated: row.workout_plan_day_id in doneThisWeek,
+      });
       doneThisWeek[row.workout_plan_day_id] = day;
+    }
   }
 
   const allSets: LoggedSet[] = (setsResult.data ?? []).map((set) => ({
@@ -633,6 +645,7 @@ export async function getTrainingOverview(
     history: Object.fromEntries(exerciseHistory(datedSets)),
     latestRecord: latestRecord(datedSets),
     doneThisWeek,
+    weekSessions,
   };
 }
 

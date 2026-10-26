@@ -1,15 +1,21 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import {
+  useOptimistic,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 import { Apple, BadgeCheck, Plus, Star, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteFood } from "@/features/foods/actions";
-import { logMeal } from "@/features/nutrition/actions";
 import type { LibraryFood } from "@/features/foods/queries";
 import { messages } from "@/i18n/es-419";
 import { triggerHaptic } from "@/lib/haptics";
 import { BackButton } from "@/mobile/ui/back-button";
-import { Stepper } from "@/mobile/ui/controls";
+import { Segmented, Stepper } from "@/mobile/ui/controls";
+import { Bar } from "@/mobile/ui/display";
+import { UseTodaySheet, type UseTodayMeal } from "./use-today-sheet";
 import { foodFacts, MICROS } from "./food-facts";
 import { MACROS, gramos, kcal } from "./format";
 
@@ -99,6 +105,129 @@ function MacroBreakdown({
   );
 }
 
+const VARIANTE_KEY = "pc-m-macros-ficha";
+function readVariante(): "anillo" | "barras" {
+  try {
+    return localStorage.getItem(VARIANTE_KEY) === "barras"
+      ? "barras"
+      : "anillo";
+  } catch {
+    return "anillo";
+  }
+}
+function subscribeVariante(cb: () => void) {
+  window.addEventListener(VARIANTE_KEY, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(VARIANTE_KEY, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+/** De donde salen los numeros, dicho para personas. */
+function sourceOf(food: LibraryFood): { nombre: string; detalle: string } {
+  if (food.isOwn)
+    return {
+      nombre: "Lo agregaste tú",
+      detalle: "Los valores son los que escribiste o escaneaste.",
+    };
+  switch (food.source) {
+    case "USDA FoodData Central":
+      return {
+        nombre: "USDA FoodData Central",
+        detalle:
+          "Base pública del Departamento de Agricultura de EE. UU., medida en laboratorio.",
+      };
+    case "Open Food Facts (ODbL)":
+      return {
+        nombre: "Open Food Facts",
+        detalle:
+          "Etiqueta del empaque, subida por la comunidad (licencia ODbL).",
+      };
+    case "Datos demostrativos":
+      return {
+        nombre: "Datos demostrativos",
+        detalle: "Valores de ejemplo para probar la app.",
+      };
+    default:
+      return {
+        nombre: food.source ?? "Sin fuente",
+        detalle: "No sabemos de dónde salen estos valores.",
+      };
+  }
+}
+
+/** Que tanto fiarse: verificado, estimado o pendiente de revisar. */
+function confidenceOf(food: LibraryFood): {
+  label: string;
+  tone: "ok" | "neutral" | "warn";
+  detalle: string;
+} {
+  if (food.dataIssue)
+    return {
+      label: "Pendiente",
+      tone: "warn",
+      detalle: "Sus números no cuadran: está pendiente de revisión.",
+    };
+  if (food.verified) return { label: "Verificado", tone: "ok", detalle: "" };
+  return {
+    label: "Estimado",
+    tone: "neutral",
+    detalle: "Úsalo como aproximación.",
+  };
+}
+
+/**
+ * Variante en barras, como el resumen de Inicio: las kcal a la izquierda y
+ * cada macro con su barra, del largo de su parte de las kcal.
+ */
+function MacroBarsCard({
+  food,
+  factor,
+}: {
+  food: LibraryFood;
+  factor: number;
+}) {
+  const parts = MACROS.map((m) => {
+    const g = food[m.key] * factor;
+    return { ...m, g, kcal: g * KCAL_POR_G[m.key] };
+  });
+  const total = parts.reduce((t, p) => t + p.kcal, 0);
+  return (
+    <div className="m-card m-macro-bars" data-size="sm">
+      <div className="m-macro-bars-kcal">
+        <span className="m-num">{kcal(food.calories * factor)}</span>
+        <small>kcal</small>
+      </div>
+      <div className="m-stack" style={{ flex: 1, gap: 9 }}>
+        {parts.map((p) => (
+          <span key={p.key} className="m-stack" style={{ gap: 4 }}>
+            <span className="m-home-macro">
+              <span>{p.label}</span>
+              <span className="m-num">
+                {gramos(p.g)} g
+                {p.key !== "fiberG" && total > 0 && (
+                  <small> · {Math.round((p.kcal / total) * 100)}%</small>
+                )}
+              </span>
+            </span>
+            <Bar
+              value={
+                p.key === "fiberG"
+                  ? Math.min(1, p.g / 10)
+                  : total > 0
+                    ? p.kcal / total
+                    : 0
+              }
+              color={p.color}
+            />
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Ficha de alimento, hermana del detalle de ejercicio: foto arriba, gramos
  * ajustables (con las porciones caseras), la informacion nutricional de esa
@@ -107,17 +236,33 @@ function MacroBreakdown({
 export function FoodDetail({
   food,
   date,
+  meals,
 }: {
   food: LibraryFood;
   date: string;
+  /** Comidas del plan de hoy, para «Usar hoy» dentro de una de ellas. */
+  meals: UseTodayMeal[];
 }) {
   const unit = food.nutritionBasis === "100ml" ? "ml" : "g";
   const portions = (food.portions ?? []).filter((p) => p.grams > 0).slice(0, 4);
   const [grams, setGrams] = useState(
     portions[0] ? Math.round(portions[0].grams) : 100,
   );
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [fav, setFav] = useOptimistic(food.isFavorite);
+  const [useOpen, setUseOpen] = useState(false);
+  /* Mientras eliges entre las dos vistas, se recuerda la ultima. */
+  const variante = useSyncExternalStore(
+    subscribeVariante,
+    readVariante,
+    () => "anillo" as const,
+  );
+  const elegirVariante = (v: "anillo" | "barras") => {
+    try {
+      localStorage.setItem(VARIANTE_KEY, v);
+    } catch {}
+    window.dispatchEvent(new Event(VARIANTE_KEY));
+  };
   const f = grams / 100;
   const group =
     messages.foods.groups[food.foodGroup as keyof typeof messages.foods.groups];
@@ -128,22 +273,6 @@ export function FoodDetail({
       triggerHaptic("selection");
       const r = await toggleFavoriteFood({ foodId: food.id });
       if ("error" in r) toast.error(r.error);
-    });
-
-  const logToday = () =>
-    startTransition(async () => {
-      const r = await logMeal({
-        date,
-        mealType: "snack",
-        name: food.name,
-        items: [{ foodId: food.id, quantityG: grams }],
-      });
-      if ("error" in r) {
-        toast.error(r.error);
-        return;
-      }
-      triggerHaptic("success");
-      toast.success(`${food.name} sumado a hoy.`);
     });
 
   // null = el alimento no trae el dato; se dice, no se pone 0.
@@ -176,6 +305,8 @@ export function FoodDetail({
     const v = food.micronutrients?.[m.key];
     return v === undefined ? [] : [{ ...m, amount: v * f }];
   });
+  const fuente = sourceOf(food);
+  const confianza = confidenceOf(food);
   // Con números que no se sostienen, sacar conclusiones sería engañar.
   const facts = food.dataIssue ? [] : foodFacts(food);
 
@@ -283,10 +414,27 @@ export function FoodDetail({
           style={{ gap: 8 }}
           aria-labelledby="m-food-nutri"
         >
-          <h2 id="m-food-nutri" className="m-section">
-            Información nutricional
-          </h2>
-          <MacroBreakdown food={food} factor={f} />
+          <div className="m-row" style={{ justifyContent: "space-between" }}>
+            <h2 id="m-food-nutri" className="m-section">
+              Información nutricional
+            </h2>
+            <div className="m-seg-compact">
+              <Segmented
+                label="Cómo ver los macros"
+                value={variante}
+                onChange={elegirVariante}
+                options={[
+                  { value: "anillo", label: "Anillo" },
+                  { value: "barras", label: "Barras" },
+                ]}
+              />
+            </div>
+          </div>
+          {variante === "anillo" ? (
+            <MacroBreakdown food={food} factor={f} />
+          ) : (
+            <MacroBarsCard food={food} factor={f} />
+          )}
         </section>
 
         <section
@@ -390,18 +538,21 @@ export function FoodDetail({
           aria-labelledby="m-food-source"
         >
           <h2 id="m-food-source" className="m-section">
-            De dónde sale
+            Fuente de los datos
           </h2>
-          <p className="m-sheet-text">
-            {food.isOwn ? "Lo agregaste tú" : (food.source ?? "Sin fuente")}
-          </p>
-          <div className="m-food-portions">
-            {food.verified && !food.dataIssue && (
-              <span className="m-tag" data-tone="ok">
-                <BadgeCheck size={12} aria-hidden="true" />
-                Verificado
+          <div className="m-card m-food-source" data-size="sm">
+            <div className="m-food-source-head">
+              <span className="m-list-row-title">{fuente.nombre}</span>
+              <span className="m-tag" data-tone={confianza.tone}>
+                {confianza.tone === "ok" && (
+                  <BadgeCheck size={12} aria-hidden="true" />
+                )}
+                {confianza.label}
               </span>
-            )}
+            </div>
+            <p className="m-sub">
+              {fuente.detalle} {confianza.detalle}
+            </p>
             {food.isCorrected && (
               <span className="m-tag" data-tone="neutral">
                 Corregido por ti
@@ -417,13 +568,22 @@ export function FoodDetail({
           type="button"
           className="m-btn m-press"
           data-variant="primary"
-          disabled={pending}
-          onClick={logToday}
+          onClick={() => setUseOpen(true)}
         >
           <Plus size={18} aria-hidden="true" />
-          {pending ? "Sumando…" : `Usar hoy · ${kcal(food.calories * f)} kcal`}
+          {`Usar hoy · ${kcal(food.calories * f)} kcal`}
         </button>
       </div>
+
+      <UseTodaySheet
+        open={useOpen}
+        onOpenChange={setUseOpen}
+        food={food}
+        grams={grams}
+        unit={unit}
+        date={date}
+        meals={meals}
+      />
     </div>
   );
 }

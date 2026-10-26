@@ -31,7 +31,14 @@ import { REST_NOTICE_KEY } from "@/mobile/rest-notice";
  * apagadas o encendidas.
  */
 type Estado =
-  "cargando" | "sin-soporte" | "instalar" | "negado" | "apagadas" | "activas";
+  | "cargando"
+  | "sin-soporte"
+  | "sin-config"
+  | "sin-sw"
+  | "instalar"
+  | "negado"
+  | "apagadas"
+  | "activas";
 
 function esIOS() {
   return /iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -42,6 +49,29 @@ function instalada() {
     window.matchMedia("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   );
+}
+
+/**
+ * El registro del service worker, ya activo. `getRegistration()` a secas
+ * devolvia `undefined` si la pantalla se abria antes de que `PwaRuntime`
+ * terminara de registrarlo —pasa al abrir la app instalada directo en
+ * Perfil— y eso se leia como "este telefono no tiene soporte". Ahora se
+ * registra aqui si falta y se espera a `ready`, con un limite.
+ */
+async function registroListo(): Promise<ServiceWorkerRegistration | null> {
+  const actual = await navigator.serviceWorker.getRegistration();
+  if (actual?.active) return actual;
+  if (!actual && process.env.NODE_ENV === "production") {
+    try {
+      await navigator.serviceWorker.register("/sw.js");
+    } catch {
+      return null;
+    }
+  }
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>((listo) => window.setTimeout(() => listo(null), 6000)),
+  ]);
 }
 
 const DIAS = [
@@ -75,16 +105,23 @@ export function NotificationsScreen({
 
   /** En que punto esta este telefono; lo resuelve el navegador. */
   const detectar = async (): Promise<Estado> => {
-    const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (esIOS() && !instalada()) return "instalar";
-    if (!("Notification" in window) || !("serviceWorker" in navigator) || !key)
+    if (
+      !("Notification" in window) ||
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window)
+    )
       return "sin-soporte";
+    /* La clave se incrusta al compilar: si falta en el despliegue no es culpa
+       del telefono, y decirle "sin soporte" mandaba a buscar donde no era. */
+    if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) return "sin-config";
     if (Notification.permission === "denied") return "negado";
-    const reg = await navigator.serviceWorker.getRegistration();
-    const sub = await reg?.pushManager.getSubscription();
+    const reg = await registroListo();
+    if (!reg) return "sin-sw";
+    const sub = await reg.pushManager.getSubscription();
     if (sub && enabled && Notification.permission === "granted")
       return "activas";
-    return reg ? "apagadas" : "sin-soporte";
+    return "apagadas";
   };
   const revisar = () => void detectar().then(setEstado);
 
@@ -120,10 +157,10 @@ export function NotificationsScreen({
   const activar = () =>
     startTransition(async () => {
       const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
-      const reg = await navigator.serviceWorker.getRegistration();
+      const reg = await registroListo();
       if (!reg) {
         setPreOpen(false);
-        setEstado("sin-soporte");
+        setEstado("sin-sw");
         return;
       }
       const permiso = await Notification.requestPermission();
@@ -286,6 +323,38 @@ export function NotificationsScreen({
               Este navegador no recibe notificaciones. Abre Pancis desde la app
               instalada en tu teléfono para activarlas.
             </p>
+          </div>
+        )}
+
+        {estado === "sin-config" && (
+          <div className="m-card m-notif-cta">
+            <span className="m-notif-icon" data-tone="warn">
+              <BellOff size={18} aria-hidden="true" />
+            </span>
+            <span className="m-card-title">Falta configurar el servidor</span>
+            <p className="m-sheet-text">
+              Tu teléfono sí puede recibirlas, pero esta versión de Pancis se
+              publicó sin la clave de avisos (NEXT_PUBLIC_VAPID_PUBLIC_KEY).
+              Cuando se agregue y se vuelva a publicar, podrás activarlas aquí.
+            </p>
+          </div>
+        )}
+
+        {estado === "sin-sw" && (
+          <div className="m-card m-notif-cta">
+            <p className="m-sheet-text">
+              Pancis todavía se está preparando en este teléfono. Espera unos
+              segundos y vuelve a intentarlo; si sigue igual, cierra la app del
+              todo y ábrela otra vez.
+            </p>
+            <button
+              type="button"
+              className="m-btn m-press"
+              data-block=""
+              onClick={revisar}
+            >
+              Reintentar
+            </button>
           </div>
         )}
 

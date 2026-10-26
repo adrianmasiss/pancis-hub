@@ -32,6 +32,8 @@ export type MealItemView = {
 export type MealView = {
   id: string;
   sourceTemplateMealId?: string | null;
+  /** Extra de hoy dentro de esta comida del plan (no la reemplaza). */
+  extraOfTemplateMealId?: string | null;
   mealType: MealType;
   name: string | null;
   status: MealStatus;
@@ -72,7 +74,7 @@ export async function getDayPlan(
     supabase
       .from("meals")
       .select(
-        "id, source_template_meal_id, meal_type, name, status, notes, created_at, scheduled_time, meal_items(id, food_id, external_name, quantity_g, serving_equivalence, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, sodium_snapshot_mg, sugar_snapshot_g, created_at, foods(name, brand, food_group, image_url, cooked_state, serving_amount, serving_unit, food_portions(label, grams)))",
+        "id, source_template_meal_id, extra_of_template_meal_id, meal_type, name, status, notes, created_at, scheduled_time, meal_items(id, food_id, external_name, quantity_g, serving_equivalence, calories_snapshot, protein_snapshot, carbohydrate_snapshot, fat_snapshot, fiber_snapshot, sodium_snapshot_mg, sugar_snapshot_g, created_at, foods(name, brand, food_group, image_url, cooked_state, serving_amount, serving_unit, food_portions(label, grams)))",
       )
       .eq("user_id", userId)
       .eq("date", date)
@@ -135,6 +137,7 @@ export async function getDayPlan(
       return {
         id: meal.id,
         sourceTemplateMealId: meal.source_template_meal_id,
+        extraOfTemplateMealId: meal.extra_of_template_meal_id,
         mealType: meal.meal_type as MealType,
         name: meal.name,
         status: meal.status as MealStatus,

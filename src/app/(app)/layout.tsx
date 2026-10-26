@@ -48,6 +48,15 @@ export default async function AppLayout({
   // Telefono: vista movil propia (src/mobile). Escritorio sigue igual.
   if (await isPhone()) {
     const accent = (await cookies()).get(MOBILE_ACCENT_COOKIE)?.value;
+    // La sesion abierta, para la mini barra «Entrenando» de toda la app.
+    const { data: live } = await supabase
+      .from("workout_sessions")
+      .select("id, started_at, paused_seconds, workout_plan_days(name)")
+      .eq("user_id", user.id)
+      .is("completed_at", null)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     return (
       <MobileShell
         displayName={displayName}
@@ -55,6 +64,16 @@ export default async function AppLayout({
         avatarUrl={avatarUrl}
         accent={isMobileAccent(accent) ? accent : DEFAULT_MOBILE_ACCENT}
         units={profile.unit_system === "imperial" ? "imperial" : "metric"}
+        live={
+          live
+            ? {
+                id: live.id,
+                startedAt: live.started_at,
+                pausedSeconds: live.paused_seconds,
+                dayName: live.workout_plan_days?.name ?? null,
+              }
+            : null
+        }
       >
         {children}
         <footer className="sr-only">{messages.legal.disclaimer}</footer>

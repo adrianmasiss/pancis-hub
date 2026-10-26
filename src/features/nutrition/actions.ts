@@ -263,6 +263,7 @@ export async function logMeal(input: unknown): Promise<NutritionActionResult> {
       meal_type: parsed.data.mealType,
       name: parsed.data.name || null,
       scheduled_time: parsed.data.scheduledTime ?? null,
+      extra_of_template_meal_id: parsed.data.extraOfTemplateMealId ?? null,
       status: "completada",
     })
     .select("id")
