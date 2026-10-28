@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   ChevronLeft,
   GripVertical,
+  Dumbbell,
   Pencil,
   Plus,
 } from "lucide-react";
@@ -95,13 +96,19 @@ function changesOf(before: Day[], after: Day[]) {
 }
 
 /**
- * Editar rutina en el telefono: los dias con sus ejercicios en lista. Cada
- * uno se cambia, se edita con ruedas, se reordena desde el asa y se borra
- * deslizando. Todo es local hasta «Guardar», que confirma (y avisa si es la
- * rutina del coach). Lo de antes queda en Versiones.
+ * El estado de una edicion de rutina: los dias con sus ejercicios, lo que
+ * cambio y lo que se abre encima (valores, reemplazo, confirmar). Todo es
+ * local hasta «Guardar», que confirma (y avisa si es la rutina del coach).
+ * Lo de antes queda en Versiones. Lo usan la pantalla completa y la edicion
+ * en linea de Entrenar · Hoy.
  */
-export function RoutineEditorMobile({ plan }: { plan: PlanDetail }) {
-  const router = useRouter();
+export function usePlanEditor(
+  plan: PlanDetail,
+  {
+    onSaved,
+    images = {},
+  }: { onSaved: () => void; images?: Record<string, string> },
+) {
   const [initial] = useState(() => fromPlan(plan));
   const [days, setDays] = useState(initial);
   const [editing, setEditing] = useState<{ day: number; key: string } | null>(
@@ -112,7 +119,6 @@ export function RoutineEditorMobile({ plan }: { plan: PlanDetail }) {
     key: string | null;
   } | null>(null);
   const [confirm, setConfirm] = useState(false);
-  const [leaving, setLeaving] = useState(false);
   const [saving, startSaving] = useTransition();
 
   const cambios = changesOf(initial, days);
@@ -191,94 +197,53 @@ export function RoutineEditorMobile({ plan }: { plan: PlanDetail }) {
       triggerHaptic("success");
       toast.success("Rutina guardada. La anterior queda en Versiones.");
       setConfirm(false);
-      goBack(router, BACK);
-      router.refresh();
+      onSaved();
     });
 
   const editRow = editing ? rowOf(editing.day, editing.key) : null;
   const replaceRow = replacing ? rowOf(replacing.day, replacing.key) : null;
 
-  return (
-    <div className="m-screen m-editor" data-m-fullscreen="">
-      <header className="m-step-head">
-        <button
-          type="button"
-          className="m-icon-btn m-press"
-          aria-label="Volver a Rutinas"
-          onClick={() => (dirty ? setLeaving(true) : goBack(router, BACK))}
-        >
-          <ChevronLeft size={20} aria-hidden="true" />
-        </button>
-        <div className="m-list-row-main">
-          <span style={{ fontSize: 17, fontWeight: 800 }}>Editar rutina</span>
-          <span className="m-list-row-sub">{plan.name}</span>
-        </div>
-      </header>
-
-      <div className="m-body">
-        {coach && (
-          <p className="m-notice" data-tone="warn">
-            <AlertTriangle size={16} aria-hidden="true" />
-            Es la rutina de tu coach: lo que cambies modifica la rutina
-            importada. La original queda en Versiones.
-          </p>
-        )}
-
-        {days.map((day, d) => (
-          <section
-            key={day.id}
-            className="m-stack"
-            aria-labelledby={`m-ed-${day.id}`}
-          >
-            <h2 id={`m-ed-${day.id}`} className="m-section">
-              Día {d + 1} · {day.title}
-            </h2>
-            <Reorder.Group
-              as="ol"
-              axis="y"
-              values={day.rows}
-              onReorder={(rows) => setRows(d, () => rows)}
-              className="m-editor-list"
-            >
-              {day.rows.map((row) => (
-                <EditorRow
-                  key={row.key}
-                  row={row}
-                  onEdit={() => setEditing({ day: d, key: row.key })}
-                  onReplace={() => setReplacing({ day: d, key: row.key })}
-                  onDelete={() => remove(d, row)}
-                />
-              ))}
-            </Reorder.Group>
-            <button
-              type="button"
-              className="m-set-add m-press"
-              onClick={() => setReplacing({ day: d, key: null })}
-            >
-              <Plus size={16} aria-hidden="true" />
-              Agregar ejercicio
-            </button>
-          </section>
+  /** Los dias con sus filas: asa, foto, Cambiar/Editar y deslizar. */
+  const lists = days.map((day, d) => (
+    <section
+      key={day.id}
+      className="m-stack"
+      aria-labelledby={`m-ed-${day.id}`}
+    >
+      <h2 id={`m-ed-${day.id}`} className="m-section">
+        Día {d + 1} · {day.title}
+      </h2>
+      <Reorder.Group
+        as="ol"
+        axis="y"
+        values={day.rows}
+        onReorder={(rows) => setRows(d, () => rows)}
+        className="m-editor-list"
+      >
+        {day.rows.map((row) => (
+          <EditorRow
+            key={row.key}
+            row={row}
+            image={images[row.id]}
+            onEdit={() => setEditing({ day: d, key: row.key })}
+            onReplace={() => setReplacing({ day: d, key: row.key })}
+            onDelete={() => remove(d, row)}
+          />
         ))}
-        <p className="m-sub" style={{ fontSize: 12, fontWeight: 500 }}>
-          Arrastra desde el asa para reordenar; desliza a la izquierda para
-          quitar.
-        </p>
-      </div>
+      </Reorder.Group>
+      <button
+        type="button"
+        className="m-set-add m-press"
+        onClick={() => setReplacing({ day: d, key: null })}
+      >
+        <Plus size={16} aria-hidden="true" />
+        Agregar ejercicio
+      </button>
+    </section>
+  ));
 
-      <div className="m-editor-foot">
-        <button
-          type="button"
-          className="m-btn m-press"
-          data-variant="primary"
-          data-block=""
-          disabled={!dirty || saving}
-          onClick={() => setConfirm(true)}
-        >
-          {dirty ? "Guardar cambios" : "Sin cambios"}
-        </button>
-      </div>
-
+  const overlays = (
+    <>
       {editRow && editing && (
         <ExerciseValuesSheet
           open
@@ -341,58 +306,166 @@ export function RoutineEditorMobile({ plan }: { plan: PlanDetail }) {
           Seguir editando
         </button>
       </Sheet>
+    </>
+  );
 
-      <Sheet
-        open={leaving}
-        onOpenChange={(o) => !o && setLeaving(false)}
-        title="Tienes cambios sin guardar"
-        description={`${cambios.join(" · ")}.`}
+  return {
+    cambios,
+    dirty,
+    coach,
+    saving,
+    askSave: () => setConfirm(true),
+    lists,
+    overlays,
+  };
+}
+
+/** Lo que se pierde al salir sin guardar: guardar, descartar o seguir. */
+export function DiscardSheet({
+  open,
+  cambios,
+  onClose,
+  onSave,
+  onDiscard,
+}: {
+  open: boolean;
+  cambios: string[];
+  onClose: () => void;
+  onSave: () => void;
+  onDiscard: () => void;
+}) {
+  return (
+    <Sheet
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
+      title="Tienes cambios sin guardar"
+      description={`${cambios.join(" · ")}.`}
+    >
+      <button
+        type="button"
+        className="m-btn m-press"
+        data-variant="primary"
+        data-block=""
+        onClick={() => {
+          onClose();
+          onSave();
+        }}
       >
+        Guardar
+      </button>
+      <button
+        type="button"
+        className="m-btn m-press"
+        data-variant="danger"
+        data-block=""
+        onClick={() => {
+          onClose();
+          onDiscard();
+        }}
+      >
+        Descartar cambios
+      </button>
+      <button
+        type="button"
+        className="m-btn"
+        data-variant="ghost"
+        data-block=""
+        onClick={onClose}
+      >
+        Seguir editando
+      </button>
+    </Sheet>
+  );
+}
+
+/**
+ * Editar rutina en el telefono, a pantalla completa (desde Rutinas): los
+ * dias con sus ejercicios en lista. Cada uno se cambia, se edita con ruedas,
+ * se reordena desde el asa y se borra deslizando.
+ */
+export function RoutineEditorMobile({
+  plan,
+  images,
+}: {
+  plan: PlanDetail;
+  images?: Record<string, string>;
+}) {
+  const router = useRouter();
+  const [leaving, setLeaving] = useState(false);
+  const ed = usePlanEditor(plan, {
+    images,
+    onSaved: () => {
+      goBack(router, BACK);
+      router.refresh();
+    },
+  });
+
+  return (
+    <div className="m-screen m-editor" data-m-fullscreen="">
+      <header className="m-step-head">
+        <button
+          type="button"
+          className="m-icon-btn m-press"
+          aria-label="Volver a Rutinas"
+          onClick={() => (ed.dirty ? setLeaving(true) : goBack(router, BACK))}
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
+        </button>
+        <div className="m-list-row-main">
+          <span style={{ fontSize: 17, fontWeight: 800 }}>Editar rutina</span>
+          <span className="m-list-row-sub">{plan.name}</span>
+        </div>
+      </header>
+
+      <div className="m-body">
+        {ed.coach && (
+          <p className="m-notice" data-tone="warn">
+            <AlertTriangle size={16} aria-hidden="true" />
+            Es la rutina de tu coach: lo que cambies modifica la rutina
+            importada. La original queda en Versiones.
+          </p>
+        )}
+        {ed.lists}
+        <p className="m-sub" style={{ fontSize: 12, fontWeight: 500 }}>
+          Arrastra desde el asa para reordenar; desliza a la izquierda para
+          quitar.
+        </p>
+      </div>
+
+      <div className="m-editor-foot">
         <button
           type="button"
           className="m-btn m-press"
           data-variant="primary"
           data-block=""
-          onClick={() => {
-            setLeaving(false);
-            setConfirm(true);
-          }}
+          disabled={!ed.dirty || ed.saving}
+          onClick={ed.askSave}
         >
-          Guardar
+          {ed.dirty ? "Guardar cambios" : "Sin cambios"}
         </button>
-        <button
-          type="button"
-          className="m-btn m-press"
-          data-variant="danger"
-          data-block=""
-          onClick={() => {
-            setLeaving(false);
-            goBack(router, BACK);
-          }}
-        >
-          Descartar cambios
-        </button>
-        <button
-          type="button"
-          className="m-btn"
-          data-variant="ghost"
-          data-block=""
-          onClick={() => setLeaving(false)}
-        >
-          Seguir editando
-        </button>
-      </Sheet>
+      </div>
+
+      {ed.overlays}
+      <DiscardSheet
+        open={leaving}
+        cambios={ed.cambios}
+        onClose={() => setLeaving(false)}
+        onSave={ed.askSave}
+        onDiscard={() => goBack(router, BACK)}
+      />
     </div>
   );
 }
 
 function EditorRow({
   row,
+  image,
   onEdit,
   onReplace,
   onDelete,
 }: {
   row: Row;
+  image?: string;
   onEdit: () => void;
   onReplace: () => void;
   onDelete: () => void;
@@ -409,6 +482,7 @@ function EditorRow({
       <span className="m-editor-handle" data-drag-handle="" aria-hidden="true">
         <GripVertical size={18} />
       </span>
+      <ExerciseAvatar image={image} />
       <span className="m-editor-main">
         <span className="m-list-row-title">{row.name}</span>
         <span className="m-list-row-sub">
@@ -437,5 +511,19 @@ function EditorRow({
         </span>
       </span>
     </SwipeRow>
+  );
+}
+
+/** La foto del ejercicio en circulo, como la de perfil; sin foto, la pesa. */
+export function ExerciseAvatar({ image }: { image?: string }) {
+  return (
+    <span className="m-ex-avatar" aria-hidden="true">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element -- foto del catalogo
+        <img src={image} alt="" loading="lazy" />
+      ) : (
+        <Dumbbell size={16} strokeWidth={2} />
+      )}
+    </span>
   );
 }

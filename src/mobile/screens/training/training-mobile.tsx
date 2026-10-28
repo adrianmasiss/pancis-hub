@@ -17,6 +17,11 @@ import { AiQuestionnaire } from "./ai-questionnaire";
 import { TrainingHistory } from "./history";
 import { ExerciseLibrary } from "./library";
 import { ExerciseDetail } from "./exercise-detail";
+import { nextPlanDay } from "./week-data";
+import {
+  GRUPOS_MUSCULARES,
+  grupoDe,
+} from "@/features/training/lib/library-groups";
 
 export type TrainingParams = {
   vista?: string;
@@ -25,6 +30,10 @@ export type TrainingParams = {
   q?: string;
   pagina?: string;
   filtro?: string;
+  /** Grupo muscular de la biblioteca (`GRUPOS_MUSCULARES`). */
+  grupo?: string;
+  /** Secundarios elegidos para ese grupo, separados por coma. */
+  sec?: string;
 };
 
 /** Dos minutos: lo justo para volver de «Empezar entrenamiento». */
@@ -48,6 +57,43 @@ async function favoriteIds(userId: string): Promise<Set<string>> {
     .select("exercise_id")
     .eq("user_id", userId);
   return new Set((data ?? []).map((f) => f.exercise_id));
+}
+
+/**
+ * Por grupo muscular, los secundarios que trabajan sus ejercicios, los mas
+ * comunes primero (sin los del propio grupo ni los que casi no aparecen).
+ */
+async function secondaryByGroup(): Promise<Record<string, string[]>> {
+  const supabase = await createClient();
+  // En tandas: la API devuelve a lo sumo mil filas por consulta.
+  const data: { primary_muscle: string; secondary_muscles: string[] | null }[] =
+    [];
+  for (let desde = 0; ; desde += 1000) {
+    const { data: tanda } = await supabase
+      .from("exercise_catalog")
+      .select("primary_muscle, secondary_muscles")
+      .is("deleted_at", null)
+      .order("id")
+      .range(desde, desde + 999);
+    data.push(...(tanda ?? []));
+    if (!tanda || tanda.length < 1000) break;
+  }
+  const porGrupo: Record<string, string[]> = {};
+  for (const g of GRUPOS_MUSCULARES) {
+    const propios = g.catalogo as readonly string[];
+    const cuenta = new Map<string, number>();
+    for (const fila of data) {
+      if (!propios.includes(fila.primary_muscle)) continue;
+      for (const m of fila.secondary_muscles ?? []) {
+        if (!propios.includes(m)) cuenta.set(m, (cuenta.get(m) ?? 0) + 1);
+      }
+    }
+    porGrupo[g.id] = [...cuenta]
+      .filter(([, n]) => n >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .map(([m]) => m);
+  }
+  return porGrupo;
 }
 
 /** Foto de cada ejercicio del catalogo, por id. */
@@ -131,12 +177,6 @@ export async function TrainingMobile({
           planned={planned ?? null}
           history={overview.history[params.ejercicio] ?? null}
           imageUrl={images[params.ejercicio] ?? null}
-          startPlanId={overview.activePlan?.id}
-          startDayId={
-            overview.activePlan?.days.find((d) =>
-              d.exercises.some((e) => e.exerciseId === params.ejercicio),
-            )?.id
-          }
           sessionId={enCurso?.id ?? null}
           favorite={(await favoriteIds(userId)).has(params.ejercicio)}
         />
@@ -149,17 +189,16 @@ export async function TrainingMobile({
       ? vista
       : "hoy";
 
-  // Proximo dia del plan activo: el siguiente al de la ultima sesion.
+  // El dia que toca por orden: el primero que falta esta semana.
   const days = overview.activePlan?.days ?? [];
-  let nextDay = days[0] ?? null;
-  const lastDayId = overview.recentSessions[0]?.planDayId;
-  if (lastDayId) {
-    const i = days.findIndex((d) => d.id === lastDayId);
-    if (i >= 0) nextDay = days[(i + 1) % days.length] ?? nextDay;
-  }
+  const nextDay = nextPlanDay(
+    days,
+    overview.doneThisWeek,
+    overview.recentSessions[0]?.planDayId,
+  );
 
-  // Los dias de cada rutina, para desplegarlos ahi mismo (en Rutinas y en
-  // Hoy › Rutinas). Son pocas.
+  // Los dias de cada rutina, para desplegarlos ahi mismo en Rutinas. Son
+  // pocas.
   const loadPlanDays = async () => {
     const detalles = await Promise.all(
       overview.plans.map((p) =>
@@ -176,10 +215,14 @@ export async function TrainingMobile({
   let body: React.ReactNode;
   if (tab === "rutinas") {
     const planDays = await loadPlanDays();
+    const ids = Object.values(planDays).flatMap((ds) =>
+      ds.flatMap((d) => d.exercises.map((e) => e.exerciseId)),
+    );
     body = (
       <Routines
         plans={overview.plans}
         planDays={planDays}
+        images={await exerciseImages([...new Set(ids)])}
         todayDayId={nextDay?.id ?? null}
         aiEnabled={aiEnabled}
       />
@@ -191,8 +234,21 @@ export async function TrainingMobile({
     const page = Math.max(1, Number(params.pagina) || 1);
     const favoritos = params.filtro === "favoritos";
     const favs = await favoriteIds(userId);
+    const grupo = grupoDe(params.grupo);
+    const musculos: string[] | undefined = grupo
+      ? [...grupo.catalogo]
+      : undefined;
+    const secundarios = grupo
+      ? (params.sec ?? "")
+          .split(",")
+          .map((m) => m.trim())
+          .filter(Boolean)
+          .slice(0, 12)
+      : [];
     const library = await getExerciseLibrary(userId, {
       query: params.q?.trim().slice(0, 80) || undefined,
+      muscles: musculos,
+      secondaryMuscles: secundarios.length ? secundarios : undefined,
       collection: "todos",
       page: favoritos ? 1 : page,
     });
@@ -223,6 +279,14 @@ export async function TrainingMobile({
         imageUrl: e.image_url,
         inRoutine: false,
       }));
+      if (musculos) {
+        exercises = exercises.filter(
+          (e) =>
+            musculos.includes(e.primaryMuscle) &&
+            (secundarios.length === 0 ||
+              e.secondaryMuscles.some((m) => secundarios.includes(m))),
+        );
+      }
       total = exercises.length;
     }
     body = (
@@ -233,16 +297,28 @@ export async function TrainingMobile({
         page={favoritos ? 1 : page}
         favorites={[...favs]}
         onlyFavorites={favoritos}
+        group={grupo?.id ?? null}
+        secondary={secundarios}
+        secondaryByGroup={await secondaryByGroup()}
       />
     );
   } else {
+    /* Sin la fecha de hoy, la rutina llega tal cual esta guardada: editarla
+       no debe volver permanente un cambio de «solo hoy». */
+    const routine = overview.activePlan
+      ? await getPlanDetail(userId, overview.activePlan.id, "1970-01-01")
+      : null;
+    const ids = (routine?.days ?? []).flatMap((d) =>
+      d.exercises.map((e) => e.exerciseId),
+    );
     body = (
       <TrainingToday
         overview={overview}
         today={today}
         timezone={timezone}
         nextDayId={nextDay?.id ?? null}
-        planDays={await loadPlanDays()}
+        routine={routine}
+        images={await exerciseImages([...new Set(ids)])}
       />
     );
   }

@@ -19,6 +19,9 @@
      dinamica, notch o la barra de estado de la app instalada) mas 16 px de
      aire. Con `viewport-fit=cover`; sin el, env() vale 0. */
   --m-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  /* Distancia de la barra de pestañas al borde de abajo: pegada al indicador
+     de inicio, como la de iOS, y no encima de todo su margen seguro. */
+  --m-dock: max(10px, calc(env(safe-area-inset-bottom, 0px) - 12px));
   /* Con el telefono de lado, el notch queda a un costado. */
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
@@ -32,7 +35,9 @@
   --m-faint: #8a8a90;
   --m-line: rgb(255 255 255 / 0.08);
   --m-on-accent: #111113;
-  --m-accent-ink: var(--m-accent);
+  /* El acento como linea, borde o texto sobre el fondo del tema (accent.ts). */
+  --m-accent-line: var(--m-accent-line-dark, var(--m-accent));
+  --m-accent-ink: var(--m-accent-line);
 
   --m-glass-bg: rgb(30 30 34 / 0.58);
   --m-glass-line: rgb(255 255 255 / 0.09);
@@ -46,6 +51,8 @@
 
   --m-ia-bg: #2a2540;
   --m-ia-text: #c9beff;
+  --m-coach-bg: #12343a;
+  --m-coach-text: #7fdcd0;
   --m-warn-bg: rgb(232 176 74 / 0.12);
   --m-warn-text: #f0c878;
   --m-danger-bg: rgb(255 122 107 / 0.08);
@@ -91,6 +98,7 @@ html:not(.dark) .m-app {
   --m-muted: #5c5c64;
   --m-faint: #77777e;
   --m-line: rgb(0 0 0 / 0.08);
+  --m-accent-line: var(--m-accent-line-light, var(--m-accent));
   --m-accent-ink: var(--m-accent-ink-light);
 
   --m-glass-bg: rgb(255 255 255 / 0.62);
@@ -103,6 +111,8 @@ html:not(.dark) .m-app {
 
   --m-ia-bg: #ebe6ff;
   --m-ia-text: #4b3aa8;
+  --m-coach-bg: #d8f3ef;
+  --m-coach-text: #0b6259;
   --m-warn-bg: rgb(232 176 74 / 0.18);
   --m-warn-text: #7a5300;
   --m-danger-bg: rgb(200 50 40 / 0.08);
@@ -153,7 +163,7 @@ html:not(.dark):has(.m-app) body {
 }
 
 .m-app :where(button, a, [role="switch"]):focus-visible {
-  outline: 2px solid var(--m-accent);
+  outline: 2px solid var(--m-accent-line);
   outline-offset: 2px;
 }
 
@@ -249,7 +259,7 @@ html:not(.dark):has(.m-app) body {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--m-dock) + 94px);
 }
 
 .m-header {
@@ -325,7 +335,7 @@ html:not(.dark):has(.m-app) body {
   background:
     radial-gradient(
       120% 70% at 100% 0%,
-      color-mix(in srgb, var(--m-accent) 20%, transparent),
+      color-mix(in srgb, var(--m-accent-line) 20%, transparent),
       transparent 60%
     ),
     var(--m-surface);
@@ -429,7 +439,7 @@ html:not(.dark):has(.m-app) body {
   background: var(--m-accent);
   color: var(--m-on-accent);
   box-shadow:
-    0 12px 28px -10px color-mix(in srgb, var(--m-accent) 67%, transparent),
+    0 12px 28px -10px color-mix(in srgb, var(--m-accent-line) 67%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 
@@ -516,6 +526,10 @@ html:not(.dark):has(.m-app) body {
   background: var(--m-ia-bg);
   color: var(--m-ia-text);
 }
+.m-tag[data-tone="coach"] {
+  background: var(--m-coach-bg);
+  color: var(--m-coach-text);
+}
 .m-tag[data-tone="warn"] {
   background: var(--m-warn-bg);
   color: var(--m-warn-text);
@@ -525,7 +539,7 @@ html:not(.dark):has(.m-app) body {
   color: var(--m-positive);
 }
 .m-tag[data-tone="accent"] {
-  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
   color: var(--m-accent-ink);
 }
 .m-tag[data-tone="neutral"] {
@@ -615,7 +629,7 @@ html:not(.dark) .m-tab:not([aria-current="page"]) {
   color: var(--m-on-accent);
   border-color: rgb(255 255 255 / 0.25);
   box-shadow:
-    0 8px 20px -8px color-mix(in srgb, var(--m-accent) 80%, transparent),
+    0 8px 20px -8px color-mix(in srgb, var(--m-accent-line) 80%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 
@@ -751,16 +765,16 @@ html:not(.dark) .m-seg-thumb {
   border-radius: 22px;
 }
 .m-check[data-current] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-check[aria-pressed="true"],
 .m-check[aria-checked="true"] {
   background: var(--m-accent);
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
   color: var(--m-on-accent);
   transform: scale(1);
   box-shadow:
-    0 8px 22px -6px color-mix(in srgb, var(--m-accent) 80%, transparent),
+    0 8px 22px -6px color-mix(in srgb, var(--m-accent-line) 80%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 
@@ -782,10 +796,10 @@ html:not(.dark) .m-seg-thumb {
   stroke: var(--m-surface-2);
 }
 .m-ring-value {
-  stroke: var(--ring-color, var(--m-accent));
+  stroke: var(--ring-color, var(--m-accent-line));
   filter: drop-shadow(
     0 0 4px
-      color-mix(in srgb, var(--ring-color, var(--m-accent)) 70%, transparent)
+      color-mix(in srgb, var(--ring-color, var(--m-accent-line)) 70%, transparent)
   );
   transition: stroke-dashoffset 0.6s var(--m-ease);
 }
@@ -818,7 +832,7 @@ html:not(.dark) .m-seg-thumb {
   border-radius: 3px;
   background: var(--bar-color, var(--m-accent));
   box-shadow: 0 0 8px
-    color-mix(in srgb, var(--bar-color, var(--m-accent)) 50%, transparent);
+    color-mix(in srgb, var(--bar-color, var(--m-accent-line)) 50%, transparent);
   transform-origin: left center;
   transition: transform 0.6s var(--m-ease);
 }
@@ -892,7 +906,7 @@ html:not(.dark) .m-sheet-grabber {
   position: fixed;
   left: 24px;
   right: 24px;
-  bottom: calc(92px + env(safe-area-inset-bottom));
+  bottom: calc(var(--m-dock) + 74px);
   z-index: 41;
   height: 48px;
   padding: 0 14px 0 16px;
@@ -915,7 +929,7 @@ html:not(.dark) .m-sheet-grabber {
   display: none;
 }
 .m-app:has(.m-live-bar):not(:has([data-m-fullscreen])) .m-screen {
-  padding-bottom: calc(168px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--m-dock) + 150px);
 }
 .m-live-bar-text {
   flex: 1;
@@ -961,7 +975,7 @@ html:not(.dark) .m-sheet-grabber {
   right: 0;
   bottom: 0;
   z-index: 40;
-  height: calc(96px + env(safe-area-inset-bottom));
+  height: calc(var(--m-dock) + 78px);
   pointer-events: none;
   background: linear-gradient(
     to bottom,
@@ -977,7 +991,7 @@ html:not(.dark) .m-sheet-grabber {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: var(--m-dock);
   height: 64px;
   padding: 6px;
   border-radius: 32px;
@@ -1022,7 +1036,7 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
   border-radius: 26px;
   background: var(--m-accent);
   box-shadow:
-    0 8px 22px -6px color-mix(in srgb, var(--m-accent) 67%, transparent),
+    0 8px 22px -6px color-mix(in srgb, var(--m-accent-line) 67%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 .m-tabbar-item > :not(.m-tabbar-pill) {
@@ -1061,10 +1075,10 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
 }
 @keyframes m-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--m-accent) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--m-accent-line) 45%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 22px color-mix(in srgb, var(--m-accent) 0%, transparent);
+    box-shadow: 0 0 0 22px color-mix(in srgb, var(--m-accent-line) 0%, transparent);
   }
 }
 
@@ -1166,11 +1180,11 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
   background: var(--m-accent);
 }
 .m-week-dot[data-state="repeat"] {
-  background: color-mix(in srgb, var(--m-accent) 62%, var(--m-surface));
+  background: color-mix(in srgb, var(--m-accent-line) 62%, var(--m-surface));
 }
 .m-week-dot[data-today] {
   opacity: 1;
-  outline: 2px solid var(--m-accent);
+  outline: 2px solid var(--m-accent-line);
   outline-offset: 2px;
 }
 .m-week-dot[aria-pressed="true"] {
@@ -1213,7 +1227,7 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
   background: var(--m-surface-3);
 }
 .m-week-legend i[data-today] {
-  box-shadow: 0 0 0 1.5px var(--m-accent);
+  box-shadow: 0 0 0 1.5px var(--m-accent-line);
 }
 
 .m-live-dot {
@@ -1357,7 +1371,7 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
 }
 .m-set-row[data-tone="current"] {
   background: var(--m-surface-2);
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-set-row[data-tone="done"] {
   opacity: 0.55;
@@ -1581,7 +1595,7 @@ html:not(.dark) .m-app .m-swipe-action {
   display: none;
 }
 .m-wheel:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--m-accent);
+  box-shadow: inset 0 0 0 2px var(--m-accent-line);
   border-radius: 12px;
 }
 .m-wheel-item {
@@ -1725,7 +1739,7 @@ html:not(.dark) .m-app .m-swipe-action {
   outline: none;
 }
 .m-search:focus-within {
-  box-shadow: 0 0 0 2px var(--m-accent);
+  box-shadow: 0 0 0 2px var(--m-accent-line);
 }
 .m-option {
   min-height: 64px;
@@ -1740,7 +1754,7 @@ html:not(.dark) .m-app .m-swipe-action {
   width: 100%;
 }
 .m-option[aria-checked="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-option-icon {
   width: 40px;
@@ -1852,7 +1866,7 @@ html:not(.dark) .m-app .m-swipe-action {
   width: 100%;
 }
 .m-routine[aria-pressed="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-action-tile {
   padding: 16px;
@@ -1917,7 +1931,7 @@ html:not(.dark) .m-app .m-swipe-action {
   text-align: left;
 }
 .m-choice[aria-pressed="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-fieldset {
   border: 0;
@@ -1951,7 +1965,7 @@ html:not(.dark) .m-app .m-swipe-action {
 .m-chip-toggle[aria-pressed="true"] {
   background: var(--m-accent);
   color: var(--m-on-accent);
-  box-shadow: 0 8px 20px -10px var(--m-accent);
+  box-shadow: 0 8px 20px -10px var(--m-accent-line);
 }
 .m-chip-toggle:disabled {
   opacity: 0.4;
@@ -2048,7 +2062,7 @@ html:not(.dark) .m-app .m-swipe-action {
   outline: none;
 }
 .m-input:focus {
-  box-shadow: 0 0 0 2px var(--m-accent);
+  box-shadow: 0 0 0 2px var(--m-accent-line);
 }
 textarea.m-input {
   height: auto;
@@ -2212,7 +2226,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
 }
 .m-cal-day[aria-pressed="true"] {
   background: var(--m-accent);
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
   color: var(--m-on-accent);
 }
 .m-cal-legend {
@@ -2499,7 +2513,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   font-weight: 600;
   background: transparent;
   color: var(--m-accent-ink);
-  box-shadow: inset 0 0 0 1.5px var(--m-accent);
+  box-shadow: inset 0 0 0 1.5px var(--m-accent-line);
 }
 .m-icon-btn[data-variant="soft"] {
   background: var(--m-surface-2);
@@ -2525,7 +2539,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   background: var(--m-accent);
   color: var(--m-on-accent);
   border: 4px solid var(--m-bg);
-  box-shadow: 0 10px 26px -8px var(--m-accent);
+  box-shadow: 0 10px 26px -8px var(--m-accent-line);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2844,7 +2858,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   transition: border-color 0.15s var(--m-ease);
 }
 .m-swap-card[aria-checked="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-swap-card .m-list-row-main {
   gap: 3px;
@@ -2888,7 +2902,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
 /* Fijo sobre la barra de pestanas mientras se baja por la comparacion. */
 .m-compare-cta {
   position: sticky;
-  bottom: calc(92px + env(safe-area-inset-bottom));
+  bottom: calc(var(--m-dock) + 74px);
   z-index: 5;
   padding-top: 8px;
 }
@@ -2907,7 +2921,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
 /* ── Copiloto ────────────────────────────────────────────────────────── */
 
 .m-copilot {
-  padding-bottom: calc(220px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--m-dock) + 202px);
 }
 .m-copilot-glow {
   position: absolute;
@@ -2922,7 +2936,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
     ),
     radial-gradient(
       80% 100% at 100% 0%,
-      color-mix(in srgb, var(--m-accent) 16%, transparent),
+      color-mix(in srgb, var(--m-accent-line) 16%, transparent),
       transparent 70%
     );
 }
@@ -2981,7 +2995,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(88px + env(safe-area-inset-bottom));
+  bottom: calc(var(--m-dock) + 70px);
   z-index: 30;
   display: flex;
   flex-direction: column;
@@ -3045,7 +3059,7 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
 .m-seg[data-tone="accent"] .m-seg-thumb {
   background: var(--m-accent);
   box-shadow:
-    0 8px 22px -8px color-mix(in srgb, var(--m-accent) 80%, transparent),
+    0 8px 22px -8px color-mix(in srgb, var(--m-accent-line) 80%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 .m-seg[data-tone="accent"] .m-seg-item[aria-pressed="true"] {
@@ -3095,12 +3109,12 @@ html:not(.dark) .m-range {
 }
 .m-chart-line {
   fill: none;
-  stroke: var(--m-accent);
+  stroke: var(--m-accent-line);
   stroke-width: 3;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(
-    0 0 6px color-mix(in srgb, var(--m-accent) 70%, transparent)
+    0 0 6px color-mix(in srgb, var(--m-accent-line) 70%, transparent)
   );
   stroke-dasharray: 1;
   animation: m-line-draw 1.3s var(--m-ease) 0.2s both;
@@ -3112,7 +3126,7 @@ html:not(.dark) .m-range {
 }
 .m-chart-dot {
   fill: #fff;
-  stroke: var(--m-accent);
+  stroke: var(--m-accent-line);
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
@@ -3171,7 +3185,7 @@ html:not(.dark) .m-range {
   font-size: 16px;
   font-weight: 600;
   box-shadow:
-    0 12px 28px -10px color-mix(in srgb, var(--m-accent) 67%, transparent),
+    0 12px 28px -10px color-mix(in srgb, var(--m-accent-line) 67%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.35) !important;
   border: 0 !important;
 }
@@ -3255,7 +3269,7 @@ html:not(.dark) .m-range {
 }
 .m-slider input {
   flex: 1;
-  accent-color: var(--m-accent);
+  accent-color: var(--m-accent-line);
   height: 44px;
 }
 .m-date-chip {
@@ -3270,7 +3284,7 @@ html:not(.dark) .m-range {
   font-weight: 600;
 }
 .m-date-chip[aria-pressed="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 
 /* ── Perfil ──────────────────────────────────────────────────────────── */
@@ -3282,7 +3296,7 @@ html:not(.dark) .m-range {
   pointer-events: none;
   background: radial-gradient(
     70% 60% at 50% 0%,
-    color-mix(in srgb, var(--m-accent) 18%, transparent),
+    color-mix(in srgb, var(--m-accent-line) 18%, transparent),
     transparent 75%
   );
 }
@@ -3302,7 +3316,7 @@ html:not(.dark) .m-range {
   box-shadow:
     0 0 0 3px var(--m-bg),
     0 0 0 5px rgb(255 255 255 / 0.15),
-    0 16px 40px -12px color-mix(in srgb, var(--m-accent) 60%, transparent);
+    0 16px 40px -12px color-mix(in srgb, var(--m-accent-line) 60%, transparent);
 }
 .m-profile-stat {
   align-items: center;
@@ -3529,11 +3543,12 @@ html:not(.dark) .m-range {
 .m-home-glow {
   position: absolute;
   inset: 0 0 auto;
-  height: 260px;
+  /* Desde el borde de arriba, bajo la barra de estado: sin corte. */
+  height: calc(260px + env(safe-area-inset-top, 0px));
   pointer-events: none;
   background: radial-gradient(
     90% 70% at 15% 0%,
-    color-mix(in srgb, var(--m-accent) 14%, transparent),
+    color-mix(in srgb, var(--m-accent-line) 14%, transparent),
     transparent 100%
   );
 }
@@ -3542,7 +3557,8 @@ html:not(.dark) .m-range {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px 4px;
+  /* Bajo la isla dinamica y su difuminado. */
+  padding: calc(var(--m-top) + 6px) 20px 4px;
 }
 .m-home-avatar {
   width: 48px;
@@ -3589,7 +3605,7 @@ html:not(.dark) .m-range {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--m-accent);
+  color: var(--m-accent-line);
   background: var(--m-glass-bg);
   border: 1px solid var(--m-glass-line);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -3602,8 +3618,8 @@ html:not(.dark) .m-range {
 }
 .m-home-body {
   position: relative;
-  padding-top: 14px;
-  gap: 12px;
+  padding-top: 18px;
+  gap: 16px;
 }
 /* Entrada escalonada cada 70 ms, como pide el diseño de Inicio. */
 .m-home-body > :nth-child(2) {
@@ -3634,48 +3650,29 @@ html:not(.dark) .m-range {
 }
 .m-home-title {
   margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
-.m-home-train .m-week {
-  margin: 0;
-}
-.m-home-mini {
-  flex: 1;
-  display: flex;
-  gap: 16px;
-  min-width: 0;
-}
-.m-home-mini-value {
-  font-size: 18px;
-  font-weight: 600;
-}
-.m-home-mini-label {
-  font-size: 11px;
-  font-weight: 600;
+.m-home-sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--m-muted);
-}
-.m-home-train .m-btn[data-variant="primary"] {
-  flex: none;
-  height: 48px;
-  padding: 0 18px;
 }
 .m-home-nutri {
   color: var(--m-text);
 }
-.m-home-nutri .m-home-row svg {
-  color: var(--m-faint);
-}
 .m-home-ring-value {
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1.1;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.05;
 }
 .m-home-ring-label {
-  font-size: 10px;
-  font-weight: 600;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
   color: var(--m-muted);
 }
 .m-home-macro {
@@ -3690,23 +3687,45 @@ html:not(.dark) .m-range {
   font-weight: 600;
 }
 .m-home-next {
-  padding: 10px 12px;
-  border-radius: 18px;
+  padding: 10px 10px 10px 18px;
+  border-radius: 22px;
   background: var(--m-surface-2);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.m-home-next-time {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--m-muted);
-}
-.m-home-next-name {
+.m-home-next-text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-home-next-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+/* La cifra en acento: la nota de color de la tarjeta. */
+.m-home-next-kcal {
+  flex: none;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 6px 16px -8px
+    color-mix(in srgb, var(--m-accent-line) 80%, transparent);
+}
+.m-home-next-name {
+  font-size: 15px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3714,10 +3733,10 @@ html:not(.dark) .m-range {
 .m-home-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 12px;
 }
 .m-home-pair .m-card {
-  padding: 14px;
+  padding: 18px 16px;
   border-radius: 22px;
   gap: 8px;
   color: var(--m-text);
@@ -3777,99 +3796,72 @@ html:not(.dark) .m-range {
 .m-home-change[data-tone="caution"] {
   color: var(--m-caution);
 }
-.m-home-spark {
-  display: block;
-  margin-top: auto;
-  overflow: visible;
-}
-.m-home-spark path {
-  fill: none;
-  stroke: var(--m-accent);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  filter: drop-shadow(
-    0 0 4px color-mix(in srgb, var(--m-accent) 67%, transparent)
-  );
-  animation: m-home-line 1.3s var(--m-ease) 0.4s both;
-}
-@keyframes m-home-line {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+/* Una sola fila: icono, consejo en tres lineas como mucho y chevron. En
+   acento, con el brillo desde la derecha. */
 .m-home-insight {
-  padding: 14px 16px;
+  padding: 12px 14px 12px 12px;
   border-radius: 22px;
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
   color: var(--m-text);
   background:
     radial-gradient(
-      120% 120% at 100% 0%,
-      rgb(155 140 240 / 0.32),
-      transparent 60%
+      120% 140% at 100% 50%,
+      color-mix(in srgb, var(--m-accent-line) 22%, transparent),
+      transparent 65%
     ),
-    #1f1c2e;
+    var(--m-surface);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.08),
-    inset 0 0 0 1px rgb(201 190 255 / 0.12);
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    inset 0 0 0 1px color-mix(in srgb, var(--m-accent-line) 22%, transparent);
 }
 html:not(.dark) .m-home-insight {
   background:
     radial-gradient(
-      120% 120% at 100% 0%,
-      rgb(155 140 240 / 0.22),
-      transparent 60%
+      120% 140% at 100% 50%,
+      color-mix(in srgb, var(--m-accent-line) 14%, transparent),
+      transparent 65%
     ),
-    var(--m-ia-bg);
-  box-shadow: inset 0 0 0 1px rgb(75 58 168 / 0.12);
+    var(--m-surface);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-accent-line) 20%, transparent);
 }
 .m-home-insight-icon {
   width: 36px;
   height: 36px;
   flex: none;
   border-radius: 18px;
-  background: rgb(201 190 255 / 0.14);
-  color: var(--m-ia-text);
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-ink);
   display: flex;
   align-items: center;
   justify-content: center;
 }
+.m-home-insight-body {
+  flex: 1;
+  min-width: 0;
+}
 .m-home-insight-label {
   display: block;
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--m-ia-text);
+  color: var(--m-accent-ink);
 }
 .m-home-insight-text {
-  display: block;
-  margin-top: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
 }
-.m-home-insight-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--m-ia-text);
-}
-@media (prefers-reduced-motion: reduce) {
-  .m-home-spark path {
-    animation: none;
-  }
+.m-home-insight > svg {
+  flex: none;
+  color: var(--m-faint);
 }
 
 /* ── Copiloto · evidencia a la vista ─────────────────────────────────── */
@@ -4081,14 +4073,14 @@ html:not(.dark) .m-home-insight {
   /* Lo de fuera del recuadro, atenuado: la vista se va sola al codigo. */
   box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.55);
   background:
-    linear-gradient(var(--m-accent), var(--m-accent)) top left / 28px 4px,
-    linear-gradient(var(--m-accent), var(--m-accent)) top left / 4px 28px,
-    linear-gradient(var(--m-accent), var(--m-accent)) top right / 28px 4px,
-    linear-gradient(var(--m-accent), var(--m-accent)) top right / 4px 28px,
-    linear-gradient(var(--m-accent), var(--m-accent)) bottom left / 28px 4px,
-    linear-gradient(var(--m-accent), var(--m-accent)) bottom left / 4px 28px,
-    linear-gradient(var(--m-accent), var(--m-accent)) bottom right / 28px 4px,
-    linear-gradient(var(--m-accent), var(--m-accent)) bottom right / 4px 28px;
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 4px 28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 4px 28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left / 28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left / 4px 28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right / 28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right / 4px 28px;
   background-repeat: no-repeat;
   overflow: hidden;
 }
@@ -4100,7 +4092,7 @@ html:not(.dark) .m-home-insight {
   height: 2px;
   border-radius: 1px;
   background: var(--m-accent);
-  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--m-accent) 60%, transparent);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--m-accent-line) 60%, transparent);
   animation: m-scan-sweep 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
 @keyframes m-scan-sweep {
@@ -4140,8 +4132,8 @@ html:not(.dark) .m-home-insight {
   border-radius: 32px;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
-  color: var(--m-accent);
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-line);
 }
 .m-scan-icon[data-tone="warn"] {
   background: var(--m-danger-bg);
@@ -4211,7 +4203,7 @@ html:not(.dark) .m-home-insight {
 /* ── Rutinas: dias desplegables ──────────────────────────────────────── */
 
 .m-routine[data-active] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-days {
   margin-top: 8px;
@@ -4288,36 +4280,50 @@ html:not(.dark) .m-home-insight {
 
 /* ── Detalle de ejercicio: esquema, musculos y enfasis ───────────────── */
 
+/* Una fila, como un tablero: la cifra centrada, la etiqueta debajo y una
+   linea fina entre columnas. */
 .m-ex-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  padding: 4px 0;
 }
 .m-ex-stat {
-  padding: 12px 6px 10px;
-  border-radius: 18px;
-  background: var(--m-surface);
-  box-shadow: var(--m-card-edge);
+  padding: 2px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   text-align: center;
 }
+.m-ex-stat + .m-ex-stat {
+  border-left: 1px solid var(--m-line);
+}
 .m-ex-stat-value {
-  font-size: 22px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 21px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.15;
   white-space: nowrap;
 }
+.m-ex-stat-value small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-ex-last {
+  font-weight: 700;
+  color: var(--m-text);
+}
 .m-ex-stat-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--m-muted);
   line-height: 1.2;
 }
 .m-ex-stats-note {
-  margin-top: 8px;
+  margin-top: 12px;
   font-size: 12px;
   font-weight: 600;
   color: var(--m-muted);
@@ -4363,8 +4369,8 @@ html:not(.dark) .m-home-insight {
   width: 22px;
   height: 22px;
   border-radius: 11px;
-  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
-  color: var(--m-accent);
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-line);
 }
 
 /* ── Acciones destructivas ───────────────────────────────────────────── */
@@ -4424,7 +4430,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 }
 .m-q-option[aria-checked="true"],
 .m-q-option[aria-pressed="true"] {
-  border-color: var(--m-accent);
+  border-color: var(--m-accent-line);
 }
 .m-q-option:disabled {
   opacity: 0.4;
@@ -4469,8 +4475,8 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   color: var(--m-text);
 }
 .m-q-day[aria-checked="true"] {
-  border-color: var(--m-accent);
-  background: color-mix(in srgb, var(--m-accent) 10%, var(--m-surface));
+  border-color: var(--m-accent-line);
+  background: color-mix(in srgb, var(--m-accent-line) 10%, var(--m-surface));
 }
 .m-q-summary {
   list-style: none;
@@ -4841,8 +4847,8 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-reader-key {
   padding: 16px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--m-accent) 9%, var(--m-surface));
-  box-shadow: inset 3px 0 0 var(--m-accent);
+  background: color-mix(in srgb, var(--m-accent-line) 9%, var(--m-surface));
+  box-shadow: inset 3px 0 0 var(--m-accent-line);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -4862,7 +4868,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   list-style: disc;
 }
 .m-reader-key li::marker {
-  color: var(--m-accent);
+  color: var(--m-accent-line);
 }
 .m-reader-body {
   display: flex;
@@ -4938,7 +4944,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   color: var(--m-text-soft);
 }
 .m-notif-icon[data-on] {
-  background: color-mix(in srgb, var(--m-accent) 18%, transparent);
+  background: color-mix(in srgb, var(--m-accent-line) 18%, transparent);
   color: var(--m-accent-ink);
 }
 .m-notif-icon[data-tone="warn"] {
@@ -4946,7 +4952,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   color: #ff5a4e;
 }
 .m-sheet-icon[data-tone="accent"] {
-  background: color-mix(in srgb, var(--m-accent) 18%, transparent);
+  background: color-mix(in srgb, var(--m-accent-line) 18%, transparent);
   color: var(--m-accent-ink);
 }
 .m-notif-cta {
@@ -5122,7 +5128,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-radio-row[aria-checked="true"] .m-radio-dot {
   background: var(--m-accent);
   box-shadow:
-    inset 0 0 0 5px var(--m-accent),
+    inset 0 0 0 5px var(--m-accent-line),
     inset 0 0 0 10px var(--m-on-accent);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -5140,7 +5146,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   --font-sans: var(--m-font-ui-stack);
   --primary: var(--m-accent);
   --primary-foreground: var(--m-on-accent);
-  --ring: var(--m-accent);
+  --ring: var(--m-accent-line);
 }
 .m-app .pc-dialog.pc-live-edge {
   inset: 0;
@@ -5219,7 +5225,7 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   font-size: 16px;
   font-weight: 700;
   box-shadow: 0 12px 28px -10px
-    color-mix(in srgb, var(--m-accent) 67%, transparent);
+    color-mix(in srgb, var(--m-accent-line) 67%, transparent);
 }
 .m-app .pc-dialog [data-slot="dialog-footer"] .pc-action-disc {
   background: transparent;
@@ -5577,56 +5583,6 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-about-body a {
   color: var(--m-accent-ink);
   text-decoration: underline;
-}
-
-/* ── Entrenar · Hoy › Rutinas (acordeon de rutinas) ──────────────────── */
-
-.m-routine-acc {
-  border-radius: 22px;
-  background: var(--m-surface);
-  box-shadow: var(--m-card-edge);
-}
-.m-routine-acc[data-active] {
-  background: color-mix(in srgb, var(--m-accent) 7%, var(--m-surface));
-  box-shadow:
-    var(--m-card-edge),
-    inset 0 0 0 1.5px color-mix(in srgb, var(--m-accent) 55%, transparent);
-}
-.m-routine-acc-head {
-  width: 100%;
-  min-height: 64px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-}
-.m-routine-acc[data-open] .m-disclosure-body {
-  grid-template-rows: 1fr;
-}
-.m-routine-acc[data-open] .m-disclosure-chevron {
-  transform: rotate(180deg);
-}
-.m-routine-acc-body {
-  padding: 0 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.m-routine-day {
-  padding-top: 12px;
-  border-top: 1px solid var(--m-line);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.m-routine-ex {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 7px 0;
-  font-size: 14px;
-  font-weight: 600;
 }
 
 /* ── Nutrición · Hoy, ronda 2 (4.1 y 4.2) ────────────────────────────── */
@@ -6040,7 +5996,8 @@ button.m-compare-side {
    alto (la grilla las estira; el minimo evita filas encogidas). */
 .m-card.m-home-train,
 .m-card.m-home-nutri {
-  padding: 20px;
+  padding: 22px 20px 20px;
+  gap: 18px;
 }
 .m-home-pair {
   align-items: stretch;
@@ -6048,6 +6005,307 @@ button.m-compare-side {
 .m-home-pair > .m-card {
   padding: 18px;
   min-height: 172px;
+}
+
+/* ── Inicio, ronda 3: tarjetas minimalistas (oct 27) ─────────────────── */
+
+.m-home-link {
+  gap: 4px;
+  color: var(--m-text);
+}
+.m-home-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.m-home-arrow {
+  width: 36px;
+  height: 36px;
+  margin: -6px -4px -6px 0;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-surface-2);
+  color: var(--m-text);
+}
+
+/* Nutricion siempre clara (en oscuro destaca sobre el resto; en claro, el
+   entreno ya es la pieza oscura y dos negras seguidas pesan). Basta con cambiar los tokens dentro de la tarjeta; anillo, barras,
+   fila de la siguiente comida y textos los heredan. Los macros toman los
+   tonos pensados para ese fondo. */
+.m-card.m-home-nutri {
+  --m-bg: #f3f3ef;
+  --m-surface: #ffffff;
+  --m-surface-2: #eeeeea;
+  --m-surface-3: #d4d4ce;
+  --m-text: #131316;
+  --m-text-soft: #3a3a40;
+  --m-muted: #6a6a72;
+  --m-faint: #8a8a90;
+  --m-protein: #b07a00;
+  --m-carbs: #6a52d9;
+  --m-fat: #0d8f87;
+  --m-accent-line: var(--m-accent-line-light, var(--m-accent));
+  --m-accent-ink: var(--m-accent-ink-light);
+  background: var(--m-surface);
+  color: var(--m-text);
+  box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.8);
+}
+
+/* El entreno de hoy, oscuro en los dos temas y con el acento solo en los
+   detalles: rotulo, hoy, entrenados, la flecha y el disco de la pildora.
+   Un brillo tenue del acento en la esquina le da profundidad sin teñirla. */
+.m-card.m-home-train {
+  --m-bg: #090909;
+  --m-surface: #111113;
+  --m-surface-2: #222225;
+  --m-surface-3: #3a3a40;
+  --m-text: #f4f4f1;
+  --m-text-soft: #c4c4ca;
+  --m-muted: #a1a1a8;
+  --m-faint: #8a8a90;
+  --m-accent-line: var(--m-accent-line-dark, var(--m-accent));
+  --m-accent-ink: var(--m-accent-line);
+  color: var(--m-text);
+  background:
+    radial-gradient(
+      90% 60% at 100% 0%,
+      color-mix(in srgb, var(--m-accent-line) 16%, transparent),
+      transparent 70%
+    ),
+    var(--m-surface);
+  box-shadow:
+    0 18px 40px -22px rgb(0 0 0 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    inset 0 0 0 1px rgb(255 255 255 / 0.05);
+}
+.m-home-train .m-eyebrow {
+  color: var(--m-accent-line);
+}
+.m-home-train .m-home-link svg {
+  color: var(--m-accent-line);
+}
+
+/* En claro, la misma tarjeta oscura; solo la sombra es mas suave. */
+html:not(.dark) .m-card.m-home-train {
+  box-shadow:
+    0 18px 40px -22px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* La semana en fichas. Hoy: acento con punto; entrenado: check en acento;
+   planeado: aro; descanso: borde punteado y punto apagado. */
+.m-home-week {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.m-home-day {
+  width: 100%;
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--m-surface-2);
+  color: var(--m-text);
+  font-size: 12px;
+  font-weight: 700;
+  transition: transform 0.2s var(--m-ease);
+}
+.m-home-day i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.m-home-day[data-state="rest"] {
+  background: transparent;
+  border: 1px dashed var(--m-surface-3);
+  color: var(--m-faint);
+}
+.m-home-day[data-state="rest"] i {
+  background: var(--m-surface-3);
+  box-shadow: none;
+}
+.m-home-day[data-state="done"] svg,
+.m-home-day-r {
+  color: var(--m-accent-line);
+}
+.m-home-day-r {
+  font-size: 10px;
+  line-height: 1;
+}
+.m-home-day[data-today] {
+  border: 0;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  box-shadow: 0 8px 20px -8px
+    color-mix(in srgb, var(--m-accent-line) 70%, transparent);
+}
+.m-home-day[data-today] i {
+  background: currentColor;
+  box-shadow: none;
+}
+.m-home-day[data-today] svg,
+.m-home-day[data-today] .m-home-day-r {
+  color: inherit;
+}
+.m-home-day[aria-pressed="true"] {
+  transform: scale(1.06);
+}
+.m-home-week-caption {
+  margin: 10px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--m-muted);
+}
+.m-home-week-caption strong {
+  color: var(--m-text);
+  font-weight: 600;
+}
+
+/* La accion de cada tarjeta grande, con mas aire que el resto de filas: la
+   pildora del entreno y la siguiente comida. */
+.m-card.m-home-train > .m-home-go,
+.m-card.m-home-nutri > .m-home-next {
+  margin-top: 8px;
+}
+
+/* La accion del dia: pildora clara a todo el ancho con el disco en acento. */
+.m-home-go {
+  height: 56px;
+  padding: 0 7px 0 22px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--m-text);
+  color: var(--m-bg);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.m-home-go:disabled {
+  opacity: 0.7;
+}
+.m-home-go-disc {
+  width: 42px;
+  height: 42px;
+  border-radius: 21px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  box-shadow: 0 6px 16px -6px
+    color-mix(in srgb, var(--m-accent-line) 80%, transparent);
+}
+
+/* Macros: lo comido en firme, la meta apagada. */
+.m-home-nutri .m-home-macro {
+  font-size: 13px;
+  font-weight: 500;
+  align-items: baseline;
+}
+.m-home-nutri .m-home-macro .m-num {
+  font-weight: 700;
+}
+.m-home-nutri .m-home-macro small {
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+
+/* Agua y peso: cifra, una linea y su accion abajo. */
+.m-home-pair .m-home-small-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+.m-home-pair .m-home-big {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.m-home-pair .m-home-big small {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.m-home-drops {
+  gap: 4px;
+}
+.m-home-drops span {
+  height: 22px;
+  border-radius: 7px;
+}
+/* La linea de Peso mide lo mismo que las gotas de Agua y las dos dejan el
+   mismo aire antes de su boton: los dos botones quedan a la misma distancia
+   de lo que tienen encima. */
+.m-home-pair .m-home-change {
+  min-height: 22px;
+  display: flex;
+  align-items: flex-end;
+  line-height: 1.2;
+  font-weight: 500;
+}
+.m-home-pair :is(.m-home-drops, .m-home-change) {
+  margin-bottom: 6px;
+}
+.m-home-pair .m-btn {
+  height: 46px;
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 700;
+}
+/* Que se lean como botones: tinte del color de su dato (celeste del agua,
+   acento en el peso) y el texto en ese tono. */
+.m-home-water .m-btn {
+  background: rgb(90 169 230 / 0.16);
+  color: #8ccaf5;
+}
+.m-home-weight .m-btn {
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-line);
+}
+html:not(.dark) .m-home-water .m-btn {
+  background: rgb(90 169 230 / 0.18);
+  color: #1d5f94;
+}
+html:not(.dark) .m-home-weight .m-btn {
+  background: color-mix(in srgb, var(--m-accent-line) 13%, transparent);
+  color: var(--m-accent-ink-light);
+}
+
+/* El texto claro sobre fondo oscuro se ve mas grueso que el oscuro sobre
+   claro (la luz se derrama alrededor del trazo). Un paso menos de peso en
+   las tarjetas oscuras de Inicio para que se lean tan delicadas como la
+   clara. */
+html.dark .m-home-pair .m-home-big,
+html.dark .m-home-pair .m-btn {
+  font-weight: 600;
+}
+html.dark .m-home-body .m-add-tile {
+  font-weight: 500;
+}
+
+/* Accesos: icono arriba, nombre abajo. */
+.m-home-body .m-grid-3 {
+  gap: 10px;
+}
+.m-home-body .m-add-tile {
+  min-height: 88px;
+  border-radius: 22px;
+  gap: 10px;
+  font-size: 12.5px;
 }
 
 /* ── Barra, ronda 2 (5.2) ────────────────────────────────────────────── */
@@ -6061,6 +6319,17 @@ button.m-compare-side {
 }
 .m-tabbar-icon {
   display: inline-flex;
+}
+/* La etiqueta sin el hueco de los descendentes bajo la linea base: asi
+   icono y texto quedan centrados a ojo dentro de la pildora. */
+.m-tabbar-item > span:last-child {
+  line-height: 1;
+}
+/* Medido en pixeles: aun asi la tinta quedaba 1,5px alta (el icono pesa
+   arriba y la etiqueta no tiene descendentes). 2px de relleno arriba la
+   dejan centrada. */
+.m-tabbar-item {
+  padding-top: 2px;
 }
 
 /* ── Campos, ronda 2 (5.3) ───────────────────────────────────────────── */
@@ -6093,16 +6362,16 @@ button.m-compare-side {
 .m-search:focus-within,
 .m-composer:focus-within {
   box-shadow:
-    0 0 0 1.5px var(--m-accent),
-    0 0 0 5px color-mix(in srgb, var(--m-accent) 18%, transparent);
+    0 0 0 1.5px var(--m-accent-line),
+    0 0 0 5px color-mix(in srgb, var(--m-accent-line) 18%, transparent);
 }
 /* Con teclado fisico el foco se nota mas; con el dedo basta lo de arriba. */
 .m-input:focus-visible,
 .m-search:has(input:focus-visible),
 .m-composer:has(:focus-visible) {
   box-shadow:
-    0 0 0 2px var(--m-accent),
-    0 0 0 6px color-mix(in srgb, var(--m-accent) 24%, transparent);
+    0 0 0 2px var(--m-accent-line),
+    0 0 0 6px color-mix(in srgb, var(--m-accent-line) 24%, transparent);
 }
 .m-composer:focus-within {
   border-color: transparent;
@@ -6128,4 +6397,414 @@ html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
   font-size: 12px;
   font-weight: 500;
   color: var(--m-muted);
+}
+
+/* ── Rutinas, ronda 3: desplegar en el lugar, editar en Hoy y el «+» ─── */
+
+.m-routine-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+.m-routine[data-open] > .m-disclosure-body {
+  grid-template-rows: 1fr;
+}
+.m-routine[data-open] > .m-routine-head .m-disclosure-chevron {
+  transform: rotate(180deg);
+}
+
+/* Foto del ejercicio en circulo, como la de perfil. */
+.m-ex-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+  overflow: hidden;
+  background: #fff;
+  color: #6b6b6b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 2px var(--m-surface),
+    0 0 0 3px var(--m-line);
+}
+.m-ex-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-day-acc-list[data-photos] {
+  padding-left: 0;
+}
+.m-day-acc-list[data-photos] .m-day-acc-ex {
+  align-items: center;
+  padding: 6px 0;
+}
+.m-day-acc-pick {
+  display: block;
+  margin: 0 0 12px 46px;
+}
+
+/* Edicion en linea: las filas sobre la tarjeta, un tono mas arriba. */
+.m-routine-editing {
+  gap: 12px;
+}
+/* Filas editables: negras, con un filo, sobre el cuerpo negro. */
+.m-routine-editing .m-editor-row {
+  background: #000;
+  box-shadow: inset 0 0 0 1px var(--m-line);
+}
+.m-editor-row .m-ex-avatar {
+  margin-top: 2px;
+}
+.m-editor-row > .m-ex-avatar,
+.m-editor-row .m-ex-avatar {
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 0 0 1px var(--m-line);
+}
+.m-inline-foot {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--m-dock) + 70px);
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+  padding: 18px 16px 8px;
+  background: linear-gradient(to bottom, var(--m-fade), var(--m-bg) 32%);
+}
+.m-inline-foot .m-btn {
+  flex: 1;
+}
+.m-inline-foot .m-btn[data-variant="primary"] {
+  flex: 1.6;
+}
+.m-app:has(.m-inline-foot) .m-screen {
+  padding-bottom: calc(var(--m-dock) + 170px);
+}
+
+/* El «+»: abajo a la derecha, sobre la barra. Solo en pantallas que
+   agregan algo. */
+.m-fab {
+  position: fixed;
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--m-dock) + 80px);
+  z-index: 41;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  box-shadow:
+    0 12px 26px -10px color-mix(in srgb, var(--m-accent) 75%, transparent),
+    0 4px 10px -4px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+  animation: m-fab-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.m-fab:disabled {
+  opacity: 0.5;
+}
+/* Aire al final: que el «+» no tape lo ultimo de la lista. */
+.m-app:has(.m-fab) .m-screen {
+  padding-bottom: calc(var(--m-dock) + 160px);
+}
+.m-app:has(.m-live-bar) .m-fab {
+  bottom: calc(var(--m-dock) + 134px);
+}
+.m-app:has([data-m-fullscreen]) .m-fab,
+.m-app:has(.m-inline-foot) .m-fab {
+  display: none;
+}
+@keyframes m-fab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-fab {
+    animation: none;
+  }
+}
+.m-fab-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-fab-options .m-list-row {
+  min-height: 64px;
+  background: var(--m-surface-2);
+  box-shadow: none;
+}
+.m-fab-options .m-list-row:disabled {
+  opacity: 0.5;
+}
+.m-fab-options .m-list-row-sub {
+  white-space: normal;
+}
+.m-fab-option-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-ink);
+}
+
+/* Elegir el dia de hoy desde «Tu rutina». */
+.m-day-acc[data-selected] .m-day-acc-num {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+.m-day-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-positive);
+}
+.m-today-back {
+  align-self: center;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Biblioteca de ejercicios: «Filtrar» abre la hoja; fuera, solo lo activo. */
+.m-filter-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+}
+.m-filter-btn[data-on] {
+  color: var(--m-accent-ink);
+  box-shadow: inset 0 0 0 1.5px var(--m-accent-line);
+}
+.m-filter-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.m-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.m-active-filter {
+  height: 32px;
+  padding: 0 10px 0 14px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-active-filter[data-tone="soft"] {
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+}
+.m-filter-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-filter-label {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-text-soft);
+}
+.m-filter-label span {
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.m-filter-grid .m-filter {
+  height: 36px;
+  padding: 0 14px;
+  background: var(--m-surface-2);
+}
+.m-filter-grid .m-filter[aria-pressed="true"] {
+  background: var(--m-text);
+  color: var(--m-bg);
+}
+.m-filter-grid .m-filter[data-tone="soft"][aria-pressed="true"] {
+  background: color-mix(in srgb, var(--m-accent-line) 18%, transparent);
+  color: var(--m-accent-ink);
+  box-shadow: inset 0 0 0 1.5px var(--m-accent-line);
+}
+
+/* Entrenar · Hoy: ejercicios, series y duracion en columna, como un
+   tablero (icono y cifra, etiqueta debajo, linea fina entre ellos). */
+.m-day-stats {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.m-day-stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: 10px 0;
+}
+.m-day-stat:first-child {
+  padding-top: 0;
+}
+.m-day-stat + .m-day-stat {
+  border-top: 1px solid var(--m-line);
+}
+.m-day-stat-value {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.m-day-stat-value svg {
+  flex: none;
+  color: var(--m-muted);
+}
+.m-day-stat-value small {
+  align-self: flex-end;
+  margin-left: -3px;
+  padding-bottom: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-day-stat-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+
+/* «Tu rutina»: franja blanca arriba (origen, nombre, resumen, Editar) y
+   cuerpo negro con los dias, igual en los dos temas. Cada parte redefine
+   sus tokens. */
+.m-routine[data-band] {
+  overflow: hidden;
+  border: 0;
+  padding-top: 0;
+  --m-surface: #0c0c0e;
+  --m-surface-2: #242427;
+  --m-surface-3: #2e2e33;
+  --m-text: #f4f4f1;
+  --m-text-soft: #c4c4ca;
+  --m-muted: #a1a1a8;
+  --m-faint: #8a8a90;
+  --m-line: rgb(255 255 255 / 0.08);
+  --m-accent-line: var(--m-accent-line-dark, var(--m-accent));
+  --m-accent-ink: var(--m-accent-line);
+  --m-ia-bg: #2a2540;
+  --m-ia-text: #c9beff;
+  --m-coach-bg: #12343a;
+  --m-coach-text: #7fdcd0;
+  --m-positive: #75d6a0;
+  --m-card-edge:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    inset 0 0 0 1px rgb(255 255 255 / 0.04);
+  color: var(--m-text);
+}
+html:not(.dark) .m-routine[data-band] {
+  box-shadow: 0 18px 40px -24px rgb(0 0 0 / 0.45);
+}
+.m-routine-band {
+  margin: 0 -16px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  --m-surface: #ffffff;
+  --m-surface-2: #eeeeea;
+  --m-surface-3: #d4d4ce;
+  --m-text: #131316;
+  --m-text-soft: #3a3a40;
+  --m-muted: #5c5c64;
+  --m-faint: #77777e;
+  --m-line: rgb(0 0 0 / 0.08);
+  --m-accent-line: var(--m-accent-line-light, var(--m-accent));
+  --m-accent-ink: var(--m-accent-ink-light);
+  --m-ia-bg: #ebe6ff;
+  --m-ia-text: #4b3aa8;
+  --m-coach-bg: #d8f3ef;
+  --m-coach-text: #0b6259;
+  background: var(--m-surface);
+  color: var(--m-text);
+}
+.m-routine-band .m-sub {
+  color: var(--m-muted);
+}
+.m-routine-band .m-btn[data-size="sm"] {
+  background: var(--m-surface-2);
+  color: var(--m-text);
+  box-shadow: none;
+}
+/* Etiqueta de origen y «Editar» a la misma altura, en una linea. */
+.m-routine-band > .m-row {
+  align-items: center;
+}
+.m-routine-band > .m-row > .m-btn[data-size="sm"],
+.m-routine-band > .m-row > .m-eyebrow {
+  height: 30px;
+}
+/* Pequeña y centrada con el boton (line-height 1: sin aire de la fuente). */
+.m-routine-band > .m-row > .m-tag {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.m-routine-band > .m-row > .m-btn[data-size="sm"] {
+  padding: 0 12px;
+  font-size: 13px;
+}
+.m-routine-band > .m-row > .m-eyebrow {
+  display: inline-flex;
+  align-items: center;
+}
+.m-routine-band .m-eyebrow {
+  color: var(--m-accent-ink);
+}
+.m-routine[data-band] .m-days {
+  margin-top: 0;
+  border-top: 0;
+}
+.m-routine-editing[data-band] .m-routine-band {
+  margin-bottom: 4px;
 }

@@ -69,7 +69,7 @@ export function GlassTabBar() {
                 className="m-tabbar-icon"
                 aria-hidden="true"
                 initial={false}
-                animate={{ scale: active ? 1.08 : 1, y: active ? -1 : 0 }}
+                animate={{ scale: active ? 1.08 : 1 }}
                 transition={
                   reduce
                     ? { duration: 0 }

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { localDateOf, todayLocalISO, weekBoundsISO } from "@/lib/dates";
+import { musculosDeBusqueda } from "./lib/library-groups";
 import {
   applyExerciseDaySwaps,
   type DaySwapOrigin,
@@ -830,6 +831,8 @@ export async function getExerciseLibrary(
   filtros: {
     query?: string;
     muscles?: readonly string[];
+    /** Que alguno de estos trabaje como secundario. */
+    secondaryMuscles?: readonly string[];
     equipment?: string;
     collection: "todos" | "rutinas" | "recientes";
     page?: number;
@@ -904,9 +907,27 @@ export async function getExerciseLibrary(
     )
     .is("deleted_at", null);
   if (ids) consulta = consulta.in("id", ids);
-  if (filtros.query) consulta = consulta.ilike("name", `%${filtros.query}%`);
+  if (filtros.query) {
+    /* Por nombre o por musculo («gluteo» trae los que lo trabajan, como
+       principal o secundario). Comas y parentesis romperian el `or`. */
+    const texto = filtros.query.replace(/[,()"{}]/g, " ").trim();
+    const musculos = musculosDeBusqueda(texto).map((m) => `"${m}"`);
+    consulta = musculos.length
+      ? consulta.or(
+          [
+            `name.ilike.%${texto}%`,
+            `primary_muscle.in.(${musculos.join(",")})`,
+            `secondary_muscles.ov.{${musculos.join(",")}}`,
+          ].join(","),
+        )
+      : consulta.ilike("name", `%${texto}%`);
+  }
   if (filtros.muscles?.length)
     consulta = consulta.in("primary_muscle", [...filtros.muscles]);
+  if (filtros.secondaryMuscles?.length)
+    consulta = consulta.overlaps("secondary_muscles", [
+      ...filtros.secondaryMuscles,
+    ]);
   if (filtros.equipment) consulta = consulta.eq("equipment", filtros.equipment);
 
   // Con foto primero: los que no la tienen no enseñan cómo se hace.

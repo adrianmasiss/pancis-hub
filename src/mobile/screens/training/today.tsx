@@ -2,20 +2,28 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ChevronRight, FileUp, Play, Sparkles } from "lucide-react";
+import {
+  ChevronRight,
+  Clock,
+  Dumbbell,
+  FileUp,
+  Layers,
+  Play,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { startSession } from "@/features/training/actions";
 import type {
   PlanDayView,
+  PlanDetail,
   TrainingOverview,
 } from "@/features/training/queries";
 import { estimatedMinutes } from "@/features/training/lib/stats";
 import { hace } from "@/features/training/components/training-ui";
 import { Sheet } from "@/mobile/ui/sheet";
-import { Stat } from "@/mobile/ui/display";
 import { ExerciseModel } from "@/mobile/ui/exercise-model";
 import { WeekStrip } from "./week";
-import { RoutinesToday } from "./routines-today";
+import { ActiveRoutine } from "./active-routine";
 import { buildWeek, dayTitle, planDaysOf } from "./week-data";
 
 export { dayTitle };
@@ -28,8 +36,8 @@ function diaLargo(dateISO: string): string {
 }
 
 /**
- * Entrenar · Hoy: la semana, el dia que toca con su boton principal y el
- * resto de la rutina. Tocar un dia ya hecho esta semana avisa que se repite,
+ * Entrenar · Hoy: la semana, el dia que toca con su boton principal y la
+ * rutina activa (editable ahi mismo). Tocar un dia ya hecho esta semana avisa que se repite,
  * pero lo permite.
  */
 export function TrainingToday({
@@ -37,23 +45,32 @@ export function TrainingToday({
   today,
   timezone,
   nextDayId,
-  planDays,
+  routine,
+  images,
 }: {
   overview: TrainingOverview;
   today: string;
   timezone: string;
   nextDayId: string | null;
-  /** Los dias de cada rutina, para desplegarlas en «Rutinas». */
-  planDays: Record<string, PlanDayView[]>;
+  /** La rutina activa tal cual esta guardada, para verla y editarla. */
+  routine: PlanDetail | null;
+  /** Foto de cada ejercicio de la rutina, por id del catalogo. */
+  images: Record<string, string>;
 }) {
   const plan = overview.activePlan;
   const days = plan?.days ?? [];
   const [dayId, setDayId] = useState(nextDayId ?? days[0]?.id ?? null);
   const [repeat, setRepeat] = useState<PlanDayView | null>(null);
+  const [skip, setSkip] = useState<PlanDayView | null>(null);
   const [pending, startTransition] = useTransition();
   const day = days.find((d) => d.id === dayId) ?? days[0] ?? null;
   const dayNumber = day ? days.indexOf(day) + 1 : 0;
   const enCurso = overview.sessionInProgress;
+  /* El que toca por orden; si se eligio otro, empezar avisa (y el que
+     tocaba sigue pendiente). */
+  const toca = days.find((d) => d.id === nextDayId) ?? null;
+  const elegido = Boolean(day && toca && day.id !== toca.id);
+  const numero = (d: PlanDayView) => days.indexOf(d) + 1;
 
   const start = (target: PlanDayView | null) =>
     startTransition(async () => {
@@ -111,15 +128,37 @@ export function TrainingToday({
             <div className="m-day-info">
               <div>
                 <div className="m-eyebrow" data-tone="accent">
-                  Hoy · Día {dayNumber}
+                  {elegido ? "Elegido" : "Hoy"} · Día {dayNumber}
                 </div>
                 <h2 id="m-today-title" className="m-card-title" data-size="lg">
                   {dayTitle(day)}
                 </h2>
               </div>
-              <Stat value={exercises.length} label="Ejercicios" />
-              <Stat value={series} label="Series" />
-              <Stat value={`~${minutos}`} unit="min" label="Duración" />
+              <dl className="m-day-stats">
+                {[
+                  {
+                    icon: Dumbbell,
+                    value: exercises.length,
+                    label: "Ejercicios",
+                  },
+                  { icon: Layers, value: series, label: "Series" },
+                  {
+                    icon: Clock,
+                    value: `~${minutos}`,
+                    unit: "min",
+                    label: "Duración",
+                  },
+                ].map(({ icon: Icon, value, unit, label }) => (
+                  <div key={label} className="m-day-stat">
+                    <dt className="m-day-stat-label">{label}</dt>
+                    <dd className="m-day-stat-value m-num">
+                      <Icon size={16} strokeWidth={2} aria-hidden="true" />
+                      {value}
+                      {unit && <small>{unit}</small>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
             {exercises.length > 0 && (
               <ExerciseModel
@@ -147,10 +186,22 @@ export function TrainingToday({
               data-variant="primary"
               data-block=""
               disabled={pending || exercises.length === 0}
-              onClick={() => (doneOn ? setRepeat(day) : start(day))}
+              onClick={() =>
+                doneOn ? setRepeat(day) : elegido ? setSkip(day) : start(day)
+              }
             >
               <Play size={16} fill="currentColor" aria-hidden="true" />
               {pending ? "Empezando…" : "Empezar entrenamiento"}
+            </button>
+          )}
+          {elegido && toca && !enCurso && (
+            <button
+              type="button"
+              className="m-link m-today-back"
+              onClick={() => setDayId(toca.id)}
+            >
+              Por orden toca el Día {numero(toca)} · {dayTitle(toca)}. Volver a
+              ese
             </button>
           )}
         </section>
@@ -195,25 +246,59 @@ export function TrainingToday({
         </section>
       )}
 
-      <RoutinesToday
-        plans={overview.plans}
-        planDays={planDays}
-        todayDayId={day?.id ?? null}
-        doneThisWeek={overview.doneThisWeek}
-        onPickDay={(d) => {
-          setDayId(d.id);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-      />
+      {routine && (
+        <ActiveRoutine
+          plan={routine}
+          images={images}
+          suggestedDayId={toca?.id ?? null}
+          selectedDayId={day?.id ?? null}
+          doneThisWeek={overview.doneThisWeek}
+          onSelectDay={setDayId}
+        />
+      )}
+
+      <Sheet
+        open={skip !== null}
+        onOpenChange={(o) => !o && setSkip(null)}
+        title={toca ? `Por orden hoy toca el Día ${numero(toca)}` : ""}
+        description={
+          skip && toca
+            ? `${dayTitle(toca)}. Si empiezas el Día ${numero(skip)} · ${dayTitle(skip)}, queda registrado como entrenado y el Día ${numero(toca)} sigue pendiente para tu próximo entreno.`
+            : undefined
+        }
+      >
+        <button
+          type="button"
+          className="m-btn m-press"
+          data-variant="primary"
+          data-block=""
+          disabled={pending}
+          onClick={() => skip && start(skip)}
+        >
+          {pending
+            ? "Empezando…"
+            : skip
+              ? `Empezar el Día ${numero(skip)} igual`
+              : "Empezar"}
+        </button>
+        <button
+          type="button"
+          className="m-btn"
+          data-variant="ghost"
+          data-block=""
+          onClick={() => {
+            if (toca) setDayId(toca.id);
+            setSkip(null);
+          }}
+        >
+          {toca ? `Hacer el Día ${numero(toca)}` : "Cancelar"}
+        </button>
+      </Sheet>
 
       <Sheet
         open={repeat !== null}
         onOpenChange={(o) => !o && setRepeat(null)}
-        title={
-          repeat
-            ? `Ya hiciste el Día ${days.indexOf(repeat) + 1} esta semana`
-            : ""
-        }
+        title={repeat ? `Ya hiciste el Día ${numero(repeat)} esta semana` : ""}
         description={
           repeat && overview.doneThisWeek[repeat.id]
             ? `Lo entrenaste el ${diaLargo(overview.doneThisWeek[repeat.id]!)}. Puedes repetirlo igual; quedará como repetido en tu historial.`
@@ -228,7 +313,7 @@ export function TrainingToday({
           disabled={pending}
           onClick={() => repeat && start(repeat)}
         >
-          {repeat ? `Repetir Día ${days.indexOf(repeat) + 1}` : "Repetir"}
+          {repeat ? `Repetir Día ${numero(repeat)}` : "Repetir"}
         </button>
         <button
           type="button"

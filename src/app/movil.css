@@ -27,6 +27,13 @@
   display: none;
 }
 
+/* La app instalada dibuja bajo la barra de estado (layout.tsx). La vista
+   movil se aparta sola; el resto (acceso, onboarding y las pantallas aun sin
+   porte) baja lo que mide esa barra. En escritorio y en Safari vale 0. */
+body:not(:has(.m-app)) {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 @media (max-width: 767px) {
   /* ── Estructura ────────────────────────────────────────────────────── */
 

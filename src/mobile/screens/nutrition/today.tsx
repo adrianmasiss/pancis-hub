@@ -16,6 +16,7 @@ import type {
 } from "@/features/dashboard/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
 import { Bar, Ring } from "@/mobile/ui/display";
+import { Fab } from "@/mobile/ui/fab";
 import { useLongPressDrag } from "@/mobile/ui/use-long-press-drag";
 import { ExtraSheet } from "./extra-sheet";
 import { LooseMeal, PlanMeal } from "./plan-meal";
@@ -337,7 +338,7 @@ export function NutritionToday({
           <div className="m-card" data-size="sm">
             <p className="m-sheet-text">
               Aún no tienes un plan activo. Sube el de tu nutricionista (PDF o
-              foto) o registra lo que comas con «Nueva comida».
+              foto) o registra lo que comas con el «+».
             </p>
             <Link
               href="/nutricion/dieta"
@@ -428,28 +429,29 @@ export function NutritionToday({
         )}
       </section>
 
-      <div className="m-grid-2">
-        <button
-          type="button"
-          className="m-btn m-press"
-          onClick={() => setNewOpen(true)}
-        >
-          <Plus size={16} aria-hidden="true" />
-          Nueva comida
-        </button>
-        <Link
-          href={`/asistente?q=${encodeURIComponent(
-            restantes !== null
-              ? `¿Qué como? Me quedan ${kcal(restantes)} kcal hoy.`
-              : "¿Qué como hoy?",
-          )}`}
-          className="m-btn m-press"
-        >
-          <Lightbulb size={16} aria-hidden="true" />
-          ¿Qué como?
-        </Link>
-      </div>
+      <Link
+        href={`/asistente?q=${encodeURIComponent(
+          restantes !== null
+            ? `¿Qué como? Me quedan ${kcal(restantes)} kcal hoy.`
+            : "¿Qué como hoy?",
+        )}`}
+        className="m-btn m-press"
+        data-block=""
+      >
+        <Lightbulb size={16} aria-hidden="true" />
+        ¿Qué como?
+      </Link>
 
+      <Fab
+        label="Nueva comida"
+        actions={[
+          {
+            label: "Nueva comida",
+            icon: Plus,
+            onClick: () => setNewOpen(true),
+          },
+        ]}
+      />
       <ExtraSheet
         open={newOpen}
         onOpenChange={setNewOpen}

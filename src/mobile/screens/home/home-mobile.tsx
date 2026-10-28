@@ -5,7 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { addDaysISO, todayInTimezone } from "@/lib/dates";
 import { getTrainingAdjustment } from "@/mobile/training-adjustment";
 import { streakDays } from "@/mobile/streak";
-import { buildWeek, planDaysOf } from "@/mobile/screens/training/week-data";
+import {
+  buildWeek,
+  nextPlanDay,
+  planDaysOf,
+} from "@/mobile/screens/training/week-data";
 import { mealLabel } from "@/mobile/screens/nutrition/format";
 import { homeInsight } from "./insight";
 import { HomeView, type WeightSummary } from "./home-view";
@@ -73,14 +77,13 @@ export async function HomeMobile({
         .limit(24),
     ]);
 
-  // El proximo dia de la rutina: el siguiente al de la ultima sesion.
+  // El dia que toca por orden: el primero que falta esta semana.
   const days = overview.activePlan?.days ?? [];
-  let nextDay = days[0] ?? null;
-  const lastDayId = overview.recentSessions[0]?.planDayId;
-  if (lastDayId) {
-    const i = days.findIndex((d) => d.id === lastDayId);
-    if (i >= 0) nextDay = days[(i + 1) % days.length] ?? nextDay;
-  }
+  const nextDay = nextPlanDay(
+    days,
+    overview.doneThisWeek,
+    overview.recentSessions[0]?.planDayId,
+  );
 
   const streak = streakDays(
     [

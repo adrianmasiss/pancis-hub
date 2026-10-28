@@ -10,6 +10,7 @@ import { useTheme } from "@/components/theme-provider";
 import { triggerHaptic } from "@/lib/haptics";
 import {
   MOBILE_ACCENTS,
+  accentVars,
   MOBILE_ACCENT_COOKIE,
   type MobileAccent,
 } from "@/mobile/accent";
@@ -62,8 +63,8 @@ const mes = (iso: string) =>
 function storeAccent(id: MobileAccent) {
   document.cookie = `${MOBILE_ACCENT_COOKIE}=${id}${COOKIE}`;
   const app = document.querySelector<HTMLElement>(".m-app");
-  app?.style.setProperty("--m-accent", MOBILE_ACCENTS[id].fill);
-  app?.style.setProperty("--m-accent-ink-light", MOBILE_ACCENTS[id].inkLight);
+  for (const [name, value] of Object.entries(accentVars(id)))
+    app?.style.setProperty(name, value);
 }
 
 function iniciales(name: string) {

@@ -11,11 +11,19 @@ export const GRUPOS_MUSCULARES = [
     label: "Espalda",
     catalogo: ["espalda", "espalda baja", "trapecio"],
   },
-  { id: "hombros", label: "Hombros", catalogo: ["hombros"] },
+  {
+    id: "hombros",
+    label: "Hombros",
+    catalogo: ["hombros", "hombro anterior", "hombro posterior"],
+  },
   { id: "biceps", label: "Bíceps", catalogo: ["biceps"] },
   { id: "triceps", label: "Tríceps", catalogo: ["triceps"] },
   { id: "antebrazo", label: "Antebrazo", catalogo: ["antebrazo"] },
-  { id: "abdomen", label: "Abdomen", catalogo: ["abdominales", "core"] },
+  {
+    id: "abdomen",
+    label: "Abdomen",
+    catalogo: ["abdominales", "core", "oblicuos"],
+  },
   { id: "gluteos", label: "Glúteos", catalogo: ["gluteos", "abductores"] },
   {
     id: "cuadriceps",
@@ -62,4 +70,30 @@ const TILDES: Record<string, string> = {
 export function rotuloCatalogo(valor: string): string {
   const texto = TILDES[valor] ?? valor;
   return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+const sinTildes = (texto: string) =>
+  texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+/**
+ * Los músculos del catálogo que nombra una búsqueda («glúteo», «pecho»,
+ * «isquios»): por el valor del catálogo o por el nombre del grupo. Vacío si
+ * el texto es corto o no nombra ninguno.
+ */
+export function musculosDeBusqueda(texto: string): string[] {
+  const q = sinTildes(texto);
+  if (q.length < 3) return [];
+  const encontrados = new Set<string>();
+  for (const g of GRUPOS_MUSCULARES) {
+    if (sinTildes(g.label).includes(q)) {
+      g.catalogo.forEach((m) => encontrados.add(m));
+      continue;
+    }
+    for (const m of g.catalogo) if (m.includes(q)) encontrados.add(m);
+  }
+  return [...encontrados];
 }

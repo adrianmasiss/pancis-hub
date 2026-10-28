@@ -45,6 +45,22 @@ export function dayTitle(day: PlanDayView): string {
   );
 }
 
+/**
+ * El dia que toca por orden: el primero de la rutina que aun no se hizo esta
+ * semana (saltarse uno lo deja pendiente para el proximo entreno). Con la
+ * semana completa, el siguiente al de la ultima sesion: se repite.
+ */
+export function nextPlanDay<D extends { id: string }>(
+  days: D[],
+  doneThisWeek: Record<string, string>,
+  lastDayId: string | null | undefined,
+): D | null {
+  const pendiente = days.find((d) => !(d.id in doneThisWeek));
+  if (pendiente) return pendiente;
+  const i = lastDayId ? days.findIndex((d) => d.id === lastDayId) : -1;
+  return days[(i + 1) % days.length] ?? null;
+}
+
 /** Los dias del plan como los necesita la semana. */
 export function planDaysOf(days: PlanDayView[] | undefined): PlanDay[] {
   return (days ?? []).map((d) => ({ id: d.id, title: dayTitle(d) }));

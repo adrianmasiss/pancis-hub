@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
+  ArrowUpRight,
   Barcode,
   Camera,
+  Check,
   ChevronRight,
   Flame,
   MapPin,
   Play,
   Sparkles,
 } from "lucide-react";
+import { triggerHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { startSession } from "@/features/training/actions";
 import type { DayPlan } from "@/features/nutrition/queries";
@@ -30,7 +33,7 @@ import {
   mealLabel,
 } from "@/mobile/screens/nutrition/format";
 import { dayTitle } from "@/mobile/screens/training/today";
-import { WeekStrip, type WeekDay } from "@/mobile/screens/training/week";
+import { ESTADO, type WeekDay } from "@/mobile/screens/training/week";
 import type { Insight } from "./insight";
 
 export type WeightSummary = {
@@ -61,19 +64,70 @@ function initials(name: string): string {
   return (first + second).toUpperCase();
 }
 
-/** La linea de tendencia del peso, en un lienzo de 134 × 44. */
-function sparkPath(points: number[]): string | null {
-  if (points.length < 2) return null;
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const span = max - min || 1;
-  return points
-    .map((v, i) => {
-      const x = ((i * 134) / (points.length - 1)).toFixed(1);
-      const y = (4 + ((max - v) / span) * 36).toFixed(1);
-      return `${i ? "L" : "M"}${x} ${y}`;
-    })
-    .join(" ");
+/** «Pierna (Énfasis en cuádriceps)» → título y énfasis por separado. */
+function splitTitle(title: string): [string, string | null] {
+  const m = /^(.+?)\s*\((.+)\)\s*$/.exec(title);
+  return m?.[1] && m[2] ? [m[1], m[2]] : [title, null];
+}
+
+/**
+ * La semana en fichas: hoy en acento, entrenado con check, planeado con
+ * aro, descanso con borde punteado. Tocar una dice que paso o que toca.
+ */
+function HomeWeek({ week }: { week: WeekDay[] }) {
+  const [elegido, setElegido] = useState<string | null>(null);
+  const dia = week.find((d) => d.date === elegido) ?? null;
+
+  return (
+    <div>
+      <ol className="m-home-week" aria-label="Esta semana">
+        {week.map((d) => (
+          <li key={d.date}>
+            <button
+              type="button"
+              className="m-home-day m-press"
+              data-state={d.state}
+              data-today={d.today ? "" : undefined}
+              aria-pressed={elegido === d.date}
+              aria-label={[
+                d.nombre,
+                d.today ? "hoy" : null,
+                ESTADO[d.state],
+                d.detail,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              onClick={() => {
+                triggerHaptic("selection");
+                setElegido(elegido === d.date ? null : d.date);
+              }}
+            >
+              <span aria-hidden="true">{d.letra}</span>
+              {d.state === "done" ? (
+                <Check size={11} strokeWidth={3.5} aria-hidden="true" />
+              ) : d.state === "repeat" ? (
+                <span className="m-home-day-r" aria-hidden="true">
+                  R
+                </span>
+              ) : (
+                <i aria-hidden="true" />
+              )}
+            </button>
+          </li>
+        ))}
+      </ol>
+      {dia && (
+        <p className="m-home-week-caption" aria-live="polite">
+          <strong>
+            {dia.nombre}
+            {dia.today ? " (hoy)" : ""}
+          </strong>{" "}
+          · {ESTADO[dia.state]}
+          {dia.detail ? ` · ${dia.detail}` : ""}
+        </p>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -131,6 +185,9 @@ export function HomeView({
     target !== null ? Math.max(0, target - consumed.calories) : null;
 
   const exercises = nextDay?.exercises ?? [];
+  const [titulo, enfasis] = nextDay
+    ? splitTitle(dayTitle(nextDay))
+    : ["", null];
   const nombre = displayName.split(/[\s@]/)[0] ?? "";
 
   const empezar = () =>
@@ -147,7 +204,6 @@ export function HomeView({
     ? Math.min(10, Math.floor((water.shown / waterTarget) * 10))
     : 0;
 
-  const spark = weight ? sparkPath(weight.points) : null;
   const change = weight?.change4w ?? null;
   const tone =
     change === null || weight?.direction === 0 || Math.abs(change) < 0.05
@@ -199,7 +255,7 @@ export function HomeView({
           aria-labelledby="m-home-train"
         >
           <div className="m-home-row">
-            <span className="m-eyebrow" data-tone="accent">
+            <span className="m-eyebrow">
               {!nextDay
                 ? "Entreno"
                 : doneToday && !sessionInProgress
@@ -208,81 +264,70 @@ export function HomeView({
             </span>
             <Link href="/entrenamiento?vista=hoy" className="m-home-link">
               Ver rutina
+              <ArrowUpRight size={14} strokeWidth={2.4} aria-hidden="true" />
             </Link>
           </div>
           {nextDay ? (
             <>
-              <h2 id="m-home-train" className="m-home-title">
-                {doneToday && !sessionInProgress
-                  ? "Listo por hoy"
-                  : dayTitle(nextDay)}
-              </h2>
-              <WeekStrip week={week} />
-              <div className="m-home-row" style={{ gap: 12 }}>
-                <div className="m-home-mini">
-                  {doneToday && !sessionInProgress ? (
-                    <div>
-                      <div className="m-home-mini-value">
-                        Día {nextDayNumber}
-                      </div>
-                      <div className="m-home-mini-label">
-                        Próxima: {dayTitle(nextDay)}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <div className="m-home-mini-value m-num">
-                          {exercises.length}
-                        </div>
-                        <div className="m-home-mini-label">ejercicios</div>
-                      </div>
-                      <div>
-                        <div className="m-home-mini-value m-num">
-                          ~{estimatedMinutes(exercises)}&apos;
-                        </div>
-                        <div className="m-home-mini-label">duración</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                {sessionInProgress ? (
-                  <Link
-                    href="/entrenamiento?vista=sesion"
-                    className="m-btn m-press"
-                    data-variant="primary"
-                  >
-                    <Play size={14} fill="currentColor" aria-hidden="true" />
-                    Continuar
-                  </Link>
-                ) : doneToday ? null : (
-                  <button
-                    type="button"
-                    className="m-btn m-press"
-                    data-variant="primary"
-                    disabled={starting}
-                    onClick={empezar}
-                  >
-                    <Play size={14} fill="currentColor" aria-hidden="true" />
-                    {starting ? "Empezando…" : "Empezar"}
-                  </button>
-                )}
+              <div>
+                <h2 id="m-home-train" className="m-home-title">
+                  {doneToday && !sessionInProgress ? "Listo por hoy" : titulo}
+                </h2>
+                <p className="m-home-sub">
+                  {doneToday && !sessionInProgress
+                    ? `Próxima: Día ${nextDayNumber} · ${dayTitle(nextDay)}`
+                    : [
+                        enfasis,
+                        `${exercises.length} ${exercises.length === 1 ? "ejercicio" : "ejercicios"}`,
+                        `~${estimatedMinutes(exercises)} min`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                </p>
               </div>
+              <HomeWeek week={week} />
+              {sessionInProgress ? (
+                <Link
+                  href="/entrenamiento?vista=sesion"
+                  className="m-home-go m-press"
+                >
+                  Continuar entreno
+                  <span className="m-home-go-disc" aria-hidden="true">
+                    <Play size={14} fill="currentColor" />
+                  </span>
+                </Link>
+              ) : doneToday ? null : (
+                <button
+                  type="button"
+                  className="m-home-go m-press"
+                  disabled={starting}
+                  onClick={empezar}
+                >
+                  {starting ? "Empezando…" : "Empezar entreno"}
+                  <span className="m-home-go-disc" aria-hidden="true">
+                    <Play size={14} fill="currentColor" />
+                  </span>
+                </button>
+              )}
             </>
           ) : (
             <>
-              <h2 id="m-home-train" className="m-home-title">
-                Sin rutina activa
-              </h2>
-              <p className="m-sheet-text">
-                Importa la de tu coach o deja que la IA arme una.
-              </p>
+              <div>
+                <h2 id="m-home-train" className="m-home-title">
+                  Sin rutina activa
+                </h2>
+                <p className="m-home-sub">
+                  Importa la de tu coach o deja que la IA arme una.
+                </p>
+              </div>
               <Link
                 href="/entrenamiento?vista=rutinas"
-                className="m-btn m-press"
-                data-variant="primary"
+                className="m-home-go m-press"
               >
                 Elegir rutina
+                <span className="m-home-go-disc" aria-hidden="true">
+                  <ArrowUpRight size={16} strokeWidth={2.4} />
+                </span>
               </Link>
             </>
           )}
@@ -299,30 +344,32 @@ export function HomeView({
           }
         >
           <span className="m-home-row">
-            <span className="m-eyebrow">Nutrición</span>
-            <ChevronRight size={16} aria-hidden="true" className="m-faint" />
+            <span className="m-home-card-title">Nutrición</span>
+            <span className="m-home-arrow" aria-hidden="true">
+              <ArrowUpRight size={16} strokeWidth={2.2} />
+            </span>
           </span>
-          <span className="m-row" style={{ gap: 16 }}>
+          <span className="m-row" style={{ gap: 18 }}>
             <Ring
               value={target ? consumed.calories / target : 0}
-              size={92}
-              stroke={8}
+              size={116}
+              stroke={10}
             >
               <span className="m-num m-home-ring-value">
                 {restantes !== null ? kcal(restantes) : "—"}
               </span>
-              <span className="m-home-ring-label">restantes</span>
+              <span className="m-home-ring-label">kcal restantes</span>
             </Ring>
-            <span className="m-stack" style={{ flex: 1, gap: 9 }}>
+            <span className="m-stack" style={{ flex: 1, gap: 10 }}>
               {MACROS.slice(0, 3).map((m) => {
                 const goal = day.targets?.[m.key] ?? null;
                 return (
-                  <span key={m.key} className="m-stack" style={{ gap: 4 }}>
+                  <span key={m.key} className="m-stack" style={{ gap: 5 }}>
                     <span className="m-home-macro">
                       <span>{m.label}</span>
                       <span className="m-num">
                         {gramos(consumed[m.key])}
-                        {goal ? ` / ${gramos(goal)}` : ""} g
+                        <small>{goal ? ` / ${gramos(goal)}` : ""} g</small>
                       </span>
                     </span>
                     <Bar
@@ -336,21 +383,33 @@ export function HomeView({
           </span>
           {next ? (
             <span className="m-home-next">
-              {next.scheduledTime && (
-                <span className="m-num m-home-next-time">
-                  {next.scheduledTime.slice(0, 5)}
+              <span className="m-home-next-text">
+                <span className="m-home-next-label">
+                  Siguiente comida
+                  {next.scheduledTime && (
+                    <span className="m-num">
+                      {" "}
+                      · {next.scheduledTime.slice(0, 5)}
+                    </span>
+                  )}
                 </span>
-              )}
-              <span className="m-home-next-name">
-                Siguiente: {mealLabel(next.mealType, next.name)}
+                <span className="m-home-next-name">
+                  {mealLabel(next.mealType, next.name)}
+                </span>
               </span>
-              <span className="m-num m-home-next-time">
-                {kcal(next.totals.calories)}
+              <span className="m-num m-home-next-kcal">
+                {kcal(next.totals.calories)} kcal
               </span>
             </span>
           ) : meals.length > 0 ? (
             <span className="m-home-next">
-              <span className="m-home-next-name">Plan del día completo</span>
+              <span className="m-home-next-text">
+                <span className="m-home-next-label">Plan del día</span>
+                <span className="m-home-next-name">Completo</span>
+              </span>
+              <span className="m-home-next-kcal" aria-hidden="true">
+                <Check size={14} strokeWidth={3} />
+              </span>
             </span>
           ) : null}
         </Link>
@@ -365,8 +424,10 @@ export function HomeView({
               Agua
             </h2>
             <div className="m-home-big m-num">
-              {litros(water.shown)}{" "}
-              <small>{waterTarget ? `/ ${litros(waterTarget)} L` : "L"}</small>
+              {litros(water.shown)}
+              <small>
+                {waterTarget ? ` / ${litros(waterTarget)} L` : " L"}
+              </small>
             </div>
             {waterTarget > 0 && (
               <div className="m-home-drops" aria-hidden="true">
@@ -382,48 +443,43 @@ export function HomeView({
               disabled={water.pending}
               onClick={() => water.add(250)}
             >
-              +250 ml
+              + 250 ml
             </button>
           </section>
 
-          <Link
-            href="/progreso"
-            className="m-card m-press m-home-weight"
-            aria-label={
-              weight
-                ? `Peso: ${u.fmtWeight(weight.kg)} ${u.weightUnit}`
-                : "Registrar peso en Progreso"
-            }
+          <section
+            className="m-card m-home-weight"
+            aria-labelledby="m-home-weight"
           >
-            <span className="m-home-small-label">Peso</span>
+            <h2 id="m-home-weight" className="m-home-small-label">
+              Peso
+            </h2>
             {weight ? (
               <>
-                <span className="m-home-big m-num">
-                  {u.fmtWeight(weight.kg)} <small>{u.weightUnit}</small>
-                </span>
-                {change !== null && (
+                <div className="m-home-big m-num">
+                  {u.fmtWeight(weight.kg)}
+                  <small> {u.weightUnit}</small>
+                </div>
+                {change !== null && Math.abs(change) >= 0.05 ? (
                   <span className="m-home-change" data-tone={tone}>
-                    {change > 0 ? "+" : change < 0 ? "−" : ""}
+                    {change > 0 ? "+" : "−"}
                     {u.fmtWeight(Math.abs(change))} {u.weightUnit} en 4 sem
                   </span>
-                )}
-                {spark && (
-                  <svg
-                    className="m-home-spark"
-                    width="100%"
-                    height="44"
-                    viewBox="0 0 134 44"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <path d={spark} pathLength={1} />
-                  </svg>
+                ) : (
+                  <span className="m-home-change">Último registro</span>
                 )}
               </>
             ) : (
-              <span className="m-sub">Sin medidas recientes</span>
+              <span className="m-home-change">Sin medidas recientes</span>
             )}
-          </Link>
+            <Link
+              href="/progreso"
+              className="m-btn m-press"
+              data-variant="soft"
+            >
+              Registrar
+            </Link>
+          </section>
         </div>
 
         {/* Consejo del copiloto: se oculta si no hay nada relevante */}
@@ -435,14 +491,11 @@ export function HomeView({
             <span className="m-home-insight-icon" aria-hidden="true">
               <Sparkles size={18} />
             </span>
-            <span style={{ flex: 1 }}>
+            <span className="m-home-insight-body">
               <span className="m-home-insight-label">Copiloto</span>
               <span className="m-home-insight-text">{insight.text}</span>
-              <span className="m-home-insight-cta">
-                Preguntar algo
-                <ChevronRight size={14} strokeWidth={2.5} aria-hidden="true" />
-              </span>
             </span>
+            <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
           </Link>
         )}
 

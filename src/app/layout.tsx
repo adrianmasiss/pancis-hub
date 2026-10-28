@@ -80,7 +80,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: messages.app.name,
-    statusBarStyle: "default",
+    /* La app instalada dibuja bajo la barra de estado: el fondo llega hasta
+       arriba sin la franja que iOS pinta con "default". Cada pantalla se
+       aparta con `env(safe-area-inset-top)`. */
+    statusBarStyle: "black-translucent",
   },
   icons: {
     apple: "/icons/apple-touch-icon.png?v=2",

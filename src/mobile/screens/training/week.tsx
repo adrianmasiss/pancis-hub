@@ -7,7 +7,7 @@ import type { WeekDay, WeekState } from "./week-data";
 
 export type { WeekDay } from "./week-data";
 
-const ESTADO: Record<WeekState, string> = {
+export const ESTADO: Record<WeekState, string> = {
   done: "Entrenado",
   repeat: "Repetido",
   plan: "Planeado",

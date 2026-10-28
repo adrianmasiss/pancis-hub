@@ -6,10 +6,7 @@ import { Check, Dumbbell, Heart, Play } from "lucide-react";
 import { toggleExerciseFavorite } from "@/features/training/favorite-actions";
 import { triggerHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
-import {
-  startSession,
-  type ExerciseDetail as Detail,
-} from "@/features/training/actions";
+import type { ExerciseDetail as Detail } from "@/features/training/actions";
 import type { PlanExerciseView } from "@/features/training/queries";
 import type { ExerciseHistory } from "@/features/training/lib/stats";
 import {
@@ -24,15 +21,13 @@ import { useUnits } from "@/mobile/units";
 /**
  * Detalle de ejercicio: foto arriba con boton de vidrio; series × reps de la
  * rutina, RIR y peso de la ultima vez; musculos principales (acento) y
- * secundarios; el enfasis de la tecnica; y «Empezar entrenamiento».
+ * secundarios y el enfasis de la tecnica.
  */
 export function ExerciseDetail({
   detail,
   planned,
   history,
   imageUrl,
-  startPlanId,
-  startDayId,
   sessionId,
   favorite,
 }: {
@@ -40,15 +35,13 @@ export function ExerciseDetail({
   planned: PlanExerciseView | null;
   history: ExerciseHistory | null;
   imageUrl: string | null;
-  startPlanId?: string;
-  startDayId?: string;
   sessionId: string | null;
   favorite: boolean;
 }) {
   const ex = detail.exercise;
   const u = useUnits();
   const photo = imageUrl ?? ex.imageUrl;
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [fav, setFav] = useOptimistic(favorite);
   const toggleFav = () =>
     startTransition(async () => {
@@ -67,17 +60,21 @@ export function ExerciseDetail({
       : "—";
   const rir = planned?.rir ?? p?.rir ?? null;
   const rest = planned?.restSeconds ?? p?.restSeconds ?? null;
-  const stats = [
+  const stats: { value: React.ReactNode; unit?: string; label: string }[] = [
     { value: sets ?? "—", label: sets === 1 ? "serie" : "series" },
     { value: repsTxt, label: "reps" },
     { value: rir ?? "—", label: "RIR" },
     {
-      value: rest
-        ? rest % 60
-          ? `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`
-          : rest / 60
-        : "—",
-      label: rest && rest % 60 === 0 ? "min descanso" : "descanso",
+      // La unidad al lado de la cifra: «2:30 min», «45 s».
+      value: !rest
+        ? "—"
+        : rest < 60
+          ? rest
+          : rest % 60
+            ? `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`
+            : rest / 60,
+      unit: !rest ? undefined : rest < 60 ? "s" : "min",
+      label: "descanso",
     },
   ];
   /* Enfasis en puntos cortos: las claves de tecnica del catalogo; si no hay,
@@ -137,7 +134,10 @@ export function ExerciseDetail({
           <div className="m-ex-stats">
             {stats.map((st) => (
               <div key={st.label} className="m-ex-stat">
-                <span className="m-ex-stat-value m-num">{st.value}</span>
+                <span className="m-ex-stat-value m-num">
+                  {st.value}
+                  {st.unit && <small>{st.unit}</small>}
+                </span>
                 <span className="m-ex-stat-label">{st.label}</span>
               </div>
             ))}
@@ -147,9 +147,9 @@ export function ExerciseDetail({
             {history?.last && (
               <>
                 {" · "}Última vez{" "}
-                <span className="m-num">
+                <strong className="m-num m-ex-last">
                   {u.fmtWeight(history.last.weightKg)} {u.weightUnit}
-                </span>
+                </strong>
               </>
             )}
           </p>
@@ -208,38 +208,23 @@ export function ExerciseDetail({
         )}
       </div>
 
-      <div className="m-active-spacer" />
-      <div className="m-step-foot">
-        {sessionId ? (
-          <Link
-            href="/entrenamiento?vista=sesion"
-            className="m-btn m-press"
-            data-variant="primary"
-          >
-            <Play size={16} fill="currentColor" aria-hidden="true" />
-            Volver a la sesión
-          </Link>
-        ) : (
-          <button
-            type="button"
-            className="m-btn m-press"
-            data-variant="primary"
-            disabled={pending}
-            onClick={() =>
-              startTransition(async () => {
-                const result = await startSession({
-                  planId: startPlanId,
-                  planDayId: startDayId,
-                });
-                if (result && "error" in result) toast.error(result.error);
-              })
-            }
-          >
-            <Play size={16} fill="currentColor" aria-hidden="true" />
-            {pending ? "Empezando…" : "Empezar entrenamiento"}
-          </button>
-        )}
-      </div>
+      {/* Desde la biblioteca no se empieza a entrenar; con una sesion en
+          curso, la ficha lleva de vuelta a ella. */}
+      {sessionId && (
+        <>
+          <div className="m-active-spacer" />
+          <div className="m-step-foot">
+            <Link
+              href="/entrenamiento?vista=sesion"
+              className="m-btn m-press"
+              data-variant="primary"
+            >
+              <Play size={16} fill="currentColor" aria-hidden="true" />
+              Volver a la sesión
+            </Link>
+          </div>
+        </>
+      )}
     </div>
   );
 }

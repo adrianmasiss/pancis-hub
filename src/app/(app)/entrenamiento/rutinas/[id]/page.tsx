@@ -41,7 +41,17 @@ export default async function PlanEditorPage({
   if (await isPhone()) {
     const base = await getPlanDetail(user.id, id, "1970-01-01");
     if (!base) notFound();
-    return <RoutineEditorMobile plan={base} />;
+    const ids = base.days.flatMap((d) => d.exercises.map((e) => e.exerciseId));
+    const { data: fotos } = ids.length
+      ? await supabase
+          .from("exercise_catalog")
+          .select("id, image_url")
+          .in("id", [...new Set(ids)])
+      : { data: [] };
+    const images = Object.fromEntries(
+      (fotos ?? []).flatMap((f) => (f.image_url ? [[f.id, f.image_url]] : [])),
+    );
+    return <RoutineEditorMobile plan={base} images={images} />;
   }
 
   const [plan, analysis, versions] = await Promise.all([

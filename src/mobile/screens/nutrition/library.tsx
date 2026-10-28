@@ -7,6 +7,7 @@ import { Barcode, Camera, PenLine, Search, Star } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteFood } from "@/features/foods/actions";
 import type { LibraryFood } from "@/features/foods/queries";
+import { Fab } from "@/mobile/ui/fab";
 import { gramos, kcal } from "./format";
 
 /**
@@ -73,26 +74,29 @@ export function FoodLibrary({
         />
       </label>
 
-      <div className="m-grid-3">
-        <Link href="/nutricion?vista=escanear" className="m-add-tile m-press">
-          <Barcode size={20} aria-hidden="true" />
-          Código de barras
-        </Link>
-        <Link
-          href="/nutricion/alimentos?metodo=foto"
-          className="m-add-tile m-press"
-        >
-          <Camera size={20} aria-hidden="true" />
-          Foto de etiqueta
-        </Link>
-        <Link
-          href="/nutricion/alimentos?metodo=manual"
-          className="m-add-tile m-press"
-        >
-          <PenLine size={20} aria-hidden="true" />
-          Manual
-        </Link>
-      </div>
+      <Fab
+        label="Agregar alimento"
+        actions={[
+          {
+            label: "Código de barras",
+            sub: "Escanéalo con la cámara.",
+            icon: Barcode,
+            href: "/nutricion?vista=escanear",
+          },
+          {
+            label: "Foto de etiqueta",
+            sub: "La tabla nutricional, leída de una foto.",
+            icon: Camera,
+            href: "/nutricion/alimentos?metodo=foto",
+          },
+          {
+            label: "Manual",
+            sub: "Escribe tú los valores por 100 g.",
+            icon: PenLine,
+            href: "/nutricion/alimentos?metodo=manual",
+          },
+        ]}
+      />
 
       <div className="m-row">
         <Link
