@@ -4725,13 +4725,17 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-water[data-done] .m-water-fill {
   border-radius: 7px;
 }
+/* Como el «+ 250 ml» de Inicio: tinte celeste y el texto en ese tono. */
 .m-water-btn {
-  background: color-mix(in srgb, #5aa9e6 14%, var(--m-surface-2));
+  height: 46px;
+  background: rgb(90 169 230 / 0.16);
+  color: #8ccaf5;
   font-size: 14px;
-  gap: 4px;
+  font-weight: 700;
 }
-.m-water-btn svg {
-  color: #5aa9e6;
+html:not(.dark) .m-water-btn {
+  background: rgb(90 169 230 / 0.18);
+  color: #1d5f94;
 }
 .m-water[data-festejo] .m-water-tank {
   animation: m-water-pop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1);
@@ -6807,4 +6811,83 @@ html:not(.dark) .m-routine[data-band] {
 }
 .m-routine-editing[data-band] .m-routine-band {
   margin-bottom: 4px;
+}
+
+/* ── Nutrición · Hoy: el resumen ──────────────────────────────────────
+   Lo que queda al frente, una barra fina con lo comido y los macros en
+   lista, cada uno con su barra y «comido / meta». */
+.m-nutri-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.m-nutri-sum-big {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.m-nutri-sum-big .m-num {
+  font-size: 52px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+.m-nutri-sum-big small {
+  font-size: 14px;
+  color: var(--m-muted);
+}
+.m-nutri-sum .m-bar {
+  height: 6px;
+}
+.m-nutri-sum-foot {
+  margin-top: 2px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--m-muted);
+}
+.m-nutri-sum-foot strong {
+  color: var(--m-text);
+  font-weight: 600;
+}
+.m-nutri-sum .m-divider {
+  margin: 4px 0;
+}
+.m-nutri-sum-macros {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin: 0;
+}
+.m-nutri-sum-macro {
+  display: grid;
+  grid-template-columns: 1fr 64px auto;
+  align-items: center;
+  gap: 12px;
+}
+.m-nutri-sum-macro dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.m-nutri-sum-macro dd {
+  margin: 0;
+}
+.m-nutri-sum-macro .m-bar {
+  height: 4px;
+}
+.m-nutri-sum-value {
+  min-width: 78px;
+  text-align: right;
+  font-size: 14px;
+}
+.m-nutri-sum-value strong {
+  font-weight: 600;
+}
+.m-nutri-sum-value small {
+  font-size: 12px;
+  color: var(--m-muted);
 }

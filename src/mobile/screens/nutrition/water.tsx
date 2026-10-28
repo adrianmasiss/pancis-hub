@@ -108,8 +108,7 @@ export function WaterCard({
               water.add(n);
             }}
           >
-            <Droplet size={15} aria-hidden="true" />+
-            <span className="m-num">{n}</span> ml
+            + {n} ml
           </button>
         ))}
       </div>

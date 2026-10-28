@@ -25,20 +25,31 @@ const PATTERNS: Record<HapticPattern, number | number[]> = {
   warning: [30, 50, 15],
 };
 
-/** El toque del sistema en iOS 18+, con un interruptor nativo invisible. */
+let iosSwitch: HTMLLabelElement | null = null;
+
+/**
+ * El toque del sistema en iOS 18+, con un interruptor nativo. Solo suena si
+ * se llama dentro del toque del usuario (en el `onClick`, no despues de un
+ * `await`). El interruptor vive en el `body` y se renderiza (fuera de
+ * pantalla, transparente): con `display: none` WebKit no siempre lo cambia.
+ */
 function iosSwitchTap(): boolean {
   if (!window.matchMedia?.("(pointer: coarse)").matches) return false;
   try {
-    const label = document.createElement("label");
-    label.ariaHidden = "true";
-    label.style.display = "none";
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.setAttribute("switch", "");
-    label.appendChild(input);
-    document.head.appendChild(label);
-    label.click();
-    label.remove();
+    if (!iosSwitch?.isConnected) {
+      const label = document.createElement("label");
+      label.ariaHidden = "true";
+      label.style.cssText =
+        "position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.tabIndex = -1;
+      input.setAttribute("switch", "");
+      label.appendChild(input);
+      document.body.appendChild(label);
+      iosSwitch = label;
+    }
+    iosSwitch.click();
     return true;
   } catch {
     return false;
@@ -50,10 +61,8 @@ export function triggerHaptic(pattern: HapticPattern = "selection"): boolean {
     return false;
   }
 
-  // Respetar preferencia de reducción de movimiento si aplica a háptica
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    return false;
-  }
+  /* «Reducir movimiento» no apaga la vibracion: en iPhone mucha gente lo
+     tiene activo y dejaba la app sin ningun toque. */
 
   if (!("vibrate" in navigator)) {
     return iosSwitchTap();

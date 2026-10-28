@@ -128,3 +128,13 @@
   crema, tinte, degradado / actual, blanco, grafito).
 - Franja: etiqueta de origen y «Editar» en una línea, ambos de 30px.
   En edición, filas de ejercicio negras (#000) con filo `--m-line`.
+
+## Nutrición · Hoy: resumen nuevo y agua aparte (2026-10-28)
+- `src/mobile/screens/nutrition/today.tsx`: el anillo se reemplazó por la tarjeta `.m-nutri-sum` (sin rótulo ni ↗: el usuario los quitó; espaciado compacto). Tiene la cifra de kcal restantes en 52px, una barra fina en acento, la fila «consumidas / Meta» y la lista de macros con punto, mini barra y «comido / meta g». Primero se probó blanca; el usuario la pidió oscura como antes (superficie normal con `data-glow`).
+- El agua (`WaterCard`) va dentro de la misma tarjeta, al final, tras un divisor (el usuario no la quiso separada). Sus botones copian el «+ 250 ml» de Inicio: tinte celeste, texto celeste, sin icono (`.m-water-btn`).
+- CSS al final de `src/mobile/mobile.css`. Se quitó el import de `Ring`.
+
+## Háptica en iPhone (2026-10-28)
+- El usuario confirmó que no vibraba. En `src/lib/haptics.ts` quité el corte por «Reducir movimiento», que en iPhone dejaba la app sin háptica. El interruptor `switch` ahora vive fijo en el `body`, renderizado fuera de pantalla, en vez de crearse en el `head` con `display:none`.
+- Solo puede sonar dentro del toque. Las llamadas que van después de un `await` (los «success» al guardar) no suenan en iOS.
+- Pendiente: que el usuario lo pruebe en el iPhone.

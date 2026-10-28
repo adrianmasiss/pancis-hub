@@ -15,7 +15,7 @@ import type {
   DietTemplateView,
 } from "@/features/dashboard/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
-import { Bar, Ring } from "@/mobile/ui/display";
+import { Bar } from "@/mobile/ui/display";
 import { Fab } from "@/mobile/ui/fab";
 import { useLongPressDrag } from "@/mobile/ui/use-long-press-drag";
 import { ExtraSheet } from "./extra-sheet";
@@ -224,52 +224,45 @@ export function NutritionToday({
 
   return (
     <div className="m-body m-stagger">
-      <section className="m-card" data-glow="" aria-label="Resumen del día">
-        <div className="m-row" style={{ gap: 18, alignItems: "center" }}>
-          <Ring
-            value={target ? consumed.calories / target : 0}
-            size={150}
-            stroke={10}
-            label={
-              restantes !== null
-                ? `${kcal(restantes)} kilocalorías restantes de ${kcal(target!)}`
-                : "Sin meta de calorías"
-            }
-          >
-            <span
-              className="m-num"
-              style={{ fontSize: 30, fontWeight: 700, lineHeight: 1 }}
-            >
-              {restantes !== null ? kcal(restantes) : "—"}
-            </span>
-            <span className="m-stat-label" style={{ marginTop: 4 }}>
-              kcal restantes
-            </span>
-          </Ring>
-          <div className="m-stack" style={{ gap: 14 }}>
-            <div className="m-stat">
-              <span className="m-stat-label">Consumidas</span>
-              <span className="m-stat-value m-kcal-stat">
-                {kcal(consumed.calories)}
-                <small>kcal</small>
-              </span>
-            </div>
-            <div className="m-stat">
-              <span className="m-stat-label">Meta de hoy</span>
-              <span className="m-stat-value m-kcal-stat">
-                {target !== null ? kcal(target) : "—"}
-                {target !== null && <small>kcal</small>}
-              </span>
-            </div>
-          </div>
+      {/* Resumen: lo que queda al frente, una barra con lo comido y los
+          macros en lista; el agua al final. */}
+      <section
+        className="m-card m-nutri-sum"
+        data-glow=""
+        aria-label="Resumen del día"
+      >
+        <div className="m-nutri-sum-big">
+          <span className="m-num">
+            {restantes !== null ? kcal(restantes) : "—"}
+          </span>
+          <small>kcal restantes</small>
+        </div>
+        <Bar
+          value={target ? consumed.calories / target : 0}
+          color="var(--m-accent)"
+        />
+        <div className="m-nutri-sum-foot">
+          <span>
+            <strong className="m-num">{kcal(consumed.calories)}</strong>{" "}
+            consumidas
+          </span>
+          <span>
+            Meta{" "}
+            <strong className="m-num">
+              {target !== null ? kcal(target) : "—"}
+            </strong>
+            {target !== null && " kcal"}
+          </span>
         </div>
 
-        <dl className="m-macro-grid">
+        <hr className="m-divider" />
+
+        <dl className="m-nutri-sum-macros">
           {MACROS.map((m) => {
             const value = consumed[m.key];
             const goal = targets?.[m.key] ?? null;
             return (
-              <div key={m.key} className="m-macro-line">
+              <div key={m.key} className="m-nutri-sum-macro">
                 <dt>
                   <span
                     className="m-dot"
@@ -278,16 +271,12 @@ export function NutritionToday({
                   />
                   {m.label}
                 </dt>
-                <dd className="m-num">
-                  {gramos(value)}
-                  {goal ? (
-                    <small> / {gramos(goal)} g</small>
-                  ) : (
-                    <small> g</small>
-                  )}
-                </dd>
-                <dd className="m-macro-line-bar">
+                <dd className="m-nutri-sum-bar">
                   <Bar value={goal ? value / goal : 0} color={m.color} />
+                </dd>
+                <dd className="m-nutri-sum-value m-num">
+                  <strong>{gramos(value)}</strong>
+                  <small>{goal ? ` / ${gramos(goal)} g` : " g"}</small>
                 </dd>
               </div>
             );
