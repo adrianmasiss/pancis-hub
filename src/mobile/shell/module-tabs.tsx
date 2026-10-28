@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { triggerHaptic } from "@/lib/haptics";
+import { Haptic } from "@/mobile/ui/haptic";
 
 export type ModuleTab = { id: string; label: string; href: string };
 
@@ -39,6 +40,7 @@ export function ModuleTabs({
           onClick={() => triggerHaptic("selection")}
           className="m-tab"
         >
+          <Haptic />
           {t.label}
         </Link>
       ))}

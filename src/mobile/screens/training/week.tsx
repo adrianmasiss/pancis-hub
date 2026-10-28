@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 import type { WeekDay, WeekState } from "./week-data";
+import { Haptic } from "@/mobile/ui/haptic";
 
 export type { WeekDay } from "./week-data";
 
@@ -51,6 +52,7 @@ export function WeekStrip({ week }: { week: WeekDay[] }) {
                   setElegido(elegido === d.date ? null : d.date);
                 }}
               >
+                <Haptic />
                 {d.state === "done" && (
                   <Check size={14} strokeWidth={3} aria-hidden="true" />
                 )}

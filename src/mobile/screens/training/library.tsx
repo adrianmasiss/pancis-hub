@@ -20,6 +20,7 @@ import {
 import { triggerHaptic } from "@/lib/haptics";
 import { Tag } from "@/mobile/ui/display";
 import { Sheet } from "@/mobile/ui/sheet";
+import { Haptic } from "@/mobile/ui/haptic";
 
 const POR_PAGINA = 24;
 
@@ -125,6 +126,7 @@ export function ExerciseLibrary({
           data-on={activos ? "" : undefined}
           onClick={() => setFilterOpen(true)}
         >
+          <Haptic />
           <SlidersHorizontal size={18} aria-hidden="true" />
           {activos > 0 && <span className="m-filter-count">{activos}</span>}
         </button>
@@ -167,6 +169,7 @@ export function ExerciseLibrary({
           aria-current={!onlyFavorites ? "page" : undefined}
           scroll={false}
         >
+          <Haptic />
           Todos
         </Link>
         <Link
@@ -175,6 +178,7 @@ export function ExerciseLibrary({
           aria-current={onlyFavorites ? "page" : undefined}
           scroll={false}
         >
+          <Haptic />
           Favoritos
         </Link>
         <span style={{ flex: 1 }} />
@@ -331,6 +335,7 @@ function FilterBody({
               setSec([]);
             }}
           >
+            <Haptic />
             {x.label}
           </button>
         ))}
@@ -357,6 +362,7 @@ function FilterBody({
                     setSec(on ? sec.filter((x) => x !== m) : [...sec, m]);
                   }}
                 >
+                  <Haptic />
                   {capital(musculo(m))}
                 </button>
               );

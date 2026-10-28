@@ -138,3 +138,10 @@
 - El usuario confirmó que no vibraba. En `src/lib/haptics.ts` quité el corte por «Reducir movimiento», que en iPhone dejaba la app sin háptica. El interruptor `switch` ahora vive fijo en el `body`, renderizado fuera de pantalla, en vez de crearse en el `head` con `display:none`.
 - Solo puede sonar dentro del toque. Las llamadas que van después de un `await` (los «success» al guardar) no suenan en iOS.
 - Pendiente: que el usuario lo pruebe en el iPhone.
+
+## Háptica en iPhone, de verdad (2026-10-28)
+- La página de prueba (artifact «Prueba de vibración») mostró que en el iPhone del usuario no vibraba ninguna activación por código (`label.click()` en el head o en el body, `input.click()`, en pointerdown). Solo vibra si el dedo toca un interruptor nativo: uno visible, una etiqueta que lo envuelve, o uno transparente encima del botón.
+- `src/mobile/ui/haptic.tsx`: `<Haptic />` es un `input type=checkbox switch` transparente que tapa a su padre. Al tocarlo vibra, hace `stopPropagation` y reenvía `parent.click()`. No usa `preventDefault`, porque cancelaría el cambio y con él la vibración. El CSS está al final de `mobile.css`: `:where(:has(> .m-haptic))` le da `position: relative` al padre, y el interruptor se oculta si el padre está desactivado.
+- Puesto en la barra inferior, las pestañas de módulo, el «+» y sus opciones, el agua (Nutrición e Inicio), Switch, Stepper, CheckCircle, Segmented, los días de la semana (Entrenar e Inicio), la cabecera de día de la rutina, «Editar», los filtros de la biblioteca, las filas de radio del perfil, los colores de acento, los favoritos, «+ Serie» y «Siguiente» del entreno.
+- `triggerHaptic` queda solo para Android (`navigator.vibrate`). Se quitó `iosSwitchTap`.
+- Comprobado con Playwright: el toque cae en `.m-haptic` y la navegación, las hojas y los filtros siguen funcionando.

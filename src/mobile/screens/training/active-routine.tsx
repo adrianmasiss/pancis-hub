@@ -15,6 +15,7 @@ import { MOBILE_PORTAL_ID } from "@/mobile/routes";
 import { Tag } from "@/mobile/ui/display";
 import { DiscardSheet, ExerciseAvatar, usePlanEditor } from "./routine-editor";
 import { dayTitle } from "./week-data";
+import { Haptic } from "@/mobile/ui/haptic";
 
 /**
  * Entrenar · Hoy › Tu rutina: solo la activa (las demas viven en Rutinas).
@@ -145,6 +146,7 @@ function RoutineView({
             data-size="sm"
             onClick={onEdit}
           >
+            <Haptic />
             <Pencil size={14} aria-hidden="true" />
             Editar
           </button>
@@ -233,6 +235,7 @@ export function DayList({
               aria-controls={`m-day-${day.id}`}
               onClick={() => onToggle(day.id)}
             >
+              <Haptic />
               <span className="m-day-acc-num m-num">{i + 1}</span>
               <span className="m-list-row-main">
                 <span className="m-list-row-title">{dayTitle(day)}</span>

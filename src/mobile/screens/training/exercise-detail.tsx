@@ -17,6 +17,7 @@ import {
 import { ModelDisclosure } from "@/mobile/ui/exercise-model";
 import { BackButton } from "@/mobile/ui/back-button";
 import { useUnits } from "@/mobile/units";
+import { Haptic } from "@/mobile/ui/haptic";
 
 /**
  * Detalle de ejercicio: foto arriba con boton de vidrio; series × reps de la
@@ -110,6 +111,7 @@ export function ExerciseDetail({
             aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
             onClick={toggleFav}
           >
+            <Haptic />
             <Heart
               size={20}
               aria-hidden="true"

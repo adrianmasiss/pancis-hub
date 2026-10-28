@@ -7,6 +7,7 @@ import { ChevronRight, Plus, type LucideIcon } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 import { MOBILE_PORTAL_ID } from "@/mobile/routes";
 import { Sheet } from "./sheet";
+import { Haptic } from "./haptic";
 
 export type FabAction = {
   label: string;
@@ -56,6 +57,7 @@ export function Fab({
           aria-label={label}
           onClick={() => triggerHaptic("selection")}
         >
+          <Haptic />
           {icono}
         </Link>
       ) : (
@@ -71,6 +73,7 @@ export function Fab({
             else setOpen(true);
           }}
         >
+          <Haptic />
           {icono}
         </button>
       )}
@@ -102,6 +105,7 @@ export function Fab({
                   className="m-list-row m-press"
                   onClick={() => setOpen(false)}
                 >
+                  <Haptic />
                   {contenido}
                 </Link>
               ) : (
@@ -115,6 +119,7 @@ export function Fab({
                     a.onClick?.();
                   }}
                 >
+                  <Haptic />
                   {contenido}
                 </button>
               );

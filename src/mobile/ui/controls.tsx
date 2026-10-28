@@ -4,6 +4,7 @@ import { useId } from "react";
 import { Check, Minus, Plus } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { triggerHaptic } from "@/lib/haptics";
+import { Haptic } from "./haptic";
 
 /** Interruptor con `role="switch"` y rebote en la perilla. */
 export function Switch({
@@ -30,6 +31,7 @@ export function Switch({
         onCheckedChange(!checked);
       }}
     >
+      <Haptic />
       <span className="m-switch-knob" aria-hidden="true" />
     </button>
   );
@@ -64,6 +66,7 @@ export function Stepper({
           onChange(Math.max(min, value - step));
         }}
       >
+        <Haptic />
         <Minus size={16} strokeWidth={2} aria-hidden="true" />
       </button>
       <span className="m-stepper-value" aria-live="polite">
@@ -79,6 +82,7 @@ export function Stepper({
           onChange(Math.min(max, value + step));
         }}
       >
+        <Haptic />
         <Plus size={16} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
@@ -118,6 +122,7 @@ export function CheckCircle({
         onToggle();
       }}
     >
+      <Haptic />
       <Check size={20} strokeWidth={2.5} aria-hidden="true" />
     </button>
   );
@@ -155,6 +160,7 @@ export function Segmented<T extends string>({
               onChange(o.value);
             }}
           >
+            <Haptic />
             {active && (
               <motion.span
                 layoutId={`m-seg-${id}`}

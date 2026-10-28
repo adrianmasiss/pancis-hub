@@ -18,6 +18,7 @@ import { Bar } from "@/mobile/ui/display";
 import { UseTodaySheet, type UseTodayMeal } from "./use-today-sheet";
 import { foodFacts, MICROS } from "./food-facts";
 import { MACROS, gramos, kcal } from "./format";
+import { Haptic } from "@/mobile/ui/haptic";
 
 const KCAL_POR_G = { proteinG: 4, carbohydrateG: 4, fatG: 9, fiberG: 0 };
 
@@ -332,6 +333,7 @@ export function FoodDetail({
             aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
             onClick={toggleFav}
           >
+            <Haptic />
             <Star
               size={20}
               aria-hidden="true"

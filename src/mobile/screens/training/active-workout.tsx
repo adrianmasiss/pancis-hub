@@ -68,6 +68,7 @@ import { ModelDisclosure } from "@/mobile/ui/exercise-model";
 import { useUnits } from "@/mobile/units";
 import { WorkoutSummary } from "./summary";
 import { SwapSheet } from "./swap-sheet";
+import { Haptic } from "@/mobile/ui/haptic";
 
 type LoggedSet = {
   id: string;
@@ -685,6 +686,7 @@ export function ActiveWorkout({
             className="m-set-add m-press"
             onClick={() => addRow(e)}
           >
+            <Haptic />
             <Plus size={16} aria-hidden="true" />
             Serie
           </button>
@@ -820,6 +822,7 @@ export function ActiveWorkout({
             } else setSummary(true);
           }}
         >
+          <Haptic />
           {next ? "Siguiente" : "Terminar"}
           <ArrowRight size={18} strokeWidth={2.5} aria-hidden="true" />
         </button>

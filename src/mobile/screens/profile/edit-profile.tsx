@@ -30,6 +30,7 @@ import { toOptionalNumber } from "@/lib/forms";
 import { triggerHaptic } from "@/lib/haptics";
 import { Segmented } from "@/mobile/ui/controls";
 import { FormField, FormScreen, FormSection } from "@/mobile/ui/form-screen";
+import { Haptic } from "@/mobile/ui/haptic";
 
 const t = messages.settings;
 const f = messages.onboarding.fields;
@@ -320,6 +321,7 @@ function ChoiceList<T extends string>({
               onChange(o.value);
             }}
           >
+            <Haptic />
             {o.label}
             <span className="m-radio-dot" aria-hidden="true" />
           </button>
@@ -390,10 +392,7 @@ function AvatarPicker({
       const data = new FormData();
       try {
         const blob = await shrinkImage(file, 512, "image/jpeg", 0.86);
-        data.set(
-          "avatar",
-          new File([blob], "avatar.jpg", { type: blob.type }),
-        );
+        data.set("avatar", new File([blob], "avatar.jpg", { type: blob.type }));
       } catch {
         data.set("avatar", file);
       }

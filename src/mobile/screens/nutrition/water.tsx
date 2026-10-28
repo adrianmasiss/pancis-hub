@@ -5,6 +5,7 @@ import { Check, Droplet, Undo2 } from "lucide-react";
 import { useWater } from "@/features/nutrition/components/use-water";
 import { triggerHaptic } from "@/lib/haptics";
 import { litros } from "./format";
+import { Haptic } from "@/mobile/ui/haptic";
 
 /**
  * El agua del dia: un tanque que se llena en azul con una ola en el borde.
@@ -108,7 +109,7 @@ export function WaterCard({
               water.add(n);
             }}
           >
-            + {n} ml
+            <Haptic />+ {n} ml
           </button>
         ))}
       </div>

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { triggerHaptic } from "@/lib/haptics";
 import { MOBILE_NAV, isActiveMobileRoute } from "@/mobile/routes";
+import { Haptic } from "@/mobile/ui/haptic";
 
 /**
  * Barra inferior flotante: capsula de vidrio a 16px de los bordes y 18px del
@@ -65,6 +66,7 @@ export function GlassTabBar() {
               }}
               className="m-tabbar-item"
             >
+              <Haptic />
               <motion.span
                 className="m-tabbar-icon"
                 aria-hidden="true"

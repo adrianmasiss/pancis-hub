@@ -35,6 +35,7 @@ import {
 import { dayTitle } from "@/mobile/screens/training/today";
 import { ESTADO, type WeekDay } from "@/mobile/screens/training/week";
 import type { Insight } from "./insight";
+import { Haptic } from "@/mobile/ui/haptic";
 
 export type WeightSummary = {
   kg: number;
@@ -102,6 +103,7 @@ function HomeWeek({ week }: { week: WeekDay[] }) {
                 setElegido(elegido === d.date ? null : d.date);
               }}
             >
+              <Haptic />
               <span aria-hidden="true">{d.letra}</span>
               {d.state === "done" ? (
                 <Check size={11} strokeWidth={3.5} aria-hidden="true" />
@@ -443,7 +445,7 @@ export function HomeView({
               disabled={water.pending}
               onClick={() => water.add(250)}
             >
-              + 250 ml
+              <Haptic />+ 250 ml
             </button>
           </section>
 

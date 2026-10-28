@@ -23,6 +23,7 @@ import {
   updateUnitSystem,
 } from "@/features/settings/actions";
 import { toast } from "sonner";
+import { Haptic } from "@/mobile/ui/haptic";
 
 export type ProfileSummary = {
   displayName: string;
@@ -306,7 +307,9 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
                     className="m-swatch m-press"
                     style={{ background: MOBILE_ACCENTS[id].fill }}
                     onClick={() => pickAccent(id)}
-                  />
+                  >
+                    <Haptic />
+                  </button>
                 ))}
               </div>
             </div>
