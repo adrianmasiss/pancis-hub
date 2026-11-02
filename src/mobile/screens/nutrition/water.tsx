@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Droplet, Undo2 } from "lucide-react";
 import { useWater } from "@/features/nutrition/components/use-water";
 import { triggerHaptic } from "@/lib/haptics";
-import { litros } from "./format";
 import { Haptic } from "@/mobile/ui/haptic";
+import { litros } from "./format";
 
 /**
- * El agua del dia: un tanque que se llena en azul con una ola en el borde.
- * Cada toque lo sube con una animacion corta; al llegar a la meta cambia a
- * verde con un check y una vibracion de logro.
+ * El agua del dia: cantidad y botones en una fila, y debajo una linea que se
+ * llena en azul con una ola en el borde. Cada toque la sube con una animacion
+ * corta; al llegar a la meta cambia a verde con un check y una vibracion de
+ * logro.
  */
 export function WaterCard({
   date,
@@ -47,33 +48,51 @@ export function WaterCard({
       data-done={cumplida ? "" : undefined}
       data-festejo={festejo ? "" : undefined}
     >
-      <div className="m-row" style={{ alignItems: "flex-end" }}>
-        <div style={{ flex: 1 }}>
-          <div className="m-stat-label m-water-label">
-            {cumplida ? (
-              <Check size={13} strokeWidth={3} aria-hidden="true" />
-            ) : (
-              <Droplet size={13} aria-hidden="true" />
-            )}
-            {cumplida ? "Meta de agua cumplida" : "Agua"}
-          </div>
-          <div className="m-stat-value">
+      <div className="m-water-row">
+        <span className="m-water-icon" aria-hidden="true">
+          {cumplida ? (
+            <Check size={17} strokeWidth={3} />
+          ) : (
+            <Droplet size={17} fill="currentColor" />
+          )}
+        </span>
+        <div className="m-water-text">
+          <span className="m-water-label">
+            {cumplida ? "Meta cumplida" : "Agua"}
+          </span>
+          <span className="m-water-amount m-num">
             {litros(water.shown)}
-            <small>{meta ? `/ ${litros(meta)} L` : "L"}</small>
-          </div>
+            <small>{meta ? ` / ${litros(meta)} L` : " L"}</small>
+          </span>
         </div>
         {water.shown > 0 && (
           <button
             type="button"
-            className="m-icon-btn m-press"
-            data-variant="soft"
+            className="m-water-undo m-press"
             aria-label="Quitar el último registro de agua"
             disabled={water.pending}
             onClick={water.undo}
           >
-            <Undo2 size={16} aria-hidden="true" />
+            <Haptic />
+            <Undo2 size={15} aria-hidden="true" />
           </button>
         )}
+        {[250, 500].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className="m-water-add m-press"
+            data-variant={n === 250 ? "fill" : "line"}
+            aria-label={`Agregar ${n} ml de agua`}
+            disabled={water.pending}
+            onClick={() => {
+              triggerHaptic("light");
+              water.add(n);
+            }}
+          >
+            <Haptic />+{n}
+          </button>
+        ))}
       </div>
 
       <div
@@ -95,23 +114,6 @@ export function WaterCard({
             <path d="M0 0 H20 C28 6 12 12 20 18 C28 24 12 30 20 36 C28 42 12 46 20 48 H0 Z" />
           </svg>
         </div>
-      </div>
-
-      <div className="m-grid-2">
-        {[250, 500].map((n) => (
-          <button
-            key={n}
-            type="button"
-            className="m-btn m-press m-water-btn"
-            disabled={water.pending}
-            onClick={() => {
-              triggerHaptic("light");
-              water.add(n);
-            }}
-          >
-            <Haptic />+ {n} ml
-          </button>
-        ))}
       </div>
     </div>
   );

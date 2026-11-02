@@ -6,16 +6,27 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, FileUp, Pencil, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { setActivePlan } from "@/features/training/actions";
-import type { PlanDayView, PlanSummary } from "@/features/training/queries";
+import type {
+  PlanDayView,
+  PlanOrigin,
+  PlanSummary,
+} from "@/features/training/queries";
 import { triggerHaptic } from "@/lib/haptics";
 import { Fab } from "@/mobile/ui/fab";
+import { Haptic } from "@/mobile/ui/haptic";
 import { Sheet } from "@/mobile/ui/sheet";
-import { DayList, OriginTag } from "./active-routine";
+import { DayList } from "./active-routine";
+
+const GRUPOS: { origin: PlanOrigin; label: string; filtro: string }[] = [
+  { origin: "coach", label: "Del coach", filtro: "Del coach" },
+  { origin: "ia", label: "Creadas con IA", filtro: "Con IA" },
+];
 
 /**
- * Rutinas: las del coach y las creadas por IA, con la activa primero. Tocar
- * una la despliega ahi mismo con sus dias y ejercicios. Agregar (importar o
- * crear con IA) va por el «+».
+ * Rutinas: las del coach y las creadas por IA, cada grupo con su rotulo y la
+ * activa primero; arriba se puede ver solo uno. Tocar una la despliega ahi
+ * mismo con sus dias y ejercicios. Agregar (importar o crear con IA) va por
+ * el «+».
  */
 export function Routines({
   plans,
@@ -34,11 +45,15 @@ export function Routines({
   const [open, setOpen] = useState<string | null>(null);
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<PlanSummary | null>(null);
+  const [filtro, setFiltro] = useState<PlanOrigin | null>(null);
   const [pending, startTransition] = useTransition();
-  const ordered = [...plans].sort(
-    (a, b) =>
-      Number(b.active) - Number(a.active) || a.origin.localeCompare(b.origin),
-  );
+  const grupos = GRUPOS.map((g) => ({
+    ...g,
+    plans: plans
+      .filter((p) => p.origin === g.origin)
+      .sort((a, b) => Number(b.active) - Number(a.active)),
+  })).filter((g) => g.plans.length > 0);
+  const visibles = grupos.filter((g) => !filtro || g.origin === filtro);
 
   const activate = (plan: PlanSummary) =>
     startTransition(async () => {
@@ -55,98 +70,133 @@ export function Routines({
 
   return (
     <div className="m-body m-stagger">
-      {ordered.length === 0 && (
+      {grupos.length > 1 && (
+        <div className="m-row" role="group" aria-label="Ver rutinas">
+          {[{ origin: null, filtro: "Todas" }, ...GRUPOS].map((g) => (
+            <button
+              key={g.filtro}
+              type="button"
+              className="m-filter m-press"
+              aria-pressed={filtro === g.origin}
+              onClick={() => {
+                triggerHaptic("selection");
+                setFiltro(g.origin);
+              }}
+            >
+              <Haptic />
+              {g.filtro}
+            </button>
+          ))}
+        </div>
+      )}
+      {plans.length === 0 && (
         <p className="m-sub">
           Aún no tienes rutinas. Toca «+» para importar la de tu coach o crear
           una con IA.
         </p>
       )}
-      {ordered.map((plan) => {
-        const abierta = open === plan.id;
-        return (
-          <section
-            key={plan.id}
-            className="m-routine"
-            data-active={plan.active ? "" : undefined}
-            data-open={abierta ? "" : undefined}
-            aria-label={plan.name}
-          >
-            <button
-              type="button"
-              className="m-routine-head m-press"
-              aria-expanded={abierta}
-              aria-controls={`m-plan-${plan.id}`}
-              onClick={() => setOpen(abierta ? null : plan.id)}
-            >
-              <span className="m-row" style={{ gap: 6 }}>
-                <OriginTag origin={plan.origin} />
-                <span style={{ flex: 1 }} />
-                {plan.active && (
-                  <span className="m-eyebrow" data-tone="accent">
-                    Activa
-                  </span>
-                )}
-              </span>
-              <span className="m-card-title" style={{ fontSize: 20 }}>
-                {plan.name}
-              </span>
-              <span className="m-row" style={{ gap: 8 }}>
-                <span className="m-sub" style={{ flex: 1 }}>
-                  {[
-                    `${plan.dayCount} ${plan.dayCount === 1 ? "día" : "días"}`,
-                    plan.objective,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-                <ChevronDown
-                  className="m-chevron m-disclosure-chevron"
-                  size={18}
-                  aria-hidden="true"
-                />
-              </span>
-            </button>
-
-            <div
-              id={`m-plan-${plan.id}`}
-              className="m-disclosure-body"
-              inert={!abierta}
-            >
-              <div>
-                <DayList
-                  days={planDays[plan.id] ?? []}
-                  images={images}
-                  openDay={openDay}
-                  onToggle={(id) => setOpenDay(openDay === id ? null : id)}
-                  todayDayId={plan.active ? todayDayId : null}
-                />
-                <div className="m-row" style={{ gap: 8, marginTop: 10 }}>
-                  {!plan.active && (
-                    <button
-                      type="button"
-                      className="m-btn m-press"
-                      data-variant="primary"
-                      disabled={pending}
-                      onClick={() => setConfirm(plan)}
-                      style={{ flex: 1 }}
+      {visibles.map((g) => (
+        <section
+          key={g.origin}
+          className="m-routine-group"
+          aria-labelledby={`m-routines-${g.origin}`}
+        >
+          <h2 id={`m-routines-${g.origin}`} className="m-routine-group-title">
+            {g.label}
+            <span className="m-routine-group-count m-num">
+              {g.plans.length}
+            </span>
+          </h2>
+          {g.plans.map((plan) => {
+            const abierta = open === plan.id;
+            return (
+              <section
+                key={plan.id}
+                className="m-routine"
+                data-active={plan.active ? "" : undefined}
+                data-open={abierta ? "" : undefined}
+                aria-label={plan.name}
+              >
+                <button
+                  type="button"
+                  className="m-routine-head m-press"
+                  aria-expanded={abierta}
+                  aria-controls={`m-plan-${plan.id}`}
+                  onClick={() => setOpen(abierta ? null : plan.id)}
+                >
+                  {/* El origen lo dice el rotulo del grupo. */}
+                  <span className="m-row" style={{ gap: 8 }}>
+                    <span
+                      className="m-card-title"
+                      style={{ fontSize: 20, flex: 1 }}
                     >
-                      Usar esta rutina
-                    </button>
-                  )}
-                  <Link
-                    href={`/entrenamiento/rutinas/${plan.id}`}
-                    className="m-btn m-press"
-                    style={{ flex: plan.active ? 1 : undefined }}
-                  >
-                    <Pencil size={15} aria-hidden="true" />
-                    Editar
-                  </Link>
+                      {plan.name}
+                    </span>
+                    {plan.active && (
+                      <span className="m-eyebrow" data-tone="accent">
+                        Activa
+                      </span>
+                    )}
+                  </span>
+                  <span className="m-row" style={{ gap: 8 }}>
+                    <span className="m-sub" style={{ flex: 1 }}>
+                      {[
+                        `${plan.dayCount} ${plan.dayCount === 1 ? "día" : "días"}`,
+                        plan.objective,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                    <ChevronDown
+                      className="m-chevron m-disclosure-chevron"
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </button>
+
+                <div
+                  id={`m-plan-${plan.id}`}
+                  className="m-disclosure-body"
+                  inert={!abierta}
+                >
+                  <div>
+                    <DayList
+                      days={planDays[plan.id] ?? []}
+                      images={images}
+                      openDay={openDay}
+                      onToggle={(id) => setOpenDay(openDay === id ? null : id)}
+                      todayDayId={plan.active ? todayDayId : null}
+                    />
+                    <div className="m-row" style={{ gap: 8, marginTop: 10 }}>
+                      {!plan.active && (
+                        <button
+                          type="button"
+                          className="m-btn m-press"
+                          data-variant="primary"
+                          disabled={pending}
+                          onClick={() => setConfirm(plan)}
+                          style={{ flex: 1 }}
+                        >
+                          Usar esta rutina
+                        </button>
+                      )}
+                      <Link
+                        href={`/entrenamiento/rutinas/${plan.id}`}
+                        className="m-btn m-press"
+                        style={{ flex: plan.active ? 1 : undefined }}
+                      >
+                        <Pencil size={15} aria-hidden="true" />
+                        Editar
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </section>
-        );
-      })}
+              </section>
+            );
+          })}
+        </section>
+      ))}
 
       <Fab
         label="Agregar rutina"

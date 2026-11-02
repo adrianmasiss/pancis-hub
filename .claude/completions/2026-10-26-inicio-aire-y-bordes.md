@@ -145,3 +145,19 @@
 - Puesto en la barra inferior, las pestañas de módulo, el «+» y sus opciones, el agua (Nutrición e Inicio), Switch, Stepper, CheckCircle, Segmented, los días de la semana (Entrenar e Inicio), la cabecera de día de la rutina, «Editar», los filtros de la biblioteca, las filas de radio del perfil, los colores de acento, los favoritos, «+ Serie» y «Siguiente» del entreno.
 - `triggerHaptic` queda solo para Android (`navigator.vibrate`). Se quitó `iosSwitchTap`.
 - Comprobado con Playwright: el toque cae en `.m-haptic` y la navegación, las hojas y los filtros siguen funcionando.
+
+## Rutinas por origen (2026-10-28)
+- `routines.tsx`: las rutinas van en grupos («Del coach», «Creadas con IA») con un título de 19px y la cuenta en una píldora (`.m-routine-group-title`; el usuario lo pidió más grande y después sin icono). La activa va primero dentro de su grupo.
+- Se quitó la etiqueta de origen de cada tarjeta, porque la dice el rótulo del grupo. «Activa» va en la fila del nombre.
+- Los chips Todas / Del coach / Con IA (estado local, con `<Haptic />`) solo aparecen si hay rutinas de los dos orígenes. `.m-filter[aria-pressed="true"]` se pinta como el chip activo.
+- Rutina de prueba en la base local, a pedido del usuario: «Prueba IA» (`workout_plans.id = fc874df7-5707-4cae-957f-61b16583e89d`, origin `ia`, usuario demo), copia de los 2 días de «Full body 3 dias». Para borrarla: `delete from workout_plans where id='fc874df7-…'`, que borra en cascada los días y ejercicios si la FK lo hace; si no, primero ejercicios y días.
+
+## Nutrición · Hoy según la referencia ~/Downloads/pancis-nutricion-hoy (2026-11-01)
+Se siguió el orden de la referencia con nuestros tamaños, fuentes y colores:
+- **Resumen:** cifra, barra y consumidas/meta, con los macros en una cuadrícula de 2 × 2 (`.m-nutri-sum-macro`, recuadro `surface-2`).
+- **Agua:** en su propia tarjeta. En una fila van el disco con la gota, «AGUA», la cantidad, deshacer, +250 lleno y +500 con contorno; debajo, la línea con la ola (10px).
+- **Plan:** «X kcal · N de M hechas» y el botón «Copiar día» con contorno (`.m-plan-copy`).
+- **Comida:** foto con `FoodThumb` 52 (la foto de un alimento, o el grupo del que más kcal pone), hora · tipo, nombre, y las kcal con la flecha debajo. Se quitó la barra de reparto de macros de la cabecera.
+- **Ingredientes:** foto de 34 y anillos P·C·G (`macro-ring.tsx`) llenos según la meta del día. Se mantuvo la fila Total.
+- **«Agregar comida»:** botón punteado al final, que reemplaza al «+» flotante en Hoy.
+- Sin cambios: el encabezado y las pestañas siguen siendo los nuestros. «¿Qué como?» y la pista de arrastrar siguen al final.

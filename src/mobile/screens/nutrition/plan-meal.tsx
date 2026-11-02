@@ -38,6 +38,7 @@ import {
 } from "@/features/nutrition/meal-time-actions";
 import type { MacroSet } from "@/features/nutrition/lib/macros";
 import { CheckCircle } from "@/mobile/ui/controls";
+import { FoodThumb } from "@/mobile/ui/food-thumb";
 import { SwipeRow } from "@/mobile/ui/swipe-row";
 import {
   ActionSheet,
@@ -46,12 +47,27 @@ import {
   TimeWheelSheet,
 } from "./day-sheets";
 import { ExtraSheet } from "./extra-sheet";
-import { MacroSplitBar, TRES } from "./macro-split";
+import { TRES } from "./macro-split";
+import { MacroRing } from "./macro-ring";
 import { addMacros, gramos, kcal, mealLabel, mealTypeLabel } from "./format";
 
 export { MacroSplitBar } from "./macro-split";
 
 type LongPress = Partial<React.HTMLAttributes<HTMLDivElement>>;
+
+type Thumbable = {
+  imageUrl?: string | null;
+  foodGroup?: string | null;
+  macros: { calories: number };
+};
+
+/** La foto de la comida: la de un alimento con foto o, si ninguno tiene, el
+ *  grupo del que mas kcal pone. */
+function mealThumb(items: Thumbable[]) {
+  const conFoto = items.find((i) => i.imageUrl);
+  if (conFoto) return conFoto;
+  return [...items].sort((a, b) => b.macros.calories - a.macros.calories)[0];
+}
 
 /** Lo que se edita de un alimento: nombre, gramos y macros de esos gramos. */
 type Editing = { name: string; grams: number; macros: MacroSet } & (
@@ -87,6 +103,7 @@ export function PlanMeal({
   extras,
   ensureLogged,
   longPress,
+  targets,
 }: {
   meal: DietTemplateMealView;
   date: string;
@@ -105,6 +122,8 @@ export function PlanMeal({
   ensureLogged: () => Promise<string | null>;
   /** Mantener presionada la cabecera para moverla de lugar. */
   longPress: LongPress;
+  /** Metas del dia: llenan los anillos de cada alimento. */
+  targets: MacroSet | null;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -181,6 +200,7 @@ export function PlanMeal({
           aria-controls={bodyId}
           onClick={() => onOpenChange(!open)}
         >
+          <MealPhoto items={shown ?? meal.items} />
           <span className="m-plan-meal-main">
             <span className="m-meal-meta">
               {time && <span className="m-num">{time}</span>}
@@ -196,17 +216,8 @@ export function PlanMeal({
               {movedFrom !== undefined && <Tag tone="neutral">Movida hoy</Tag>}
             </span>
             <span className="m-plan-meal-title">{title}</span>
-            <MacroSplitBar macros={totals} />
+            <MealKcal calories={totals.calories} />
           </span>
-          <span className="m-plan-meal-kcal">
-            <span className="m-num">{kcal(totals.calories)}</span>
-            <small>kcal</small>
-          </span>
-          <ChevronDown
-            className="m-chevron m-disclosure-chevron"
-            size={18}
-            aria-hidden="true"
-          />
         </button>
         <CheckCircle
           checked={done}
@@ -228,6 +239,9 @@ export function PlanMeal({
                         name={item.foodName}
                         grams={item.quantityG}
                         macros={item.macros}
+                        image={item.imageUrl}
+                        group={item.foodGroup}
+                        targets={targets}
                       />
                     </li>
                   ))
@@ -260,6 +274,9 @@ export function PlanMeal({
                         name={item.foodName}
                         grams={item.quantityG}
                         macros={item.macros}
+                        image={item.imageUrl}
+                        group={item.foodGroup}
+                        targets={targets}
                         note={
                           item.daySwap &&
                           item.daySwap.originalFoodName !== item.foodName
@@ -292,6 +309,9 @@ export function PlanMeal({
                       name={item.foodName}
                       grams={item.quantityG}
                       macros={item.macros}
+                      image={item.imageUrl}
+                      group={item.foodGroup}
+                      targets={targets}
                       tag="Extra de hoy"
                     />
                   </SwipeRow>
@@ -497,12 +517,14 @@ export function LooseMeal({
   open,
   onOpenChange,
   longPress,
+  targets,
 }: {
   meal: MealView;
   date: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   longPress: LongPress;
+  targets: MacroSet | null;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -542,6 +564,7 @@ export function LooseMeal({
           aria-controls={bodyId}
           onClick={() => onOpenChange(!open)}
         >
+          <MealPhoto items={meal.items} />
           <span className="m-plan-meal-main">
             <span className="m-meal-meta">
               {time && <span className="m-num">{time}</span>}
@@ -550,17 +573,8 @@ export function LooseMeal({
               <Tag tone="neutral">Fuera del plan</Tag>
             </span>
             <span className="m-plan-meal-title">{title}</span>
-            <MacroSplitBar macros={meal.totals} />
+            <MealKcal calories={meal.totals.calories} />
           </span>
-          <span className="m-plan-meal-kcal">
-            <span className="m-num">{kcal(meal.totals.calories)}</span>
-            <small>kcal</small>
-          </span>
-          <ChevronDown
-            className="m-chevron m-disclosure-chevron"
-            size={18}
-            aria-hidden="true"
-          />
         </button>
         <CheckCircle checked label={`Eliminar ${name}`} onToggle={eliminar} />
       </div>
@@ -598,6 +612,9 @@ export function LooseMeal({
                     name={item.foodName}
                     grams={item.quantityG}
                     macros={item.macros}
+                    image={item.imageUrl}
+                    group={item.foodGroup}
+                    targets={targets}
                   />
                 </SwipeRow>
               ))}
@@ -784,6 +801,9 @@ function IngCells({
   name,
   grams,
   macros,
+  image,
+  group,
+  targets,
   note,
   tag,
   href,
@@ -791,17 +811,23 @@ function IngCells({
   name: string;
   grams: number;
   macros: MacroSet;
+  image?: string | null;
+  group?: string | null;
+  targets: MacroSet | null;
   note?: string;
   tag?: string;
   href?: string;
 }) {
   const label = (
     <>
-      <span>{name}</span>
-      <small>
-        {tag && <span className="m-ing-tag">{tag} · </span>}
-        <span className="m-num">{gramos(grams)}</span> g{note && ` · ${note}`}
-      </small>
+      <FoodThumb imageUrl={image} foodGroup={group} size={34} />
+      <span className="m-ing-text">
+        <span>{name}</span>
+        <small>
+          {tag && <span className="m-ing-tag">{tag} · </span>}
+          <span className="m-num">{gramos(grams)}</span> g{note && ` · ${note}`}
+        </small>
+      </span>
     </>
   );
   return (
@@ -820,14 +846,13 @@ function IngCells({
       )}
       <span className="m-num">{kcal(macros.calories)}</span>
       {TRES.map((m) => (
-        <span
+        <MacroRing
           key={m.key}
-          className="m-num"
-          style={{ color: m.color }}
-          aria-label={`${m.label} ${gramos(macros[m.key])} g`}
-        >
-          {gramos(macros[m.key])}
-        </span>
+          value={macros[m.key]}
+          goal={targets?.[m.key] ?? null}
+          color={m.color}
+          label={m.label}
+        />
       ))}
     </>
   );
@@ -844,5 +869,28 @@ function IngTotal({ totals }: { totals: MacroSet }) {
         </span>
       ))}
     </div>
+  );
+}
+
+/** Foto de la comida, como en la biblioteca: la del alimento o su grupo. */
+function MealPhoto({ items }: { items: Thumbable[] }) {
+  const t = mealThumb(items);
+  return (
+    <FoodThumb imageUrl={t?.imageUrl} foodGroup={t?.foodGroup} size={52} />
+  );
+}
+
+/** Las kcal bajo el nombre, con la flecha que abre la comida. */
+function MealKcal({ calories }: { calories: number }) {
+  return (
+    <span className="m-plan-meal-kcal">
+      <span className="m-num">{kcal(calories)}</span>
+      <small>kcal</small>
+      <ChevronDown
+        className="m-chevron m-disclosure-chevron"
+        size={15}
+        aria-hidden="true"
+      />
+    </span>
   );
 }

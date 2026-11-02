@@ -2607,7 +2607,8 @@ html:not(.dark) .m-cal-day[data-tone="on"] {
   font-weight: 600;
   color: var(--m-text-soft);
 }
-.m-filter[aria-current="page"] {
+.m-filter[aria-current="page"],
+.m-filter[aria-pressed="true"] {
   background: var(--m-text);
   color: var(--m-bg);
 }
@@ -4665,13 +4666,46 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
   flex-direction: column;
   gap: 12px;
 }
-.m-water-label {
+/* Una fila: el icono en su disco, la cantidad y los dos botones. */
+.m-water-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
 }
-.m-water-label svg {
+.m-water-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--m-water) 16%, transparent);
   color: var(--m-water);
+}
+.m-water-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.m-water-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-water-amount {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.m-water-amount small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
 }
 .m-water[data-done] {
   --m-water: var(--m-positive);
@@ -4679,10 +4713,40 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-water[data-done] .m-water-label {
   color: var(--m-positive);
 }
+.m-water-undo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--m-muted);
+}
+/* +250 lleno en celeste; +500 con contorno. */
+.m-water-add {
+  flex: none;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.m-water-add[data-variant="fill"] {
+  background: var(--m-water);
+  color: #06233a;
+}
+.m-water-add[data-variant="line"] {
+  border: 1px solid var(--m-surface-3);
+  color: var(--m-text);
+}
+.m-water-add:disabled {
+  opacity: 0.5;
+}
 .m-water-tank {
   position: relative;
-  height: 14px;
-  border-radius: 7px;
+  height: 10px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--m-water) 12%, var(--m-surface-2));
   overflow: hidden;
 }
@@ -4724,18 +4788,6 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 }
 .m-water[data-done] .m-water-fill {
   border-radius: 7px;
-}
-/* Como el «+ 250 ml» de Inicio: tinte celeste y el texto en ese tono. */
-.m-water-btn {
-  height: 46px;
-  background: rgb(90 169 230 / 0.16);
-  color: #8ccaf5;
-  font-size: 14px;
-  font-weight: 700;
-}
-html:not(.dark) .m-water-btn {
-  background: rgb(90 169 230 / 0.18);
-  color: #1d5f94;
 }
 .m-water[data-festejo] .m-water-tank {
   animation: m-water-pop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1);
@@ -5692,10 +5744,6 @@ a.m-ing-name {
 .m-ing-tag {
   color: var(--m-accent-ink);
   font-weight: 700;
-}
-.m-ing-swipe > .m-ing[data-extra] .m-ing-name > span:first-child::before {
-  content: "+ ";
-  color: var(--m-accent-ink);
 }
 .m-ing-hint,
 .m-ing-note {
@@ -6854,35 +6902,42 @@ html:not(.dark) .m-routine[data-band] {
 .m-nutri-sum .m-divider {
   margin: 4px 0;
 }
+/* Los cuatro macros en cuadricula de 2 × 2: cada uno en su recuadro con
+   el nombre, lo comido / la meta y su barra. */
 .m-nutri-sum-macros {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0 0;
 }
 .m-nutri-sum-macro {
-  display: grid;
-  grid-template-columns: 1fr 64px auto;
-  align-items: center;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px 14px;
+  border-radius: 18px;
+  background: var(--m-surface-2);
+  min-width: 0;
 }
 .m-nutri-sum-macro dt {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 7px;
+  font-size: 13px;
   font-weight: 500;
+  color: var(--m-text-soft);
 }
 .m-nutri-sum-macro dd {
   margin: 0;
 }
 .m-nutri-sum-macro .m-bar {
   height: 4px;
+  margin-top: 2px;
+  background: var(--m-surface-3);
 }
 .m-nutri-sum-value {
-  min-width: 78px;
-  text-align: right;
-  font-size: 14px;
+  font-size: 20px;
+  white-space: nowrap;
 }
 .m-nutri-sum-value strong {
   font-weight: 600;
@@ -6919,4 +6974,159 @@ html:not(.dark) .m-routine[data-band] {
 .m-app :disabled > input.m-haptic,
 .m-app [aria-disabled="true"] > input.m-haptic {
   display: none;
+}
+
+/* ── Rutinas por origen ──────────────────────────────────────────────
+   Un rotulo pequeño por grupo (del coach, con IA) con su cuenta al lado;
+   las tarjetas del grupo debajo. */
+.m-routine-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.m-routine-group + .m-routine-group {
+  margin-top: 18px;
+}
+.m-routine-group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--m-text);
+}
+.m-routine-group-count {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--m-surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-text-soft);
+}
+
+/* ── Nutrición · Hoy, plan de comidas (referencia de nov 2026) ────────
+   Cabecera con «Copiar día» en contorno; cada comida con su foto, la hora
+   y el tipo, el nombre y las kcal debajo; los alimentos con foto y anillos
+   P · C · G; al final «Agregar comida» punteado. */
+.m-plan-sum strong {
+  color: var(--m-text);
+  font-weight: 600;
+}
+.m-plan-copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--m-surface-3);
+  color: var(--m-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.m-plan-meal-head {
+  padding: 10px 10px 10px 0;
+}
+.m-plan-meal-toggle {
+  padding-left: 12px;
+  gap: 12px;
+}
+.m-plan-meal-toggle > .m-food-thumb {
+  border-radius: 16px;
+}
+.m-plan-meal-main {
+  gap: 2px;
+}
+.m-plan-meal-kcal {
+  align-items: center;
+  margin-top: 1px;
+}
+.m-plan-meal-kcal .m-num {
+  font-size: 15px;
+}
+.m-plan-meal-kcal .m-disclosure-chevron {
+  margin-left: 2px;
+}
+/* Ingredientes: foto, nombre y gramos; kcal; tres anillos. */
+.m-ing {
+  grid-template-columns: minmax(0, 1fr) 38px repeat(3, 30px);
+  gap: 8px;
+  align-items: center;
+}
+.m-ing-head > :nth-child(n + 3) {
+  text-align: center;
+}
+.m-ing-total > :nth-child(n + 3) {
+  text-align: center;
+}
+.m-ing-name {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.m-ing-name > .m-food-thumb {
+  border-radius: 10px;
+}
+.m-ing-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.m-ing-text > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-ing-text small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--m-muted);
+}
+.m-ing-swipe > .m-ing[data-extra] .m-ing-text > span:first-child::before {
+  content: "+ ";
+  color: var(--m-accent-ink);
+}
+.m-ring-mini {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  justify-self: center;
+}
+.m-ring-mini svg {
+  position: absolute;
+  inset: 0;
+}
+.m-ring-mini-track {
+  fill: none;
+  stroke: var(--m-surface-3);
+}
+.m-ring-mini .m-num {
+  position: relative;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--m-text-soft);
+}
+.m-add-meal {
+  height: 52px;
+  border-radius: 22px;
+  border: 1.5px dashed var(--m-surface-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--m-text-soft);
+  font-size: 15px;
+  font-weight: 600;
 }

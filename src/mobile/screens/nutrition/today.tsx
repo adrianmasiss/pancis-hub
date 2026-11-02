@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Reorder, useDragControls } from "motion/react";
-import { Dumbbell, Lightbulb, Plus } from "lucide-react";
+import { Copy, Dumbbell, Lightbulb, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
 import { deleteMeal, updateMealTime } from "@/features/nutrition/actions";
@@ -16,7 +16,7 @@ import type {
 } from "@/features/dashboard/queries";
 import { consumedTotals } from "@/features/nutrition/lib/day-overview";
 import { Bar } from "@/mobile/ui/display";
-import { Fab } from "@/mobile/ui/fab";
+import { Haptic } from "@/mobile/ui/haptic";
 import { useLongPressDrag } from "@/mobile/ui/use-long-press-drag";
 import { ExtraSheet } from "./extra-sheet";
 import { LooseMeal, PlanMeal } from "./plan-meal";
@@ -57,8 +57,8 @@ export function timeBetween(
 }
 
 /**
- * Nutricion · Hoy: el anillo de kcal restantes, los cuatro macros, el agua y
- * el plan de comidas con su hora y su check. Marcar o desmarcar recalcula
+ * Nutricion · Hoy: las kcal restantes con los cuatro macros, el agua y el
+ * plan de comidas con su foto, su hora y su check. Marcar o desmarcar recalcula
  * todo al instante; el servidor lo confirma detras. Las comidas se reordenan
  * manteniendolas presionadas: eso les da otra hora, solo hoy.
  */
@@ -225,7 +225,7 @@ export function NutritionToday({
   return (
     <div className="m-body m-stagger">
       {/* Resumen: lo que queda al frente, una barra con lo comido y los
-          macros en lista; el agua al final. */}
+          cuatro macros en cuadricula. */}
       <section
         className="m-card m-nutri-sum"
         data-glow=""
@@ -255,8 +255,6 @@ export function NutritionToday({
           </span>
         </div>
 
-        <hr className="m-divider" />
-
         <dl className="m-nutri-sum-macros">
           {MACROS.map((m) => {
             const value = consumed[m.key];
@@ -271,19 +269,20 @@ export function NutritionToday({
                   />
                   {m.label}
                 </dt>
-                <dd className="m-nutri-sum-bar">
-                  <Bar value={goal ? value / goal : 0} color={m.color} />
-                </dd>
                 <dd className="m-nutri-sum-value m-num">
                   <strong>{gramos(value)}</strong>
                   <small>{goal ? ` / ${gramos(goal)} g` : " g"}</small>
+                </dd>
+                <dd className="m-nutri-sum-bar">
+                  <Bar value={goal ? value / goal : 0} color={m.color} />
                 </dd>
               </div>
             );
           })}
         </dl>
+      </section>
 
-        <hr className="m-divider" />
+      <section className="m-card" aria-label="Agua">
         <WaterCard date={date} ml={day.waterMl} targetMl={day.waterMlTarget} />
       </section>
 
@@ -308,19 +307,25 @@ export function NutritionToday({
             </h2>
             {meals.length > 0 && (
               <p className="m-plan-sum">
-                <span className="m-num">
+                <strong className="m-num">
                   {kcal(meals.reduce((t, m) => t + m.totals.calories, 0))}
-                </span>{" "}
-                kcal en {meals.length} comidas
+                </strong>{" "}
+                kcal ·{" "}
+                <strong className="m-num">
+                  {meals.filter((m) => isDone(m.id, m.loggedToday)).length}
+                </strong>{" "}
+                de {meals.length} hechas
               </p>
             )}
           </div>
           <Link
             href="/nutricion?vista=historial&copiar=1"
-            className="m-link m-press"
-            style={{ whiteSpace: "nowrap" }}
+            className="m-plan-copy m-press"
+            aria-label="Copiar el plan de otro día"
           >
-            Copiar de otro día
+            <Haptic />
+            <Copy size={14} aria-hidden="true" />
+            Copiar día
           </Link>
         </div>
         {meals.length === 0 && (
@@ -392,6 +397,7 @@ export function NutritionToday({
                       extras={extrasOf(entry.meal.id)}
                       ensureLogged={() => ensureLogged(entry.meal.id)}
                       longPress={longPress}
+                      targets={targets}
                     />
                   ) : (
                     <LooseMeal
@@ -404,6 +410,7 @@ export function NutritionToday({
                       open={openMeal === key}
                       onOpenChange={(o) => setOpenMeal(o ? key : null)}
                       longPress={longPress}
+                      targets={targets}
                     />
                   )
                 }
@@ -411,6 +418,15 @@ export function NutritionToday({
             );
           })}
         </Reorder.Group>
+        <button
+          type="button"
+          className="m-add-meal m-press"
+          onClick={() => setNewOpen(true)}
+        >
+          <Haptic />
+          <Plus size={16} aria-hidden="true" />
+          Agregar comida
+        </button>
         {entries.length > 1 && (
           <p className="m-ing-hint" style={{ textAlign: "center" }}>
             Mantén presionada una comida para moverla de hora.
@@ -431,16 +447,6 @@ export function NutritionToday({
         ¿Qué como?
       </Link>
 
-      <Fab
-        label="Nueva comida"
-        actions={[
-          {
-            label: "Nueva comida",
-            icon: Plus,
-            onClick: () => setNewOpen(true),
-          },
-        ]}
-      />
       <ExtraSheet
         open={newOpen}
         onOpenChange={setNewOpen}
