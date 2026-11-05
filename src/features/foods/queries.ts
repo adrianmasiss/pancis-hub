@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { applyCorrection } from "@/features/foods/lib/corrections";
+import { isConfirmedFood } from "@/features/foods/lib/confirmed";
+import { DIVERGENCE_THRESHOLD } from "@/features/foods/lib/source-agreement";
 import { getUserFoodCorrections } from "@/features/foods/correction-actions";
 import {
   FOOD_GROUPS,
@@ -22,6 +24,10 @@ export type LibraryFood = {
   sugarG?: number | null;
   sodiumMg?: number | null;
   verified: boolean;
+  /** Lleva el check: números reales y correctos (ver `isConfirmedFood`). */
+  confirmed: boolean;
+  /** Producto de marca (tiene código de barras): sus números son de etiqueta. */
+  branded: boolean;
   isOwn: boolean;
   isFavorite: boolean;
   imageUrl: string | null;
@@ -59,6 +65,8 @@ export type LibraryFilters = {
   foodId?: string;
   group?: FoodGroup;
   view: FoodView;
+  /** Sólo los que llevan el check (ver `isConfirmedFood`). */
+  onlyConfirmed?: boolean;
   /** Página pedida, empezando en 1. */
   page?: number;
   pageSize?: number;
@@ -148,7 +156,7 @@ export async function getFoodsLibraryPage(
   let query = supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, nutrition_basis, density_g_per_ml, data_issue, micronutrients, food_portions(label, grams)",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, external_source, barcode, max_divergence_pct, nutrition_basis, density_g_per_ml, data_issue, micronutrients, food_portions(label, grams)",
       { count: "exact" },
     )
     .is("deleted_at", null)
@@ -198,6 +206,21 @@ export async function getFoodsLibraryPage(
   if (filters.group && FOOD_GROUPS.includes(filters.group)) {
     query = query.eq("food_group", filters.group);
   }
+  /* La misma regla que `isConfirmedFood`, dicha en la consulta para que el
+     total y las páginas cuenten sólo los verificados. */
+  if (filters.onlyConfirmed) {
+    query = query
+      .eq("external_source", "usda")
+      .is("barcode", null)
+      .is("data_issue", null)
+      .is("owner_user_id", null)
+      .or(
+        `max_divergence_pct.is.null,max_divergence_pct.lte.${DIVERGENCE_THRESHOLD}`,
+      );
+    const corregidos = [...corrections.keys()];
+    if (corregidos.length > 0)
+      query = query.not("id", "in", `(${corregidos.join(",")})`);
+  }
   if (filters.view === "favoritos") {
     const ids = [...favoriteIds];
     if (ids.length === 0) return { foods: [], total: 0 };
@@ -211,8 +234,8 @@ export async function getFoodsLibraryPage(
 
   const { data, count } = await query;
   // Las correcciones del usuario se superponen al catalogo compartido.
-  const foods = (data ?? []).map((food) =>
-    applyCorrection(
+  const foods = (data ?? []).map((food) => {
+    const corrected = applyCorrection(
       {
         id: food.id,
         name: food.name,
@@ -227,6 +250,8 @@ export async function getFoodsLibraryPage(
         sugarG: food.sugar_g === null ? null : Number(food.sugar_g),
         sodiumMg: food.sodium_mg === null ? null : Number(food.sodium_mg),
         verified: food.verified,
+        confirmed: false,
+        branded: food.barcode !== null,
         isOwn: food.owner_user_id === userId,
         isFavorite: favoriteIds.has(food.id),
         imageUrl: food.image_url,
@@ -244,8 +269,23 @@ export async function getFoodsLibraryPage(
         micronutrients: food.micronutrients as LibraryFood["micronutrients"],
       },
       corrections.get(food.id),
-    ),
-  );
+    );
+    // Se decide despues de la correccion: lo corregido ya no es lo medido.
+    return {
+      ...corrected,
+      confirmed: isConfirmedFood({
+        externalSource: food.external_source,
+        barcode: food.barcode,
+        dataIssue: food.data_issue,
+        maxDivergencePct:
+          food.max_divergence_pct === null
+            ? null
+            : Number(food.max_divergence_pct),
+        isCorrected: corrected.isCorrected,
+        isOwn: corrected.isOwn,
+      }),
+    };
+  });
 
   if (filters.view === "recientes") {
     const order = new Map(recentIds.map((id, index) => [id, index]));

@@ -19,6 +19,13 @@ import {
   isPaletteName,
 } from "@/lib/theme/palettes";
 import { PwaRuntime } from "@/components/shared/pwa-runtime";
+import { isPhone } from "@/lib/device";
+import {
+  DEFAULT_MOBILE_ACCENT,
+  MOBILE_ACCENT_COOKIE,
+  isMobileAccent,
+  phoneAccentCss,
+} from "@/mobile/accent";
 import { CON_SELECTOR, GUION_FONDOS } from "@/features/auth/fondos-guion";
 import { Toaster } from "@/components/ui/sonner";
 import { messages } from "@/i18n/es-419";
@@ -124,6 +131,15 @@ export default async function RootLayout({
   const paletaCookie = jar.get(PALETTE_STORAGE_KEY)?.value;
   const paleta = isPaletteName(paletaCookie) ? paletaCookie : DEFAULT_PALETTE;
 
+  // En el telefono, el acento elegido en Perfil manda tambien fuera de la
+  // vista movil: acceso, pantallas de carga, cargadores y logo.
+  const acentoCookie = jar.get(MOBILE_ACCENT_COOKIE)?.value;
+  const acentoMovil = (await isPhone())
+    ? isMobileAccent(acentoCookie)
+      ? acentoCookie
+      : DEFAULT_MOBILE_ACCENT
+    : null;
+
   return (
     <html
       lang="es"
@@ -144,6 +160,11 @@ export default async function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} ${karrik.variable} ${modo === "dark" ? "dark" : ""} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        {acentoMovil ? (
+          <style
+            dangerouslySetInnerHTML={{ __html: phoneAccentCss(acentoMovil) }}
+          />
+        ) : null}
         {/* Lo elegido en el selector de fondos, aplicado ANTES de pintar.
             Vive aqui, en la raiz, y no en cada layout: el documento es uno, y
             con una copia por seccion la hoja del acento se habria inyectado

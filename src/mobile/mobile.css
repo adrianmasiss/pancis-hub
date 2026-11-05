@@ -66,6 +66,9 @@
   --m-carbs: #a996ff;
   --m-fat: #3fd9cf;
   --m-fiber: #7ddc8f;
+  /* «Más detalle» de la ficha: sodio y colesterol, de la misma familia. */
+  --m-sodium: #7cb8ff;
+  --m-cholesterol: #f59ac4;
 
   --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --m-ease-bounce: cubic-bezier(0.3, 1.4, 0.5, 1);
@@ -125,6 +128,8 @@ html:not(.dark) .m-app {
   --m-carbs: #6a52d9;
   --m-fat: #0d8f87;
   --m-fiber: #2f8a45;
+  --m-sodium: #2a6fc4;
+  --m-cholesterol: #b4467d;
 }
 
 /* El fondo del documento acompaña a la vista movil, para que el rebote del
@@ -3970,16 +3975,21 @@ html:not(.dark) .m-home-insight {
   font-size: 11px;
 }
 /* Ficha: de donde salen las kcal (ronda oct 2026). */
-.m-macro-break {
-  flex-direction: row;
+.m-card.m-macro-break {
+  gap: 0;
+  padding: 18px 22px 0 18px;
+}
+.m-macro-break-top {
+  display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 22px;
+  padding-bottom: 18px;
 }
 .m-macro-donut {
   position: relative;
   flex: none;
-  width: 112px;
-  height: 112px;
+  width: 104px;
+  height: 104px;
 }
 .m-macro-donut svg {
   transform: rotate(-90deg);
@@ -4008,29 +4018,46 @@ html:not(.dark) .m-home-insight {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 11px;
 }
+/* Cada macro: nombre y valor arriba, su barra debajo (nov 2026: anillo y
+   barras juntos). La columna es angosta a proposito: al lado del anillo
+   las barras quedan cortas y la tarjeta respira. */
 .m-macro-legend li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.m-macro-legend-head {
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   font-size: 13px;
   font-weight: 600;
 }
+.m-macro-legend-head .m-dot {
+  flex: none;
+}
 .m-macro-legend-name {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .m-macro-legend-g {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
 }
-.m-macro-legend-pct {
-  font-size: 12px;
+.m-macro-legend-g small {
+  font-family: var(--m-font-ui-stack);
+  font-size: 11px;
+  font-weight: 500;
   color: var(--m-muted);
-  text-align: right;
+}
+.m-macro-legend .m-bar {
+  height: 5px;
 }
 
 /* ── Escaner de codigo de barras ─────────────────────────────────────── */
@@ -5935,49 +5962,10 @@ button.m-compare-side {
   justify-content: space-between;
   gap: 10px;
 }
-.m-macro-bars {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-.m-macro-bars-kcal {
-  flex: none;
-  min-width: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.m-macro-bars-kcal .m-num {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1;
-}
-.m-macro-bars-kcal small {
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--m-muted);
-}
-.m-macro-bars .m-home-macro small {
-  font-family: var(--m-font-ui-stack);
-  font-size: 11px;
-  color: var(--m-muted);
-}
 .m-use-time {
   min-width: 44px;
   font-size: 13px;
   color: var(--m-muted);
-}
-.m-card.m-macro-bars {
-  flex-direction: row;
-  align-items: center;
-}
-.m-macro-bars .m-home-macro {
-  gap: 8px;
-}
-.m-seg-compact {
-  flex: none;
-  width: 176px;
 }
 
 /* ── Historial, ronda 2 (4.5) ────────────────────────────────────────── */
@@ -7129,4 +7117,546 @@ html:not(.dark) .m-routine[data-band] {
   color: var(--m-text-soft);
   font-size: 15px;
   font-weight: 600;
+}
+
+/* ── Comparar, ronda 3 (nov 2026) ──────────────────────────────────────
+   Segun la referencia del usuario, mas despejada: la pareja en una tarjeta
+   (plan arriba, sustituto abajo y resaltado), la similitud en segmentos, la
+   cantidad, los macros en anillos y el boton fijo. Movimiento solo donde
+   cuenta algo: el sustituto que entra, las filas que se cruzan al
+   intercambiar, los segmentos que se encienden y las diferencias que
+   aparecen. Con movimiento reducido, solo fundidos. */
+/* El segmentado de Comparar, mas bajo que el general (.m-seg, 40 px). */
+/* Cada opcion mide su texto (no mitades iguales de un ancho fijo, que
+   dejaban «Desde mi plan» saliendose del fondo del activo). El fondo activo
+   queda a 4 px del borde por igual y con el radio concentrico. */
+.m-cmp-mode .m-seg {
+  grid-auto-columns: max-content;
+  padding: 4px;
+}
+.m-cmp-mode .m-seg-item {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.m-cmp-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+  /* Aire con las pestañas de arriba y con la tarjeta de abajo. */
+  margin: 14px 0 10px;
+}
+.m-cmp-context {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--m-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.m-cmp-context strong {
+  color: var(--m-text);
+  font-weight: 600;
+}
+.m-cmp {
+  gap: 22px;
+}
+.m-cmp-pair {
+  padding: 8px;
+  gap: 2px;
+}
+.m-cmp-pair-top {
+  position: relative;
+}
+.m-cmp-pair-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.m-cmp-row {
+  display: flex;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 20px;
+  text-align: left;
+  color: inherit;
+}
+.m-cmp-row[data-highlight] {
+  background: var(--m-surface-2);
+  padding-block: 12px;
+}
+.m-cmp-row-in {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  animation: m-cmp-in 260ms var(--m-ease) both;
+}
+.m-cmp-row[data-highlight] .m-food-thumb {
+  outline: 1.5px solid var(--m-accent-ink);
+  outline-offset: 2px;
+}
+.m-cmp-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Que el texto no pase por debajo del boton de intercambiar. */
+  padding-right: 34px;
+}
+.m-cmp-row-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.m-cmp-row[data-highlight] .m-cmp-row-eyebrow {
+  color: var(--m-accent-ink);
+}
+.m-cmp-row-name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.m-cmp-row[data-highlight] .m-cmp-row-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.m-cmp-row-meta {
+  font-size: 12.5px;
+  color: var(--m-muted);
+}
+.m-cmp-row-meta strong {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-cmp-row-empty {
+  font-size: 14px;
+  color: var(--m-muted);
+}
+.m-cmp-row-trail {
+  display: inline-flex;
+  color: var(--m-faint);
+  margin-left: -34px;
+}
+.m-cmp-flip {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  border-radius: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-bg);
+  color: var(--m-text);
+  box-shadow:
+    0 0 0 3px var(--m-surface),
+    inset 0 0 0 1px var(--m-line);
+  z-index: 1;
+}
+.m-cmp-flip svg {
+  transform: rotate(calc(var(--turns, 0) * 180deg));
+  transition: transform 320ms var(--m-ease);
+}
+.m-cmp-flip:disabled {
+  opacity: 0.4;
+}
+.m-cmp-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  margin-top: 4px;
+  border-radius: 16px;
+  font-size: 14px;
+  color: var(--m-muted);
+  text-align: left;
+}
+.m-cmp-pair[data-flips] .m-cmp-row:first-child .m-cmp-row-in {
+  animation-name: m-cmp-from-below;
+}
+.m-cmp-pair[data-flips] .m-cmp-row:last-child .m-cmp-row-in {
+  animation-name: m-cmp-from-above;
+}
+
+.m-cmp-sim {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 4px 0;
+}
+.m-cmp-sim-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.m-cmp-sim-value .m-num {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.m-cmp-sim-value small {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m-muted);
+  margin-left: 1px;
+}
+.m-cmp-sim-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--m-accent-ink);
+}
+.m-cmp-sim-unit {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--m-muted);
+}
+.m-cmp-sim-bar {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 3px;
+}
+.m-cmp-sim-bar i {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--m-surface-3);
+  transition: background-color 220ms var(--m-ease);
+  transition-delay: calc(var(--i) * 16ms);
+}
+.m-cmp-sim-bar i[data-on] {
+  background: var(--m-accent-ink);
+}
+@starting-style {
+  .m-cmp-sim-bar i[data-on] {
+    background: var(--m-surface-3);
+  }
+}
+
+.m-card.m-cmp-qty {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 12px 18px;
+  border-radius: 22px;
+}
+.m-cmp-qty .m-stepper {
+  height: 44px;
+  padding: 0 4px;
+  border-radius: 22px;
+}
+.m-cmp-qty .m-stepper button {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+}
+.m-cmp-qty .m-stepper-value {
+  min-width: 56px;
+  font-size: 16px;
+}
+.m-cmp-qty-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.m-cmp-qty-hint {
+  font-size: 13px;
+  color: var(--m-muted);
+}
+.m-cmp-qty-reset {
+  height: 22px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-accent-ink);
+  text-align: left;
+}
+
+.m-cmp-macros {
+  display: flex;
+  flex-direction: column;
+}
+/* Las mismas columnas que las filas: «Plan» y «Sustituto» (o A y B)
+   quedan encima de su anillo. */
+.m-cmp-macros-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px 16px 36px 76px;
+  align-items: end;
+  gap: 6px;
+  padding: 0 4px 8px;
+}
+.m-cmp-macros-col {
+  justify-self: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+  white-space: nowrap;
+}
+.m-cmp-macro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px 16px 36px 76px;
+  align-items: center;
+  gap: 6px;
+  min-height: 58px;
+  padding: 0 4px;
+  border-top: 1px solid var(--m-line);
+}
+.m-cmp-macro-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 500;
+  min-width: 0;
+}
+.m-cmp-macro .m-dot {
+  background: var(--c);
+}
+.m-cmp-macro .m-ring-mini .m-num {
+  font-size: 10.5px;
+}
+.m-cmp-macro .m-ring-mini circle:not(.m-ring-mini-track) {
+  transition: stroke-dasharray 420ms var(--m-ease);
+}
+.m-cmp-macro-arrow {
+  text-align: center;
+  font-size: 12px;
+  color: var(--m-faint);
+}
+.m-cmp-delta {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+  animation: m-cmp-pop 240ms var(--m-ease) both;
+}
+.m-cmp-macro:nth-child(3) .m-cmp-delta { animation-delay: 40ms; }
+.m-cmp-macro:nth-child(4) .m-cmp-delta { animation-delay: 80ms; }
+.m-cmp-macro:nth-child(5) .m-cmp-delta { animation-delay: 120ms; }
+.m-cmp-delta[data-tone="up"] {
+  background: color-mix(in srgb, var(--m-accent-ink) 16%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-cmp-delta[data-tone="down"] {
+  color: var(--m-text);
+}
+.m-cmp-delta[data-tone="same"] {
+  color: var(--m-muted);
+}
+
+.m-cmp-help {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--m-muted);
+  padding: 0 4px;
+}
+.m-cmp-cta {
+  position: sticky;
+  bottom: calc(var(--m-dock) + 74px);
+  z-index: 5;
+  padding-top: 8px;
+}
+.m-cmp-cta::before {
+  content: "";
+  position: absolute;
+  inset: -24px -20px -12px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--m-bg) 40%);
+}
+.m-cmp-cta .m-btn {
+  width: 100%;
+}
+.m-cmp-cta-note {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--m-muted);
+}
+
+@keyframes m-cmp-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes m-cmp-from-below {
+  from {
+    opacity: 0.3;
+    transform: translateY(60%);
+  }
+}
+@keyframes m-cmp-from-above {
+  from {
+    opacity: 0.3;
+    transform: translateY(-60%);
+  }
+}
+@keyframes m-cmp-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes m-cmp-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-cmp-row-in,
+  .m-cmp-pair[data-flips] .m-cmp-row .m-cmp-row-in,
+  .m-cmp-delta {
+    animation-name: m-cmp-fade;
+    animation-delay: 0s;
+  }
+  .m-cmp-flip svg {
+    transition: none;
+  }
+  .m-cmp-sim-bar i,
+  .m-cmp-macro .m-ring-mini circle:not(.m-ring-mini-track) {
+    transition: none;
+  }
+}
+
+/* Ficha de alimento: «Más detalle» plegado al pie de la tarjeta de macros,
+   con las mismas filas, colores y barras. Se abre con la altura
+   (grid 0fr → 1fr) y las barras se dibujan como las de arriba. */
+.m-more {
+  margin: 0 -22px 0 -18px;
+  border-top: 1px solid var(--m-line);
+}
+.m-more-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px 0 18px;
+  text-align: left;
+  color: inherit;
+}
+.m-more-title {
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+}
+.m-more-hint {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--m-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  transition: opacity 200ms var(--m-ease);
+}
+.m-more-toggle[aria-expanded="true"] .m-more-hint {
+  opacity: 0;
+}
+.m-more-chevron {
+  flex: none;
+  color: var(--m-muted);
+  transition: transform 260ms var(--m-ease);
+}
+.m-more-toggle[aria-expanded="true"] .m-more-chevron {
+  transform: rotate(180deg);
+}
+.m-more-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms var(--m-ease);
+}
+.m-more-toggle[aria-expanded="true"] + .m-more-panel {
+  grid-template-rows: 1fr;
+}
+.m-more-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 22px 0 18px;
+  opacity: 0;
+  transition:
+    opacity 200ms var(--m-ease),
+    padding 280ms var(--m-ease);
+}
+.m-more-toggle[aria-expanded="true"] + .m-more-panel .m-more-inner {
+  opacity: 1;
+  padding: 2px 22px 18px 18px;
+}
+.m-more-inner .m-sub {
+  font-size: 11.5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-more-panel,
+  .m-more-chevron,
+  .m-more-inner {
+    transition: none;
+  }
+}
+
+/* Check de verificado (nov 2026): sello del acento con la palomita en el
+   color que va sobre el acento, como el de las redes. */
+.m-verified {
+  flex: none;
+  display: inline-block;
+  vertical-align: -0.12em;
+}
+.m-verified-seal {
+  fill: var(--m-accent);
+  stroke: var(--m-accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.m-verified-check {
+  fill: none;
+  stroke: var(--m-on-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.m-verified-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.m-verified-line .m-list-row-title {
+  min-width: 0;
+}
+.m-filter .m-verified {
+  margin: 0 6px 0 -3px;
+}
+.m-active-name .m-verified {
+  margin-left: 8px;
+  vertical-align: -0.08em;
 }

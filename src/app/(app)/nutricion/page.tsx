@@ -29,6 +29,8 @@ export default async function NutritionPage({
     item?: string;
     q?: string;
     filtro?: string;
+    grupo?: string;
+    pagina?: string;
     alimento?: string;
   }>;
 }) {

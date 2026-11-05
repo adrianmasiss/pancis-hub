@@ -1,128 +1,125 @@
 "use client";
 
-import {
-  useOptimistic,
-  useState,
-  useSyncExternalStore,
-  useTransition,
-} from "react";
-import { Apple, BadgeCheck, Plus, Star, TriangleAlert } from "lucide-react";
+import { useOptimistic, useState, useTransition, type ReactNode } from "react";
+import { Apple, ChevronDown, Plus, Star, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteFood } from "@/features/foods/actions";
 import type { LibraryFood } from "@/features/foods/queries";
 import { messages } from "@/i18n/es-419";
 import { triggerHaptic } from "@/lib/haptics";
 import { BackButton } from "@/mobile/ui/back-button";
-import { Segmented, Stepper } from "@/mobile/ui/controls";
+import { Stepper } from "@/mobile/ui/controls";
 import { Bar } from "@/mobile/ui/display";
 import { UseTodaySheet, type UseTodayMeal } from "./use-today-sheet";
 import { foodFacts, MICROS } from "./food-facts";
 import { MACROS, gramos, kcal } from "./format";
 import { Haptic } from "@/mobile/ui/haptic";
+import { VerifiedBadge } from "@/mobile/ui/verified-badge";
 
 const KCAL_POR_G = { proteinG: 4, carbohydrateG: 4, fatG: 9, fiberG: 0 };
 
 /**
  * De donde salen las calorias: un anillo partido en los colores de cada macro,
- * las kcal en el centro y al lado cada macro con su valor y su parte del total.
- * La fibra no suma (o casi) kcal: va con su valor y sin porcentaje.
+ * las kcal en el centro y al lado cada macro con su valor, su parte del total
+ * y una barra de esa parte (nov 2026: el usuario quiso el anillo Y las
+ * barras, en vez de elegir). La fibra no suma (o casi) kcal: va con su valor,
+ * sin porcentaje, y su barra cuenta sobre 10 g. Debajo, en la misma
+ * tarjeta, va lo plegable («Más detalle»).
  */
 function MacroBreakdown({
   food,
   factor,
+  children,
 }: {
   food: LibraryFood;
   factor: number;
+  children?: ReactNode;
 }) {
   const parts = MACROS.map((m) => {
     const g = food[m.key] * factor;
     return { ...m, g, kcal: g * KCAL_POR_G[m.key] };
   });
   const total = parts.reduce((t, p) => t + p.kcal, 0);
-  const size = 112;
-  const stroke = 12;
+  const size = 104;
+  const stroke = 11;
   const r = (size - stroke) / 2;
   const len = 2 * Math.PI * r;
   const gap = total > 0 ? 3 : 0;
   let offset = 0;
   return (
-    <div className="m-card m-macro-break" data-size="sm">
-      <div
-        className="m-macro-donut"
-        role="img"
-        aria-label={`${kcal(food.calories * factor)} kcal`}
-      >
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            strokeWidth={stroke}
-            className="m-ring-track"
-          />
-          {total > 0 &&
-            parts
-              .filter((p) => p.kcal > 0)
-              .map((p) => {
-                const seg = (p.kcal / total) * len;
-                const el = (
-                  <circle
-                    key={p.key}
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={r}
-                    fill="none"
-                    stroke={p.color}
-                    strokeWidth={stroke}
-                    strokeDasharray={`${Math.max(0, seg - gap)} ${len}`}
-                    strokeDashoffset={-offset}
-                  />
-                );
-                offset += seg;
-                return el;
-              })}
-        </svg>
-        <span className="m-macro-donut-center">
-          <span className="m-num">{kcal(food.calories * factor)}</span>
-          <small>kcal</small>
-        </span>
+    <div className="m-card m-macro-break">
+      <div className="m-macro-break-top">
+        <div
+          className="m-macro-donut"
+          role="img"
+          aria-label={`${kcal(food.calories * factor)} kcal`}
+        >
+          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              strokeWidth={stroke}
+              className="m-ring-track"
+            />
+            {total > 0 &&
+              parts
+                .filter((p) => p.kcal > 0)
+                .map((p) => {
+                  const seg = (p.kcal / total) * len;
+                  const el = (
+                    <circle
+                      key={p.key}
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={r}
+                      fill="none"
+                      stroke={p.color}
+                      strokeWidth={stroke}
+                      strokeDasharray={`${Math.max(0, seg - gap)} ${len}`}
+                      strokeDashoffset={-offset}
+                    />
+                  );
+                  offset += seg;
+                  return el;
+                })}
+          </svg>
+          <span className="m-macro-donut-center">
+            <span className="m-num">{kcal(food.calories * factor)}</span>
+            <small>kcal</small>
+          </span>
+        </div>
+        <ul className="m-macro-legend">
+          {parts.map((p) => (
+            <li key={p.key}>
+              <span className="m-macro-legend-head">
+                <span className="m-dot" style={{ background: p.color }} />
+                <span className="m-macro-legend-name">{p.label}</span>
+                <span className="m-num m-macro-legend-g">
+                  {gramos(p.g)} g
+                  {p.key !== "fiberG" && total > 0 && (
+                    <small> · {Math.round((p.kcal / total) * 100)}%</small>
+                  )}
+                </span>
+              </span>
+              <Bar
+                value={
+                  p.key === "fiberG"
+                    ? Math.min(1, p.g / 10)
+                    : total > 0
+                      ? p.kcal / total
+                      : 0
+                }
+                color={p.color}
+              />
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul className="m-macro-legend">
-        {parts.map((p) => (
-          <li key={p.key}>
-            <span className="m-dot" style={{ background: p.color }} />
-            <span className="m-macro-legend-name">{p.label}</span>
-            <span className="m-num m-macro-legend-g">{gramos(p.g)} g</span>
-            <span className="m-num m-macro-legend-pct">
-              {p.key === "fiberG" || total === 0
-                ? ""
-                : `${Math.round((p.kcal / total) * 100)}%`}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {children}
     </div>
   );
-}
-
-const VARIANTE_KEY = "pc-m-macros-ficha";
-function readVariante(): "anillo" | "barras" {
-  try {
-    return localStorage.getItem(VARIANTE_KEY) === "barras"
-      ? "barras"
-      : "anillo";
-  } catch {
-    return "anillo";
-  }
-}
-function subscribeVariante(cb: () => void) {
-  window.addEventListener(VARIANTE_KEY, cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    window.removeEventListener(VARIANTE_KEY, cb);
-    window.removeEventListener("storage", cb);
-  };
 }
 
 /** De donde salen los numeros, dicho para personas. */
@@ -134,6 +131,12 @@ function sourceOf(food: LibraryFood): { nombre: string; detalle: string } {
     };
   switch (food.source) {
     case "USDA FoodData Central":
+      if (food.branded)
+        return {
+          nombre: "USDA FoodData Central",
+          detalle:
+            "Producto de marca: es la etiqueta que declara el fabricante, recopilada por el Departamento de Agricultura de EE. UU.",
+        };
       return {
         nombre: "USDA FoodData Central",
         detalle:
@@ -170,63 +173,17 @@ function confidenceOf(food: LibraryFood): {
       tone: "warn",
       detalle: "Sus números no cuadran: está pendiente de revisión.",
     };
-  if (food.verified) return { label: "Verificado", tone: "ok", detalle: "" };
+  if (food.confirmed)
+    return {
+      label: "Verificado",
+      tone: "ok",
+      detalle: "Sin correcciones y sin desacuerdo con otras fuentes.",
+    };
   return {
     label: "Estimado",
     tone: "neutral",
     detalle: "Úsalo como aproximación.",
   };
-}
-
-/**
- * Variante en barras, como el resumen de Inicio: las kcal a la izquierda y
- * cada macro con su barra, del largo de su parte de las kcal.
- */
-function MacroBarsCard({
-  food,
-  factor,
-}: {
-  food: LibraryFood;
-  factor: number;
-}) {
-  const parts = MACROS.map((m) => {
-    const g = food[m.key] * factor;
-    return { ...m, g, kcal: g * KCAL_POR_G[m.key] };
-  });
-  const total = parts.reduce((t, p) => t + p.kcal, 0);
-  return (
-    <div className="m-card m-macro-bars" data-size="sm">
-      <div className="m-macro-bars-kcal">
-        <span className="m-num">{kcal(food.calories * factor)}</span>
-        <small>kcal</small>
-      </div>
-      <div className="m-stack" style={{ flex: 1, gap: 9 }}>
-        {parts.map((p) => (
-          <span key={p.key} className="m-stack" style={{ gap: 4 }}>
-            <span className="m-home-macro">
-              <span>{p.label}</span>
-              <span className="m-num">
-                {gramos(p.g)} g
-                {p.key !== "fiberG" && total > 0 && (
-                  <small> · {Math.round((p.kcal / total) * 100)}%</small>
-                )}
-              </span>
-            </span>
-            <Bar
-              value={
-                p.key === "fiberG"
-                  ? Math.min(1, p.g / 10)
-                  : total > 0
-                    ? p.kcal / total
-                    : 0
-              }
-              color={p.color}
-            />
-          </span>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 /**
@@ -252,18 +209,7 @@ export function FoodDetail({
   const [, startTransition] = useTransition();
   const [fav, setFav] = useOptimistic(food.isFavorite);
   const [useOpen, setUseOpen] = useState(false);
-  /* Mientras eliges entre las dos vistas, se recuerda la ultima. */
-  const variante = useSyncExternalStore(
-    subscribeVariante,
-    readVariante,
-    () => "anillo" as const,
-  );
-  const elegirVariante = (v: "anillo" | "barras") => {
-    try {
-      localStorage.setItem(VARIANTE_KEY, v);
-    } catch {}
-    window.dispatchEvent(new Event(VARIANTE_KEY));
-  };
+  const [moreOpen, setMoreOpen] = useState(false);
   const f = grams / 100;
   const group =
     messages.foods.groups[food.foodGroup as keyof typeof messages.foods.groups];
@@ -279,24 +225,48 @@ export function FoodDetail({
   // null = el alimento no trae el dato; se dice, no se pone 0.
   // Proteina, carbohidratos y grasas van en la tarjeta de colores; aqui el
   // resto, mas discreto.
-  const rows: { label: string; per100: number | null; suffix: string }[] = [
+  const rows: {
+    label: string;
+    per100: number | null;
+    suffix: string;
+    /** Referencia de la barra; `vd` = es un valor diario de la FDA. */
+    dv: { ref: number; vd: boolean };
+    /** Como los macros: la saturada es grasa y el azucar, carbohidrato. */
+    color: string;
+  }[] = [
     ...(food.micronutrients?.sat_fat_g !== undefined
       ? [
           {
             label: "Saturada",
             per100: food.micronutrients.sat_fat_g,
             suffix: "g",
+            dv: { ref: 20, vd: true },
+            color: "var(--m-fat)",
           },
         ]
       : []),
-    { label: "Azúcar", per100: food.sugarG ?? null, suffix: "g" },
-    { label: "Sodio", per100: food.sodiumMg ?? null, suffix: "mg" },
+    {
+      label: "Azúcar",
+      per100: food.sugarG ?? null,
+      suffix: "g",
+      dv: { ref: 50, vd: false },
+      color: "var(--m-carbs)",
+    },
+    {
+      label: "Sodio",
+      per100: food.sodiumMg ?? null,
+      suffix: "mg",
+      dv: { ref: 2300, vd: true },
+      color: "var(--m-sodium)",
+    },
     ...(food.micronutrients?.cholesterol_mg !== undefined
       ? [
           {
             label: "Colesterol",
             per100: food.micronutrients.cholesterol_mg,
             suffix: "mg",
+            dv: { ref: 300, vd: true },
+            color: "var(--m-cholesterol)",
           },
         ]
       : []),
@@ -344,7 +314,10 @@ export function FoodDetail({
         </div>
         <div className="m-active-title">
           <div className="m-sub">Biblioteca · {group ?? "Alimento"}</div>
-          <h1 className="m-active-name">{food.name}</h1>
+          <h1 className="m-active-name">
+            {food.name}
+            {food.confirmed && <VerifiedBadge size={22} />}
+          </h1>
           {food.brand && <div className="m-sub">{food.brand}</div>}
         </div>
       </div>
@@ -416,68 +389,76 @@ export function FoodDetail({
           style={{ gap: 8 }}
           aria-labelledby="m-food-nutri"
         >
-          <div className="m-row" style={{ justifyContent: "space-between" }}>
-            <h2 id="m-food-nutri" className="m-section">
-              Información nutricional
-            </h2>
-            <div className="m-seg-compact">
-              <Segmented
-                label="Cómo ver los macros"
-                value={variante}
-                onChange={elegirVariante}
-                options={[
-                  { value: "anillo", label: "Anillo" },
-                  { value: "barras", label: "Barras" },
-                ]}
-              />
-            </div>
-          </div>
-          {variante === "anillo" ? (
-            <MacroBreakdown food={food} factor={f} />
-          ) : (
-            <MacroBarsCard food={food} factor={f} />
-          )}
-        </section>
-
-        <section
-          className="m-stack"
-          style={{ gap: 8 }}
-          aria-labelledby="m-food-more"
-        >
-          <h2 id="m-food-more" className="m-eyebrow">
-            Más detalle
+          <h2 id="m-food-nutri" className="m-section">
+            Información nutricional
           </h2>
-          <div className="m-card m-nutri" data-size="sm" data-quiet="">
-            <div className="m-nutri-row" data-head="">
-              <span />
-              <span>
-                {grams} {unit}
-              </span>
-              <span>100 {unit}</span>
-            </div>
-            {rows.map((r) => (
-              <div key={r.label} className="m-nutri-row">
-                <span>{r.label}</span>
-                {r.per100 === null ? (
-                  <span className="m-nutri-none">Sin dato</span>
-                ) : (
-                  <span>
-                    {r.suffix === "mg"
-                      ? kcal(r.per100 * f)
-                      : gramos(r.per100 * f)}{" "}
-                    {r.suffix}
-                  </span>
-                )}
-                <span>
-                  {r.per100 === null
-                    ? "—"
-                    : r.suffix === "mg"
-                      ? kcal(r.per100)
-                      : gramos(r.per100)}
+          <MacroBreakdown food={food} factor={f}>
+            <div className="m-more">
+              <button
+                type="button"
+                className="m-more-toggle m-press"
+                aria-expanded={moreOpen}
+                aria-controls="m-food-more"
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                <span className="m-more-title">Más detalle</span>
+                <span className="m-more-hint">
+                  {rows.map((r) => r.label).join(", ")}
                 </span>
+                <ChevronDown
+                  size={18}
+                  className="m-more-chevron"
+                  aria-hidden="true"
+                />
+              </button>
+              <div className="m-more-panel" id="m-food-more" inert={!moreOpen}>
+                <div className="m-more-inner">
+                  {/* Se vuelve a montar al abrir: las barras se dibujan desde 0
+                  con la misma animacion que las de los macros. */}
+                  <ul className="m-macro-legend" key={moreOpen ? "on" : "off"}>
+                    {rows.map((r) => {
+                      const v = r.per100 === null ? null : r.per100 * f;
+                      return (
+                        <li key={r.label}>
+                          <span className="m-macro-legend-head">
+                            <span
+                              className="m-dot"
+                              style={{ background: r.color }}
+                            />
+                            <span className="m-macro-legend-name">
+                              {r.label}
+                            </span>
+                            {v === null ? (
+                              <span className="m-nutri-none">Sin dato</span>
+                            ) : (
+                              <span className="m-num m-macro-legend-g">
+                                {r.suffix === "mg" ? kcal(v) : gramos(v)}{" "}
+                                {r.suffix}
+                                {r.dv.vd && (
+                                  <small>
+                                    {" "}
+                                    · {Math.round((v / r.dv.ref) * 100)}% VD
+                                  </small>
+                                )}
+                              </span>
+                            )}
+                          </span>
+                          <Bar
+                            value={moreOpen && v !== null ? v / r.dv.ref : 0}
+                            color={r.color}
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="m-sub">
+                    Las barras van contra el valor diario de referencia (FDA);
+                    el azúcar, contra el límite de 50 g de azúcares añadidos.
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          </MacroBreakdown>
         </section>
 
         {micros.length > 0 && (
@@ -547,7 +528,7 @@ export function FoodDetail({
               <span className="m-list-row-title">{fuente.nombre}</span>
               <span className="m-tag" data-tone={confianza.tone}>
                 {confianza.tone === "ok" && (
-                  <BadgeCheck size={12} aria-hidden="true" />
+                  <VerifiedBadge size={13} decorative />
                 )}
                 {confianza.label}
               </span>

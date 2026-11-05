@@ -9,7 +9,8 @@ import { kcal, mealLabel } from "./format";
 import { NutritionToday } from "./today";
 import { MealDetail } from "./meal-detail";
 import { CompareFoods } from "./compare";
-import { FoodLibrary } from "./library";
+import { FoodLibrary, type LibraryFilter } from "./library";
+import { FOOD_GROUPS, type FoodGroup } from "@/features/foods/schemas";
 import { FoodDetail } from "./food-detail";
 import { BarcodeScannerScreen } from "./scanner";
 import { EatOut } from "./eat-out";
@@ -25,6 +26,9 @@ export type NutritionParams = {
   item?: string;
   q?: string;
   filtro?: string;
+  /** Grupo de alimento de la biblioteca (`FOOD_GROUPS`). */
+  grupo?: string;
+  pagina?: string;
   /** Ficha de un alimento de la biblioteca. */
   alimento?: string;
   /** Restaurante elegido en «Comer fuera». */
@@ -32,6 +36,9 @@ export type NutritionParams = {
   /** Historial abierto desde «Copiar de otro día». */
   copiar?: string;
 };
+
+/** Alimentos por pagina de la biblioteca, como la de ejercicios. */
+const FOOD_LIBRARY_PAGE = 24;
 
 function fechaCorta(dateISO: string): string {
   const s = new Intl.DateTimeFormat("es-CR", {
@@ -171,19 +178,39 @@ export async function NutritionMobile({
         meals={planMeals}
         date={date}
         initialItemId={params.item ?? null}
+        targets={day.targets ?? null}
       />
     );
   } else if (tab === "biblioteca") {
     title = "Biblioteca";
     subtitle = "Valores por 100 g";
-    const view = params.filtro === "favoritos" ? "favoritos" : "todos";
-    const { foods } = await getFoodsLibraryPage(userId, {
+    const filtro: LibraryFilter =
+      params.filtro === "favoritos" || params.filtro === "verificados"
+        ? params.filtro
+        : "todos";
+    const grupo = FOOD_GROUPS.includes(params.grupo as FoodGroup)
+      ? (params.grupo as FoodGroup)
+      : null;
+    const page = Math.max(1, Number(params.pagina) || 1);
+    const { foods, total } = await getFoodsLibraryPage(userId, {
       query: params.q?.trim().slice(0, 80) || undefined,
-      view,
-      page: 1,
-      pageSize: 40,
+      view: filtro === "favoritos" ? "favoritos" : "todos",
+      onlyConfirmed: filtro === "verificados",
+      group: grupo ?? undefined,
+      page,
+      pageSize: FOOD_LIBRARY_PAGE,
     });
-    body = <FoodLibrary foods={foods} query={params.q ?? ""} view={view} />;
+    body = (
+      <FoodLibrary
+        foods={foods}
+        total={total}
+        query={params.q ?? ""}
+        page={page}
+        pageSize={FOOD_LIBRARY_PAGE}
+        filter={filtro}
+        group={grupo}
+      />
+    );
   } else if (tab === "fuera") {
     title = "Comer fuera";
     subtitle = day.remaining
