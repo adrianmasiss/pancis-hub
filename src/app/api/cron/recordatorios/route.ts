@@ -5,8 +5,9 @@ import { addDaysISO, localDateOf } from "@/lib/dates";
 import { parseNotificationPrefs } from "@/features/reminders/prefs";
 
 /*
-  Recordatorios push. Lo llama un programador cada ~15 min (ver
-  docs en el cierre de la tarea) con `Authorization: Bearer CRON_SECRET`.
+  Recordatorios push. Lo llama pg_cron desde Supabase cada 15 min
+  (migracion 20261106000000_recordatorios_pg_cron) con
+  `Authorization: Bearer CRON_SECRET`.
 
   Cada tipo se enciende y se ajusta en Perfil › Notificaciones
   (`profiles.notification_prefs`, ver src/features/reminders/prefs.ts):
