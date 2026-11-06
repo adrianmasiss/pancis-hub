@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, ImagePlus } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 import type {
@@ -15,18 +15,27 @@ import { num } from "./format";
 
 type Units = ReturnType<typeof useUnits>;
 
-export type Fila = { key: keyof MeasurementView; label: string; value: string };
+export type Fila = {
+  key: keyof MeasurementView;
+  label: string;
+  value: string;
+  unit: string;
+};
 
 /** Todas las cifras de una medicion que traiga, en el orden del informe. */
 export function filasDe(m: MeasurementView, u: Units): Fila[] {
-  const kg = (v: number) => `${u.fmtWeight(v)} ${u.weightUnit}`;
-  const cm = (v: number) => `${u.fmtLength(v)} ${u.lengthUnit}`;
-  const filas: [keyof MeasurementView, string, string | null][] = [
+  const kg = (v: number) => [u.fmtWeight(v), u.weightUnit] as const;
+  const cm = (v: number) => [u.fmtLength(v), u.lengthUnit] as const;
+  const filas: [
+    keyof MeasurementView,
+    string,
+    readonly [string, string] | null,
+  ][] = [
     ["weightKg", "Peso", m.weightKg !== null ? kg(m.weightKg) : null],
     [
       "bodyFatPercentage",
       "% de grasa",
-      m.bodyFatPercentage !== null ? `${num(m.bodyFatPercentage)} %` : null,
+      m.bodyFatPercentage !== null ? [num(m.bodyFatPercentage), "%"] : null,
     ],
     [
       "skeletalMuscleKg",
@@ -34,33 +43,35 @@ export function filasDe(m: MeasurementView, u: Units): Fila[] {
       m.skeletalMuscleKg !== null ? kg(m.skeletalMuscleKg) : null,
     ],
     [
-      "visceralFatLevel",
-      "Grasa visceral",
-      m.visceralFatLevel !== null ? `Nivel ${num(m.visceralFatLevel)}` : null,
-    ],
-    [
       "totalBodyWaterL",
       "Agua corporal",
       m.totalBodyWaterL !== null
-        ? `${num(m.totalBodyWaterL)} L`
+        ? [num(m.totalBodyWaterL), "L"]
         : m.bodyWaterPercentage !== null
-          ? `${num(m.bodyWaterPercentage)} %`
+          ? [num(m.bodyWaterPercentage), "%"]
           : null,
     ],
     ["proteinKg", "Proteína", m.proteinKg !== null ? kg(m.proteinKg) : null],
     ["mineralKg", "Minerales", m.mineralKg !== null ? kg(m.mineralKg) : null],
     [
+      "visceralFatLevel",
+      "Grasa visceral",
+      m.visceralFatLevel !== null
+        ? [`Nivel ${num(m.visceralFatLevel)}`, ""]
+        : null,
+    ],
+    [
       "basalMetabolicRateKcal",
       "Metabolismo basal",
       m.basalMetabolicRateKcal !== null
-        ? `${num(m.basalMetabolicRateKcal, 0)} kcal`
+        ? [num(m.basalMetabolicRateKcal, 0), "kcal"]
         : null,
     ],
-    ["bmi", "IMC", m.bmi !== null ? num(m.bmi) : null],
+    ["bmi", "IMC", m.bmi !== null ? [num(m.bmi), ""] : null],
     [
       "waistHipRatio",
       "Cintura/cadera",
-      m.waistHipRatio !== null ? num(m.waistHipRatio, 2) : null,
+      m.waistHipRatio !== null ? [num(m.waistHipRatio, 2), ""] : null,
     ],
     ["waistCm", "Cintura", m.waistCm !== null ? cm(m.waistCm) : null],
     ["hipCm", "Cadera", m.hipCm !== null ? cm(m.hipCm) : null],
@@ -68,9 +79,86 @@ export function filasDe(m: MeasurementView, u: Units): Fila[] {
     ["armCm", "Brazo", m.armCm !== null ? cm(m.armCm) : null],
     ["thighCm", "Muslo", m.thighCm !== null ? cm(m.thighCm) : null],
   ];
-  return filas.flatMap(([key, label, value]) =>
-    value === null ? [] : [{ key, label, value }],
+  return filas.flatMap(([key, label, v]) =>
+    v === null ? [] : [{ key, label, value: v[0], unit: v[1] }],
   );
+}
+
+/** Las cifras por tema, en el orden en que se leen. */
+const GRUPOS: { titulo: string; keys: (keyof MeasurementView)[] }[] = [
+  {
+    titulo: "Principal",
+    keys: ["weightKg", "bodyFatPercentage", "skeletalMuscleKg"],
+  },
+  {
+    titulo: "Composición",
+    keys: ["totalBodyWaterL", "proteinKg", "mineralKg"],
+  },
+  {
+    titulo: "Metabolismo",
+    keys: [
+      "visceralFatLevel",
+      "basalMetabolicRateKcal",
+      "bmi",
+      "waistHipRatio",
+    ],
+  },
+  {
+    titulo: "Medidas",
+    keys: ["waistCm", "hipCm", "chestCm", "armCm", "thighCm"],
+  },
+];
+
+/** Una bandeja: rotulo pequeño encima y filas de rotulo y cifra dentro. */
+function Bandeja({
+  titulo,
+  extra,
+  children,
+}: {
+  titulo: string;
+  extra?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="m-prog-tray">
+      <h3 className="m-prog-tray-title">
+        {titulo}
+        {extra && <span>{extra}</span>}
+      </h3>
+      <div className="m-prog-tray-core">{children}</div>
+    </section>
+  );
+}
+
+/** Las cifras de un escaneo agrupadas en bandejas. */
+export function ScanFacts({
+  m,
+  omit = [],
+}: {
+  m: MeasurementView;
+  omit?: (keyof MeasurementView)[];
+}) {
+  const u = useUnits();
+  const filas = filasDe(m, u).filter((f) => !omit.includes(f.key));
+  return GRUPOS.map((g) => {
+    const suyas = g.keys.flatMap((k) => filas.filter((f) => f.key === k));
+    if (suyas.length === 0) return null;
+    return (
+      <Bandeja key={g.titulo} titulo={g.titulo}>
+        <dl className="m-prog-tray-list">
+          {suyas.map((f) => (
+            <div key={f.key}>
+              <dt>{f.label}</dt>
+              <dd className="m-num">
+                {f.value}
+                {f.unit && <small>{f.unit}</small>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Bandeja>
+    );
+  });
 }
 
 const SEGMENTO: Record<SegmentKey, string> = {
@@ -80,40 +168,68 @@ const SEGMENTO: Record<SegmentKey, string> = {
   pierna_derecha: "Pierna der.",
   pierna_izquierda: "Pierna izq.",
 };
+const ORDEN_SEGMENTOS = Object.keys(SEGMENTO) as SegmentKey[];
 
-/** El analisis por segmento entero: magra y grasa de cada parte. */
+/** El analisis por segmento entero: magra y grasa de cada parte, cada par
+ * derecha/izquierda junto. */
 export function SegmentTable({ m }: { m: MeasurementView }) {
   const u = useUnits();
-  const filas = m.segments.filter(
-    (s) => s.leanMassKg !== null || s.fatMassKg !== null,
-  );
+  const filas = m.segments
+    .filter((s) => s.leanMassKg !== null || s.fatMassKg !== null)
+    .sort(
+      (a, b) =>
+        ORDEN_SEGMENTOS.indexOf(a.segment) - ORDEN_SEGMENTOS.indexOf(b.segment),
+    );
   if (filas.length === 0) return null;
   const kg = (v: number | null) => (v === null ? "—" : u.fmtWeight(v));
   return (
-    <table className="m-prog-seg-table m-num">
-      <thead>
-        <tr>
-          <th scope="col">Segmento</th>
-          <th scope="col">Magra</th>
-          <th scope="col">Grasa</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filas.map((s) => (
-          <tr key={s.segment}>
-            <th scope="row">{SEGMENTO[s.segment]}</th>
-            <td>
-              {kg(s.leanMassKg)}
-              <small>{u.weightUnit}</small>
-            </td>
-            <td>
-              {kg(s.fatMassKg)}
-              <small>{u.weightUnit}</small>
-            </td>
+    <Bandeja titulo="Por segmento" extra={`Magra · Grasa (${u.weightUnit})`}>
+      <table className="m-prog-seg-table">
+        <thead className="sr-only">
+          <tr>
+            <th scope="col">Segmento</th>
+            <th scope="col">Magra</th>
+            <th scope="col">Grasa</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {filas.map((s) => (
+            <tr key={s.segment}>
+              <th scope="row">{SEGMENTO[s.segment]}</th>
+              <td className="m-num">{kg(s.leanMassKg)}</td>
+              <td className="m-num">{kg(s.fatMassKg)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Bandeja>
+  );
+}
+
+/** Todo un escaneo: cifras por tema, segmentos y las fotos de ese dia. */
+export function ScanDetail({
+  measurement,
+  photos,
+  measurements,
+  omit,
+}: {
+  measurement: MeasurementView;
+  photos: PhotoViewItem[];
+  measurements: MeasurementView[];
+  omit?: (keyof MeasurementView)[];
+}) {
+  return (
+    <>
+      <ScanFacts m={measurement} omit={omit} />
+      <SegmentTable m={measurement} />
+      <Bandeja titulo="Fotos de ese día">
+        <MeasurementPhotos
+          measurement={measurement}
+          photos={photos}
+          measurements={measurements}
+        />
+      </Bandeja>
+    </>
   );
 }
 
@@ -178,43 +294,49 @@ export function MeasurementPhotos({
 }
 
 /**
- * «Más del escaneo», bajo las cuatro tarjetas en Resumen: plegado, para que
- * lo principal quepa en una mirada. Dentro, lo que no se ve arriba, el
- * analisis por segmento y las fotos de ese dia.
+ * «Más del escaneo», bajo el cuerpo en Resumen: plegado, para que lo
+ * principal quepa en una mirada. Dentro, lo que no se ve arriba, el analisis
+ * por segmento y las fotos de ese dia.
  */
 export function ScanExtras({
   measurement,
   photos,
   measurements,
   omit,
+  open,
+  onOpenChange: setOpen,
 }: {
   measurement: MeasurementView;
   photos: PhotoViewItem[];
   measurements: MeasurementView[];
   /** Lo que ya se ve junto al maniqui. */
   omit: (keyof MeasurementView)[];
+  /** Controlado: «Ver todo el escaneo» lo abre desde la tarjeta del cuerpo. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const u = useUnits();
-  const [open, setOpen] = useState(false);
-  const filas = filasDe(measurement, u).filter((f) => !omit.includes(f.key));
+  const datos = filasDe(measurement, u).filter(
+    (f) => !omit.includes(f.key),
+  ).length;
   const fotos = photos.filter(
     (p) => p.measurementId === measurement.id && p.signedUrl,
   ).length;
-  const conSegmentos = measurement.segments.some(
+  const segmentos = measurement.segments.filter(
     (s) => s.leanMassKg !== null || s.fatMassKg !== null,
-  );
+  ).length;
   const pista = [
-    filas
-      .slice(0, 3)
-      .map((f) => f.label)
-      .join(", "),
-    conSegmentos && "segmentos",
-    fotos > 0 ? `${fotos} ${fotos === 1 ? "foto" : "fotos"}` : "fotos",
+    datos > 0 && `${datos} ${datos === 1 ? "dato" : "datos"}`,
+    segmentos > 0 && `${segmentos} segmentos`,
+    fotos > 0 ? `${fotos} ${fotos === 1 ? "foto" : "fotos"}` : "sin fotos",
   ]
     .filter(Boolean)
     .join(" · ");
   return (
-    <section className="m-card m-prog-extras m-prog-scan">
+    <section
+      id="m-prog-extras-card"
+      className="m-card m-prog-extras m-prog-scan"
+    >
       <button
         type="button"
         className="m-prog-scan-toggle m-press"
@@ -229,29 +351,22 @@ export function ScanExtras({
           <span className="m-list-row-title">Más del escaneo</span>
           <span className="m-list-row-sub">{pista}</span>
         </span>
-        <ChevronDown size={18} className="m-more-chevron" aria-hidden="true" />
+        <span className="m-prog-chev" aria-hidden="true">
+          <ChevronDown
+            size={16}
+            strokeWidth={1.75}
+            className="m-more-chevron"
+          />
+        </span>
       </button>
       <div className="m-more-panel" id="m-prog-extras" inert={!open}>
         <div className="m-more-inner m-prog-scan-inner">
-          {filas.length > 0 && (
-            <dl className="m-prog-facts">
-              {filas.map((f) => (
-                <div key={f.key}>
-                  <dt>{f.label}</dt>
-                  <dd className="m-num">{f.value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          <SegmentTable m={measurement} />
-          <div className="m-prog-extras-photos">
-            <span className="m-prog-sublabel">Fotos de ese día</span>
-            <MeasurementPhotos
-              measurement={measurement}
-              photos={photos}
-              measurements={measurements}
-            />
-          </div>
+          <ScanDetail
+            measurement={measurement}
+            photos={photos}
+            measurements={measurements}
+            omit={omit}
+          />
         </div>
       </div>
     </section>

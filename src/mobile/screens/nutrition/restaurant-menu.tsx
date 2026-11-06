@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import catalog from "@/features/restaurants/data/costa-rica-2026-11-06.json";
 import {
   addRestaurantItem,
   researchRestaurant,
@@ -78,6 +79,15 @@ export function RestaurantMenu({
   const [newOpen, setNewOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
+  const normalizeName = (name: string) =>
+    name
+      .toLocaleLowerCase("es")
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]/g, "");
+  const report = catalog.find(
+    (r) => normalizeName(r.name) === normalizeName(restaurant.name),
+  );
   const best = bestForToday(items, remainingKcal);
   const q = term.trim().toLowerCase();
   const verificados = items.filter((i) => i.status === "verificado").length;
@@ -113,8 +123,10 @@ export function RestaurantMenu({
   const nota = fuentes.has("verificado")
     ? fuentes.size === 1
       ? "Valores de la tabla oficial del restaurante, revisados."
-      : "Unos valores son de la tabla oficial revisada; otros, estimados."
-    : "Valores estimados: buscados por la IA o escritos por usuarios.";
+      : "Hay valores verificados y otros estimados o pendientes de revisión."
+    : fuentes.has("pendiente")
+      ? "Hay fichas pendientes de validación. Consulta la fuente y las observaciones de cada plato."
+      : "Valores estimados: buscados por la IA o escritos por usuarios.";
 
   return (
     <div className="m-screen" data-m-fullscreen="" style={{ paddingBottom: 0 }}>
@@ -147,6 +159,42 @@ export function RestaurantMenu({
           </div>
         </header>
 
+        {restaurant.imageSourceUrl && (
+          <a
+            className="m-sub"
+            href={restaurant.imageSourceUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Fuente de la imagen del restaurante
+          </a>
+        )}
+
+        {report && (
+          <section
+            className="m-card m-stack"
+            style={{ padding: 16, gap: 8 }}
+            aria-label="Fuentes del restaurante"
+          >
+            <p className="m-sub">{report.nutrition.slice(4)}</p>
+            <p className="m-sub">{report.note}</p>
+            <p className="m-sub">En el menú: {report.examples}</p>
+            <a
+              href={report.menuUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="m-sub"
+            >
+              Ver menú del restaurante{" "}
+              <ExternalLink size={12} aria-hidden="true" />
+            </a>
+            <p className="m-sub">
+              Informe consultado el 06/11/2026 · Disponibilidad sujeta a
+              sucursal.
+            </p>
+          </section>
+        )}
+
         {items.length > 0 && (
           <label className="m-search">
             <Search size={18} aria-hidden="true" />
@@ -165,7 +213,11 @@ export function RestaurantMenu({
             href={dishHref(restaurant.id, best.id)}
             className="m-rest-best m-press"
           >
-            <DishThumb section={best.section} size={48} />
+            <DishThumb
+              imageUrl={best.imageUrl}
+              section={best.section}
+              size={48}
+            />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span className="m-eyebrow" data-tone="accent">
                 Mejor opción para hoy
@@ -267,7 +319,10 @@ export function RestaurantMenu({
                     href={dishHref(restaurant.id, item.id)}
                     className="m-list-row m-press"
                   >
-                    <DishThumb section={item.section} />
+                    <DishThumb
+                      imageUrl={item.imageUrl}
+                      section={item.section}
+                    />
                     <span className="m-list-row-main">
                       <span className="m-verified-line">
                         <span className="m-list-row-title">{item.name}</span>
@@ -286,11 +341,21 @@ export function RestaurantMenu({
                             {FIT_TAG[fit].label}
                           </span>
                         )}
-                        {item.status === "pendiente" && (
-                          <span className="m-tag" data-tone="warn">
-                            Pendiente
+                        {item.sourceNote?.startsWith(
+                          "Fuente oficial publicada.",
+                        ) && (
+                          <span className="m-tag">
+                            Fuente oficial · vigencia pendiente
                           </span>
                         )}
+                        {item.status === "pendiente" &&
+                          !item.sourceNote?.startsWith(
+                            "Fuente oficial publicada.",
+                          ) && (
+                            <span className="m-tag" data-tone="warn">
+                              Pendiente
+                            </span>
+                          )}
                       </span>
                     </span>
                     <ChevronRight
@@ -353,22 +418,48 @@ export function RestaurantMenu({
   );
 }
 
-/** Baldosa del plato: sin fotos de los restaurantes, el icono de su seccion. */
+/** Foto publicada del producto; icono solo cuando no hay foto o falla. */
 export function DishThumb({
+  imageUrl,
   section,
   size = 44,
 }: {
   section: MenuSection;
+  imageUrl?: string | null;
   size?: number;
 }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const showImage = imageUrl && failedUrl !== imageUrl;
   const Icon = SECTION_ICON[section];
   return (
     <span
       className="m-food-thumb"
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        overflow: "hidden",
+        background: showImage ? "#fff" : undefined,
+      }}
       aria-hidden="true"
     >
-      <Icon size={size * 0.45} strokeWidth={1.6} />
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt=""
+          width={size}
+          height={size}
+          loading="lazy"
+          decoding="async"
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          ref={(img) => {
+            if (img?.complete && img.naturalWidth === 0) setFailedUrl(imageUrl);
+          }}
+          onError={() => setFailedUrl(imageUrl)}
+        />
+      ) : (
+        <Icon size={size * 0.45} strokeWidth={1.6} />
+      )}
     </span>
   );
 }

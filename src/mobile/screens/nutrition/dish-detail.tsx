@@ -120,13 +120,38 @@ export function DishDetail({
     return (
       <Shell restaurant={restaurant}>
         <div className="m-body">
+          <DishThumb
+            imageUrl={item.imageUrl}
+            section={item.section}
+            size={160}
+          />
           <h1 className="m-title" style={{ fontSize: 28 }}>
             {item.name}
           </h1>
           <p className="m-sub">
-            Este plato todavía no tiene sus valores. Pídele a la IA que busque
-            el menú desde la pantalla del restaurante.
-          </p>
+            {item.sourceNote ??
+              "Este plato todavía no tiene valores completos para registrarlo."}
+          </p>{" "}
+          {item.imageSourceUrl && (
+            <a
+              className="m-sub"
+              href={item.imageSourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Fuente de la foto · Presentación ilustrativa
+            </a>
+          )}
+          {item.sourceUrl && (
+            <a
+              className="m-sub"
+              href={item.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ver fuente
+            </a>
+          )}
         </div>
       </Shell>
     );
@@ -190,7 +215,11 @@ export function DishDetail({
     <Shell restaurant={restaurant}>
       <div className="m-body m-stagger" style={{ paddingTop: 4, gap: 18 }}>
         <div className="m-dish-hero">
-          <DishThumb section={item.section} size={96} />
+          <DishThumb
+            imageUrl={item.imageUrl}
+            section={item.section}
+            size={96}
+          />
           {fit && remaining !== null && (
             <span
               key={fit}
@@ -365,9 +394,20 @@ export function DishDetail({
         )}
 
         <p className="m-sub m-rest-note">
-          {item.status === "verificado"
-            ? "Valores de la tabla oficial del restaurante, revisados."
-            : (item.sourceNote ?? "Valores estimados.")}
+          {item.sourceNote ??
+            (item.status === "verificado"
+              ? "Valores de la tabla oficial del restaurante, revisados."
+              : "Valores estimados.")}{" "}
+          {item.imageSourceUrl && (
+            <a
+              className="m-sub"
+              href={item.imageSourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Fuente de la foto · Presentación ilustrativa
+            </a>
+          )}
           {item.sourceUrl && (
             <>
               {" "}

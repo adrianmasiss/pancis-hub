@@ -1,0 +1,362 @@
+[
+  {
+    "name": "McDonald's",
+    "category": "hamburguesas",
+    "menuUrl": "https://www.mcdonalds.co.cr/menu",
+    "nutrition": "A - Kcal y macros publicados; revisión pendiente.",
+    "note": "87 fichas revisadas. Hay kcal y macros en gramos, pero también ceros anómalos, ausencias y contradicciones. Ver anexo completo; no importar todo automáticamente.",
+    "examples": "Big Mac; McPollo; McPinto; McNuggets; McPapas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "KFC",
+    "category": "pollo",
+    "menuUrl": "https://www.kfccostarica.cr/Menu",
+    "nutrition": "B - Nutrición parcial o validación pendiente.",
+    "note": "Se localizó PDF de kcal y alérgenos en Tictuk, sin macros. No se confirmó enlace desde el sitio actual ni revisión vigente. Documento pendiente de validación de procedencia y combos.",
+    "examples": "KCS Original; Coronel; Twister Clásico; piezas de pollo; megas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Burger King",
+    "category": "hamburguesas",
+    "menuUrl": "https://www.ubereats.com/cr/store/burger-king-zona-centro-desamparados/yVfVstPWUeueTDIWKKcK1g",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional pública verificable para Costa Rica. No trasladar valores de Estados Unidos. Sitio local: https://burgerkingcostarica.com/home",
+    "examples": "Hamburguesas a la parrilla; combos; papas; bebidas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Taco Bell",
+    "category": "mexicana",
+    "menuUrl": "https://www.ubereats.com/cr/store/taco-bell-coronado/KXagvo4uV2GdqNmMvP993Q",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Separar producto individual, papas y bebida en los Full Box.",
+    "examples": "Beefy Stacker; Fiesta Fries Supreme; Burrito 5 Capas; Mexican Pizza.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Subway",
+    "category": "sandwiches",
+    "menuUrl": "https://www.subwaycostarica.com/",
+    "nutrition": "A - Kcal y macros publicados; revisión pendiente.",
+    "note": "Guía local con kcal, porción y macros. Sigue enlazada, pero sin fecha de revisión verificada; varios productos podrían no corresponder al menú actual. Reconfirmar recetas y disponibilidad.",
+    "examples": "Subs de 15 cm; jamón; pollo; pavo; vegetales.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Pizza Hut",
+    "category": "pizza",
+    "menuUrl": "https://www.ubereats.com/cr/store/pizza-hut-paseo-colon-restaurante/hoO29T-tRouL4cMu66r69g",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Registrar diámetro, masa y número de porciones; no mezclar pizza entera con tajada.",
+    "examples": "Pizzas; Breadsticks; Cheese Poppers; opciones Gluten Friendly.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Papa Johns",
+    "category": "pizza",
+    "menuUrl": "https://www.papajohns.cr/menu/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable de kcal y macros. Pedir ficha por tamaño, masa, ingredientes y salsa incluida.",
+    "examples": "Pizzas; acompañamientos; bebidas; postres.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Domino's",
+    "category": "pizza",
+    "menuUrl": "https://www.ubereats.com/cr/store/dominos-pizza-sabana/fmbGZTttWmqnIzgrlzUA7g",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable. El menú distingue tamaños de 12, 14 y 18 pulgadas; validar tajadas y porción de referencia.",
+    "examples": "Extravaganza; Meat Fest; Cheesy Fingers; Lava Cake.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Little Caesars",
+    "category": "pizza",
+    "menuUrl": "https://cr.littlecaesars.com/es-cr/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Respaldo del menú: https://web.didiglobal.com/cr/food/san-jose/little-caesars-lomas-de-ayarco/5764607966855301030/",
+    "examples": "Pepperoni; queso; Duo Duo; Crazy Puffs.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Ready Pizza",
+    "category": "pizza",
+    "menuUrl": "https://www.readypizzacr.com/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Validar masa, ingredientes, peso total y cantidad de tajadas antes de calcular porciones.",
+    "examples": "Pizzas de 14 pulgadas; combos; acompañamientos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Pollolandia",
+    "category": "pollo",
+    "menuUrl": "https://www.ubereats.com/cr/store/pollolandia-belen/C8B1FJy3Wq-_9AmhDMcO9Q",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Es distinta de Pollo Granjero, cadena cerrada en 2026. Solicitar datos por corte de pollo y aceite/preparación.",
+    "examples": "Personal de 2 piezas; familiar de 6 piezas; tortillas; acompañamientos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Rosti",
+    "category": "pollo",
+    "menuUrl": "https://www.ubereats.com/cr/store/rosti-san-jose/5JjXv1NYQv-EdrbKvg0g7Q",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. El casado cambia según proteína y guarniciones; no asignar un valor único a todas las variantes.",
+    "examples": "Pollo; Rosti Casado; wraps; acompañamientos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Quiznos",
+    "category": "sandwiches",
+    "menuUrl": "https://www.ubereats.com/cr/store/quiznos-san-jose-hotel-costa-rica/Nwr94IcnQCy5jegCk08cAA",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable. Confirmar tamaño, pan, queso y aderezo; las tablas internacionales no prueban equivalencia local.",
+    "examples": "Pavo Aguacate; Steak Especial; Avoketo; subs de 15 cm.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Popeyes",
+    "category": "pollo",
+    "menuUrl": "https://www.ubereats.com/cr/store/popeyes-rohrmoser/b2r4K63jXt2cFUDwVI6sHg",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Inclusión por oferta emergente y delivery; no demuestra pertenencia a un top 40 de consumo.",
+    "examples": "Chicken Sandwich; tenders; boneless; piezas; biscuit.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Smashburger",
+    "category": "hamburguesas",
+    "menuUrl": "https://www.smashburger.co.cr/menu",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable. Solicitar gramos de carne, porción de papas y fichas de salsas; no copiar datos de otros países.",
+    "examples": "Classic Smash; Mushroom Swiss; Double Bacon; Smash Fries.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Johnny Rockets",
+    "category": "hamburguesas",
+    "menuUrl": "https://johnnyrockets.co.cr/es/menu-digital/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Menú en imagen: se localizó el enlace, sin transcripción exhaustiva ni fecha de edición confirmada.",
+    "examples": "Hamburguesas; acompañamientos; bebidas y batidos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Spoon",
+    "category": "cafe",
+    "menuUrl": "https://spooncr.com/Men%C3%BA%20de%20Restaurante/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional pública local. El menú de salón y el catálogo de repostería pueden diferir. PDF actual enlazado: https://drive.google.com/file/d/1IPEBKdnI0yTQZeL2sWn6QdpkAdJiNIwM/view",
+    "examples": "Menú de salón; repostería; desayunos; comidas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Così",
+    "category": "saludable",
+    "menuUrl": "https://www.ubereats.com/cr/brand-city/san-jos%C3%A9-san-jos%C3%A9/cosi",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional completa local. La afirmación Smart Fit de menos de 600 calorías no indica kcal exactas ni macros y no basta para una ficha nutricional.",
+    "examples": "Signature; Turkey Avocado; Tico; Tomato Basil.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Tacobar",
+    "category": "mexicana",
+    "menuUrl": "https://www.ubereats.com/cr/store/tacobar-killer-fish-tacos-%26-more-escazu/umsS8tIdR0yT5YpQUfCT8A",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Registrar proteínas, tortillas, ensalada y salsas; la barra de ensaladas hace variable la porción consumida.",
+    "examples": "Tacos; Super Burrito; Quinoa Wrap; Bowl Asiático.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Satay",
+    "category": "asiatica",
+    "menuUrl": "https://www.ubereats.com/cr/store/satay-paseo-colon/KB4Ixt6dXfC3EexVAJHVQw",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable. Separar arroz, proteína, salsa y bebidas; documentar si un paquete de sushi es individual o compartido.",
+    "examples": "Tazón; Satay Mix; bento; sushi; chop suey.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Teriyaki",
+    "category": "asiatica",
+    "menuUrl": "https://teriyaki.co.cr/menu",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Los combos combinan bases, proteínas y guarniciones; solicitar fichas por componente.",
+    "examples": "Teriyaki; Orange Tempura; Kung Pao; arroz; ensalada.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Sushi To Go",
+    "category": "asiatica",
+    "menuUrl": "https://www.rappi.co.cr/restaurantes/6656-sushi-to-go",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional oficial local. No usar cifras de agregadores sin receta, unidad y origen verificables; distinguir roll completo de pieza.",
+    "examples": "Beach Roll; rolls; combinaciones; acompañamientos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Nacionsushi",
+    "category": "asiatica",
+    "menuUrl": "https://nacionsushi.com/cr/menu/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional específica para Costa Rica. Un PDF global o de otro país no confirma la receta local. Menú localizado; transcripción integral pendiente.",
+    "examples": "Sushi; entradas; platos asiáticos; bebidas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Arby's",
+    "category": "sandwiches",
+    "menuUrl": "https://www.ubereats.com/cr/store/arbys-city-mall/qi2y7ArQU1Cga3334_oTRw",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Menú contrastado con https://web.didiglobal.com/cr/food/san-jose/arbys-city-mall/5764607655642140058/ ; no inferir que toda la cadena cerró.",
+    "examples": "Classic Beef & Cheddar; Turkey Avocado Bacon; Curly Fries.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Ajúa",
+    "category": "mexicana",
+    "menuUrl": "https://www.ubereats.com/cr/store/restaurante-ajua-tibas-san-jose-cr/nfyTq96fSK6TFpcTxjRFRw",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Tamaños, rellenos, queso y acompañamientos cambian sustancialmente la porción.",
+    "examples": "Quesadillas; chilaquiles; molcajete.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Hooligan's",
+    "category": "otro",
+    "menuUrl": "https://www.ubereats.com/cr/store/hooligans-lindora/gE5XdzC2VLKUcnixQ760Qg",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local verificable. Diferenciar alitas con hueso, boneless, salsa y papas; no dividir paquetes sin conocer número de piezas.",
+    "examples": "Alitas; All Star Box; combos; acompañamientos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Chili's",
+    "category": "otro",
+    "menuUrl": "https://www.chiliscr.com/menu.php",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Las fichas de Estados Unidos no se consideran verificadas para Costa Rica; distinguir platos compartidos e individuales.",
+    "examples": "Fajitas; ribs; Chicken Crispers; Triple Dipper.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "TGI Fridays",
+    "category": "otro",
+    "menuUrl": "https://linktr.ee/tgifridayscostarica",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "PDF localizado pero no recuperado por el lector: https://tgifridayscr.s3.us-east-2.amazonaws.com/Trifold%2BMenu_nuevo%2B2_compressed.pdf . No se encontró tabla oficial local; registros de Fitia no se trataron como verificados.",
+    "examples": "Menú general del restaurante; platos y combos de estilo americano.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Denny's",
+    "category": "otro",
+    "menuUrl": "https://dennyscostarica.com/nuestros-menus/menu-general/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local verificable. Desglosar huevos, carnes, pancakes, sirope y acompañamientos en desayunos configurables.",
+    "examples": "Desayunos; hamburguesas; platos principales; menú verde.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "IHOP / Applebee's",
+    "category": "otro",
+    "menuUrl": "https://www.ubereats.com/cr/store/ihop-applebees-escazu/exntoq2iUm28FP9N81KHXg",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Inclusión por variedad y oferta emergente; su escala no demuestra estar entre los 40 de mayor consumo.",
+    "examples": "Pancakes; omelets; hamburguesas; ensalada oriental.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Olive Garden",
+    "category": "otro",
+    "menuUrl": "https://olivegarden.cr/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local verificable. Aclarar si pan y ensalada están incluidos o son adicionales al plato principal.",
+    "examples": "Amazing Alfredos; sopas; ensaladas; pizzas; postres.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "P.F. Chang's",
+    "category": "asiatica",
+    "menuUrl": "https://pfchangs.cr/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Menú gráfico: https://www.qrcodechimp.com/page/pfchangscr . No usar porciones de catering como porción individual.",
+    "examples": "Menú asiático; entradas; platos para compartir; catering.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "El Novillo Alegre",
+    "category": "otro",
+    "menuUrl": "https://www.restauranteelnovilloalegre.com/menu-el-novillo-alegre-2/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. El peso anunciado de carne puede ser previo a cocción; confirmar base, merma y grasa antes de usarlo.",
+    "examples": "Cortes de res; empanadas; provoleta; guarniciones.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "La Princesa Marina",
+    "category": "otro",
+    "menuUrl": "https://www.ubereats.com/cr/store/la-princesa-marina-sabana/9jzTa1MQWoKObaLggYoVxQ",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Pesos o tamaños del plato no equivalen a macros. Diferenciar empanizado, plancha, salsas y guarniciones.",
+    "examples": "Ceviche; arroz con camarón; filete de pescado; mariscos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Starbucks",
+    "category": "cafe",
+    "menuUrl": "https://www.ubereats.com/cr/store/starbucks-distrito-4/X5WQor3WRz-n8tW6QktMjw",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla oficial local de kcal y macros. Registrar tamaño, leche, siropes y crema. No usar automáticamente Starbucks Estados Unidos o fichas de Fitia.",
+    "examples": "Cafés; bebidas frías; bebidas con leche; alimentos.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "POPS",
+    "category": "otro",
+    "menuUrl": "https://www.pops.co.cr/info/menu",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla pública local para porción servida. Una etiqueta de producto empacado, si aparece, no representa necesariamente una bola, cono o batido preparado.",
+    "examples": "Helados; sabores; postres y bebidas de heladería.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Cantón",
+    "category": "asiatica",
+    "menuUrl": "https://canton.cr/menu/",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Registrar tamaño regular/grande, arroz y salsa; no asignar un único valor a todos los combos.",
+    "examples": "Arroces; Honey Chicken; Orange Chicken; General TSO.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "La Fabbrica",
+    "category": "pizza",
+    "menuUrl": "https://lafabbricapizzeria.com/menu.html",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla local de kcal y macros. Validar pizza completa/tajada, masa, tamaño y agregados; no equiparar a pizzas de cadenas internacionales.",
+    "examples": "Pizzas al horno; cocina italiana; entradas; bebidas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "La Oliva Verde",
+    "category": "saludable",
+    "menuUrl": "https://www.laolivaverde.com/",
+    "nutrition": "B - Nutrición parcial o validación pendiente.",
+    "note": "Publica calorías; columnas de grasa, carbohidratos y proteína tienen unidades ambiguas y no se pueden interpretar como gramos. Ensaladas excluyen aderezos, spread y mini pita. Menú enlazado con nombre de archivo 2024; vigencia pendiente.",
+    "examples": "Ensaladas; piadine; wraps; opciones vegetarianas.",
+    "consultedAt": "2026-11-06"
+  },
+  {
+    "name": "Hungry",
+    "category": "sandwiches",
+    "menuUrl": "https://www.ubereats.com/cr/store/hungry-lincoln/5oqKyrDdSdqnga9ZOsDIAA",
+    "nutrition": "C - Tabla nutricional local no encontrada.",
+    "note": "No se encontró tabla nutricional local. Hungry Hobo y marcas extranjeras de nombre parecido no son una fuente equivalente.",
+    "examples": "Philly Steak; Papas Philly; Big Hungry.",
+    "consultedAt": "2026-11-06"
+  }
+]

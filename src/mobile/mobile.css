@@ -8387,9 +8387,7 @@ html:not(.dark) .m-routine[data-band] {
   letter-spacing: -0.01em;
 }
 .m-prog-callout-value small,
-.m-prog-range-value small,
-.m-prog-trend-value small,
-.m-prog-row-value small {
+.m-prog-trend-value small {
   margin-left: 2px;
   font-size: 0.6em;
   font-weight: 600;
@@ -8431,107 +8429,7 @@ html:not(.dark) .m-routine[data-band] {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Rangos */
-.m-grid-2.m-prog-ranges {
-  gap: 10px;
-}
-.m-card.m-prog-range {
-  padding: 13px 14px 12px;
-  gap: 6px;
-}
-.m-prog-range-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--m-muted);
-}
-.m-prog-range-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-.m-prog-range-value {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.m-prog-range-bar {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 3px;
-  height: 6px;
-  margin-top: 6px;
-}
-.m-prog-range-bar[data-zones="2"] {
-  grid-template-columns: 2fr 1fr;
-}
-.m-prog-range-bar > span {
-  border-radius: 3px;
-  background: var(--m-zone-off);
-}
-.m-prog-range-bar > span[data-normal] {
-  background: var(--m-zone-on);
-}
-/* La marca: un contenedor del ancho de la barra que se corre hasta su sitio
-   (transform, no `left`), con el punto en su borde izquierdo. */
-.m-prog-range-bar > i {
-  position: absolute;
-  inset: 0;
-  transform: translateX(calc(var(--pos) * 100%));
-  animation: m-prog-mark-in 700ms var(--m-ease) calc(300ms + var(--i, 0) * 50ms)
-    backwards;
-}
-.m-prog-range-bar > i::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 0 0 2.5px var(--m-accent-line),
-    0 1px 4px rgb(0 0 0 / 0.35);
-}
-.m-prog-range {
-  --i: 0;
-}
-@keyframes m-prog-mark-in {
-  from {
-    transform: translateX(0);
-    opacity: 0;
-  }
-}
-.m-prog-range-zones {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--m-faint, var(--m-muted));
-}
-.m-prog-range-bar[data-zones="2"] + .m-prog-range-zones {
-  grid-template-columns: 2fr 1fr;
-}
-.m-prog-range-zones span {
-  text-align: center;
-}
-.m-prog-range-zones span:first-child {
-  text-align: left;
-}
-.m-prog-range-zones span:last-child {
-  text-align: right;
-}
-.m-prog-range-zones span[data-on] {
-  color: var(--m-text);
-  font-weight: 700;
-}
-.m-prog-range-none {
-  font-size: 11px;
-  margin-top: 4px;
-}
+
 
 /* Tendencia */
 .m-card.m-prog-trend {
@@ -8593,82 +8491,6 @@ html:not(.dark) .m-routine[data-band] {
   font-size: 11px;
   font-weight: 600;
   color: var(--m-muted);
-}
-
-/* Mediciones */
-.m-prog-list {
-  gap: 8px;
-}
-.m-prog-list ul {
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border-radius: 22px;
-  background: var(--m-surface);
-  box-shadow: var(--m-card-edge);
-}
-.m-prog-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 60px 66px 56px;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 10px 9px 12px;
-  border-radius: 18px;
-  text-align: left;
-  transition:
-    background-color 200ms var(--m-ease),
-    box-shadow 200ms var(--m-ease);
-}
-.m-prog-row[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--metric) 11%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--metric) 38%, transparent);
-}
-.m-prog-row-name {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.m-prog-row-name > span {
-  font-size: 14px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.m-prog-row-name > small {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--m-muted);
-}
-.m-prog-spark {
-  width: 60px;
-  height: 24px;
-  overflow: visible;
-}
-.m-prog-spark-area {
-  fill: color-mix(in srgb, var(--metric) 16%, transparent);
-}
-.m-prog-spark-line {
-  fill: none;
-  stroke: var(--metric);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-.m-prog-spark-dot {
-  fill: var(--metric);
-}
-.m-prog-row-value {
-  text-align: right;
-  font-size: 15px;
-  font-weight: 700;
-}
-.m-prog-row .m-prog-chip {
-  justify-self: end;
 }
 
 /* Historial y Escaneos */
@@ -8784,18 +8606,16 @@ html:not(.dark) .m-routine[data-band] {
   .m-prog-leaders line,
   .m-prog-dot,
   .m-prog-callout,
-  .m-prog-chart-area,
-  .m-prog-side-list > div {
+  .m-prog-chart-area {
     animation: none;
   }
-  .m-prog-range-bar > i {
-    animation: m-prog-fade 300ms ease backwards;
+  .m-prog-body-view,
+  .m-prog-bal-bar > i {
+    animation: m-prog-fade 200ms ease backwards;
   }
+  
   .m-prog-reading-bar::after {
     animation-duration: 2.4s;
-  }
-  .m-prog-row {
-    transition: none;
   }
 }
 .m-prog-body-title {
@@ -8810,12 +8630,6 @@ html:not(.dark) .m-routine[data-band] {
   font-size: 14px;
   font-weight: 600;
 }
-/* La marca se corre con un `transform` del ancho de la barra: sin recortar,
-   su caja se sale de la tarjeta y la pagina quedaba 14 px mas ancha que el
-   telefono (se podia arrastrar de lado). */
-.m-card.m-prog-range {
-  overflow: clip;
-}
 
 /* Progreso v2 (nov 2026): el maniqui quieto. No gira ni se acerca, ni al
    arrastrar ni al tocar: los rotulos apuntan a un sitio fijo del cuerpo. El
@@ -8825,125 +8639,227 @@ html:not(.dark) .m-routine[data-band] {
   touch-action: auto;
   cursor: default;
 }
-.m-prog-body-score {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  height: 46px;
-  padding: 0 8px;
-  border-radius: 14px;
-  background: var(--m-accent);
-  color: var(--m-on-accent);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-}
-.m-prog-body-score small {
-  margin-top: 2px;
-  font-size: 9.5px;
-  font-weight: 600;
-  opacity: 0.75;
-}
 
-/* Sin analisis por segmento: maniqui a la izquierda, cifras a la derecha. */
-.m-prog-side {
-  display: grid;
-  grid-template-columns: 44% minmax(0, 1fr);
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
+/* Las dos vistas del cuerpo (nov 2026): el maniqui es el mismo; lo de
+   abajo entra subiendo 8 px. En Segmentos se enciende todo hasta que se toca
+   un lado, y entonces el maniqui señala solo ese. */
+.m-prog-body .m-model.m-prog-model {
+  height: 270px;
 }
-.m-prog-side .m-model.m-prog-model {
-  height: 280px;
+.m-prog-model[data-sel] .m-prog-dot,
+.m-prog-model[data-sel] .m-prog-callout,
+.m-prog-model[data-sel] .m-prog-leaders line {
+  animation-delay: 0ms;
 }
-.m-prog-side-list {
+.m-prog-body-view {
+  animation: m-prog-view-in 220ms var(--m-ease) backwards;
+}
+@keyframes m-prog-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.m-prog-stats {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.m-prog-side-list > div {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "label chip"
-    "value chip";
-  align-items: center;
-  column-gap: 8px;
-  padding: 7px 0;
-  animation: m-prog-callout-in 420ms var(--m-ease)
-    calc(200ms + var(--i) * 50ms) backwards;
-  --from: 8px;
-}
-.m-prog-side-list > div + div {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 12px;
   box-shadow: inset 0 1px 0 var(--m-divider);
 }
-.m-prog-side-list dt {
-  grid-area: label;
+.m-prog-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+.m-prog-stats > div + div {
+  padding-left: 12px;
+  box-shadow: inset 1px 0 0 var(--m-divider);
+}
+.m-prog-stats dt {
   font-size: 11px;
   font-weight: 600;
   color: var(--m-muted);
 }
-.m-prog-side-list dd {
-  grid-area: value;
+.m-prog-stats dd {
   margin: 0;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1.1;
+  white-space: nowrap;
 }
-.m-prog-side-list dd small {
+.m-prog-stats dd small {
   margin-left: 2px;
-  font-size: 0.6em;
+  font-size: 0.58em;
   font-weight: 600;
   color: var(--m-muted);
 }
-.m-prog-side-list .m-prog-chip {
-  grid-area: chip;
+.m-prog-bal {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+  box-shadow: inset 0 1px 0 var(--m-divider);
+}
+.m-prog-bal-head {
+  display: flex;
+  margin-bottom: 2px;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m-faint);
+}
+/* El nombre va al centro, en la linea de las cifras: una fila por par. */
+.m-prog-bal-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "der izq";
+  column-gap: 4px;
+  padding: 2px 0;
+}
+.m-prog-bal-name {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--m-text-soft);
+}
+.m-prog-bal-name > span {
+  color: var(--m-muted);
+}
+.m-prog-bal-name > b {
+  font-weight: 600;
+  color: var(--m-bad-text);
+}
+.m-prog-bal-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.m-prog-bal-side[data-lado="der"] {
+  grid-area: der;
+}
+.m-prog-bal-side[data-lado="izq"] {
+  grid-area: izq;
+  align-items: flex-end;
+  text-align: right;
+}
+.m-prog-bal-value {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.m-prog-bal-value small {
+  margin-left: 2px;
+  font-size: 0.66em;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+/* La barra sale del centro (el cuerpo) hacia su lado. */
+.m-prog-bal-bar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px 0 0 999px;
+  background: var(--m-zone-off);
+  overflow: hidden;
+}
+.m-prog-bal-side[data-lado="izq"] .m-prog-bal-bar {
+  justify-content: flex-start;
+  border-radius: 0 999px 999px 0;
+}
+.m-prog-bal-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--m-accent);
+  transform-origin: right;
+  animation: m-prog-bal-in 450ms var(--m-ease) 80ms backwards;
+}
+.m-prog-bal-side[data-lado="izq"] .m-prog-bal-bar > i {
+  transform-origin: left;
+}
+.m-prog-bal-bar[data-tone="bad"] > i {
+  background: var(--m-bad);
+}
+@keyframes m-prog-bal-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+/* Con un lado elegido, los demas se apagan un poco. */
+.m-prog-bal:has([aria-pressed="true"])
+  :is(.m-prog-bal-side, .m-prog-bal-trunk)[aria-pressed="false"] {
+  opacity: 0.45;
+}
+.m-prog-bal-side,
+.m-prog-bal-trunk {
+  transition: opacity 180ms var(--m-ease);
+}
+.m-prog-bal-trunk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 1px 0 var(--m-divider);
+  background: none;
+  color: var(--m-text-soft);
+  font: inherit;
+  font-size: 12.5px;
+}
+.m-prog-bal-trunk .m-prog-chip {
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+.m-prog-body-note {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  text-align: center;
+  color: var(--m-faint);
+}
+.m-prog-body-more {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--m-good-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+#m-prog-extras-card {
+  scroll-margin-top: 72px;
 }
 
 /* Mas del escaneo */
 .m-card.m-prog-extras {
   padding: 14px 16px;
   gap: 12px;
-}
-.m-prog-seg-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.m-prog-seg-table th,
-.m-prog-seg-table td {
-  padding: 7px 0;
-  text-align: right;
-  font-weight: 600;
-}
-.m-prog-seg-table th[scope="row"],
-.m-prog-seg-table thead th:first-child {
-  text-align: left;
-}
-.m-prog-seg-table thead th {
-  padding-top: 0;
-  font-size: 11px;
-  color: var(--m-muted);
-}
-.m-prog-seg-table tbody th {
-  color: var(--m-text-soft);
-}
-.m-prog-seg-table tbody tr {
-  box-shadow: inset 0 1px 0 var(--m-divider);
-}
-.m-prog-seg-table small {
-  margin-left: 2px;
-  font-size: 0.75em;
-  color: var(--m-muted);
-}
-.m-prog-extras-photos {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 /* Fotos de una medicion: miniaturas 3:4 y la casilla de agregar. */
@@ -9088,35 +9004,142 @@ html:not(.dark) .m-prog-photo-add {
   font-size: 12px;
   text-align: center;
 }
-/* Las cifras de un escaneo en dos columnas: rotulo arriba, cifra abajo. */
-.m-prog-facts {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 16px;
-}
-.m-prog-facts > div {
+
+/* El detalle de un escaneo en bandejas (nov 2026): un rotulo pequeño encima
+   y, dentro, filas de rotulo y cifra. La bandeja es un vidrio apenas mas
+   claro que la tarjeta, con un filo de luz arriba; las filas se separan con
+   un pelo que no llega al borde. Al abrir, entran subiendo de a una. */
+.m-prog-tray {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 8px 0;
-  box-shadow: inset 0 -1px 0 var(--m-divider);
+  gap: 7px;
 }
-.m-prog-facts dt {
-  font-size: 11px;
+.m-prog-tray-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-faint);
+}
+.m-prog-tray-title > span {
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.m-prog-tray-core {
+  --tray-line: rgb(255 255 255 / 0.06);
+  padding: 2px 14px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--m-surface-2) 55%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    inset 0 0 0 1px rgb(255 255 255 / 0.03);
+}
+html:not(.dark) .m-prog-tray-core {
+  --tray-line: rgb(0 0 0 / 0.07);
+  background: color-mix(in srgb, var(--m-surface-2) 70%, transparent);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.04);
+}
+.m-prog-tray-list {
+  margin: 0;
+}
+.m-prog-tray-list > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 11px 0 10px;
+  box-sizing: border-box;
+}
+.m-prog-tray-list > div + div,
+.m-prog-seg-table tbody tr + tr {
+  box-shadow: inset 0 1px 0 var(--tray-line);
+}
+.m-prog-tray-list dt {
+  font-size: 13px;
+  color: var(--m-text-soft);
+}
+.m-prog-tray-list dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.m-prog-tray-list dd small {
+  margin-left: 3px;
+  font-size: 0.72em;
   font-weight: 600;
   color: var(--m-muted);
 }
-.m-prog-facts dd {
-  margin: 0;
-  font-size: 15px;
+.m-prog-seg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.m-prog-seg-table th,
+.m-prog-seg-table td {
+  height: 42px;
+  padding: 0;
+  text-align: right;
   font-weight: 700;
 }
-.m-prog-sublabel {
-  font-size: 11px;
-  font-weight: 600;
+.m-prog-seg-table tbody th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--m-text-soft);
+}
+.m-prog-seg-table td {
+  width: 64px;
+}
+/* La grasa, un paso atras de la magra: es la segunda columna. */
+.m-prog-seg-table td + td {
   color: var(--m-muted);
 }
+.m-prog-tray .m-prog-photos {
+  padding: 12px 0;
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray {
+  animation: m-prog-view-in 320ms var(--m-ease) backwards;
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(2) {
+  animation-delay: 40ms;
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(3) {
+  animation-delay: 80ms;
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(n + 4) {
+  animation-delay: 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray {
+    animation: m-prog-fade 200ms ease backwards;
+  }
+}
+/* El chevron en su propio circulo, al ras del borde. */
+.m-prog-chev {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--m-surface-2);
+  color: var(--m-muted);
+}
+.m-prog-chev .m-more-chevron {
+  transition: transform 260ms var(--m-ease);
+}
+.m-prog-scan-toggle[aria-expanded="true"] .m-prog-chev .m-more-chevron {
+  transform: rotate(180deg);
+}
+
 /* «Más del escaneo» plegado: misma tarjeta que un escaneo de la lista. */
 .m-card.m-prog-extras {
   padding: 0;
@@ -9131,15 +9154,9 @@ html:not(.dark) .m-prog-photo-add {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.m-prog-extras .m-more-inner.m-prog-scan-inner {
-  gap: 12px;
-}
-
-/* El rotulo de la zona en la que caes, en el tono de la zona sana si es la
-   normal. */
-.m-prog-range-zones span[data-on]:nth-child(2),
-.m-prog-range-bar[data-zones="2"] + .m-prog-range-zones span[data-on]:first-child {
-  color: var(--m-zone-label);
+.m-prog-extras .m-more-inner.m-prog-scan-inner,
+.m-prog-scan .m-more-inner.m-prog-scan-inner {
+  gap: 16px;
 }
 
 /* ── Paleta neón (nov 6 2026, del usuario) ──────────────────────────────

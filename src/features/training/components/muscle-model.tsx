@@ -38,6 +38,11 @@ type Props = {
   focus?: string[] | null;
   /** Los músculos encendidos laten despacio, como si trabajaran. */
   pulse?: boolean;
+  /**
+   * Enciende solo las zonas pares de un lado del modelo (`x` negativa o
+   * positiva); las del centro, siempre. Nulo: los dos lados.
+   */
+  lado?: -1 | 1 | null;
 };
 
 /* Un latido cada 1,8 s: lento, de respiración, no de alarma. */
@@ -212,6 +217,7 @@ export function MuscleModel({
   tone = "anatomia",
   focus = null,
   pulse = false,
+  lado = null,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
@@ -223,6 +229,7 @@ export function MuscleModel({
     tone,
     focus,
     pulse,
+    lado,
   });
   const controls = useRef<{ paint: () => void; turn: () => void } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -237,10 +244,11 @@ export function MuscleModel({
       tone,
       focus,
       pulse,
+      lado,
     };
     controls.current?.paint();
     controls.current?.turn();
-  }, [highlight, view, onPick, onViewChange, tone, focus, pulse]);
+  }, [highlight, view, onPick, onViewChange, tone, focus, pulse, lado]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -444,8 +452,11 @@ export function MuscleModel({
     };
     const paint = () => {
       MODEL_REGIONS.forEach((zona, i) => {
+        const { lado } = latest.current;
         uniforms.uZonaInfo.value[i]!.z =
-          latest.current.highlight[zona.muscle] ?? 0;
+          lado && zona.x !== 0 && Math.sign(zona.x) !== lado
+            ? 0
+            : (latest.current.highlight[zona.muscle] ?? 0);
       });
       render();
     };

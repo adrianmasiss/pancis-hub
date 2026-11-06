@@ -105,3 +105,23 @@
 - Paleta neón del usuario (modo oscuro): acentos lima/burgundy/gold/cyan/merlot en `accent.ts` (fill, onFill, chip, zonas, degradado; `inkLight` propio para claro). Cookies viejas: naranja/rosa→burgundy, menta→cyan (`resolveMobileAccent`); por defecto lima.
 - Base oscura #070708 / tarjetas #0F0F11 / héroe #0C0C0E / borde #1C1C1F; chips «va bien» en acento y «va mal» ámbar (coral en gold); series `--m-serie-*` (gold y cyan cambian grasa/músculo vía `.m-app[data-accent]`).
 - Neón: resplandor arriba (`.m-app::before`), brillo y viñeta en la tarjeta del maniquí, degradado en «+» y píldora de la barra, «+» respira (2,8 s; sin movimiento reducido).
+- (nov 6, después del push) Quitada la lista «Mediciones · rango» bajo la tendencia: al usuario no le aportaba. El gráfico queda con Peso/Grasa/Músculo.
+
+## Tu cuerpo en dos vistas (2026-11-06)
+- Elegida la opción A del lienzo (https://claude.ai/artifact/MRzaC1pEDaHbt6T4Bkefnc) con la vista 2 de la C.
+- `body.tsx`: un solo maniquí quieto; segmentado «Resumen | Segmentos» (solo si hay segmentos).
+  Resumen = Peso/Grasa/Músculo con cambio. Segmentos = barras derecha/izquierda desde el centro
+  (escala 85 % de la extremidad mayor, «iguales» bajo 0,1 kg, ámbar si «Bajo») + tronco; tocar un
+  lado lo señala en el maniquí (punto, línea, rótulo) y apaga los demás. Sin segmentos: nota.
+- `MuscleModel` nuevo prop `lado` (-1 = derecha de la persona, a la izquierda de la pantalla).
+- «Ver todo el escaneo» abre y baja a «Más del escaneo» (estado levantado a `summary.tsx`).
+- Se quitaron la vista al lado (`.m-prog-side*`) y la ficha del puntaje (ahora «· 78 pts» en el eyebrow).
+- Verificado: oscuro/claro, con y sin segmentos (borrados y restaurados en local, 5 filas), overflow 0, 711 tests.
+
+## Sin tarjetas de rango y «Más del escaneo» en bandejas (2026-11-06)
+- Quitadas las 4 tarjetas de rango del Resumen (`ranges.tsx` borrado y todo `.m-prog-range*` del CSS).
+- `scan-detail.tsx`: `ScanDetail` = bandejas por tema (Principal/Composición/Metabolismo/Medidas),
+  «Por segmento» (pares der/izq juntos, grasa en gris) y «Fotos de ese día». Se usa en «Más del
+  escaneo» y en cada escaneo de la pestaña Escaneos. `filasDe` ahora separa valor y unidad.
+- Bandeja: rótulo pequeño encima, vidrio apenas más claro con filo de luz, filas de 42 px con
+  pelo `--tray-line`; entran subiendo 8 px escalonadas 40 ms al abrir. Chevron en círculo.

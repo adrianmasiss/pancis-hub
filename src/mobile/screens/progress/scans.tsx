@@ -10,7 +10,7 @@ import type {
 import { MeasurementFormDialog } from "@/features/progress/components/measurement-form-dialog";
 import { useUnits } from "@/mobile/units";
 import { fechaCorta, num } from "./format";
-import { MeasurementPhotos, SegmentTable, filasDe } from "./scan-detail";
+import { ScanDetail } from "./scan-detail";
 
 const FUENTE: Record<string, string> = {
   inbody: "InBody",
@@ -171,16 +171,7 @@ export function ScansList({
             </button>
             <div className="m-more-panel" id={`m-scan-${m.id}`} inert={!open}>
               <div className="m-more-inner m-prog-scan-inner">
-                <dl className="m-prog-facts">
-                  {filasDe(m, u).map((f) => (
-                    <div key={f.key}>
-                      <dt>{f.label}</dt>
-                      <dd className="m-num">{f.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <SegmentTable m={m} />
-                <MeasurementPhotos
+                <ScanDetail
                   measurement={m}
                   photos={photos}
                   measurements={measurements}
