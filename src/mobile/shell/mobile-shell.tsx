@@ -83,6 +83,7 @@ export function MobileShell({
     <MobileContext.Provider value={{ ...user, accent, units }}>
       <div
         className={`m-app ${manrope.variable} ${saira.variable}`}
+        data-accent={accent}
         style={accentVars(accent) as CSSProperties}
       >
         <main id="contenido">

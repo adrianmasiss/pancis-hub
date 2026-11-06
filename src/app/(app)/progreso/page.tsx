@@ -18,6 +18,7 @@ import { WellbeingForm } from "@/features/progress/components/wellbeing-form";
 import { getProgressData } from "@/features/progress/queries";
 import { createClient } from "@/lib/supabase/server";
 import { isPhone } from "@/lib/device";
+import { hasGeminiApiKey } from "@/lib/ai/google";
 import { todayInTimezone } from "@/lib/dates";
 import { ProgressMobile } from "@/mobile/screens/progress/progress-mobile";
 import { messages } from "@/i18n/es-419";
@@ -50,7 +51,7 @@ const fechaCorta = (iso: string) =>
 export default async function ProgressPage({
   searchParams,
 }: {
-  searchParams: Promise<{ vista?: string }>;
+  searchParams: Promise<{ vista?: string; m?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -60,7 +61,7 @@ export default async function ProgressPage({
 
   const params = await searchParams;
 
-  // Telefono: Resumen y Evidencia, con los mismos datos.
+  // Telefono: Resumen, Escaneos y Fotos, con los mismos datos.
   if (await isPhone()) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -72,8 +73,9 @@ export default async function ProgressPage({
       <ProgressMobile
         userId={user.id}
         vista={params.vista}
+        abierta={params.m ?? null}
+        aiEnabled={hasGeminiApiKey()}
         today={todayInTimezone(timezone)}
-        timezone={timezone}
       />
     );
   }

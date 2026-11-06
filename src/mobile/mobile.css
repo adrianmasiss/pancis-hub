@@ -25,15 +25,18 @@
   /* Con el telefono de lado, el notch queda a un costado. */
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
-  --m-bg: #090909;
-  --m-surface: #1a1a1a;
-  --m-surface-2: #242427;
-  --m-surface-3: #2e2e33;
-  --m-text: #f4f4f1;
+  /* Base oscura de la paleta neón del usuario (nov 6 2026). */
+  --m-bg: #070708;
+  --m-surface: #0f0f11;
+  --m-surface-hero: #0c0c0e;
+  --m-surface-2: #1c1c1f;
+  --m-surface-3: #26262a;
+  --m-text: #ffffff;
   --m-text-soft: #c4c4ca;
-  --m-muted: #a1a1a8;
-  --m-faint: #8a8a90;
-  --m-line: rgb(255 255 255 / 0.08);
+  --m-muted: #a1a1a6;
+  --m-faint: #8e8e94;
+  --m-line: #1c1c1f;
+  --m-divider: #161618;
   --m-on-accent: #111113;
   /* El acento como linea, borde o texto sobre el fondo del tema (accent.ts). */
   --m-accent-line: var(--m-accent-line-dark, var(--m-accent));
@@ -45,12 +48,12 @@
   --m-overlay: rgb(24 24 27 / 0.45);
   --m-sheet-bg: rgb(26 26 30 / 0.82);
   --m-card-edge:
-    inset 0 1px 0 rgb(255 255 255 / 0.06),
-    inset 0 0 0 1px rgb(255 255 255 / 0.04);
-  --m-fade: rgb(9 9 9 / 0);
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    inset 0 0 0 1px #1c1c1f;
+  --m-fade: rgb(7 7 8 / 0);
 
   --m-ia-bg: #2a2540;
-  --m-ia-text: #c9beff;
+  --m-ia-text: #b9acff;
   --m-coach-bg: #12343a;
   --m-coach-text: #7fdcd0;
   --m-warn-bg: rgb(232 176 74 / 0.12);
@@ -60,6 +63,24 @@
   --m-positive: #75d6a0;
   --m-caution: #f4cc6a;
   --m-critical: #ff747d;
+
+  /* Chips de cambio: «va bien» en el acento, «va mal» en ambar (no rojo:
+     un cambio contrario a la meta no es una alarma). Gold lo cambia. */
+  --m-good-text: var(--m-accent-text-dark, var(--m-accent));
+  --m-good-chip: var(--m-accent-chip-dark);
+  --m-bad: #f5c04a;
+  --m-bad-text: #f7ce72;
+  --m-bad-chip: rgb(245 192 74 / 0.14);
+  /* Barras de rango: zona sana en el acento apagado, las demas neutras. */
+  --m-zone-off: #26262a;
+  --m-zone-on: var(--m-zone-on-dark);
+  --m-zone-label: var(--m-zone-label-dark);
+  /* Series de los graficos de Progreso. */
+  --m-serie-grasa: #f5c04a;
+  --m-serie-musculo: #3fd6c2;
+  --m-serie-cintura: #a796ff;
+  --m-serie-pecho: #6fd38a;
+  --m-serie-brazo: #4da3ff;
 
   /* Macros: los colores que ya usa la app (macro-skill-bars.css). */
   --m-protein: #ffc75a;
@@ -123,6 +144,22 @@ html:not(.dark) .m-app {
   --m-positive: #1f7a54;
   --m-caution: #8a5a18;
   --m-critical: #b8342f;
+  --m-surface-hero: #ffffff;
+  --m-divider: rgb(0 0 0 / 0.06);
+
+  --m-good-text: var(--m-accent-ink);
+  --m-good-chip: color-mix(in srgb, var(--m-accent-ink) 11%, transparent);
+  --m-bad: #b8860b;
+  --m-bad-text: #8a5a18;
+  --m-bad-chip: rgb(232 176 74 / 0.2);
+  --m-zone-off: var(--m-surface-2);
+  --m-zone-on: color-mix(in srgb, var(--m-accent) 55%, #fff);
+  --m-zone-label: var(--m-accent-ink);
+  --m-serie-grasa: #b07a00;
+  --m-serie-musculo: #0d8f87;
+  --m-serie-cintura: #6a52d9;
+  --m-serie-pecho: #2f8a45;
+  --m-serie-brazo: #2a6fc4;
 
   --m-protein: #b07a00;
   --m-carbs: #6a52d9;
@@ -136,7 +173,7 @@ html:not(.dark) .m-app {
    scroll no enseñe el fondo de escritorio. Solo existe en telefono. */
 html:has(.m-app),
 html:has(.m-app) body {
-  background: var(--m-bg-doc, #090909);
+  background: var(--m-bg-doc, #070708);
 }
 html:not(.dark):has(.m-app),
 html:not(.dark):has(.m-app) body {
@@ -842,7 +879,9 @@ html:not(.dark) .m-seg-thumb {
   transition: transform 0.6s var(--m-ease);
 }
 .m-bar-fill[data-draw] {
-  animation: m-bar-draw 1.1s var(--m-ease) 0.2s both;
+  /* `backwards`, no `both`: con el relleno hacia adelante la animacion se
+     queda pisando el transform y los cambios saltan sin la transicion. */
+  animation: m-bar-draw 1.1s var(--m-ease) 0.2s backwards;
 }
 @keyframes m-bar-draw {
   from {
@@ -6533,7 +6572,7 @@ html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
   position: fixed;
   right: calc(18px + env(safe-area-inset-right, 0px));
   bottom: calc(var(--m-dock) + 80px);
-  z-index: 41;
+  z-index: 43;
   width: 54px;
   height: 54px;
   border-radius: 50%;
@@ -6546,6 +6585,7 @@ html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
     0 4px 10px -4px rgb(0 0 0 / 0.35),
     inset 0 1px 0 rgb(255 255 255 / 0.22);
   animation: m-fab-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+  transition: box-shadow 220ms var(--m-ease);
 }
 .m-fab:disabled {
   opacity: 0.5;
@@ -6572,21 +6612,115 @@ html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
     animation: none;
   }
 }
-.m-fab-options {
+/* El menu del «+» (nov 2026, segun la referencia): el fondo se oscurece y
+   las opciones salen apiladas del boton, de abajo hacia arriba, con un
+   escalonado corto; al cerrar vuelven al boton mas rapido de lo que
+   salieron. El «+» gira 135° y queda como «×», con un anillo del acento. */
+.m-fab-glyph {
+  display: grid;
+  transition: transform 260ms var(--m-ease);
+}
+.m-fab[data-open] .m-fab-glyph {
+  transform: rotate(135deg);
+}
+.m-fab[data-open] {
+  animation: none;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--m-accent) 26%, transparent),
+    0 12px 26px -10px color-mix(in srgb, var(--m-accent) 75%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+.m-fab-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 42;
+  pointer-events: none;
+}
+.m-fab-menu[data-open] {
+  pointer-events: auto;
+}
+.m-fab-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.58);
+  opacity: 0;
+  transition: opacity 180ms var(--m-ease);
+}
+html:not(.dark) .m-fab-scrim {
+  background: rgb(18 18 20 / 0.32);
+}
+.m-fab-menu[data-open] .m-fab-scrim {
+  opacity: 1;
+  transition-duration: 240ms;
+}
+.m-fab-stack {
+  position: absolute;
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--m-dock) + 80px + 54px + 14px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  /* Todas del ancho de la mas larga, alineadas al boton. */
+  align-items: stretch;
+  width: max-content;
+  gap: 10px;
+  max-width: calc(100vw - 36px);
 }
-.m-fab-options .m-list-row {
-  min-height: 64px;
-  background: var(--m-surface-2);
-  box-shadow: none;
+.m-app:has(.m-live-bar) .m-fab-stack {
+  bottom: calc(var(--m-dock) + 134px + 54px + 14px);
 }
-.m-fab-options .m-list-row:disabled {
+.m-fab-stack li {
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transform-origin: bottom right;
+  /* Al cerrar: todas a la vez y en 140ms, sin hacer esperar. */
+  transition:
+    opacity 140ms var(--m-ease),
+    transform 140ms var(--m-ease);
+}
+.m-fab-menu[data-open] .m-fab-stack li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 220ms var(--m-ease) calc(var(--i) * 40ms),
+    transform 260ms var(--m-ease) calc(var(--i) * 40ms);
+}
+.m-fab-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  min-width: 236px;
+  min-height: 62px;
+  padding: 10px 18px 10px 10px;
+  border-radius: 22px;
+  text-align: left;
+  color: var(--m-text);
+  background: var(--m-surface);
+  box-shadow:
+    var(--m-card-edge),
+    0 14px 30px -14px rgb(0 0 0 / 0.5);
+}
+.m-fab-option:disabled {
   opacity: 0.5;
 }
-.m-fab-options .m-list-row-sub {
-  white-space: normal;
+.m-fab-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.m-fab-option-title {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.m-fab-option-sub {
+  font-size: 12px;
+  color: var(--m-muted);
+  line-height: 1.3;
 }
 .m-fab-option-icon {
   width: 40px;
@@ -6595,8 +6729,24 @@ html .m-app :is(.m-input, .m-search input, .m-composer-input):focus-visible {
   flex: none;
   display: grid;
   place-items: center;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+}
+.m-fab-option-icon[data-tone="accent"] {
   background: color-mix(in srgb, var(--m-accent-line) 16%, transparent);
   color: var(--m-accent-ink);
+}
+.m-fab-option-icon[data-tone="ia"] {
+  background: rgb(139 108 255 / 0.22);
+  color: var(--m-ia-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-fab-glyph,
+  .m-fab-stack li,
+  .m-fab-menu[data-open] .m-fab-stack li {
+    transform: none;
+    transition: opacity 160ms ease;
+  }
 }
 
 /* Elegir el dia de hoy desde «Tu rutina». */
@@ -7659,4 +7809,1451 @@ html:not(.dark) .m-routine[data-band] {
 .m-active-name .m-verified {
   margin-left: 8px;
   vertical-align: -0.08em;
+}
+
+/* ── Comer fuera, ronda nov 2026 ─────────────────────────────────────────
+   Directorio, menu del restaurante y ficha del plato, segun la referencia
+   del usuario y con las piezas que ya tiene la app. */
+.m-rest-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--m-surface-2);
+  color: var(--m-text);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  width: 44px;
+  height: 44px;
+}
+.m-rest-avatar[data-add] {
+  background: color-mix(in srgb, var(--m-accent-line) 14%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-copilot-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(139 108 255 / 0.22);
+  color: var(--m-ia-text);
+}
+.m-rest-missing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  text-align: left;
+  border: 1px dashed color-mix(in srgb, var(--m-text) 20%, transparent);
+  color: inherit;
+}
+.m-rest-missing .m-list-row-sub {
+  margin-top: 2px;
+  white-space: normal;
+}
+.m-card.m-rest-empty {
+  flex-direction: row;
+  align-items: center;
+  color: var(--m-muted);
+}
+.m-rest-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.m-rest-hero .m-rest-avatar {
+  border-radius: 18px;
+}
+.m-rest-hero .m-sub strong {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-rest-best {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow:
+    var(--m-card-edge),
+    inset 0 0 0 1px color-mix(in srgb, var(--m-accent-line) 30%, transparent);
+}
+.m-rest-best .m-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  margin-bottom: 2px;
+}
+.m-rest-best .m-list-row-sub {
+  display: block;
+  white-space: normal;
+}
+.m-rest-item-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  min-width: 0;
+}
+.m-rest-item-sub .m-list-row-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-rest-item-sub .m-tag {
+  height: 19px;
+  padding: 0 7px;
+  font-size: 10.5px;
+}
+.m-rest-note {
+  font-size: 12px;
+}
+.m-rest-note a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.m-chips-scroll .m-filter {
+  flex: none;
+}
+
+/* Ficha del plato */
+.m-dish-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.m-dish-head .m-rest-avatar {
+  border-radius: 9px;
+}
+.m-dish-hero {
+  position: relative;
+  height: 172px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      90% 120% at 50% 110%,
+      color-mix(in srgb, var(--m-accent-line) 16%, transparent),
+      transparent 65%
+    ),
+    var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  overflow: hidden;
+}
+.m-dish-hero .m-food-thumb {
+  border-radius: 30px;
+  background: var(--m-surface-2);
+}
+.m-dish-fit {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  animation: m-cmp-pop 260ms var(--m-ease) both;
+}
+.m-dish-fit .m-dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+.m-dish-name {
+  font-size: 26px;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+.m-dish-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.m-dish-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-text-soft);
+}
+.m-dish-fact .m-dot {
+  width: 6px;
+  height: 6px;
+}
+.m-card.m-dish-macros {
+  padding: 18px 20px;
+  gap: 14px;
+}
+.m-dish-macros-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.m-dish-kcal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  line-height: 1;
+}
+.m-dish-kcal .m-num {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.m-dish-kcal small,
+.m-dish-after-value small {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-dish-macros-head > .m-sub {
+  font-size: 12px;
+  text-align: right;
+}
+.m-dish-macro-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.m-dish-macro-rows li {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) 96px 46px;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.m-dish-macro-rows .m-bar {
+  height: 5px;
+}
+.m-dish-macro-g {
+  text-align: right;
+  font-weight: 700;
+}
+.m-dish-macro-g small {
+  margin-left: 1px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-dish-macros-foot {
+  font-size: 11.5px;
+}
+.m-card.m-dish-options {
+  padding: 4px 16px;
+  gap: 0;
+}
+.m-dish-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 0;
+}
+.m-dish-option + .m-dish-option {
+  border-top: 1px solid var(--m-line);
+}
+.m-dish-meals {
+  animation: m-cmp-fade 220ms var(--m-ease) both;
+}
+.m-dish-explain {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.m-card.m-dish-after {
+  padding: 16px 18px;
+  gap: 12px;
+}
+.m-dish-after-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.m-dish-after-value .m-num {
+  font-size: 24px;
+  font-weight: 700;
+}
+.m-dish-after[data-over] .m-dish-after-value .m-num {
+  color: var(--m-warn-text);
+}
+/* Dos tramos sobre la meta: lo comido y, a continuacion, este plato. Se
+   mueven con transform (escala y desplazamiento), no con el ancho. */
+.m-dish-track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--m-surface-2);
+  overflow: hidden;
+}
+.m-dish-track > span {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  transform-origin: left center;
+  transition: transform 320ms var(--m-ease);
+}
+.m-dish-track-a {
+  background: color-mix(in srgb, var(--m-text) 32%, transparent);
+  transform: scaleX(var(--k));
+}
+.m-dish-track-b {
+  background: var(--m-accent);
+  transform: translateX(calc(var(--x) * 100%)) scaleX(var(--k));
+}
+.m-dish-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-dish-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.m-dot[data-tone="consumed"] {
+  background: color-mix(in srgb, var(--m-text) 32%, transparent);
+}
+.m-dot[data-tone="dish"] {
+  background: var(--m-accent);
+}
+.m-dish-table-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m-text);
+}
+.m-dish-table-toggle[aria-expanded="true"] .m-more-chevron {
+  transform: rotate(180deg);
+}
+.m-dish-table-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms var(--m-ease);
+}
+.m-dish-table-toggle[aria-expanded="true"] + .m-dish-table-panel {
+  grid-template-rows: 1fr;
+}
+.m-dish-table-inner {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 200ms var(--m-ease);
+}
+.m-dish-table-toggle[aria-expanded="true"] + .m-dish-table-panel .m-dish-table-inner {
+  opacity: 1;
+}
+.m-dish-table-rows {
+  margin: 0;
+  padding: 4px 16px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-dish-table-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  font-size: 13.5px;
+}
+.m-dish-table-rows > div + div {
+  border-top: 1px solid var(--m-line);
+}
+.m-dish-table-rows dt {
+  color: var(--m-text-soft);
+}
+.m-dish-table-rows dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-dish-track > span,
+  .m-dish-table-panel,
+  .m-dish-table-inner {
+    transition: none;
+  }
+  .m-dish-fit,
+  .m-dish-meals {
+    animation: none;
+  }
+}
+
+/* Logos reales y check de verificado en Comer fuera (nov 2026). El logo va
+   sobre blanco, como icono de app, con aire para que no toque el borde; la
+   linea fina lo separa del fondo en claro. */
+.m-rest-avatar[data-logo] {
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06);
+  overflow: hidden;
+}
+.m-rest-avatar img {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  object-fit: contain;
+}
+.m-rest-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  color: var(--m-text);
+}
+.m-rest-verified .m-verified {
+  vertical-align: 0;
+}
+.m-dish-name .m-verified {
+  margin-left: 8px;
+  vertical-align: -0.06em;
+}
+
+/* Tabla nutricional del plato (nov 2026): «Más detalle» de la ficha de
+   alimento al pie de la tarjeta de macros. La tarjeta tiene 16px de aire,
+   no los 22/18 de la de alimentos. Azúcar y saturada cuelgan de su macro. */
+.m-dish-macros .m-more {
+  margin: 2px -16px -16px;
+}
+.m-dish-macros .m-more-toggle {
+  padding: 0 16px;
+}
+.m-dish-macros .m-more-inner {
+  padding: 0 16px;
+}
+.m-dish-macros .m-more-toggle[aria-expanded="true"] + .m-more-panel .m-more-inner {
+  padding: 2px 16px 16px;
+}
+.m-macro-legend li[data-sub] {
+  padding-left: 15px;
+}
+.m-macro-legend li[data-sub] .m-macro-legend-head {
+  font-weight: 500;
+  color: var(--m-text-soft);
+}
+
+/* ── Progreso (nov 2026, segun la referencia del usuario) ───────────────
+   El cuerpo con sus cifras señaladas, los rangos del InBody, la tendencia
+   con las mediciones y el historial. Movimiento: solo entradas (una vez, al
+   abrir) y transiciones de estado; nada se mueve mientras se lee. */
+
+.m-prog-summary {
+  gap: 12px;
+}
+
+/* Tonos del cambio: el color dice si fue a favor de la meta, no si subio. */
+.m-prog-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--m-text-soft);
+  background: var(--m-surface-2);
+}
+.m-prog-chip[data-tone="good"] {
+  color: var(--m-good-text);
+  background: var(--m-good-chip);
+}
+.m-prog-chip[data-tone="bad"] {
+  color: var(--m-bad-text);
+  background: var(--m-bad-chip);
+}
+
+/* Tu cuerpo */
+.m-prog-body {
+  padding: 16px 16px 14px;
+  gap: 4px;
+}
+.m-prog-body-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-prog-body-head .m-seg {
+  flex: none;
+  padding: 3px;
+}
+.m-prog-body-head .m-seg-item {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 12px;
+}
+.m-model.m-prog-model {
+  height: 300px;
+}
+.m-prog-leaders,
+.m-prog-callouts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--m-ease);
+}
+.m-prog-leaders {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.m-prog-leaders line {
+  stroke: var(--m-text-soft);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  animation: m-prog-fade 420ms var(--m-ease) backwards;
+}
+.m-prog-leaders line:nth-child(1) {
+  animation-delay: 260ms;
+}
+.m-prog-leaders line:nth-child(2) {
+  animation-delay: 320ms;
+}
+.m-prog-leaders line:nth-child(3) {
+  animation-delay: 380ms;
+}
+/* Mientras gira (o de espaldas) los rotulos ya no apuntan a su sitio. */
+.m-prog-model[data-hidden] .m-prog-leaders,
+.m-prog-model[data-hidden] .m-prog-callouts {
+  opacity: 0;
+  transition-duration: 140ms;
+}
+.m-prog-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--m-accent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--m-accent) 28%, transparent),
+    0 0 10px color-mix(in srgb, var(--m-accent) 60%, transparent);
+  animation: m-prog-dot-in 360ms var(--m-ease-bounce, var(--m-ease))
+    calc(200ms + var(--i) * 60ms) backwards;
+}
+.m-prog-callout {
+  position: absolute;
+  width: 31%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  animation: m-prog-callout-in 420ms var(--m-ease)
+    calc(240ms + var(--i) * 60ms) backwards;
+}
+.m-prog-callout[data-side="left"] {
+  left: 0;
+  --from: -8px;
+}
+.m-prog-callout[data-side="right"] {
+  right: 0;
+  align-items: flex-end;
+  text-align: right;
+  --from: 8px;
+}
+.m-prog-callout-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-callout-value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.m-prog-callout-value small,
+.m-prog-range-value small,
+.m-prog-trend-value small,
+.m-prog-row-value small {
+  margin-left: 2px;
+  font-size: 0.6em;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+@keyframes m-prog-callout-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--from, 0));
+  }
+}
+@keyframes m-prog-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes m-prog-fade {
+  from {
+    opacity: 0;
+  }
+}
+.m-prog-body-empty {
+  position: absolute;
+  inset: auto 0 8px;
+  text-align: center;
+  font-size: 12px;
+}
+.m-prog-body-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-prog-body-foot .m-sub {
+  font-size: 11.5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Rangos */
+.m-grid-2.m-prog-ranges {
+  gap: 10px;
+}
+.m-card.m-prog-range {
+  padding: 13px 14px 12px;
+  gap: 6px;
+}
+.m-prog-range-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-range-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.m-prog-range-value {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.m-prog-range-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3px;
+  height: 6px;
+  margin-top: 6px;
+}
+.m-prog-range-bar[data-zones="2"] {
+  grid-template-columns: 2fr 1fr;
+}
+.m-prog-range-bar > span {
+  border-radius: 3px;
+  background: var(--m-zone-off);
+}
+.m-prog-range-bar > span[data-normal] {
+  background: var(--m-zone-on);
+}
+/* La marca: un contenedor del ancho de la barra que se corre hasta su sitio
+   (transform, no `left`), con el punto en su borde izquierdo. */
+.m-prog-range-bar > i {
+  position: absolute;
+  inset: 0;
+  transform: translateX(calc(var(--pos) * 100%));
+  animation: m-prog-mark-in 700ms var(--m-ease) calc(300ms + var(--i, 0) * 50ms)
+    backwards;
+}
+.m-prog-range-bar > i::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 2.5px var(--m-accent-line),
+    0 1px 4px rgb(0 0 0 / 0.35);
+}
+.m-prog-range {
+  --i: 0;
+}
+@keyframes m-prog-mark-in {
+  from {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+.m-prog-range-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--m-faint, var(--m-muted));
+}
+.m-prog-range-bar[data-zones="2"] + .m-prog-range-zones {
+  grid-template-columns: 2fr 1fr;
+}
+.m-prog-range-zones span {
+  text-align: center;
+}
+.m-prog-range-zones span:first-child {
+  text-align: left;
+}
+.m-prog-range-zones span:last-child {
+  text-align: right;
+}
+.m-prog-range-zones span[data-on] {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-prog-range-none {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Tendencia */
+.m-card.m-prog-trend {
+  padding: 14px 16px 12px;
+  gap: 12px;
+}
+.m-prog-trend .m-seg-item {
+  height: 32px;
+  font-size: 13px;
+}
+.m-prog-trend-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-prog-trend-value {
+  margin-top: 2px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.m-prog-trend-delta {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--m-text-soft);
+}
+.m-prog-trend-delta[data-tone="good"] {
+  color: var(--m-good-text);
+}
+.m-prog-trend-delta[data-tone="bad"] {
+  color: var(--m-bad-text);
+}
+.m-prog-trend .m-range button {
+  height: 30px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+.m-chart.m-prog-chart {
+  height: 120px;
+}
+.m-prog-chart .m-chart-line {
+  stroke: var(--metric);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--metric) 55%, transparent));
+}
+.m-prog-chart .m-chart-dot {
+  stroke: var(--metric);
+}
+.m-prog-chart-area {
+  animation: m-prog-fade 700ms var(--m-ease) 450ms backwards;
+}
+.m-prog-trend-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+
+/* Mediciones */
+.m-prog-list {
+  gap: 8px;
+}
+.m-prog-list ul {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 22px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+}
+.m-prog-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 60px 66px 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px 9px 12px;
+  border-radius: 18px;
+  text-align: left;
+  transition:
+    background-color 200ms var(--m-ease),
+    box-shadow 200ms var(--m-ease);
+}
+.m-prog-row[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--metric) 11%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--metric) 38%, transparent);
+}
+.m-prog-row-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.m-prog-row-name > span {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-prog-row-name > small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-spark {
+  width: 60px;
+  height: 24px;
+  overflow: visible;
+}
+.m-prog-spark-area {
+  fill: color-mix(in srgb, var(--metric) 16%, transparent);
+}
+.m-prog-spark-line {
+  fill: none;
+  stroke: var(--metric);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.m-prog-spark-dot {
+  fill: var(--metric);
+}
+.m-prog-row-value {
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+}
+.m-prog-row .m-prog-chip {
+  justify-self: end;
+}
+
+/* Historial y Escaneos */
+.m-prog-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+.m-prog-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-accent-ink);
+}
+.m-prog-score {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--m-surface-2);
+  font-size: 15px;
+  font-weight: 700;
+}
+.m-prog-score[data-first] {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+.m-prog-score[data-text] {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.m-prog-score[data-text]:not([data-first]) {
+  color: var(--m-muted);
+}
+.m-card.m-prog-scan {
+  padding: 0;
+  gap: 0;
+}
+.m-prog-scan-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 14px;
+  text-align: left;
+}
+.m-prog-scan-toggle[aria-expanded="true"] .m-more-chevron {
+  transform: rotate(180deg);
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel {
+  grid-template-rows: 1fr;
+}
+.m-more-inner.m-prog-scan-inner {
+  padding: 0 14px;
+}
+.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-more-inner {
+  opacity: 1;
+  padding: 0 14px 14px;
+}
+.m-prog-scan-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.m-prog-scan-foot .m-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.m-prog-scan-foot > :last-child {
+  margin-left: auto;
+}
+
+/* Importar InBody: mientras la IA lee */
+.m-prog-reading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--m-text-soft);
+}
+.m-prog-reading-bar {
+  position: relative;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--m-surface-2);
+  overflow: hidden;
+}
+.m-prog-reading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: 2px;
+  background: var(--m-ia-text);
+  animation: m-prog-scan 1.2s var(--m-ease) infinite;
+}
+@keyframes m-prog-scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-prog-leaders line,
+  .m-prog-dot,
+  .m-prog-callout,
+  .m-prog-chart-area,
+  .m-prog-side-list > div {
+    animation: none;
+  }
+  .m-prog-range-bar > i {
+    animation: m-prog-fade 300ms ease backwards;
+  }
+  .m-prog-reading-bar::after {
+    animation-duration: 2.4s;
+  }
+  .m-prog-row {
+    transition: none;
+  }
+}
+.m-prog-body-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+.m-prog-body-title > .m-num {
+  font-size: 14px;
+  font-weight: 600;
+}
+/* La marca se corre con un `transform` del ancho de la barra: sin recortar,
+   su caja se sale de la tarjeta y la pagina quedaba 14 px mas ancha que el
+   telefono (se podia arrastrar de lado). */
+.m-card.m-prog-range {
+  overflow: clip;
+}
+
+/* Progreso v2 (nov 2026): el maniqui quieto. No gira ni se acerca, ni al
+   arrastrar ni al tocar: los rotulos apuntan a un sitio fijo del cuerpo. El
+   dedo que cae encima desplaza la pagina. */
+.m-prog-model .muscle-model-stage canvas {
+  pointer-events: none;
+  touch-action: auto;
+  cursor: default;
+}
+.m-prog-body-score {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 46px;
+  padding: 0 8px;
+  border-radius: 14px;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+.m-prog-body-score small {
+  margin-top: 2px;
+  font-size: 9.5px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* Sin analisis por segmento: maniqui a la izquierda, cifras a la derecha. */
+.m-prog-side {
+  display: grid;
+  grid-template-columns: 44% minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.m-prog-side .m-model.m-prog-model {
+  height: 280px;
+}
+.m-prog-side-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.m-prog-side-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label chip"
+    "value chip";
+  align-items: center;
+  column-gap: 8px;
+  padding: 7px 0;
+  animation: m-prog-callout-in 420ms var(--m-ease)
+    calc(200ms + var(--i) * 50ms) backwards;
+  --from: 8px;
+}
+.m-prog-side-list > div + div {
+  box-shadow: inset 0 1px 0 var(--m-divider);
+}
+.m-prog-side-list dt {
+  grid-area: label;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-side-list dd {
+  grid-area: value;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.m-prog-side-list dd small {
+  margin-left: 2px;
+  font-size: 0.6em;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-side-list .m-prog-chip {
+  grid-area: chip;
+}
+
+/* Mas del escaneo */
+.m-card.m-prog-extras {
+  padding: 14px 16px;
+  gap: 12px;
+}
+.m-prog-seg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.m-prog-seg-table th,
+.m-prog-seg-table td {
+  padding: 7px 0;
+  text-align: right;
+  font-weight: 600;
+}
+.m-prog-seg-table th[scope="row"],
+.m-prog-seg-table thead th:first-child {
+  text-align: left;
+}
+.m-prog-seg-table thead th {
+  padding-top: 0;
+  font-size: 11px;
+  color: var(--m-muted);
+}
+.m-prog-seg-table tbody th {
+  color: var(--m-text-soft);
+}
+.m-prog-seg-table tbody tr {
+  box-shadow: inset 0 1px 0 var(--m-divider);
+}
+.m-prog-seg-table small {
+  margin-left: 2px;
+  font-size: 0.75em;
+  color: var(--m-muted);
+}
+.m-prog-extras-photos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Fotos de una medicion: miniaturas 3:4 y la casilla de agregar. */
+.m-prog-photos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.m-prog-photo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--m-surface-2);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-prog-photo:not(.m-prog-photo-add) span {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 14px 6px 5px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+  color: #fff;
+  text-align: center;
+}
+.m-prog-photo-add {
+  box-shadow: inset 0 0 0 1.5px var(--m-surface-3);
+  background: transparent;
+}
+html:not(.dark) .m-prog-photo-add {
+  box-shadow: inset 0 0 0 1.5px var(--m-surface-2);
+}
+
+/* Importar InBody: las fotos de ese dia */
+.m-prog-photo-slots {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-prog-photo-slots > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.m-prog-photo-slot {
+  position: relative;
+}
+.m-prog-photo-slot label {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1.5px var(--m-surface-3);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--m-muted);
+  cursor: pointer;
+}
+.m-prog-photo-slot img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: m-prog-fade 240ms var(--m-ease);
+}
+.m-prog-photo-slot[data-filled] label span {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 14px 6px 6px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+  color: #fff;
+  text-align: center;
+}
+.m-prog-photo-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+}
+/* Area tactil de 44 px sin agrandar el circulo. */
+.m-prog-photo-remove::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+
+/* Fotos: el respaldo de cada foto */
+.m-card.m-prog-backing {
+  padding: 10px 14px;
+}
+.m-prog-backing table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.m-prog-backing th,
+.m-prog-backing td {
+  padding: 6px 0;
+  text-align: right;
+  font-weight: 600;
+}
+.m-prog-backing thead th {
+  font-size: 11px;
+  color: var(--m-muted);
+}
+.m-prog-backing tbody th {
+  text-align: left;
+  color: var(--m-text-soft);
+}
+.m-prog-backing-delta {
+  color: var(--m-text-soft);
+}
+.m-prog-backing-none {
+  font-size: 12px;
+  text-align: center;
+}
+/* Las cifras de un escaneo en dos columnas: rotulo arriba, cifra abajo. */
+.m-prog-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+}
+.m-prog-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 0;
+  box-shadow: inset 0 -1px 0 var(--m-divider);
+}
+.m-prog-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+.m-prog-facts dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.m-prog-sublabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--m-muted);
+}
+/* «Más del escaneo» plegado: misma tarjeta que un escaneo de la lista. */
+.m-card.m-prog-extras {
+  padding: 0;
+  gap: 0;
+}
+.m-prog-extras .m-prog-scan-toggle {
+  min-height: 56px;
+  padding: 10px 16px;
+}
+.m-prog-extras .m-list-row-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m-prog-extras .m-more-inner.m-prog-scan-inner {
+  gap: 12px;
+}
+
+/* El rotulo de la zona en la que caes, en el tono de la zona sana si es la
+   normal. */
+.m-prog-range-zones span[data-on]:nth-child(2),
+.m-prog-range-bar[data-zones="2"] + .m-prog-range-zones span[data-on]:first-child {
+  color: var(--m-zone-label);
+}
+
+/* ── Paleta neón (nov 6 2026, del usuario) ──────────────────────────────
+   Los acentos viven en accent.ts; aqui, lo que algunos cambian (solo en
+   oscuro: en claro mandan los tokens del tema) y el efecto neón. */
+.m-app[data-accent="gold"] {
+  /* El ambar de «va mal» choca con el amarillo: pasa a coral. */
+  --m-bad: #ff7a6b;
+  --m-bad-text: #ff9c90;
+  --m-bad-chip: rgb(255 122 107 / 0.14);
+  --m-serie-grasa: #ff8a5b;
+}
+.m-app[data-accent="cyan"] {
+  /* El turquesa del musculo choca con el cyan: pasa a lima. */
+  --m-serie-musculo: #d9f24a;
+}
+
+/* Resplandor arriba de la pantalla, detras del contenido. */
+.m-app::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 640px;
+  pointer-events: none;
+  background: radial-gradient(
+    90% 55% at 50% 0%,
+    color-mix(in srgb, var(--m-accent) 13%, transparent),
+    color-mix(in srgb, var(--m-accent) 4%, transparent) 45%,
+    transparent 75%
+  );
+}
+.m-app > main {
+  position: relative;
+}
+html:not(.dark) .m-app::before {
+  opacity: 0.5;
+}
+
+/* La tarjeta del maniqui: brillo del acento al centro y viñeta en los bordes. */
+.m-card.m-prog-body {
+  background:
+    radial-gradient(
+      60% 50% at 50% 46%,
+      color-mix(in srgb, var(--m-accent) 16%, transparent),
+      color-mix(in srgb, var(--m-accent) 5%, transparent) 45%,
+      transparent 75%
+    ),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.5) 100%),
+    var(--m-surface-hero);
+}
+html:not(.dark) .m-card.m-prog-body {
+  background:
+    radial-gradient(
+      60% 50% at 50% 46%,
+      color-mix(in srgb, var(--m-accent) 18%, transparent),
+      transparent 75%
+    ),
+    var(--m-surface-hero);
+}
+
+/* El «+» y la pildora activa de la barra: degradado del acento. El «+»
+   respira (un brillo lento) para decir que ahi se agrega. */
+.m-fab,
+.m-tabbar-pill {
+  background: radial-gradient(
+    circle at 50% 35%,
+    var(--m-accent-light, var(--m-accent)) 0%,
+    var(--m-accent) 48%,
+    var(--m-accent-deep, var(--m-accent)) 100%
+  );
+  color: var(--m-on-accent);
+}
+.m-tabbar-pill {
+  box-shadow:
+    0 6px 20px color-mix(in srgb, var(--m-accent) 28%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.m-fab {
+  animation:
+    m-fab-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) both,
+    m-fab-glow 2.8s ease-in-out 0.5s infinite;
+}
+@keyframes m-fab-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 30px color-mix(in srgb, var(--m-accent) 38%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--m-accent) 25%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 12px 46px color-mix(in srgb, var(--m-accent) 62%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--m-accent) 40%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-fab {
+    animation: none;
+  }
+}
+
+/* Ocho acentos no caben junto al rotulo: van debajo, a todo el ancho. */
+.m-pref-row[data-stack] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding-top: 14px;
+  padding-bottom: 16px;
+}
+.m-pref-row[data-stack] .m-swatches {
+  justify-content: space-between;
+  gap: 6px;
+}
+.m-pref-row[data-stack] .m-swatch {
+  width: 32px;
+  height: 32px;
 }

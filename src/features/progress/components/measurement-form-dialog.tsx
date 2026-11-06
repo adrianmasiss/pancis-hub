@@ -40,10 +40,19 @@ const count = (...values: (number | null | undefined)[]) =>
 
 export function MeasurementFormDialog({
   measurement,
+  open: openProp,
+  onOpenChange,
 }: {
   measurement?: MeasurementView;
+  /** Controlado desde fuera (el «+» del telefono): sin boton propio. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (o: boolean) =>
+    controlled ? onOpenChange?.(o) : setOpenState(o);
   const [source, setSource] = useState<MeasurementSource>(
     measurement?.source ?? "manual",
   );
@@ -80,20 +89,22 @@ export function MeasurementFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {measurement ? (
-          <ActionButton
-            family="edit"
-            compact
-            aria-label={`${t.editMeasurement} — ${measurement.measuredAt}`}
-          ></ActionButton>
-        ) : (
-          // La accion prominente de Progreso: registrar una medicion es a lo
-          // unico que se entra aqui; lo demas es lectura. Dentro de la tabla
-          // este mismo dialogo es solo un lapiz, y ese no es prominente.
-          <ActionButton family="add">{t.addMeasurement}</ActionButton>
-        )}
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger asChild>
+          {measurement ? (
+            <ActionButton
+              family="edit"
+              compact
+              aria-label={`${t.editMeasurement} — ${measurement.measuredAt}`}
+            ></ActionButton>
+          ) : (
+            // La accion prominente de Progreso: registrar una medicion es a lo
+            // unico que se entra aqui; lo demas es lectura. Dentro de la tabla
+            // este mismo dialogo es solo un lapiz, y ese no es prominente.
+            <ActionButton family="add">{t.addMeasurement}</ActionButton>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>

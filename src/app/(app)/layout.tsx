@@ -3,11 +3,7 @@ import { cookies } from "next/headers";
 import { AppShell } from "@/components/layout/app-shell";
 import { isPhone } from "@/lib/device";
 import { MobileShell } from "@/mobile/shell/mobile-shell";
-import {
-  DEFAULT_MOBILE_ACCENT,
-  MOBILE_ACCENT_COOKIE,
-  isMobileAccent,
-} from "@/mobile/accent";
+import { MOBILE_ACCENT_COOKIE, resolveMobileAccent } from "@/mobile/accent";
 import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
@@ -62,7 +58,7 @@ export default async function AppLayout({
         displayName={displayName}
         email={user.email}
         avatarUrl={avatarUrl}
-        accent={isMobileAccent(accent) ? accent : DEFAULT_MOBILE_ACCENT}
+        accent={resolveMobileAccent(accent)}
         units={profile.unit_system === "imperial" ? "imperial" : "metric"}
         live={
           live

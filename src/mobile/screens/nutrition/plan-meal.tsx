@@ -143,7 +143,11 @@ export function PlanMeal({
   const shown = changed ? logged!.items : null;
   const foods = (shown ?? items).map((i) => i.foodName).join(", ");
   const name = mealLabel(meal.mealType, meal.name);
-  const title = meal.name?.trim() || foods || mealLabel(meal.mealType);
+  const title =
+    (changed && logged?.name?.trim()) ||
+    meal.name?.trim() ||
+    foods ||
+    mealLabel(meal.mealType);
   const fecha = date !== today ? `&fecha=${date}` : "";
   const bodyId = `m-meal-${meal.id}`;
 

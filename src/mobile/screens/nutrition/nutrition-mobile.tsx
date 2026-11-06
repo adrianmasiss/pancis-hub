@@ -15,9 +15,12 @@ import { FoodDetail } from "./food-detail";
 import { BarcodeScannerScreen } from "./scanner";
 import { EatOut } from "./eat-out";
 import {
+  getRestaurant,
   getRestaurantItems,
   listRestaurants,
 } from "@/features/restaurants/queries";
+import { RestaurantMenu } from "./restaurant-menu";
+import { DishDetail } from "./dish-detail";
 import { NutritionHistory, type HistoryDay } from "./history";
 
 export type NutritionParams = {
@@ -31,8 +34,10 @@ export type NutritionParams = {
   pagina?: string;
   /** Ficha de un alimento de la biblioteca. */
   alimento?: string;
-  /** Restaurante elegido en «Comer fuera». */
+  /** Restaurante elegido en «Comer fuera»: abre su menu. */
   r?: string;
+  /** Plato del menu del restaurante: abre su ficha. */
+  plato?: string;
   /** Historial abierto desde «Copiar de otro día». */
   copiar?: string;
 };
@@ -154,6 +159,65 @@ export async function NutritionMobile({
     }
   }
 
+  const UUID = /^[0-9a-f-]{36}$/i;
+  if (vista === "fuera" && params.r && UUID.test(params.r)) {
+    const restaurant = await getRestaurant(params.r);
+    if (restaurant) {
+      const items = await getRestaurantItems(restaurant.id);
+      const remainingKcal = day.remaining
+        ? Math.max(0, day.remaining.calories)
+        : null;
+      const item =
+        params.plato && UUID.test(params.plato)
+          ? items.find((i) => i.id === params.plato)
+          : undefined;
+      if (item) {
+        const abiertas = (diet?.meals ?? []).filter((m) => !m.loggedToday);
+        // La que toca: la primera sin registrar cuya hora no paso, o la
+        // primera sin registrar (las horas van como HH:MM:SS).
+        const ahora =
+          date === today
+            ? new Intl.DateTimeFormat("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+                timeZone: timezone,
+              }).format(new Date())
+            : "00:00";
+        const sugerida =
+          abiertas.find(
+            (m) => (m.scheduledTime?.slice(0, 5) ?? "99:99") >= ahora,
+          ) ?? abiertas[0];
+        return (
+          <DishDetail
+            restaurant={restaurant}
+            item={item}
+            date={date}
+            consumed={day.totals}
+            targets={day.targets}
+            openPlanMeals={abiertas.map((m) => ({
+              id: m.id,
+              label: mealLabel(m.mealType, m.name),
+              kcal: m.totals.calories,
+            }))}
+            suggestedMealId={sugerida?.id ?? null}
+            pendingPlanKcal={abiertas.reduce(
+              (t, m) => t + m.totals.calories,
+              0,
+            )}
+          />
+        );
+      }
+      return (
+        <RestaurantMenu
+          restaurant={restaurant}
+          items={items}
+          remainingKcal={remainingKcal}
+        />
+      );
+    }
+  }
+
   const planMeals = diet?.meals ?? [];
   const logged = planMeals.filter((m) => m.loggedToday).length;
   const tab =
@@ -217,23 +281,10 @@ export async function NutritionMobile({
       ? `Te quedan ${kcal(Math.max(0, day.remaining.calories))} kcal hoy`
       : "Registra lo que comas fuera del plan";
     const restaurants = await listRestaurants(params.q?.trim() || undefined);
-    // El elegido puede no salir en la busqueda (se acaba de crear): se suma.
-    if (params.r && !restaurants.some((r) => r.id === params.r)) {
-      const todos = await listRestaurants();
-      const elegido = todos.find((r) => r.id === params.r);
-      if (elegido) restaurants.unshift(elegido);
-    }
-    const selected =
-      restaurants.find((r) => r.id === params.r) ??
-      restaurants.find((r) => r.itemCount > 0) ??
-      null;
     body = (
       <EatOut
-        date={date}
         query={params.q ?? ""}
         restaurants={restaurants}
-        selected={selected}
-        items={selected ? await getRestaurantItems(selected.id) : []}
         remainingKcal={
           day.remaining ? Math.max(0, day.remaining.calories) : null
         }

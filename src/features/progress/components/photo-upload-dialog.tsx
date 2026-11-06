@@ -40,11 +40,24 @@ const fecha = (iso: string) =>
  */
 export function PhotoUploadDialog({
   measurements = [],
+  defaultMeasurementId,
+  open: openProp,
+  onOpenChange,
 }: {
   /** Para colgar la foto de una medición. Vacío = sólo fotos sueltas. */
   measurements?: { id: string; measuredAt: string }[];
+  /** La medición que viene elegida: la foto queda como respaldo de esas
+   * cifras (peso, grasa…) salvo que se cambie. */
+  defaultMeasurementId?: string;
+  /** Controlado desde fuera (el «+» del telefono): sin boton propio. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (o: boolean) =>
+    controlled ? onOpenChange?.(o) : setOpenState(o);
   const [view, setView] = useState<(typeof PHOTO_VIEWS)[number]>("frontal");
   const [hasFile, setHasFile] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -65,9 +78,11 @@ export function PhotoUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <ActionButton family="add">{t.upload}</ActionButton>
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger asChild>
+          <ActionButton family="add">{t.upload}</ActionButton>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>{t.upload}</DialogTitle>
@@ -106,6 +121,7 @@ export function PhotoUploadDialog({
                   label={t.measurement}
                   name="measurementId"
                   className="pc-metric"
+                  defaultValue={defaultMeasurementId ?? ""}
                   options={[
                     { value: "", label: t.noMeasurement },
                     ...measurements.map((m) => ({

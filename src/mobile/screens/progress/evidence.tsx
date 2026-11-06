@@ -6,7 +6,8 @@ import type {
   MeasurementView,
   PhotoViewItem,
 } from "@/features/progress/queries";
-import { PhotoUploadDialog } from "@/features/progress/components/photo-upload-dialog";
+import { useUnits } from "@/mobile/units";
+import { num, signo } from "./format";
 
 const POSES = [
   { id: "frontal", label: "Frente" },
@@ -26,7 +27,9 @@ const corta = (iso: string) =>
 /**
  * Fotos de progreso por pose. La mas reciente contra la fecha que
  * se elija, con un deslizador que descubre una sobre la otra. Las fotos son
- * privadas: se sirven con URL firmada y solo las ve su dueño.
+ * privadas: se sirven con URL firmada y solo las ve su dueño. Debajo, el
+ * respaldo: con que peso, grasa y musculo se tomo cada una (la medicion de
+ * la que cuelga).
  */
 export function ProgressEvidence({
   photos,
@@ -118,6 +121,14 @@ export function ProgressEvidence({
         )}
       </div>
 
+      {reciente && (
+        <PhotoBacking
+          reciente={reciente}
+          compara={compara}
+          measurements={measurements}
+        />
+      )}
+
       {compara && (
         <label className="m-row m-slider">
           <span className="m-sub">Desliza</span>
@@ -152,15 +163,89 @@ export function ProgressEvidence({
           </div>
         </section>
       )}
-
-      <div className="m-legacy-cta">
-        <PhotoUploadDialog
-          measurements={measurements.map((m) => ({
-            id: m.id,
-            measuredAt: m.measuredAt,
-          }))}
-        />
-      </div>
     </div>
+  );
+}
+
+const CIFRAS = [
+  { key: "weightKg", label: "Peso", kg: true },
+  { key: "bodyFatPercentage", label: "Grasa", kg: false },
+  { key: "skeletalMuscleKg", label: "Músculo", kg: true },
+] as const;
+
+/**
+ * Las cifras de la medicion de cada foto, lado a lado: «esta foto es con
+ * 65,1 kg y 17,1 % de grasa». Sin medicion enlazada, lo dice.
+ */
+function PhotoBacking({
+  reciente,
+  compara,
+  measurements,
+}: {
+  reciente: PhotoViewItem;
+  compara: PhotoViewItem | null;
+  measurements: MeasurementView[];
+}) {
+  const u = useUnits();
+  const de = (p: PhotoViewItem | null) =>
+    p?.measurementId
+      ? (measurements.find((m) => m.id === p.measurementId) ?? null)
+      : null;
+  const nueva = de(reciente);
+  const vieja = compara ? de(compara) : null;
+  if (!nueva && !vieja) {
+    return (
+      <p className="m-sub m-prog-backing-none">
+        {compara ? "Estas fotos no están" : "Esta foto no está"} ligada
+        {compara ? "s" : ""} a una medición. Al subirlas desde «+», elige la
+        medición de ese día.
+      </p>
+    );
+  }
+  const valor = (m: MeasurementView | null, c: (typeof CIFRAS)[number]) => {
+    const v = m?.[c.key] ?? null;
+    if (v === null) return "—";
+    return c.kg ? `${u.fmtWeight(v)} ${u.weightUnit}` : `${num(v)} %`;
+  };
+  return (
+    <section
+      className="m-card m-prog-backing"
+      data-size="sm"
+      aria-label="Cifras de cada foto"
+    >
+      <table className="m-num">
+        <thead>
+          <tr>
+            <td />
+            {compara && <th scope="col">{corta(compara.capturedAt)}</th>}
+            <th scope="col">{corta(reciente.capturedAt)}</th>
+            {compara && <th scope="col">Cambio</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {CIFRAS.map((c) => {
+            const a = vieja?.[c.key] ?? null;
+            const b = nueva?.[c.key] ?? null;
+            const delta = a !== null && b !== null ? b - a : null;
+            return (
+              <tr key={c.key}>
+                <th scope="row">{c.label}</th>
+                {compara && <td>{valor(vieja, c)}</td>}
+                <td>{valor(nueva, c)}</td>
+                {compara && (
+                  <td className="m-prog-backing-delta">
+                    {delta === null
+                      ? "—"
+                      : c.kg
+                        ? `${signo(u.weight(delta))} ${u.weightUnit}`
+                        : `${signo(delta)} %`}
+                  </td>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </section>
   );
 }

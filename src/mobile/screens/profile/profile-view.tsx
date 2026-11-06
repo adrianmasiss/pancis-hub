@@ -66,6 +66,7 @@ function storeAccent(id: MobileAccent) {
   const app = document.querySelector<HTMLElement>(".m-app");
   for (const [name, value] of Object.entries(accentVars(id)))
     app?.style.setProperty(name, value);
+  if (app) app.dataset.accent = id;
 }
 
 function iniciales(name: string) {
@@ -290,7 +291,7 @@ export function ProfileView({ summary: s }: { summary: ProfileSummary }) {
                 />
               </div>
             </div>
-            <div className="m-pref-row">
+            <div className="m-pref-row" data-stack="">
               <span className="m-pref-label">Color de acento</span>
               <div
                 className="m-swatches"

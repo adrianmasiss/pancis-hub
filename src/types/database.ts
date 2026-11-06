@@ -794,9 +794,9 @@ export type Database = {
           execution_notes: string | null
           external_id: string | null
           hardest_point: string | null
+          has_image: boolean | null
           id: string
           image_end_url: string | null
-          has_image: boolean | null
           image_url: string | null
           instructions: string | null
           is_unilateral: boolean
@@ -827,6 +827,7 @@ export type Database = {
           execution_notes?: string | null
           external_id?: string | null
           hardest_point?: string | null
+          has_image?: boolean | null
           id?: string
           image_end_url?: string | null
           image_url?: string | null
@@ -859,6 +860,7 @@ export type Database = {
           execution_notes?: string | null
           external_id?: string | null
           hardest_point?: string | null
+          has_image?: boolean | null
           id?: string
           image_end_url?: string | null
           image_url?: string | null
@@ -1199,9 +1201,9 @@ export type Database = {
           carbohydrate_g: number
           cooked_state: string | null
           created_at: string
+          data_issue: string | null
           deleted_at: string | null
           density_g_per_ml: number | null
-          data_issue: string | null
           external_id: string | null
           external_name: string | null
           external_source: string | null
@@ -1233,9 +1235,9 @@ export type Database = {
           carbohydrate_g: number
           cooked_state?: string | null
           created_at?: string
+          data_issue?: string | null
           deleted_at?: string | null
           density_g_per_ml?: number | null
-          data_issue?: string | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -1267,9 +1269,9 @@ export type Database = {
           carbohydrate_g?: number
           cooked_state?: string | null
           created_at?: string
+          data_issue?: string | null
           deleted_at?: string | null
           density_g_per_ml?: number | null
-          data_issue?: string | null
           external_id?: string | null
           external_name?: string | null
           external_source?: string | null
@@ -2116,6 +2118,53 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_item_options: {
+        Row: {
+          calories_delta: number
+          carbohydrate_delta: number
+          created_at: string
+          created_by: string | null
+          fat_delta: number
+          fiber_delta: number
+          id: string
+          item_id: string
+          label: string
+          protein_delta: number
+        }
+        Insert: {
+          calories_delta?: number
+          carbohydrate_delta?: number
+          created_at?: string
+          created_by?: string | null
+          fat_delta?: number
+          fiber_delta?: number
+          id?: string
+          item_id: string
+          label: string
+          protein_delta?: number
+        }
+        Update: {
+          calories_delta?: number
+          carbohydrate_delta?: number
+          created_at?: string
+          created_by?: string | null
+          fat_delta?: number
+          fiber_delta?: number
+          id?: string
+          item_id?: string
+          label?: string
+          protein_delta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_item_options_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_items: {
         Row: {
           calories: number | null
@@ -2128,11 +2177,15 @@ export type Database = {
           name: string
           protein_g: number | null
           restaurant_id: string
+          sat_fat_g: number | null
+          section: string
           serving_g: number | null
           serving_label: string | null
+          sodium_mg: number | null
           source_note: string | null
           source_url: string | null
           status: string
+          sugar_g: number | null
           updated_at: string
         }
         Insert: {
@@ -2146,11 +2199,15 @@ export type Database = {
           name: string
           protein_g?: number | null
           restaurant_id: string
+          sat_fat_g?: number | null
+          section?: string
           serving_g?: number | null
           serving_label?: string | null
+          sodium_mg?: number | null
           source_note?: string | null
           source_url?: string | null
           status?: string
+          sugar_g?: number | null
           updated_at?: string
         }
         Update: {
@@ -2164,11 +2221,15 @@ export type Database = {
           name?: string
           protein_g?: number | null
           restaurant_id?: string
+          sat_fat_g?: number | null
+          section?: string
           serving_g?: number | null
           serving_label?: string | null
+          sodium_mg?: number | null
           source_note?: string | null
           source_url?: string | null
           status?: string
+          sugar_g?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -2183,26 +2244,32 @@ export type Database = {
       }
       restaurants: {
         Row: {
+          category: string | null
           country: string
           created_at: string
           created_by: string | null
           id: string
+          logo_url: string | null
           name: string
           updated_at: string
         }
         Insert: {
+          category?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           updated_at?: string
         }
         Update: {
+          category?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           updated_at?: string
         }
@@ -2609,6 +2676,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      food_data_issue: {
+        Args: {
+          p_calories: number
+          p_carbs: number
+          p_fat: number
+          p_fiber: number
+          p_is_label: boolean
+          p_protein: number
+        }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
       log_diet_template_meal: {
         Args: { p_date: string; p_template_meal_id: string }

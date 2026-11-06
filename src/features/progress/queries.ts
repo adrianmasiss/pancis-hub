@@ -102,6 +102,8 @@ export type ProgressData = {
   photos: PhotoViewItem[];
   /** Analisis de composicion corporal; null sin mediciones. */
   composition: CompositionReport | null;
+  /** El objetivo del perfil: decide si bajar de peso es bueno. */
+  goal: PrimaryGoal | null;
   /** Evolucion de masa grasa y masa magra, para graficar. */
   fatMassSeries: DatedValue[];
   leanMassSeries: DatedValue[];
@@ -262,14 +264,14 @@ export async function getProgressData(userId: string): Promise<ProgressData> {
     waistCm: row.waistCm,
   }));
 
+  const goal = (profileResult.data?.primary_goal as PrimaryGoal | null) ?? null;
+
   return {
     measurements,
     weightSeries,
+    goal,
     weightAverage7: movingAverage(weightSeries, 7),
-    composition: buildCompositionReport(
-      snapshots,
-      (profileResult.data?.primary_goal as PrimaryGoal | null) ?? null,
-    ),
+    composition: buildCompositionReport(snapshots, goal),
     fatMassSeries: compositionSeries(snapshots, "fatMassKg"),
     leanMassSeries: compositionSeries(snapshots, "leanMassKg"),
     wellbeingToday:

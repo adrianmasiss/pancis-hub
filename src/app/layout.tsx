@@ -21,9 +21,8 @@ import {
 import { PwaRuntime } from "@/components/shared/pwa-runtime";
 import { isPhone } from "@/lib/device";
 import {
-  DEFAULT_MOBILE_ACCENT,
   MOBILE_ACCENT_COOKIE,
-  isMobileAccent,
+  resolveMobileAccent,
   phoneAccentCss,
 } from "@/mobile/accent";
 import { CON_SELECTOR, GUION_FONDOS } from "@/features/auth/fondos-guion";
@@ -135,9 +134,7 @@ export default async function RootLayout({
   // vista movil: acceso, pantallas de carga, cargadores y logo.
   const acentoCookie = jar.get(MOBILE_ACCENT_COOKIE)?.value;
   const acentoMovil = (await isPhone())
-    ? isMobileAccent(acentoCookie)
-      ? acentoCookie
-      : DEFAULT_MOBILE_ACCENT
+    ? resolveMobileAccent(acentoCookie)
     : null;
 
   return (

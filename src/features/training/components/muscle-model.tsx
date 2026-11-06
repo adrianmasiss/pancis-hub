@@ -30,8 +30,10 @@ type Props = {
    * cálido, para fondos naranjas.
    * `piel`: cuerpo en tono piel y el músculo que trabaja en rojo anaranjado,
    * como un músculo y no como pintura. Variante opcional; se fija al montar.
+   * `acento`: maniquí claro y las zonas en el acento de la vista móvil
+   * (`--m-accent`, leído al montar), como en Progreso.
    */
-  tone?: "anatomia" | "maniqui" | "piel";
+  tone?: "anatomia" | "maniqui" | "piel" | "acento";
   /** Músculos a los que se acerca la cámara. Vacío o nulo: el cuerpo entero. */
   focus?: string[] | null;
   /** Los músculos encendidos laten despacio, como si trabajaran. */
@@ -74,6 +76,15 @@ const TONOS = {
     secondary: new THREE.Color("#d9774f"),
     mezcla: 0.9,
     borde: 1.7,
+  },
+  /* Maniquí de Progreso: gris cálido claro, como un muñeco de sastre; el
+     principal se cambia por el acento al montar. */
+  acento: {
+    base: new THREE.Color("#c4bcb1"),
+    primary: new THREE.Color("#d4ff3a"),
+    secondary: new THREE.Color("#a59b8e"),
+    mezcla: 0.82,
+    borde: 2.2,
   },
 } as const;
 
@@ -310,8 +321,13 @@ export function MuscleModel({
     rim.position.set(-2, 1, -3);
     scene.add(rim);
     const meshes: THREE.Mesh[] = [];
-    const { base, primary, secondary, mezcla, borde } =
+    const { base, secondary, mezcla, borde, ...tono } =
       TONOS[latest.current.tone];
+    let primary: THREE.Color = tono.primary;
+    if (latest.current.tone === "acento") {
+      const css = getComputedStyle(host).getPropertyValue("--m-accent").trim();
+      if (/^#[0-9a-f]{6}$/i.test(css)) primary = new THREE.Color(css);
+    }
     /* Todo el color va en el shader: el peso de cada zona es un uniforme, así
        que cambiar de ejercicio no recorre la malla, y el latido sólo mueve
        `uMix` y `uGlow`. */

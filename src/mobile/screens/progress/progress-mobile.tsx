@@ -1,73 +1,55 @@
 import { getProgressData } from "@/features/progress/queries";
-import { getTrainingOverview } from "@/features/training/queries";
-import { createClient } from "@/lib/supabase/server";
-import { addDaysISO, localDateOf } from "@/lib/dates";
 import { ScreenHeader } from "@/mobile/shell/screen-header";
 import { ProgressSummary } from "./summary";
 import { ProgressEvidence } from "./evidence";
-import { ProgressSegment } from "./segment";
+import { ProgressFab } from "./progress-fab";
+import { ScansList } from "./scans";
+import { ProgressSegment, type ProgressTab } from "./segment";
 
 /**
- * Progreso en telefono: Resumen (peso, grasa, cintura, marca y constancia) y
- * Fotos (con comparador). Mismos datos que escritorio.
+ * Progreso en telefono: Resumen (el cuerpo con sus cifras, los rangos del
+ * InBody, la tendencia y las mediciones), Escaneos (cada medicion entera) y
+ * Fotos (con comparador). El «+» agrega cualquiera de las tres cosas.
  */
 export async function ProgressMobile({
   userId,
   vista,
+  abierta,
+  aiEnabled,
   today,
-  timezone,
 }: {
   userId: string;
   vista: string | undefined;
+  /** El escaneo que llega abierto desde el historial (`?m=`). */
+  abierta: string | null;
+  aiEnabled: boolean;
   today: string;
-  timezone: string;
 }) {
   // «Evidencia» es la biblioteca de estudios (/evidencia); las fotos se
   // llaman «Fotos». `vista=evidencia` sigue valiendo para enlaces viejos.
-  const fotos = vista === "fotos" || vista === "evidencia";
+  const tab: ProgressTab =
+    vista === "fotos" || vista === "evidencia"
+      ? "fotos"
+      : vista === "escaneos"
+        ? "escaneos"
+        : "resumen";
   const data = await getProgressData(userId);
 
   let body: React.ReactNode;
-  if (fotos) {
+  if (tab === "escaneos") {
+    body = (
+      <ScansList
+        measurements={data.measurements}
+        photos={data.photos}
+        initialOpen={abierta}
+      />
+    );
+  } else if (tab === "fotos") {
     body = (
       <ProgressEvidence photos={data.photos} measurements={data.measurements} />
     );
   } else {
-    const supabase = await createClient();
-    const desde = addDaysISO(today, -6);
-    const [overview, { data: meals }] = await Promise.all([
-      getTrainingOverview(userId, { date: today, timezone }),
-      supabase
-        .from("meals")
-        .select("date")
-        .eq("user_id", userId)
-        .in("status", ["completada", "completada_con_cambios"])
-        .is("deleted_at", null)
-        .gte("date", desde)
-        .lte("date", today),
-    ]);
-    /* Constancia de 7 dias: dias con comidas registradas y entrenos frente a
-       los dias de la rutina activa. Mitad y mitad. */
-    const mealDays = new Set((meals ?? []).map((m) => m.date)).size;
-    const workouts = overview.recentSessions.filter(
-      (s) => s.completedAt && localDateOf(s.startedAt, timezone) >= desde,
-    ).length;
-    const planDays = overview.activePlan?.days.length ?? 0;
-    const constancia =
-      planDays > 0
-        ? Math.round(
-            ((mealDays / 7 + Math.min(1, workouts / planDays)) / 2) * 100,
-          )
-        : Math.round((mealDays / 7) * 100);
-
-    body = (
-      <ProgressSummary
-        data={data}
-        record={overview.latestRecord}
-        constancia={constancia}
-        today={today}
-      />
-    );
+    body = <ProgressSummary data={data} today={today} goal={data.goal} />;
   }
 
   return (
@@ -75,15 +57,22 @@ export async function ProgressMobile({
       <ScreenHeader
         title="Progreso"
         subtitle={
-          fotos
+          tab === "fotos"
             ? "Tus fotos son privadas: solo tú las ves"
-            : "Tu cuerpo y tu constancia"
+            : tab === "escaneos"
+              ? "Cada medición con todas sus cifras"
+              : "Tu cuerpo y tu constancia"
         }
       />
       <div className="m-body" style={{ paddingBottom: 0 }}>
-        <ProgressSegment active={fotos ? "fotos" : "resumen"} />
+        <ProgressSegment active={tab} />
       </div>
       {body}
+      <ProgressFab
+        measurements={data.measurements}
+        today={today}
+        aiEnabled={aiEnabled}
+      />
     </div>
   );
 }

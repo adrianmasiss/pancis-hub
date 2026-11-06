@@ -61,3 +61,47 @@
 - Segmentado «Desde mi plan / Libre»: columnas al ancho de su texto (`grid-auto-columns: max-content`) en vez de mitades de un ancho fijo de 212 px; padding 4 px y 0 16 px. El fondo activo ya no se sale ni se encima.
 - Ficha de alimento: «Más detalle» ahora vive al pie de la misma tarjeta de macros (separado por una línea), plegable. Sus filas llevan punto y barra de color como los macros (saturada = color de grasas, azúcar = carbohidratos, sodio `--m-sodium`, colesterol `--m-cholesterol`, nuevos tokens claro/oscuro) y las barras se dibujan con la misma animación al abrir (la lista se vuelve a montar con `key`).
 - Check de verificado (como el de las redes): `src/features/foods/lib/confirmed.ts` (`isConfirmedFood`, con tests). Lo lleva sólo un genérico de USDA (laboratorio, sin código de barras), sin `data_issue`, sin desacuerdo entre fuentes > 15 %, no corregido por el usuario y no propio. Las marcas de USDA ya no dicen «Verificado» en la ficha (son la etiqueta del fabricante; texto de la fuente corregido). `LibraryFood` gana `confirmed` y `branded`. Sello `src/mobile/ui/verified-badge.tsx` en el color del acento, en filas de la biblioteca, título de la ficha y la etiqueta de la fuente. Filtro «Verificados» (`?filtro=verificados`, `onlyConfirmed` en la consulta, misma regla en SQL y excluye los corregidos): 11 978 en local. La cuenta pasó a su propia línea. Escritorio sin tocar.
+
+## Comer fuera según la referencia (nov 2026)
+
+- Migración `20261105000000_comer_fuera_menu.sql` (aplicada SOLO en local): `restaurants.category`, `restaurant_items.section`, tabla `restaurant_item_options` (diferencias por porción, RLS lectura para autenticados, inserción propia) y política de update de la categoría. **Antes de desplegar: `supabase db push`.** Tipos regenerados.
+- Lógica pura en `src/features/restaurants/lib/menu.ts` (+ tests): categorías, secciones, `dishMacros`, `fitOf` (cabe / justo >80 % / te pasas), `bestForToday` (más proteína que quepa), `dishFacts` (umbrales FDA por porción), `initials`.
+- Directorio (`eat-out.tsx`): buscador, copiloto, chips por tipo, filas con avatar de iniciales, «¿No está tu restaurante?» → hoja con nombre + tipo, «Agregar y buscar menú» (IA).
+- Menú (`restaurant-menu.tsx`, `?vista=fuera&r=`): encabezado con «Te quedan», buscar en el menú, «Mejor opción para hoy», chips por sección, grupos con Cabe/Justo/Te pasas, agregar plato (con sección) y buscar con IA.
+- Ficha del plato (`dish-detail.tsx`, `&plato=`): sello de si cabe, aporta, kcal con contador y macros contra la meta, Personaliza (interruptores), Porción ½/1/2, Cómo lo registro (extra / en lugar de una comida del plan), proyección del día, «Después te quedarían» con dos tramos, consejo, tabla plegable y CTA fija.
+- `logRestaurantItem` acepta opciones y `insteadOfTemplateMealId`; el reemplazo queda como «Cambiada hoy» en Hoy, con el nombre de lo comido (`plan-meal.tsx`). `logMeal` acepta `sourceTemplateMealId`. La IA ahora devuelve sección, opciones con cifras publicadas y categoría.
+- `useCountUp` pasó a `src/mobile/ui/use-count-up.ts` (lo usan Comparar y la ficha del plato).
+- Datos de prueba SOLO en local: 4 restaurantes (Subway con 8 platos y 3 opciones), nota «Prueba local (datos de ejemplo)».
+- Omitido de la referencia: carrusel de fotos (no hay fotos de platos), corazón/compartir, botón «Comparar».
+
+## Comer fuera: logos reales y check de verificado (nov 2026)
+
+- `restaurants.logo_url` (en la misma migración 20261105000000, aún solo local): archivo de Wikimedia Commons; un check solo acepta `commons.wikimedia.org/wiki/Special:FilePath/…`.
+- `lib/logo.ts`: Wikidata (P154) por nombre, filtra por descripción de comida, elige el logo vigente sin eslogan ni de un solo país; `commonsThumb` arma la miniatura PNG directa por md5 (evita 3 redirecciones). Se busca al crear el restaurante y al investigarlo con IA.
+- Avatar: logo sobre blanco con padding en px (el % se mide contra el contenedor y lo hacía gigante); si no carga, iniciales.
+- Check: `status = 'verificado'` (ya existía; RLS solo deja ponerlo a un admin). Se ve en filas del menú, mejor opción, ficha del plato, «N verificados» en el directorio y chip «Verificados» en el menú. Hoy ningún plato lo tiene.
+
+## Tabla nutricional del plato (nov 2026)
+
+- «Ver tabla nutricional» pasó a «Tabla nutricional» plegada al pie de la tarjeta de macros, con el mismo marcado que «Más detalle» de alimentos (`.m-more`, `.m-macro-legend`, barras que se redibujan al abrir), contra el VD de la FDA.
+- Nuevas columnas `restaurant_items.sat_fat_g`, `sugar_g`, `sodium_mg` (misma migración, solo local); la IA las pide al investigar. Lo que no publica el restaurante no se lista y se dice en la nota.
+
+## Progreso rediseñado + menú «+» en tarjetas (2026-11-06)
+
+- Referencia del usuario: Resumen / Escaneos / Fotos. Resumen = `BodyCard` (maniquí `tone="acento"` con rótulos y líneas guía, Composición/Medidas, «Girar 360°»), `RangeCards` (Bajo/Normal/Alto con el rango del propio informe; visceral 1–9 por defecto), `Trends` (pestañas Peso/Grasa/Músculo, rango anclado a la ÚLTIMA medición, lista con sparklines por color de métrica), constancia + récord, `ScanHistory`.
+- Escaneos: `ScansList` desplegable con todas las cifras y edición; `?m=` abre una.
+- `Fab` ahora es speed-dial (tarjetas apiladas, fondo oscurecido, «×» con aro del acento) en todas las pantallas. Progreso: Medición manual / Importar InBody (IA, 1 petición de Gemini por lectura, se revisa antes de guardar) / Foto. Se quitaron los botones viejos (`m-legacy-cta`) de Resumen y Fotos.
+- Lógica en `src/features/progress/lib/trends-view.ts` (tests). CSS al final de `mobile.css` (sección «Progreso (nov 2026)»).
+
+### Ronda 2 de Progreso (2026-11-06)
+- La pagina quedaba 14 px mas ancha (la marca de los rangos se salia): `overflow: clip` en `.m-prog-range`. Verificado `scrollWidth - innerWidth = 0`.
+- Maniqui quieto (`pointer-events: none` en el canvas, sin girar ni acercar). Con segmentos del InBody: rotulos por brazo/pierna/tronco con magra y evaluacion. Sin ellos: maniqui a la izquierda y cifras principales a la derecha. Se elige la ultima medicion con segmentos, si no con composicion (`medicionDelCuerpo`).
+- «Más del escaneo» (`scan-detail.tsx`): el resto en dos columnas, tabla por segmento y fotos de esa medicion con «Agregar foto» ya ligada.
+- Fuera constancia y récord (y sus consultas). Tarjetas de rango solo si el informe trae rango.
+- Fotos ligadas: importar InBody acepta frente/lado/espalda (se suben colgadas del escaneo, `saveInbodyReading` devuelve `id`); el «+» → foto elige la ultima medicion por defecto; Fotos muestra peso/grasa/musculo de cada foto comparada. Tabla de Fotos sin verificar en pantalla: la demo no tiene fotos.
+
+### Paleta neón + desplegable (2026-11-06)
+- Resumen: maniquí → las 4 tarjetas de rango (siempre) → «Más del escaneo» plegado → tendencia → historial.
+- Paleta neón del usuario (modo oscuro): acentos lima/burgundy/gold/cyan/merlot en `accent.ts` (fill, onFill, chip, zonas, degradado; `inkLight` propio para claro). Cookies viejas: naranja/rosa→burgundy, menta→cyan (`resolveMobileAccent`); por defecto lima.
+- Base oscura #070708 / tarjetas #0F0F11 / héroe #0C0C0E / borde #1C1C1F; chips «va bien» en acento y «va mal» ámbar (coral en gold); series `--m-serie-*` (gold y cyan cambian grasa/músculo vía `.m-app[data-accent]`).
+- Neón: resplandor arriba (`.m-app::before`), brillo y viñeta en la tarjeta del maniquí, degradado en «+» y píldora de la barra, «+» respira (2,8 s; sin movimiento reducido).
