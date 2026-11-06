@@ -14,6 +14,7 @@ import {
   MOBILE_ACCENT_COOKIE,
   type MobileAccent,
 } from "@/mobile/accent";
+import { cambiarIconoApk, cambiarIconoIphone } from "@/mobile/apk";
 import { useMobile } from "@/mobile/shell/mobile-shell";
 import { PasskeyRow } from "./passkeys";
 import { Segmented, Switch } from "@/mobile/ui/controls";
@@ -67,6 +68,8 @@ function storeAccent(id: MobileAccent) {
   for (const [name, value] of Object.entries(accentVars(id)))
     app?.style.setProperty(name, value);
   if (app) app.dataset.accent = id;
+  cambiarIconoIphone(id);
+  cambiarIconoApk(id);
 }
 
 function iniciales(name: string) {

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pancis Hub</string>
+    <string name="url_inicio">https://pancis-hub.vercel.app/?origen=apk</string>
+    <string name="asset_statements" translatable="false">[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "web", "site": "https://pancis-hub.vercel.app"}}]</string>
+</resources>

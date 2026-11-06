@@ -1,0 +1,50 @@
+// APK de Pancis Hub: una Trusted Web Activity que abre la app web a pantalla
+// completa. El codigo de la app es la web; aqui solo vive el contenedor, los
+// iconos por acento y el cambio de icono.
+plugins {
+    id "com.android.application"
+}
+
+def firma = new Properties()
+def archivoFirma = rootProject.file("keystore.properties")
+if (archivoFirma.exists()) firma.load(new FileInputStream(archivoFirma))
+
+android {
+    namespace "com.pancishub.app"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.pancishub.app"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        release {
+            if (archivoFirma.exists()) {
+                storeFile file(firma["storeFile"])
+                storePassword firma["storePassword"]
+                keyAlias firma["keyAlias"]
+                keyPassword firma["keyPassword"]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation "com.google.androidbrowserhelper:androidbrowserhelper:2.5.0"
+}

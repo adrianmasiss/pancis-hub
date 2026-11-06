@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.pancishub.app",
+      "sha256_cert_fingerprints": [
+        "33:47:F3:C0:14:29:97:2C:D8:42:E9:5C:2F:24:1A:22:FF:C6:7E:99:EA:82:DE:50:38:24:3D:A0:FE:37:D9:83"
+      ]
+    }
+  }
+]

@@ -3,13 +3,15 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { messages } from "@/i18n/es-419";
+import { anotarSiEsApk } from "@/mobile/apk";
 
 /**
- * Registra el service worker (solo en produccion) y notifica los
- * cambios de conexion.
+ * Registra el service worker (solo en produccion), anota si la app corre
+ * dentro del APK y notifica los cambios de conexion.
  */
 export function PwaRuntime() {
   useEffect(() => {
+    anotarSiEsApk();
     if ("serviceWorker" in navigator) {
       if (process.env.NODE_ENV === "production") {
         navigator.serviceWorker.register("/sw.js").catch(() => {

@@ -60,7 +60,8 @@ const TIPOS: Record<string, string> = {
 };
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
+  // Sin espacios ni saltos de linea: al pegarlo en Vercel suele colarse uno.
+  const secret = process.env.CRON_SECRET?.trim();
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`)
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;

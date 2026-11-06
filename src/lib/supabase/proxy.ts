@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   // El programador de recordatorios no tiene sesion: la ruta exige su
   // propio secreto (CRON_SECRET).
   "/api/cron",
+  // Android lee aqui la huella del APK para abrirlo sin barra de navegador.
+  "/.well-known",
 ];
 
 /** Rutas de autenticacion que no deben verse con sesion activa. */

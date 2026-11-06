@@ -77,7 +77,21 @@ FORM: direccion fijada por el usuario, sin sorteo; superficies de 24px,
 lienzo de 30px, datos tabulares, controles con respuesta y movimiento reducido.
 -->`;
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  // El icono del iPhone en el acento elegido: iOS lo copia al «Agregar a
+  // inicio» y no lo vuelve a leer, asi que sale del color de ese momento.
+  const acento = (await cookies()).get(MOBILE_ACCENT_COOKIE)?.value;
+  return {
+    ...metadata,
+    icons: {
+      apple: acento
+        ? `/icons/acento/${resolveMobileAccent(acento)}-180.png`
+        : "/icons/apple-touch-icon.png?v=2",
+    },
+  };
+}
+
+const metadata: Metadata = {
   title: {
     default: messages.app.name,
     template: `%s | ${messages.app.name}`,
