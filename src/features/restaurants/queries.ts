@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { commonsThumb } from "./lib/logo";
-import { restaurantImage, restaurantItemImage } from "./lib/images";
 import {
   MENU_SECTIONS,
   type MenuSection,
@@ -13,9 +12,8 @@ export type RestaurantSummary = {
   id: string;
   name: string;
   category: RestaurantCategory | null;
-  /** Imagen real del catálogo; respaldo de Wikimedia Commons si no hay. */
+  /** Miniatura del logo oficial (Wikimedia Commons); null si no hay. */
   logoUrl: string | null;
-  imageSourceUrl?: string | null;
   itemCount: number;
   /** Platos verificados contra la tabla oficial del restaurante. */
   verifiedCount: number;
@@ -35,8 +33,6 @@ export type RestaurantItemOption = {
 export type RestaurantItem = {
   id: string;
   name: string;
-  imageUrl?: string | null;
-  imageSourceUrl?: string | null;
   servingLabel: string | null;
   servingG: number | null;
   calories: number | null;
@@ -77,10 +73,7 @@ function toSummary(r: SummaryRow): RestaurantSummary {
     id: r.id,
     name: r.name,
     category: (r.category ?? null) as RestaurantCategory | null,
-    logoUrl:
-      restaurantImage(r.name)?.src ??
-      (r.logo_url ? commonsThumb(r.logo_url) : null),
-    imageSourceUrl: restaurantImage(r.name)?.sourceUrl ?? null,
+    logoUrl: r.logo_url ? commonsThumb(r.logo_url) : null,
     itemCount: count(r.restaurant_items),
     verifiedCount: count(r.verificados),
   };
@@ -129,17 +122,13 @@ export async function getRestaurantItems(
   const { data } = await supabase
     .from("restaurant_items")
     .select(
-      "id, name, restaurants(name), serving_label, serving_g, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sat_fat_g, sugar_g, sodium_mg, status, section, source_url, source_note, restaurant_item_options(id, label, calories_delta, protein_delta, carbohydrate_delta, fat_delta, fiber_delta)",
+      "id, name, serving_label, serving_g, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sat_fat_g, sugar_g, sodium_mg, status, section, source_url, source_note, restaurant_item_options(id, label, calories_delta, protein_delta, carbohydrate_delta, fat_delta, fiber_delta)",
     )
     .eq("restaurant_id", restaurantId)
     .order("name");
   return (data ?? []).map((i) => ({
     id: i.id,
     name: i.name,
-    imageUrl:
-      restaurantItemImage(i.restaurants?.name ?? "", i.name)?.src ?? null,
-    imageSourceUrl:
-      restaurantItemImage(i.restaurants?.name ?? "", i.name)?.sourceUrl ?? null,
     servingLabel: i.serving_label,
     servingG: n(i.serving_g),
     calories: n(i.calories),
