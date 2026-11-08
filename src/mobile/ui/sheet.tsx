@@ -1,6 +1,8 @@
 "use client";
 
 import { Dialog } from "radix-ui";
+import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -23,6 +25,7 @@ export function Sheet({
   description,
   icon,
   children,
+  layout = "sheet",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,9 +35,30 @@ export function Sheet({
   /** Va sobre el titulo (p. ej. el aviso de una accion destructiva). */
   icon?: React.ReactNode;
   children?: React.ReactNode;
+  layout?: "sheet" | "screen";
 }) {
   const reduce = useReducedMotion();
   const drag = useDragControls();
+  const screen = layout === "screen";
+  const [viewport, setViewport] = useState<{ top: number; height: number }>();
+  useEffect(() => {
+    if (!open || !screen) return;
+    const visible = window.visualViewport;
+    const update = () =>
+      setViewport({
+        top: visible?.offsetTop ?? 0,
+        height: visible?.height ?? window.innerHeight,
+      });
+    update();
+    visible?.addEventListener("resize", update);
+    visible?.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      visible?.removeEventListener("resize", update);
+      visible?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, screen]);
   // Solo se monta abierto, y abrir es siempre del cliente: hay `document`.
   const container =
     open && typeof document !== "undefined"
@@ -58,15 +82,17 @@ export function Sheet({
             <Dialog.Content asChild forceMount>
               <motion.div
                 className="m-sheet"
-                initial={reduce ? { opacity: 0 } : { y: "100%" }}
-                animate={reduce ? { opacity: 1 } : { y: 0 }}
-                exit={reduce ? { opacity: 0 } : { y: "100%" }}
+                data-layout={layout}
+                style={screen ? viewport : undefined}
+                initial={reduce || screen ? { opacity: 0 } : { y: "100%" }}
+                animate={reduce || screen ? { opacity: 1 } : { y: 0 }}
+                exit={reduce || screen ? { opacity: 0 } : { y: "100%" }}
                 transition={
-                  reduce
+                  reduce || screen
                     ? { duration: 0.15 }
                     : { type: "spring", bounce: 0, duration: 0.5 }
                 }
-                drag={reduce ? false : "y"}
+                drag={reduce || screen ? false : "y"}
                 dragListener={false}
                 dragControls={drag}
                 dragConstraints={{ top: 0, bottom: 0 }}
@@ -77,13 +103,25 @@ export function Sheet({
                   }
                 }}
               >
-                <div
-                  className="m-sheet-grabber"
-                  aria-hidden="true"
-                  onPointerDown={(e) => drag.start(e)}
-                />
+                {!screen && (
+                  <div
+                    className="m-sheet-grabber"
+                    aria-hidden="true"
+                    onPointerDown={(e) => drag.start(e)}
+                  />
+                )}
                 {icon}
-                <Dialog.Title className="m-sheet-title">{title}</Dialog.Title>
+                <div className="m-sheet-heading">
+                  <Dialog.Title className="m-sheet-title">{title}</Dialog.Title>
+                  {screen && (
+                    <Dialog.Close
+                      className="m-icon-btn m-press"
+                      aria-label="Cerrar"
+                    >
+                      <X size={20} aria-hidden="true" />
+                    </Dialog.Close>
+                  )}
+                </div>
                 {description ? (
                   <Dialog.Description className="m-sheet-text">
                     {description}

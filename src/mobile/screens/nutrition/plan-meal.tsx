@@ -218,6 +218,7 @@ export function PlanMeal({
                 swapped && <Tag tone="warn">Ajustada hoy</Tag>
               )}
               {movedFrom !== undefined && <Tag tone="neutral">Movida hoy</Tag>}
+              {extras.length > 0 && <Tag tone="neutral">Con extras</Tag>}
             </span>
             <span className="m-plan-meal-title">{title}</span>
             <MealKcal calories={totals.calories} />

@@ -5,6 +5,7 @@ import { Apple, ChevronDown, Plus, Star, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteFood } from "@/features/foods/actions";
 import type { LibraryFood } from "@/features/foods/queries";
+import { WebFoodProvenance } from "@/features/foods/components/web-food-sources";
 import { messages } from "@/i18n/es-419";
 import { triggerHaptic } from "@/lib/haptics";
 import { BackButton } from "@/mobile/ui/back-button";
@@ -124,6 +125,13 @@ function MacroBreakdown({
 
 /** De donde salen los numeros, dicho para personas. */
 function sourceOf(food: LibraryFood): { nombre: string; detalle: string } {
+  if (food.webProvenance)
+    return {
+      nombre: "Importado por el copiloto",
+      detalle: food.isCorrected
+        ? "Modificaste los valores importados; las fuentes originales se conservan abajo."
+        : "Datos publicados en las fuentes enlazadas, transcritos con IA.",
+    };
   if (food.isOwn)
     return {
       nombre: "Lo agregaste tú",
@@ -178,6 +186,12 @@ function confidenceOf(food: LibraryFood): {
       label: "Verificado",
       tone: "ok",
       detalle: "Sin correcciones y sin desacuerdo con otras fuentes.",
+    };
+  if (food.webProvenance)
+    return {
+      label: "Sin revisar",
+      tone: "neutral",
+      detalle: "La importación no equivale a una revisión de la etiqueta.",
     };
   return {
     label: "Estimado",
@@ -536,6 +550,7 @@ export function FoodDetail({
             <p className="m-sub">
               {fuente.detalle} {confianza.detalle}
             </p>
+            <WebFoodProvenance provenance={food.webProvenance} />
             {food.isCorrected && (
               <span className="m-tag" data-tone="neutral">
                 Corregido por ti

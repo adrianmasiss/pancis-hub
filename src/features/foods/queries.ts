@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { webProvenanceSchema, type WebProvenance } from "./lib/web-food";
 import { applyCorrection } from "@/features/foods/lib/corrections";
 import { isConfirmedFood } from "@/features/foods/lib/confirmed";
 import { DIVERGENCE_THRESHOLD } from "@/features/foods/lib/source-agreement";
@@ -10,6 +11,7 @@ import {
 } from "@/features/foods/schemas";
 
 export type LibraryFood = {
+  webProvenance?: WebProvenance | null;
   id: string;
   name: string;
   brand: string | null;
@@ -156,7 +158,7 @@ export async function getFoodsLibraryPage(
   let query = supabase
     .from("foods")
     .select(
-      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, external_source, barcode, max_divergence_pct, nutrition_basis, density_g_per_ml, data_issue, micronutrients, food_portions(label, grams)",
+      "id, name, brand, food_group, cooked_state, calories, protein_g, carbohydrate_g, fat_g, fiber_g, sugar_g, sodium_mg, verified, owner_user_id, image_url, source, external_source, barcode, max_divergence_pct, nutrition_basis, density_g_per_ml, data_issue, micronutrients, web_provenance, food_portions(label, grams)",
       { count: "exact" },
     )
     .is("deleted_at", null)
@@ -267,6 +269,8 @@ export async function getFoodsLibraryPage(
         })),
         dataIssue: food.data_issue as LibraryFood["dataIssue"],
         micronutrients: food.micronutrients as LibraryFood["micronutrients"],
+        webProvenance:
+          webProvenanceSchema.safeParse(food.web_provenance).data ?? null,
       },
       corrections.get(food.id),
     );

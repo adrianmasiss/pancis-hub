@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Reorder, useDragControls } from "motion/react";
-import { Copy, Dumbbell, Lightbulb, Plus } from "lucide-react";
+import { Copy, Dumbbell, Lightbulb, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { logDietTemplateMeal } from "@/features/dashboard/actions";
 import { deleteMeal, updateMealTime } from "@/features/nutrition/actions";
@@ -14,16 +14,21 @@ import type {
   DietTemplateMealView,
   DietTemplateView,
 } from "@/features/dashboard/queries";
-import { consumedTotals } from "@/features/nutrition/lib/day-overview";
+import {
+  consumedTotals,
+  isMealConsumed,
+} from "@/features/nutrition/lib/day-overview";
 import { Bar } from "@/mobile/ui/display";
+import { Fab } from "@/mobile/ui/fab";
 import { Haptic } from "@/mobile/ui/haptic";
 import { useLongPressDrag } from "@/mobile/ui/use-long-press-drag";
+import { ADD_FOOD_OPTIONS } from "./add-food-options";
 import { ExtraSheet } from "./extra-sheet";
 import { LooseMeal, PlanMeal } from "./plan-meal";
 import { WaterCard } from "./water";
 import { fromMinutes, toMinutes } from "./day-sheets";
 import type { TrainingAdjustment } from "@/mobile/training-adjustment";
-import { MACROS, addMacros, gramos, kcal } from "./format";
+import { MACROS, addMacros, gramos, kcal, mealLabel } from "./format";
 
 /** Una fila del dia: comida del plan o comida suelta, ordenadas por hora. */
 type Entry =
@@ -151,7 +156,7 @@ export function NutritionToday({
     (m) => !m.sourceTemplateMealId && !m.extraOfTemplateMealId,
   );
 
-  /* El dia en orden de hora: lo del plan y lo agregado, juntos. */
+  /* Orden por hora dentro de cada grupo: plan y comidas independientes. */
   const entries: Entry[] = [
     ...meals.map((meal) => ({
       key: `p:${meal.id}`,
@@ -184,8 +189,9 @@ export function NutritionToday({
   const drag = useRef({ start: "", now: order });
 
   const drop = (key: string) => {
-    const now = drag.current.now;
-    if (now.join("|") === drag.current.start) return;
+    const kind = byKey.get(key)?.kind;
+    const now = drag.current.now.filter((k) => byKey.get(k)?.kind === kind);
+    if (drag.current.now.join("|") === drag.current.start) return;
     const i = now.indexOf(key);
     const timeOf = (k: string | undefined) =>
       k === undefined ? null : (byKey.get(k)?.time ?? null);
@@ -343,81 +349,118 @@ export function NutritionToday({
             </Link>
           </div>
         )}
-        <Reorder.Group
-          as="ul"
-          axis="y"
-          values={order}
-          onReorder={(o) => {
-            drag.current.now = o;
-            setLocal((s) => ({ ...s, order: o }));
-          }}
-          className="m-day-list"
-        >
-          {order.map((key) => {
-            const entry = byKey.get(key)!;
-            return (
-              <DayItem
-                key={key}
-                value={key}
-                onLift={() =>
-                  (drag.current = { start: order.join("|"), now: order })
-                }
-                onDrop={() => drop(key)}
+        {(["plan", "suelta"] as const).map((kind) => {
+          const groupOrder = order.filter(
+            (key) => byKey.get(key)?.kind === kind,
+          );
+          if (!groupOrder.length) return null;
+          return (
+            <section
+              key={kind}
+              className="m-stack"
+              aria-label={
+                kind === "plan" ? "Comidas del plan" : "Fuera del plan"
+              }
+            >
+              {kind === "suelta" && (
+                <div className="m-off-plan-heading">
+                  <h2 className="m-section">Fuera del plan</h2>
+                  <p className="m-sub">
+                    Comidas independientes que también cuentan en tu día.
+                  </p>
+                </div>
+              )}
+              <Reorder.Group
+                as="ul"
+                axis="y"
+                values={groupOrder}
+                onReorder={(o) => {
+                  let index = 0;
+                  const next = order.map((key) =>
+                    byKey.get(key)?.kind === kind ? o[index++]! : key,
+                  );
+                  drag.current.now = next;
+                  setLocal((s) => ({ ...s, order: next }));
+                }}
+                className="m-day-list"
               >
-                {(longPress) =>
-                  entry.kind === "plan" ? (
-                    <PlanMeal
-                      meal={
-                        times[key]
-                          ? { ...entry.meal, scheduledTime: `${times[key]}:00` }
-                          : entry.meal
+                {groupOrder.map((key) => {
+                  const entry = byKey.get(key)!;
+                  return (
+                    <DayItem
+                      key={key}
+                      value={key}
+                      onLift={() =>
+                        (drag.current = { start: order.join("|"), now: order })
                       }
-                      date={date}
-                      today={today}
-                      open={openMeal === key}
-                      onOpenChange={(o) => setOpenMeal(o ? key : null)}
-                      done={isDone(entry.meal.id, entry.meal.loggedToday)}
-                      canToggle={
-                        entry.meal.items.some((i) => !i.omitted) &&
-                        !(entry.meal.loggedToday && !loggedOf(entry.meal.id))
-                      }
-                      onToggle={() =>
-                        toggle(
-                          entry.meal.id,
-                          isDone(entry.meal.id, entry.meal.loggedToday),
+                      onDrop={() => drop(key)}
+                    >
+                      {(longPress) =>
+                        entry.kind === "plan" ? (
+                          <PlanMeal
+                            meal={
+                              times[key]
+                                ? {
+                                    ...entry.meal,
+                                    scheduledTime: `${times[key]}:00`,
+                                  }
+                                : entry.meal
+                            }
+                            date={date}
+                            today={today}
+                            open={openMeal === key}
+                            onOpenChange={(o) => setOpenMeal(o ? key : null)}
+                            done={isDone(entry.meal.id, entry.meal.loggedToday)}
+                            canToggle={
+                              entry.meal.items.some((i) => !i.omitted) &&
+                              !(
+                                entry.meal.loggedToday &&
+                                !loggedOf(entry.meal.id)
+                              )
+                            }
+                            onToggle={() =>
+                              toggle(
+                                entry.meal.id,
+                                isDone(entry.meal.id, entry.meal.loggedToday),
+                              )
+                            }
+                            movedFrom={
+                              moved[entry.meal.id] ??
+                              (times[key]
+                                ? (entry.meal.scheduledTime?.slice(0, 5) ?? "")
+                                : undefined)
+                            }
+                            logged={loggedOf(entry.meal.id)}
+                            extras={extrasOf(entry.meal.id)}
+                            ensureLogged={() => ensureLogged(entry.meal.id)}
+                            longPress={longPress}
+                            targets={targets}
+                          />
+                        ) : (
+                          <LooseMeal
+                            meal={
+                              times[key]
+                                ? {
+                                    ...entry.meal,
+                                    scheduledTime: `${times[key]}:00`,
+                                  }
+                                : entry.meal
+                            }
+                            date={date}
+                            open={openMeal === key}
+                            onOpenChange={(o) => setOpenMeal(o ? key : null)}
+                            longPress={longPress}
+                            targets={targets}
+                          />
                         )
                       }
-                      movedFrom={
-                        moved[entry.meal.id] ??
-                        (times[key]
-                          ? (entry.meal.scheduledTime?.slice(0, 5) ?? "")
-                          : undefined)
-                      }
-                      logged={loggedOf(entry.meal.id)}
-                      extras={extrasOf(entry.meal.id)}
-                      ensureLogged={() => ensureLogged(entry.meal.id)}
-                      longPress={longPress}
-                      targets={targets}
-                    />
-                  ) : (
-                    <LooseMeal
-                      meal={
-                        times[key]
-                          ? { ...entry.meal, scheduledTime: `${times[key]}:00` }
-                          : entry.meal
-                      }
-                      date={date}
-                      open={openMeal === key}
-                      onOpenChange={(o) => setOpenMeal(o ? key : null)}
-                      longPress={longPress}
-                      targets={targets}
-                    />
-                  )
-                }
-              </DayItem>
-            );
-          })}
-        </Reorder.Group>
+                    </DayItem>
+                  );
+                })}
+              </Reorder.Group>
+            </section>
+          );
+        })}
         <button
           type="button"
           className="m-add-meal m-press"
@@ -447,11 +490,33 @@ export function NutritionToday({
         ¿Qué como?
       </Link>
 
+      <Fab
+        label="Agregar comida al día"
+        actions={[
+          {
+            label: "Buscar alimento",
+            sub: "Elige de tu biblioteca para este día.",
+            icon: Search,
+            onClick: () => setNewOpen(true),
+          },
+          ...ADD_FOOD_OPTIONS,
+        ]}
+      />
       <ExtraSheet
         open={newOpen}
         onOpenChange={setNewOpen}
         date={date}
         destino={{ kind: "nueva" }}
+        completedMeals={meals
+          .filter((meal) => {
+            const logged = loggedOf(meal.id);
+            return logged && isMealConsumed(logged.status);
+          })
+          .map((meal) => ({
+            templateMealId: meal.id,
+            mealName: mealLabel(meal.mealType, meal.name),
+            time: meal.scheduledTime,
+          }))}
       />
     </div>
   );

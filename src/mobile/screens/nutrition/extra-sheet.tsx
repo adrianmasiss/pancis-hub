@@ -2,18 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, Plus, Search, X } from "lucide-react";
+import { Clock, Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import {
-  addMealItem,
-  logMeal,
-  searchFoods,
-} from "@/features/nutrition/actions";
+import { addMealItem, logMeal } from "@/features/nutrition/actions";
 import type { MealType } from "@/features/nutrition/schemas";
 import { triggerHaptic } from "@/lib/haptics";
 import { Sheet } from "@/mobile/ui/sheet";
 import { Stepper } from "@/mobile/ui/controls";
-import { useSearch } from "@/mobile/ui/use-search";
+import { DayFoodSearch } from "./day-food-search";
 import { TimeWheelSheet } from "./day-sheets";
 import { gramos, kcal, per100 } from "./format";
 
@@ -25,7 +21,33 @@ export type PickedFood = {
   carbohydrateG: number;
   fatG: number;
   fiberG: number;
+  nutritionBasis?: "100g" | "100ml";
+  /** Porciones caseras con su peso, para elegir la cantidad de un toque. */
+  portions?: { label: string; grams: number }[];
 };
+
+/**
+ * Atajos de cantidad: las porciones del alimento primero (las que tiene
+ * cargadas la biblioteca) y después cantidades redondas. Sin repetir pesos.
+ */
+function quantityShortcuts(food: PickedFood) {
+  const unit = food.nutritionBasis === "100ml" ? "ml" : "g";
+  const own = (food.portions ?? [])
+    .filter((p) => p.grams >= 1 && p.grams <= 2000)
+    .slice(0, 4)
+    .map((p) => ({
+      grams: Math.round(p.grams),
+      label: `${p.label} · ${Math.round(p.grams)} ${unit}`,
+    }));
+  const round = [50, 100, 150, 200, 250].map((grams) => ({
+    grams,
+    label: `${grams} ${unit}`,
+  }));
+  const seen = new Set<number>();
+  return [...own, ...round].filter((s) =>
+    seen.has(s.grams) ? false : (seen.add(s.grams), true),
+  );
+}
 
 /**
  * A donde va lo que se registra:
@@ -73,7 +95,8 @@ export function ExtraSheet({
   date,
   initial,
   title,
-  destino = { kind: "suelto" },
+  destino: defaultDestino = { kind: "suelto" },
+  completedMeals = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -82,9 +105,18 @@ export function ExtraSheet({
   initial?: { food: PickedFood; grams: number } | null;
   title?: string;
   destino?: ExtraDestino;
+  completedMeals?: Omit<Extract<ExtraDestino, { kind: "extra" }>, "kind">[];
 }) {
   const router = useRouter();
-  const [term, setTerm] = useState("");
+  const [selectedMeal, setSelectedMeal] = useState("");
+  const target = completedMeals.find(
+    (meal) => meal.templateMealId === selectedMeal,
+  );
+  const canChooseDestination = defaultDestino.kind === "nueva";
+  const destino: ExtraDestino =
+    canChooseDestination && target
+      ? { kind: "extra", ...target }
+      : defaultDestino;
   const [picked, setPicked] = useState<{ food: PickedFood; grams: number }[]>(
     initial ? [initial] : [],
   );
@@ -94,24 +126,10 @@ export function ExtraSheet({
   const [horaOpen, setHoraOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const results = useSearch(term, async (q) => {
-    const r = await searchFoods({ term: q });
-    if ("error" in r) return null;
-    return r.results.map((f) => ({
-      id: f.id,
-      name: f.name,
-      calories: f.caloriesPer100g,
-      proteinG: f.proteinPer100g,
-      carbohydrateG: f.carbohydratePer100g,
-      fatG: f.fatPer100g,
-      fiberG: f.fiberPer100g,
-    }));
-  });
-
   const close = () => {
     onOpenChange(false);
-    setTerm("");
     setNombre("");
+    setSelectedMeal("");
     setHora(ahora());
     setPicked(initial ? [initial] : []);
     setSearching(!initial);
@@ -121,7 +139,6 @@ export function ExtraSheet({
     setPicked((p) =>
       p.some((x) => x.food.id === food.id) ? p : [...p, { food, grams: 100 }],
     );
-    setTerm("");
     setSearching(false);
   };
 
@@ -133,6 +150,12 @@ export function ExtraSheet({
   const save = () =>
     picked.length > 0 &&
     startTransition(async () => {
+      if (canChooseDestination && selectedMeal && !target) {
+        toast.error(
+          "Esa comida ya no está registrada. Elige dónde agregar el alimento.",
+        );
+        return;
+      }
       const items = picked.map((p) => ({
         foodId: p.food.id,
         quantityG: p.grams,
@@ -208,34 +231,11 @@ export function ExtraSheet({
     <Sheet
       open={open}
       onOpenChange={(o) => (o ? onOpenChange(true) : close())}
-      title={heading}
-      description="Se suma a lo de hoy. Tu plan no cambia."
+      layout="screen"
+      title={searching ? "Buscar alimento" : heading}
+      description={`Se registra para el ${date.split("-").reverse().join("/")}. Tu plan no cambia.`}
     >
-      {destino.kind === "nueva" && (
-        <div className="m-new-meal-fields">
-          <label className="m-field">
-            <span>Nombre</span>
-            <input
-              className="m-input"
-              placeholder="Merienda"
-              maxLength={80}
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          </label>
-          <button
-            type="button"
-            className="m-time-chip m-press"
-            aria-label={`Hora: ${hora}. Cambiar`}
-            onClick={() => setHoraOpen(true)}
-          >
-            <Clock size={16} aria-hidden="true" />
-            <span className="m-num">{hora}</span>
-          </button>
-        </div>
-      )}
-
-      {picked.length > 0 && (
+      {!searching && picked.length > 0 && (
         <ul className="m-picked">
           {picked.map((p, i) => {
             const m = per100(p.food, p.grams);
@@ -260,12 +260,12 @@ export function ExtraSheet({
                   style={{ justifyContent: "space-between" }}
                 >
                   <Stepper
-                    label={`Gramos de ${p.food.name}`}
+                    label={`Cantidad de ${p.food.name}`}
                     value={p.grams}
                     step={10}
                     min={10}
                     max={2000}
-                    unit="g"
+                    unit={p.food.nutritionBasis === "100ml" ? "ml" : "g"}
                     onChange={(g) =>
                       setPicked((all) =>
                         all.map((x, j) => (j === i ? { ...x, grams: g } : x)),
@@ -277,9 +277,36 @@ export function ExtraSheet({
                     <small>kcal</small>
                   </span>
                 </div>
-                <p className="m-sub">
-                  P {gramos(m.proteinG)} · C {gramos(m.carbohydrateG)} · G{" "}
-                  {gramos(m.fatG)}
+                <div
+                  className="m-portions"
+                  role="group"
+                  aria-label={`Cantidades rápidas de ${p.food.name}`}
+                >
+                  {quantityShortcuts(p.food).map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      className="m-portion m-press"
+                      aria-pressed={p.grams === s.grams}
+                      onClick={() =>
+                        setPicked((all) =>
+                          all.map((x, j) =>
+                            j === i ? { ...x, grams: s.grams } : x,
+                          ),
+                        )
+                      }
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="m-picked-macros m-num">
+                  <span data-macro="p">Proteína {gramos(m.proteinG)} g</span>
+                  <span data-macro="c">Carbos {gramos(m.carbohydrateG)} g</span>
+                  <span data-macro="g">Grasa {gramos(m.fatG)} g</span>
+                  {m.fiberG > 0 && (
+                    <span data-macro="f">Fibra {gramos(m.fiberG)} g</span>
+                  )}
                 </p>
               </li>
             );
@@ -288,35 +315,7 @@ export function ExtraSheet({
       )}
 
       {searching ? (
-        <>
-          <label className="m-search">
-            <Search size={18} aria-hidden="true" />
-            <span className="sr-only">Buscar alimento</span>
-            <input
-              type="search"
-              placeholder="Buscar alimento"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-            />
-          </label>
-          <div className="m-stack">
-            {results.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className="m-list-row m-press"
-                onClick={() => add(f)}
-              >
-                <span className="m-list-row-main">
-                  <span className="m-list-row-title">{f.name}</span>
-                  <span className="m-list-row-sub">
-                    {kcal(f.calories)} kcal · por 100 g
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </>
+        <DayFoodSearch onSelect={add} />
       ) : (
         !initial && (
           <button
@@ -330,7 +329,61 @@ export function ExtraSheet({
         )
       )}
 
-      {picked.length > 0 && (
+      {!searching && canChooseDestination && (
+        <label className="m-field">
+          <span>¿Dónde lo agregamos?</span>
+          <select
+            className="m-input"
+            value={selectedMeal}
+            disabled={pending}
+            onChange={(event) => setSelectedMeal(event.target.value)}
+          >
+            <option value="">Como comida fuera del plan</option>
+            {completedMeals.length > 0 && (
+              <optgroup label="Comidas del plan ya hechas">
+                {completedMeals.map((meal) => (
+                  <option key={meal.templateMealId} value={meal.templateMealId}>
+                    {meal.mealName}
+                    {meal.time ? ` · ${meal.time.slice(0, 5)}` : ""}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          <small className="m-sub">
+            {target
+              ? `Se suma como extra a ${target.mealName}, solo para este día.`
+              : completedMeals.length
+                ? "Aparecerá separada de las comidas del plan."
+                : "También puedes sumar extras a una comida del plan después de marcarla como hecha."}
+          </small>
+        </label>
+      )}
+      {!searching && destino.kind === "nueva" && (
+        <div className="m-new-meal-fields">
+          <label className="m-field">
+            <span>Nombre</span>
+            <input
+              className="m-input"
+              placeholder="Merienda"
+              maxLength={80}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="m-time-chip m-press"
+            aria-label={`Hora: ${hora}. Cambiar`}
+            onClick={() => setHoraOpen(true)}
+          >
+            <Clock size={16} aria-hidden="true" />
+            <span className="m-num">{hora}</span>
+          </button>
+        </div>
+      )}
+
+      {!searching && picked.length > 0 && (
         <button
           type="button"
           className="m-btn m-press"
@@ -339,7 +392,9 @@ export function ExtraSheet({
           disabled={pending}
           onClick={save}
         >
-          {pending ? "Guardando…" : `Agregar · ${kcal(total)} kcal`}
+          {pending
+            ? "Guardando…"
+            : `Agregar${destino.kind === "extra" ? ` a ${destino.mealName}` : ""} · ${kcal(total)} kcal`}
         </button>
       )}
 

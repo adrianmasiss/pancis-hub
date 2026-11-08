@@ -3,20 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Barcode,
-  Camera,
-  ChevronRight,
-  PenLine,
-  Search,
-  SlidersHorizontal,
-  Star,
-  X,
-} from "lucide-react";
+import { ChevronRight, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import type { LibraryFood } from "@/features/foods/queries";
 import { FOOD_GROUPS, type FoodGroup } from "@/features/foods/schemas";
 import { messages } from "@/i18n/es-419";
 import { triggerHaptic } from "@/lib/haptics";
+import { ADD_FOOD_OPTIONS } from "./add-food-options";
 import { Fab } from "@/mobile/ui/fab";
 import { FoodThumb } from "@/mobile/ui/food-thumb";
 import { Haptic } from "@/mobile/ui/haptic";
@@ -219,29 +211,7 @@ export function FoodLibrary({
         </div>
       )}
 
-      <Fab
-        label="Agregar alimento"
-        actions={[
-          {
-            label: "Código de barras",
-            sub: "Escanéalo con la cámara.",
-            icon: Barcode,
-            href: "/nutricion?vista=escanear",
-          },
-          {
-            label: "Foto de etiqueta",
-            sub: "La tabla nutricional, leída de una foto.",
-            icon: Camera,
-            href: "/nutricion/alimentos?metodo=foto",
-          },
-          {
-            label: "Manual",
-            sub: "Escribe tú los valores por 100 g.",
-            icon: PenLine,
-            href: "/nutricion/alimentos?metodo=manual",
-          },
-        ]}
-      />
+      <Fab label="Agregar alimento" actions={ADD_FOOD_OPTIONS} />
 
       <Sheet
         open={filterOpen}

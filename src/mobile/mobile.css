@@ -47,9 +47,7 @@
   --m-glass-hi: inset 0 1px 0 rgb(255 255 255 / 0.08);
   --m-overlay: rgb(24 24 27 / 0.45);
   --m-sheet-bg: rgb(26 26 30 / 0.82);
-  --m-card-edge:
-    inset 0 1px 0 rgb(255 255 255 / 0.04),
-    inset 0 0 0 1px #1c1c1f;
+  --m-card-edge: inset 0 1px 0 rgb(255 255 255 / 0.04), inset 0 0 0 1px #1c1c1f;
   --m-fade: rgb(7 7 8 / 0);
 
   --m-ia-bg: #2a2540;
@@ -841,7 +839,11 @@ html:not(.dark) .m-seg-thumb {
   stroke: var(--ring-color, var(--m-accent-line));
   filter: drop-shadow(
     0 0 4px
-      color-mix(in srgb, var(--ring-color, var(--m-accent-line)) 70%, transparent)
+      color-mix(
+        in srgb,
+        var(--ring-color, var(--m-accent-line)) 70%,
+        transparent
+      )
   );
   transition: stroke-dashoffset 0.6s var(--m-ease);
 }
@@ -1119,10 +1121,12 @@ html:not(.dark) .m-tabbar-item:not([data-active]) {
 }
 @keyframes m-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--m-accent-line) 45%, transparent);
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--m-accent-line) 45%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 22px color-mix(in srgb, var(--m-accent-line) 0%, transparent);
+    box-shadow: 0 0 0 22px
+      color-mix(in srgb, var(--m-accent-line) 0%, transparent);
   }
 }
 
@@ -2148,7 +2152,8 @@ textarea.m-input {
 .m-form textarea.m-input {
   height: auto;
 }
-.m-form select.m-input {
+.m-form select.m-input,
+.m-sheet[data-layout="screen"] select.m-input {
   appearance: none;
   padding-right: 40px;
   background-image:
@@ -3869,7 +3874,8 @@ html:not(.dark) .m-home-insight {
       transparent 65%
     ),
     var(--m-surface);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-accent-line) 20%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--m-accent-line) 20%, transparent);
 }
 .m-home-insight-icon {
   width: 36px;
@@ -4140,14 +4146,22 @@ html:not(.dark) .m-home-insight {
   /* Lo de fuera del recuadro, atenuado: la vista se va sola al codigo. */
   box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.55);
   background:
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 28px 4px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 4px 28px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 28px 4px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 4px 28px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left / 28px 4px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left / 4px 28px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right / 28px 4px,
-    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right / 4px 28px;
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 28px
+      4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top left / 4px
+      28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 28px
+      4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) top right / 4px
+      28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left /
+      28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom left /
+      4px 28px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right /
+      28px 4px,
+    linear-gradient(var(--m-accent-line), var(--m-accent-line)) bottom right /
+      4px 28px;
   background-repeat: no-repeat;
   overflow: hidden;
 }
@@ -4159,7 +4173,8 @@ html:not(.dark) .m-home-insight {
   height: 2px;
   border-radius: 1px;
   background: var(--m-accent);
-  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--m-accent-line) 60%, transparent);
+  box-shadow: 0 0 12px 2px
+    color-mix(in srgb, var(--m-accent-line) 60%, transparent);
   animation: m-scan-sweep 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
 @keyframes m-scan-sweep {
@@ -5761,10 +5776,18 @@ html:not(.dark) .m-app .m-btn[data-variant="destructive"] {
 .m-macro-line > * {
   grid-row: var(--row);
 }
-.m-macro-line:nth-child(1) { --row: 1; }
-.m-macro-line:nth-child(2) { --row: 2; }
-.m-macro-line:nth-child(3) { --row: 3; }
-.m-macro-line:nth-child(4) { --row: 4; }
+.m-macro-line:nth-child(1) {
+  --row: 1;
+}
+.m-macro-line:nth-child(2) {
+  --row: 2;
+}
+.m-macro-line:nth-child(3) {
+  --row: 3;
+}
+.m-macro-line:nth-child(4) {
+  --row: 4;
+}
 
 /* La lista del dia: cada comida es un item arrastrable. */
 .m-day-list {
@@ -7606,9 +7629,15 @@ html:not(.dark) .m-routine[data-band] {
   color: var(--m-text-soft);
   animation: m-cmp-pop 240ms var(--m-ease) both;
 }
-.m-cmp-macro:nth-child(3) .m-cmp-delta { animation-delay: 40ms; }
-.m-cmp-macro:nth-child(4) .m-cmp-delta { animation-delay: 80ms; }
-.m-cmp-macro:nth-child(5) .m-cmp-delta { animation-delay: 120ms; }
+.m-cmp-macro:nth-child(3) .m-cmp-delta {
+  animation-delay: 40ms;
+}
+.m-cmp-macro:nth-child(4) .m-cmp-delta {
+  animation-delay: 80ms;
+}
+.m-cmp-macro:nth-child(5) .m-cmp-delta {
+  animation-delay: 120ms;
+}
 .m-cmp-delta[data-tone="up"] {
   background: color-mix(in srgb, var(--m-accent-ink) 16%, transparent);
   color: var(--m-accent-ink);
@@ -8160,7 +8189,9 @@ html:not(.dark) .m-routine[data-band] {
   opacity: 0;
   transition: opacity 200ms var(--m-ease);
 }
-.m-dish-table-toggle[aria-expanded="true"] + .m-dish-table-panel .m-dish-table-inner {
+.m-dish-table-toggle[aria-expanded="true"]
+  + .m-dish-table-panel
+  .m-dish-table-inner {
   opacity: 1;
 }
 .m-dish-table-rows {
@@ -8242,7 +8273,10 @@ html:not(.dark) .m-routine[data-band] {
 .m-dish-macros .m-more-inner {
   padding: 0 16px;
 }
-.m-dish-macros .m-more-toggle[aria-expanded="true"] + .m-more-panel .m-more-inner {
+.m-dish-macros
+  .m-more-toggle[aria-expanded="true"]
+  + .m-more-panel
+  .m-more-inner {
   padding: 2px 16px 16px;
 }
 .m-macro-legend li[data-sub] {
@@ -8362,8 +8396,8 @@ html:not(.dark) .m-routine[data-band] {
   flex-direction: column;
   align-items: flex-start;
   gap: 3px;
-  animation: m-prog-callout-in 420ms var(--m-ease)
-    calc(240ms + var(--i) * 60ms) backwards;
+  animation: m-prog-callout-in 420ms var(--m-ease) calc(240ms + var(--i) * 60ms)
+    backwards;
 }
 .m-prog-callout[data-side="left"] {
   left: 0;
@@ -8430,7 +8464,6 @@ html:not(.dark) .m-routine[data-band] {
   white-space: nowrap;
 }
 
-
 /* Tendencia */
 .m-card.m-prog-trend {
   padding: 14px 16px 12px;
@@ -8476,7 +8509,9 @@ html:not(.dark) .m-routine[data-band] {
 }
 .m-prog-chart .m-chart-line {
   stroke: var(--metric);
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--metric) 55%, transparent));
+  filter: drop-shadow(
+    0 0 6px color-mix(in srgb, var(--metric) 55%, transparent)
+  );
 }
 .m-prog-chart .m-chart-dot {
   stroke: var(--metric);
@@ -8613,7 +8648,7 @@ html:not(.dark) .m-routine[data-band] {
   .m-prog-bal-bar > i {
     animation: m-prog-fade 200ms ease backwards;
   }
-  
+
   .m-prog-reading-bar::after {
     animation-duration: 2.4s;
   }
@@ -9108,13 +9143,19 @@ html:not(.dark) .m-prog-tray-core {
 .m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray {
   animation: m-prog-view-in 320ms var(--m-ease) backwards;
 }
-.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(2) {
+.m-prog-scan-toggle[aria-expanded="true"]
+  + .m-more-panel
+  .m-prog-tray:nth-child(2) {
   animation-delay: 40ms;
 }
-.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(3) {
+.m-prog-scan-toggle[aria-expanded="true"]
+  + .m-more-panel
+  .m-prog-tray:nth-child(3) {
   animation-delay: 80ms;
 }
-.m-prog-scan-toggle[aria-expanded="true"] + .m-more-panel .m-prog-tray:nth-child(n + 4) {
+.m-prog-scan-toggle[aria-expanded="true"]
+  + .m-more-panel
+  .m-prog-tray:nth-child(n + 4) {
   animation-delay: 120ms;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -9204,7 +9245,11 @@ html:not(.dark) .m-app::before {
       color-mix(in srgb, var(--m-accent) 5%, transparent) 45%,
       transparent 75%
     ),
-    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.5) 100%),
+    radial-gradient(
+      120% 90% at 50% 50%,
+      transparent 55%,
+      rgb(0 0 0 / 0.5) 100%
+    ),
     var(--m-surface-hero);
 }
 html:not(.dark) .m-card.m-prog-body {
@@ -9273,4 +9318,357 @@ html:not(.dark) .m-card.m-prog-body {
 .m-pref-row[data-stack] .m-swatch {
   width: 32px;
   height: 32px;
+}
+
+/* Formularios con búsqueda: arriba y dentro del área visible del teclado. */
+.m-sheet[data-layout="screen"] {
+  top: 0;
+  bottom: auto;
+  height: 100dvh;
+  max-height: none;
+  border-radius: 0;
+  padding-top: max(16px, env(safe-area-inset-top));
+  background: var(--m-bg);
+}
+.m-sheet[data-layout="screen"] > * {
+  flex-shrink: 0;
+}
+.m-sheet-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.m-off-plan-heading {
+  border-top: 1px solid var(--m-glass-line);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+.m-off-plan-heading .m-sub {
+  margin-top: 4px;
+}
+
+/* ── Buscar alimento en Hoy (nov 2026) ───────────────────────────────────
+   Una lista agrupada en una sola superficie (no una tarjeta por fila: los
+   resultados son una secuencia), nombre en dos líneas, macros con sus
+   colores y el «+» teñido del acento. Movimiento: fundido corto al cambiar
+   resultados (se ve decenas de veces al día, así que casi imperceptible),
+   esqueleto mientras carga y un «pop» solo en el resultado de la búsqueda
+   externa, que es raro. */
+
+.m-dsearch {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.m-dsearch-clear {
+  width: 28px;
+  height: 28px;
+  margin-right: -6px;
+  border-radius: 14px;
+  background: var(--m-surface-3);
+  color: var(--m-text-soft);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.m-dsearch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-dsearch-group > .m-eyebrow {
+  padding-left: 4px;
+}
+.m-dsearch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  overflow: hidden;
+}
+.m-dsearch-list > li {
+  position: relative;
+}
+/* Separador que arranca después de la foto, como en iOS. */
+.m-dsearch-list > li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 70px;
+  right: 0;
+  height: 1px;
+  background: var(--m-divider);
+}
+.m-dsearch-row {
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: transparent;
+}
+.m-dsearch-row:active {
+  background: var(--m-surface-2);
+}
+.m-dsearch-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.m-dsearch-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.m-dsearch-name svg {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-left: 5px;
+}
+.m-dsearch-brand {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.m-dsearch-macros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.m-dsearch-macros strong {
+  color: var(--m-text);
+  font-weight: 700;
+}
+.m-dsearch-macros [data-macro="p"] {
+  color: var(--m-protein);
+}
+.m-dsearch-macros [data-macro="c"] {
+  color: var(--m-carbs);
+}
+.m-dsearch-macros [data-macro="g"] {
+  color: var(--m-fat);
+}
+.m-dsearch-basis {
+  color: var(--m-faint);
+}
+.m-dsearch-add {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  color: var(--m-accent-ink);
+  transition: transform 160ms var(--m-ease);
+}
+.m-dsearch-row:active .m-dsearch-add {
+  transform: scale(0.88);
+}
+
+/* Cargando: tres filas que respiran en lugar de un texto suelto. */
+.m-dsearch-skel {
+  height: 68px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.m-dsearch-skel > span {
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--m-surface-2) 0%,
+    var(--m-surface-3) 50%,
+    var(--m-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: m-dsearch-shimmer 1.2s ease-in-out infinite;
+}
+.m-dsearch-skel > span:first-child {
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+.m-dsearch-skel > span:last-child {
+  height: 14px;
+  flex: 1;
+  max-width: 60%;
+}
+@keyframes m-dsearch-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.m-dsearch-enter > li {
+  animation: m-dsearch-in 180ms var(--m-ease) both;
+}
+.m-dsearch-enter > li:nth-child(2) {
+  animation-delay: 25ms;
+}
+.m-dsearch-enter > li:nth-child(3) {
+  animation-delay: 50ms;
+}
+.m-dsearch-enter > li:nth-child(4) {
+  animation-delay: 75ms;
+}
+.m-dsearch-enter > li:nth-child(n + 5) {
+  animation-delay: 100ms;
+}
+@keyframes m-dsearch-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.m-dsearch-hint {
+  padding: 4px 4px 0;
+}
+
+/* Buscar afuera: discreto bajo los resultados, protagonista si no hubo nada. */
+.m-dsearch-outside {
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--m-surface);
+  box-shadow: var(--m-card-edge);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-dsearch-outside[data-prominent] {
+  box-shadow:
+    var(--m-card-edge),
+    inset 0 0 0 1px color-mix(in srgb, var(--m-accent) 35%, transparent);
+  animation: m-dsearch-in 220ms var(--m-ease) both;
+}
+.m-dsearch-outside-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.m-dsearch-spin {
+  animation: m-dsearch-spin 1.4s linear infinite;
+}
+@keyframes m-dsearch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.m-dsearch-web {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: m-dsearch-in 220ms var(--m-ease) both;
+}
+.m-dsearch-pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: m-pop 0.5s var(--m-ease) both;
+}
+.m-dsearch-pill[data-tone="good"] {
+  background: color-mix(in srgb, var(--m-accent) 16%, transparent);
+  color: var(--m-accent-ink);
+}
+.m-dsearch-pill[data-tone="warn"] {
+  background: var(--m-warn-bg);
+  color: var(--m-warn-text);
+}
+
+/* Lo elegido: entra desde abajo, y las porciones son atajos de cantidad. */
+.m-picked-row {
+  animation: m-dsearch-in 260ms var(--m-ease) both;
+}
+.m-picked-macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.m-picked-macros [data-macro="p"] {
+  color: var(--m-protein);
+}
+.m-picked-macros [data-macro="c"] {
+  color: var(--m-carbs);
+}
+.m-picked-macros [data-macro="g"] {
+  color: var(--m-fat);
+}
+.m-picked-macros [data-macro="f"] {
+  color: var(--m-fiber);
+}
+.m-portions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -14px;
+  padding: 0 14px;
+}
+.m-portions::-webkit-scrollbar {
+  display: none;
+}
+.m-portion {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  background: var(--m-surface-2);
+  color: var(--m-text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: none;
+}
+.m-portion[aria-pressed="true"] {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-dsearch-skel > span,
+  .m-dsearch-spin {
+    animation: none;
+  }
+  .m-dsearch-enter > li,
+  .m-dsearch-outside[data-prominent],
+  .m-dsearch-web,
+  .m-dsearch-pill,
+  .m-picked-row {
+    animation-name: m-dsearch-fade;
+  }
+}
+@keyframes m-dsearch-fade {
+  from {
+    opacity: 0;
+  }
 }
