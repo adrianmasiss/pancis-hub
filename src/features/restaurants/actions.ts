@@ -5,7 +5,11 @@ import { generateObject, generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import {
+  getGeminiSearchModel,
+  hasGeminiApiKey,
+  withGeminiFallback,
+} from "@/lib/ai/google";
 import { logMeal } from "@/features/nutrition/actions";
 import { MEAL_TYPES } from "@/features/nutrition/schemas";
 import { findRestaurantLogo } from "./lib/logo";
@@ -320,26 +324,23 @@ export async function researchRestaurant(
   if (!restaurant) return { error: FALLO };
 
   try {
-    /* Si el modelo principal esta saturado (503) o sin cuota, el lite. */
-    const buscar = (modelId?: string) =>
-      generateText({
-        model: getGeminiModel(modelId),
-        tools: { google_search: google.tools.googleSearch({}) },
-        prompt: `Busca la informacion nutricional oficial del menu de «${restaurant.name}» (pais: ${restaurant.country}). Prioriza la tabla nutricional publicada por el propio restaurante. Si no la publica para ese pais, usa la tabla oficial del mismo restaurante en otro pais (Estados Unidos, Mexico o España) y di de que pais es cada dato. Lista hasta 20 platos populares, cada uno con: nombre, porcion (descripcion y gramos si aparecen), calorias, proteina, carbohidratos, grasa, fibra, grasa saturada, azucar y sodio (mg) por porcion, la seccion del menu (plato, acompañamiento, bebida o postre) y la URL de donde sale el dato. Si la tabla publica variantes con sus propias cifras (sin salsa, salsas, extras, pan distinto), di cuanto cambia cada una. Di tambien que tipo de comida vende (hamburguesas, pollo, sandwiches, pizza, mexicana, asiatica, cafe, saludable u otro). Si no encuentras un valor, dilo; no lo inventes.`,
-      });
-    const found = await buscar().catch(() => buscar("gemini-3.1-flash-lite"));
+    /* La busqueda web solo funciona gratis con un modelo: ver getGeminiSearchModel. */
+    const found = await generateText({
+      model: getGeminiSearchModel(),
+      tools: { google_search: google.tools.googleSearch({}) },
+      prompt: `Busca la informacion nutricional oficial del menu de «${restaurant.name}» (pais: ${restaurant.country}). Prioriza la tabla nutricional publicada por el propio restaurante. Si no la publica para ese pais, usa la tabla oficial del mismo restaurante en otro pais (Estados Unidos, Mexico o España) y di de que pais es cada dato. Lista hasta 20 platos populares, cada uno con: nombre, porcion (descripcion y gramos si aparecen), calorias, proteina, carbohidratos, grasa, fibra, grasa saturada, azucar y sodio (mg) por porcion, la seccion del menu (plato, acompañamiento, bebida o postre) y la URL de donde sale el dato. Si la tabla publica variantes con sus propias cifras (sin salsa, salsas, extras, pan distinto), di cuanto cambia cada una. Di tambien que tipo de comida vende (hamburguesas, pollo, sandwiches, pizza, mexicana, asiatica, cafe, saludable u otro). Si no encuentras un valor, dilo; no lo inventes.`,
+    });
     const urls = (found.sources ?? [])
       .map((s) => ("url" in s ? s.url : null))
       .filter((u): u is string => Boolean(u));
 
-    const formatear = (modelId?: string) =>
+    /* Dar formato a un texto ya escrito: basta el rapido. */
+    const { object } = await withGeminiFallback("rapido", (model) =>
       generateObject({
-        model: getGeminiModel(modelId),
+        model,
         schema: researchSchema,
         prompt: `Pasa este texto a la lista estructurada. Incluye SOLO los platos que traen calorias, proteina, carbohidratos y grasa. No inventes valores ni platos; si falta fibra, grasa saturada, azucar o sodio usa null. Si un plato no trae URL propia usa null. En country pon el pais de la tabla si se dice (o null). En section usa plato, acompanamiento, bebida o postre. En options pon solo variantes con cifras publicadas, como diferencia frente al plato base (negativa si quita); si no hay, lista vacia. En category el tipo de comida del restaurante (o null).\n\n${found.text}\n\nFuentes consultadas:\n${urls.join("\n")}`,
-      });
-    const { object } = await formatear().catch(() =>
-      formatear("gemini-3.1-flash-lite"),
+      }),
     );
 
     const logo = restaurant.logo_url

@@ -79,7 +79,10 @@ export async function compareFoods(
   const { original, substitute } = input;
 
   const originalMacros = scaleMacros(original.per100g, original.quantityG);
-  const substituteMacros = scaleMacros(substitute.per100g, substitute.quantityG);
+  const substituteMacros = scaleMacros(
+    substitute.per100g,
+    substitute.quantityG,
+  );
 
   const difference: MacroSet = {
     calories: Math.round(substituteMacros.calories - originalMacros.calories),

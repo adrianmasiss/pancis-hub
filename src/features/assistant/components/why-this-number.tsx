@@ -68,7 +68,9 @@ export function WhyThisNumber({
           </DialogHeader>
 
           {pending || !explanations ? (
-            <p className="text-muted-foreground text-sm">{messages.common.loading}</p>
+            <p className="text-muted-foreground text-sm">
+              {messages.common.loading}
+            </p>
           ) : explanations.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t.whereFromEmpty}</p>
           ) : (

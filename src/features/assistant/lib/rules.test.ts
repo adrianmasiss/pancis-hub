@@ -49,7 +49,9 @@ describe("detectIntent", () => {
   });
 
   it("detecta que el usuario quiere sustituir un ejercicio", () => {
-    const intent = detectIntent("no puedo hacer sentadilla, me molesta la rodilla");
+    const intent = detectIntent(
+      "no puedo hacer sentadilla, me molesta la rodilla",
+    );
     expect(intent.kind).toBe("exerciseSubstitute");
     if (intent.kind === "exerciseSubstitute") {
       expect(intent.exerciseName).toContain("sentadilla");
@@ -196,9 +198,9 @@ describe("respuestas de entrenamiento", () => {
 
 describe('"por que ese numero" se responde sin IA', () => {
   it("detecta la pregunta por el origen de una cifra", () => {
-    expect(detectIntent("por que mi objetivo de proteina es ese numero?")).toEqual(
-      { kind: "whyThisNumber", formulaKey: "protein_ranges" },
-    );
+    expect(
+      detectIntent("por que mi objetivo de proteina es ese numero?"),
+    ).toEqual({ kind: "whyThisNumber", formulaKey: "protein_ranges" });
     expect(detectIntent("de donde sale mi descanso entre series?")).toEqual({
       kind: "whyThisNumber",
       formulaKey: "min_rest_seconds",
@@ -233,7 +235,8 @@ describe('"por que ese numero" se responde sin IA', () => {
           label: "Tu rango de proteina",
           value: "1.8 a 2.2 g/kg de peso corporal",
           rationale: "La necesidad cambia con el objetivo.",
-          limitations: "Las mujeres estan infrarrepresentadas en esta literatura.",
+          limitations:
+            "Las mujeres estan infrarrepresentadas en esta literatura.",
           isProductParameter: false,
         },
       },
@@ -276,7 +279,9 @@ describe('"por que ese numero" se responde sin IA', () => {
  */
 describe("cambiar X por Y es ambiguo por diseno", () => {
   it("una sustitucion de comida se detecta como ejercicio", () => {
-    const intent = detectIntent("puedo cambiar el arroz de mi almuerzo por papa hoy?");
+    const intent = detectIntent(
+      "puedo cambiar el arroz de mi almuerzo por papa hoy?",
+    );
 
     expect(intent.kind).toBe("exerciseSubstitute");
   });
@@ -304,9 +309,9 @@ describe("sintomas clinicos", () => {
     expect(detectIntent("me mareo cuando no llegue a la proteina").kind).toBe(
       "clinicalSymptom",
     );
-    expect(detectIntent("no puedo hacer sentadilla, me lesione la rodilla").kind).toBe(
-      "clinicalSymptom",
-    );
+    expect(
+      detectIntent("no puedo hacer sentadilla, me lesione la rodilla").kind,
+    ).toBe("clinicalSymptom");
   });
 
   it("no se dispara con mensajes normales", () => {

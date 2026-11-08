@@ -23,6 +23,7 @@ import {
   unitsFor,
 } from "../lib/units";
 import { SourceSeal } from "./source-seal";
+import { WebFoodProvenance } from "./web-food-sources";
 import { messages } from "@/i18n/es-419";
 import "./food-detail-card.css";
 
@@ -399,6 +400,7 @@ function FoodDetailBody({
           )}
         </section>
 
+        <WebFoodProvenance provenance={food.local?.webProvenance} />
         {food.agreement && (
           <section className="food-detail-block library-detail-sources">
             <h3 className="food-detail-kicker">Qué dice cada fuente</h3>

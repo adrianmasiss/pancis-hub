@@ -58,9 +58,13 @@ datos con su referencia científica verificada detrás (`research_sources`,
 dónde sale este número» con el texto exacto de la evidencia, incluidos sus
 matices y limitaciones, sin que un modelo lo reescriba.
 
-**Propone, nunca escribe sola.** Toda sustitución, recálculo o ajuste se
+**Propone los cambios al plan.** Toda sustitución, recálculo o ajuste se
 presenta con el antes y el después y espera confirmación. El copiloto no tiene
-herramientas de escritura: devuelve propuestas.
+herramientas para modificar el plan o registrar consumo automáticamente.
+Al buscar un producto comercial, puede agregar su ficha a la biblioteca
+personal con fuentes web y datos completos, sin confirmación adicional.
+La importación queda marcada como no revisada; datos incompletos o
+contradictorios no se convierten en una ficha utilizable.
 
 **La excepción diaria es el mecanismo.** Otras apps te hacen editar el plan (y
 perderlo) o ignorarlo. Aquí el plan base es inmutable y el día es una capa
@@ -91,7 +95,10 @@ recálculo de objetivos propuesto.
 
 - **Todo gratis, siempre.** Solo APIs sin coste (USDA, Open Food Facts; Edamam
   descartado por esto). Supabase y Vercel en plan gratuito. Gemini gratuito:
-  **20 peticiones por minuto**, y cada pregunta del copiloto gasta 2-4.
+  **20 peticiones al día** en gemini-2.5-flash (medido 2026-10-17), y cada
+  pregunta del copiloto gasta 2-4. Por eso hay dos niveles de modelo (fino y
+  rápido, cada uno con su cuota) y el motor propio contesta lo que ya tiene
+  escrito.
 - Sin PDFs científicos protegidos: solo metadatos, resúmenes propios y
   fragmentos autorizados.
 - **No existe «lo más económico»**: no hay fuente gratuita fiable de precios, y
@@ -136,7 +143,8 @@ compatibilidad.
    decir de dónde sale, con sus matices.
 2. **El plan base es sagrado.** El día es una excepción encima; nada lo
    sobrescribe sin confirmación explícita.
-3. **Proponer, no ejecutar.** Antes y después a la vista, y la persona decide.
+3. **Proponer los cambios del día.** Antes y después a la vista, y la persona decide.
+   Importar un producto a la biblioteca es una excepción: no cambia el plan ni registra consumo.
 4. **Honestidad sobre precisión.** Rangos y estimaciones donde el método solo da
    eso; advertir en vez de inventar exactitud.
 5. **Funciona sin lo caro.** Si la IA o una API externa fallan, la función

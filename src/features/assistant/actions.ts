@@ -3,7 +3,13 @@
 import { generateObject, generateText, hasToolCall, stepCountIs } from "ai";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import {
+  getGeminiModel,
+  hasGeminiApiKey,
+  withGeminiFallback,
+  type GeminiTier,
+} from "@/lib/ai/google";
+import { routeAssistantQuestion } from "@/features/assistant/lib/routing";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import { detectRelevantFormulas } from "@/features/assistant/lib/grounding";
@@ -29,6 +35,7 @@ import {
 } from "@/server/tools/catalog";
 import { buildAssistantToolset } from "@/server/tools/toolset";
 import type { ToolSource } from "@/server/tools/types";
+import type { WebFoodResult } from "@/features/foods/lib/web-food";
 import {
   detectIntent,
   deterministicProvider,
@@ -50,6 +57,8 @@ const askSchema = z.object({
   /** Conversacion a la que encadenar. Sin esto, se abre una nueva. */
   conversationId: z.uuid().optional(),
   image: z.string().max(6_000_000).regex(IMAGE_DATA_URL).optional(),
+  /** "Analizar a fondo": la misma pregunta, con el modelo fino. */
+  deep: z.boolean().optional(),
 });
 
 const assistantReplySchema = z.object({
@@ -173,6 +182,9 @@ SOLO EVIDENCIA (regla del producto, no se rompe). Toda afirmacion de salud, nutr
 - En "citedSources" pon el titulo exacto de cada fuente que respalda lo que dices. Una fuente del payload que no trata la pregunta NO se cita.
 
 HERRAMIENTAS. Tienes herramientas para consultar el catalogo, los motores de la app y la biblioteca cientifica. Usalas en vez de suponer:
+- Cuando te pidan buscar un producto comercial o un plato de restaurante (incluso solo su nombre, con errores como "chocoququi"), usa find_and_save_food. La herramienta busca primero en el catálogo, después en la web y GUARDA automáticamente una ficha personal solo si tiene datos suficientes. Pasa únicamente nombre/marca/presentación, nunca datos del usuario. Es la única excepción a proponer sin escribir: no cambia planes ni registra consumo.
+- Si find_and_save_food devuelve varias fichas de Open Food Facts con su código, muéstralas con sus cifras y pide cuál coincide con el empaque. Cuando la persona elija o escriba un código, llama otra vez con ese barcode.
+- No digas que guardaste si find_and_save_food no devolvió saved o existing. Si devuelve incomplete, explica qué falta y pide marca/presentación o etiqueta; no inventes los valores. Una ficha importada de la web no está verificada. Sus fuentes comerciales respaldan datos de producto, nunca consejos de salud. Para conocer los macros de una ficha guardada usa search_foods con el nombre devuelto.
 - Si te falta un dato concreto (un alimento, un ejercicio, una medida, una fuente), llamala. Es preferible una llamada mas a una respuesta vaga o inventada.
 - Nunca dictes macros ni compatibilidades tu: pide ids con search_foods y deja que compare_foods calcule.
 - Las herramientas que empiezan por "propose_" NO aplican nada. Devuelven una propuesta que el usuario tiene que confirmar en pantalla; dilo asi en tu respuesta.
@@ -185,7 +197,7 @@ Debes responder en el formato estructurado solicitado:
 - observation: que ves en su situacion, dicho a el ("No tienes arroz", "Hoy vas 60 g de proteina").
 - interpretation: que significa de forma prudente.
 - confidence: baja, media o alta.
-- action: una accion concreta y reversible.
+- action: una accion concreta y reversible, CON CANTIDADES. Si el payload o las herramientas traen gramos, porciones, series o kcal, la accion los dice: "Cambia los 200 g de arroz por 135 g de camote" esta bien; "Puedes usar camote" esta MAL. Una respuesta sin cifras teniendo cifras es generica.
 - alternative: una opcion alternativa si aplica.
 - reason: por que esa accion tiene sentido.
 - reevaluate: cuando revisar de nuevo.
@@ -357,7 +369,13 @@ async function generateGeminiReply(input: {
   tools: ReturnType<typeof buildAssistantToolset>;
   /** Foto adjunta, como data URL. */
   image?: string;
-}): Promise<{ reply: GeneratedReply | null; toolNames: string[] }> {
+  /** Nivel de modelo elegido por `routeAssistantQuestion`. */
+  tier: GeminiTier;
+}): Promise<{
+  reply: GeneratedReply | null;
+  toolNames: string[];
+  tier: GeminiTier;
+}> {
   const payload = JSON.stringify(
     {
       userMessage: input.message,
@@ -377,31 +395,37 @@ async function generateGeminiReply(input: {
     null,
     2,
   );
-  const { steps, text } = await generateText({
-    model: getGeminiModel(),
-    tools: input.tools,
-    // Termina cuando entrega la respuesta, o cuando se acaba el presupuesto.
-    stopWhen: [hasToolCall("responder"), stepCountIs(MAX_TOOL_STEPS)],
-    system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
-    // Con foto, el mensaje lleva la imagen al lado del contexto.
-    ...(input.image
-      ? {
-          messages: [
-            {
-              role: "user" as const,
-              content: [
-                { type: "text" as const, text: payload },
-                {
-                  type: "file" as const,
-                  data: input.image,
-                  mediaType: "image/jpeg",
-                },
-              ],
-            },
-          ],
-        }
-      : { prompt: payload }),
-  });
+  const {
+    result: { steps, text },
+    tier,
+  } = await withGeminiFallback(input.tier, async (model, tier) => ({
+    tier,
+    result: await generateText({
+      model,
+      tools: input.tools,
+      // Termina cuando entrega la respuesta, o cuando se acaba el presupuesto.
+      stopWhen: [hasToolCall("responder"), stepCountIs(MAX_TOOL_STEPS)],
+      system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
+      // Con foto, el mensaje lleva la imagen al lado del contexto.
+      ...(input.image
+        ? {
+            messages: [
+              {
+                role: "user" as const,
+                content: [
+                  { type: "text" as const, text: payload },
+                  {
+                    type: "file" as const,
+                    data: input.image,
+                    mediaType: "image/jpeg",
+                  },
+                ],
+              },
+            ],
+          }
+        : { prompt: payload }),
+    }),
+  }));
 
   const calls = steps.flatMap((step) => step.toolCalls);
   const toolNames = calls.map((call) => call.toolName);
@@ -410,27 +434,32 @@ async function generateGeminiReply(input: {
     ? assistantReplySchema.safeParse(answer.input)
     : { success: false as const };
 
-  if (parsed.success) return { reply: parsed.data, toolNames };
+  if (parsed.success) return { reply: parsed.data, toolNames, tier };
 
   /*
    * A veces contesta en texto plano en vez de llamar a `responder`, sobre todo
    * despues de usar una herramienta. Esa respuesta suele ser buena, y tirarla
    * para caer al motor de reglas seria desperdiciar el trabajo (y la cuota) que
    * ya se gasto. Se le da forma en una segunda llamada SIN herramientas, que es
-   * la unica forma de usar salida estructurada con Gemini.
+   * la unica forma de usar salida estructurada con Gemini. Solo es dar formato
+   * a un texto ya escrito, asi que va al modelo rapido y no gasta la cuota fina.
    */
   if (text.trim().length > 0) {
     const { object } = await generateObject({
-      model: getGeminiModel(),
+      model: getGeminiModel("rapido"),
       schema: assistantReplySchema,
       system: GEMINI_ASSISTANT_SYSTEM_PROMPT,
       prompt: `Esta es tu respuesta en texto libre. Pasala al formato estructurado sin anadir datos nuevos ni cifras que no esten aqui:\n\n${text}`,
     });
-    return { reply: object, toolNames: [...toolNames, "(reformateo)"] };
+    return {
+      reply: object,
+      toolNames: [...toolNames, "(reformateo)"],
+      tier,
+    };
   }
 
   // Ni herramienta ni texto: contesta el motor deterministico.
-  return { reply: null, toolNames };
+  return { reply: null, toolNames, tier };
 }
 
 export async function askAssistant(
@@ -470,6 +499,7 @@ export async function askAssistant(
    */
   const sources = grounded.flatMap((entry) => entry.sources);
   const collectSources = (extra: ToolSource[]) => sources.push(...extra);
+  const foodResearch: WebFoodResult[] = [];
 
   const history = parsed.data.conversationId
     ? await getRecentMessages(user.id, parsed.data.conversationId)
@@ -503,17 +533,30 @@ export async function askAssistant(
    */
   const explainedFromRegistry =
     intent.kind === "whyThisNumber" && context.formulaExplanation != null;
+  const route = routeAssistantQuestion({
+    message: parsed.data.message,
+    intent,
+    explainedFromRegistry,
+    hasImage: Boolean(parsed.data.image),
+    deep: parsed.data.deep ?? false,
+  });
 
   // RF-015: sin IA generativa el asistente sigue respondiendo, y ahora ademas
-  // con sus fuentes.
-  if (explainedFromRegistry || !hasGeminiApiKey()) {
+  // con sus fuentes. Un sintoma clinico tambien sale de aqui: la derivacion
+  // esta escrita y no depende de que haya cuota.
+  if (route === "reglas" || !hasGeminiApiKey()) {
     const reply = { ...fallbackReply, sources: toReplySources(sources) };
     const { conversationId } = await persist(reply, "reglas");
     return { reply, conversationId };
   }
 
   try {
-    const { reply: generated, toolNames } = await generateGeminiReply({
+    const {
+      reply: generated,
+      toolNames,
+      tier,
+    } = await generateGeminiReply({
+      tier: route,
       image: parsed.data.image,
       message: parsed.data.message,
       context,
@@ -531,11 +574,13 @@ export async function askAssistant(
         today: context.today,
         onSources: collectSources,
         replySchema: assistantReplySchema,
+        onFoodResult: (result) => foodResearch.push(result),
       }),
     });
-    if (toolNames.length > 0) {
-      console.info("Copiloto, herramientas usadas:", toolNames.join(", "));
-    }
+    console.info(
+      `Copiloto (${tier}):`,
+      toolNames.length ? toolNames.join(", ") : "sin herramientas",
+    );
     // Las fuentes las pone el servidor, NO el modelo: asi no puede citar algo
     // que no se le dio. Aqui ya incluyen lo que trajeron las herramientas.
     const reply: AssistantReply = generated
@@ -543,8 +588,18 @@ export async function askAssistant(
           ...withoutCited(generated),
           options: await resolveOptions(generated.options),
           sources: toReplySources(citedOnly(sources, generated.citedSources)),
+          depth: tier === "fino" ? "detallada" : "rapida",
         }
       : { ...fallbackReply, sources: toReplySources(sources) };
+    if (foodResearch.length) {
+      reply.foodResearch = foodResearch;
+      if (!generated) {
+        reply.observation = foodResearch
+          .map((r) => r.name ?? r.query)
+          .join(", ");
+        reply.action = foodResearch.map((r) => r.message).join(" ");
+      }
+    }
     const { conversationId } = await persist(
       reply,
       generated ? "gemini" : "reglas",
@@ -560,6 +615,13 @@ export async function askAssistant(
      */
     const reply = {
       ...fallbackReply,
+      ...(foodResearch.length
+        ? {
+            foodResearch,
+            observation: foodResearch.map((r) => r.name ?? r.query).join(", "),
+            action: foodResearch.map((r) => r.message).join(" "),
+          }
+        : {}),
       reason: messages.assistant.aiUnavailable,
       sources: toReplySources(sources),
     };

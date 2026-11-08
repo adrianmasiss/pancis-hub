@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { askAssistant } from "@/features/assistant/actions";
+import { FoodResearchResults } from "@/features/assistant/components/food-research-results";
 import { logMeal } from "@/features/nutrition/actions";
 import type {
   AssistantOption,
@@ -23,7 +24,7 @@ import { messages } from "@/i18n/es-419";
 import { ScreenHeader } from "@/mobile/shell/screen-header";
 
 type Entry =
-  | { role: "user"; text: string; image?: string }
+  | { role: "user"; text: string; image?: string; deep?: boolean }
   | { role: "assistant"; reply: AssistantReply };
 
 const SUGERENCIAS = [
@@ -31,6 +32,7 @@ const SUGERENCIAS = [
   "¿Cómo voy esta semana?",
   "¿Qué cambio si hoy no puedo entrenar?",
   "¿Por qué mi meta de proteína es esa?",
+  "Buscá Choco QuQi y agregala a mi biblioteca",
 ];
 
 /** Reduce la foto en el telefono: 1280 px de lado mayor, JPEG al 80 %. */
@@ -69,14 +71,14 @@ export function CopilotMobile({
   const fileRef = useRef<HTMLInputElement>(null);
   const sentInitial = useRef(false);
 
-  const send = (text: string) => {
+  const send = (text: string, deep = false) => {
     const photo = image;
     const trimmed =
       text.trim() || (photo ? "¿Qué hay en esta foto y cuánto aporta?" : "");
     if (!trimmed || pending) return;
     setEntries((e) => [
       ...e,
-      { role: "user", text: trimmed, image: photo ?? undefined },
+      { role: "user", text: trimmed, image: photo ?? undefined, deep },
     ]);
     setMessage("");
     setImage(null);
@@ -86,6 +88,7 @@ export function CopilotMobile({
           message: trimmed,
           conversationId: conversationId ?? undefined,
           image: photo ?? undefined,
+          deep,
         });
         if ("error" in result) {
           toast.error(result.error);
@@ -158,10 +161,23 @@ export function CopilotMobile({
                   className="m-bubble-photo"
                 />
               )}
+              {entry.deep && `${t.copilot.deeperAsked} `}
               {entry.text}
             </div>
           ) : (
-            <Reply key={i} reply={entry.reply} today={today} />
+            <Reply
+              key={i}
+              reply={entry.reply}
+              today={today}
+              onDeeper={
+                entry.reply.depth === "rapida" && !pending
+                  ? () => {
+                      const asked = entries[i - 1];
+                      if (asked?.role === "user") send(asked.text, true);
+                    }
+                  : undefined
+              }
+            />
           ),
         )}
         {pending && (
@@ -284,7 +300,16 @@ const ROLE: Record<string, { label: string; tone: "ok" | "warn" | "neutral" }> =
  * sostiene o matiza y la nota del revisor). Solo aparecen las fuentes que
  * respaldan la respuesta; sin ninguna, se dice. El razonamiento va plegado.
  */
-function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
+function Reply({
+  reply,
+  today,
+  onDeeper,
+}: {
+  reply: AssistantReply;
+  today: string;
+  /** Solo en respuestas del modelo rapido: repetir con el fino. */
+  onDeeper?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const sources = reply.sources ?? [];
   const basadoEn = sources.filter((s) => !s.isProductParameter).slice(0, 3);
@@ -292,6 +317,7 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
     <article className="m-reply">
       <p className="m-sheet-text">{reply.observation}</p>
       <p className="m-reply-action">{reply.action}</p>
+      <FoodResearchResults results={reply.foodResearch} mobile />
       {basadoEn.length > 0 && (
         <div className="m-based-on">
           {basadoEn.map((s) => (
@@ -327,8 +353,9 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
         </div>
         {sources.length === 0 ? (
           <p className="m-sub" style={{ fontSize: 13 }}>
-            Ningún estudio de la biblioteca respalda esta respuesta: sale de tus
-            datos o es una indicación general.
+            {reply.foodResearch?.length
+              ? "Las fuentes del producto aparecen arriba. Son datos comerciales, no estudios ni recomendaciones de salud."
+              : "Ningún estudio de la biblioteca respalda esta respuesta: sale de tus datos o es una indicación general."}
           </p>
         ) : (
           <ul className="m-evidence-list">
@@ -391,6 +418,17 @@ function Reply({ reply, today }: { reply: AssistantReply; today: string }) {
           style={{ transform: open ? "rotate(180deg)" : undefined }}
         />
       </button>
+      {onDeeper && (
+        <button
+          type="button"
+          className="m-link m-press"
+          style={{ alignSelf: "flex-start", gap: 6 }}
+          onClick={onDeeper}
+        >
+          <Sparkles size={14} aria-hidden="true" />
+          {t.copilot.deeper}
+        </button>
+      )}
       {open && (
         <div className="m-stack" style={{ gap: 6 }}>
           <p className="m-sheet-text">{reply.interpretation}</p>

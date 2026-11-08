@@ -148,6 +148,16 @@ export function normalizeOffProduct(raw: unknown): NormalizedFood | null {
     fatG: round1(num(nutriments["fat_100g"]) ?? 0),
     fiberG: round1(num(nutriments["fiber_100g"]) ?? 0),
   };
+  const missingNutrients = (
+    [
+      ["proteinG", "proteins_100g"],
+      ["carbohydrateG", "carbohydrates_100g"],
+      ["fatG", "fat_100g"],
+      ["fiberG", "fiber_100g"],
+    ] as const
+  )
+    .filter(([, key]) => num(nutriments[key]) === undefined)
+    .map(([field]) => field);
 
   const sugar = num(nutriments["sugars_100g"]);
   // Open Food Facts publica el sodio en GRAMOS por 100 g; el catalogo lo
@@ -180,6 +190,7 @@ export function normalizeOffProduct(raw: unknown): NormalizedFood | null {
     foodGroup: inferFoodGroup(name, category, per100g) as FoodGroup,
     cookedState: inferCookedState(name),
     per100g,
+    ...(missingNutrients.length ? { missingNutrients } : {}),
     nutritionBasis: offNutritionBasis(product),
     sugarG: sugar !== undefined ? round1(sugar) : null,
     sodiumMg: sodiumMg !== null ? round1(sodiumMg) : null,

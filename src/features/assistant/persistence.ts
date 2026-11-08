@@ -16,11 +16,7 @@ import type { ToolSource } from "@/server/tools/types";
  */
 
 export type ConversationOrigin =
-  | "chat"
-  | "comida"
-  | "alimento"
-  | "ejercicio"
-  | "biometria";
+  "chat" | "comida" | "alimento" | "ejercicio" | "biometria";
 
 /**
  * Guarda el turno completo: la pregunta, la respuesta y de donde salieron sus

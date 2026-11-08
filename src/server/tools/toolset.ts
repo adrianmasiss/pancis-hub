@@ -10,12 +10,11 @@ import {
   searchCatalogFoods,
 } from "@/server/tools/catalog";
 import { compareFoods, proposeDaySwap } from "@/server/tools/nutrition";
-import {
-  getSourcesForFormula,
-  searchEvidence,
-} from "@/server/tools/evidence";
+import { getSourcesForFormula, searchEvidence } from "@/server/tools/evidence";
 import type { FormulaKey } from "@/features/assistant/lib/grounding";
 import type { ToolSource } from "@/server/tools/types";
+import { importWebFood } from "./import-web-food";
+import type { WebFoodResult } from "@/features/foods/lib/web-food";
 
 /**
  * Las herramientas que el modelo puede llamar.
@@ -33,8 +32,8 @@ import type { ToolSource } from "@/server/tools/types";
  *
  * 1. Ninguna herramienta hace aritmetica propia. Todas envuelven motores que ya
  *    existen y ya tienen pruebas.
- * 2. Las de escritura no escriben. Devuelven una propuesta con el nombre de la
- *    accion que la aplicaria, y ninguna recibe cliente de base de datos.
+ * 2. Los cambios al plan y al registro diario solo se proponen. La excepción
+ *    autorizada es importar una ficha web a la biblioteca personal.
  * 3. El modelo NUNCA dicta macros. Recibe y devuelve identificadores; los
  *    numeros los pone el catalogo. Es la misma leccion de `importExternalFood`
  *    en la fase 1.
@@ -75,6 +74,7 @@ export type ToolsetDeps = {
   onSources: (sources: ToolSource[]) => void;
   /** Esquema de la respuesta final. Viaja como herramienta, ver abajo. */
   replySchema: z.ZodType;
+  onFoodResult?: (result: WebFoodResult) => void;
 };
 
 export function buildAssistantToolset({
@@ -82,7 +82,9 @@ export function buildAssistantToolset({
   today,
   onSources,
   replySchema,
+  onFoodResult,
 }: ToolsetDeps) {
+  let research: { query: string; promise: Promise<WebFoodResult> } | undefined;
   return {
     /*
      * La respuesta final es una HERRAMIENTA, no salida estructurada.
@@ -100,6 +102,47 @@ export function buildAssistantToolset({
       description:
         "Entrega tu respuesta final al usuario. Llamala siempre, y solo cuando ya tengas los datos que necesitabas.",
       inputSchema: replySchema,
+    }),
+
+    find_and_save_food: tool({
+      description:
+        "Busca un producto comercial o plato de restaurante para Costa Rica y lo agrega a la biblioteca con fuentes si sus datos están completos y coherentes. Orden: catálogo, Open Food Facts (etiquetas reales, sin IA), y la web solo si no está. Acepta nombres con errores. No registra consumo ni modifica planes. Si hay varias fichas que no coinciden devuelve sus códigos de barras: pide a la persona cuál es y vuelve a llamar con barcode. Si faltan nutrientes devuelve qué falta. Una búsqueda por turno.",
+      inputSchema: z.object({
+        query: z
+          .string()
+          .trim()
+          .min(2)
+          .max(120)
+          .describe(
+            "Solo nombre, marca y presentación del producto; nunca datos personales ni el mensaje completo",
+          ),
+        barcode: z
+          .string()
+          .regex(/^\d{6,14}$/)
+          .optional()
+          .describe(
+            "Código de barras que la persona eligió o escribió; solo dígitos",
+          ),
+      }),
+      execute: async ({ query, barcode }) => {
+        if (research && research.query !== query)
+          return {
+            status: "unavailable",
+            message:
+              "Ya investigaste un producto en este turno. Responde con ese resultado antes de buscar otro.",
+          };
+        if (!research)
+          research = {
+            query,
+            promise: importWebFood(query, { barcode }).then((result) => {
+              onFoodResult?.(result);
+              return result;
+            }),
+          };
+        const { searchSuggestions: _html, ...result } = await research.promise;
+        void _html;
+        return result;
+      },
     }),
 
     search_foods: tool({
@@ -160,7 +203,9 @@ export function buildAssistantToolset({
           getCatalogFood(substituteFoodId),
         ]);
         if (!original || !substitute) {
-          return { error: "Alguno de los alimentos no existe en la biblioteca." };
+          return {
+            error: "Alguno de los alimentos no existe en la biblioteca.",
+          };
         }
 
         const result = await compareFoods({

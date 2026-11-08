@@ -8,6 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveAvatarUrl } from "@/lib/storage/avatar-url";
 import { messages } from "@/i18n/es-419";
 
+// El copiloto contextual también puede investigar productos desde otras pantallas.
+export const maxDuration = 120;
+
 export default async function AppLayout({
   children,
 }: Readonly<{

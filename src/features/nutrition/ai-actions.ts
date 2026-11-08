@@ -2,7 +2,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import { hasGeminiApiKey, withGeminiFallback } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAndStoreFoodImage } from "@/lib/images/food-image";
 import { messages } from "@/i18n/es-419";
@@ -123,26 +123,28 @@ export async function parseDietPlanImage(
   }
 
   try {
-    const { object } = await generateObject({
-      model: getGeminiModel(),
-      schema: dietPlanSchema,
-      schemaName: "diet_plan",
-      schemaDescription:
-        "Plan nutricional extraido desde una imagen o PDF de dieta.",
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Extrae el plan de alimentacion de este archivo, con macros estimados por alimento.",
-            },
-            { type: "file", data: base64Data, mediaType: mimeType },
-          ],
-        },
-      ],
-    });
+    const { object } = await withGeminiFallback("fino", (model) =>
+      generateObject({
+        model,
+        schema: dietPlanSchema,
+        schemaName: "diet_plan",
+        schemaDescription:
+          "Plan nutricional extraido desde una imagen o PDF de dieta.",
+        system: SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Extrae el plan de alimentacion de este archivo, con macros estimados por alimento.",
+              },
+              { type: "file", data: base64Data, mediaType: mimeType },
+            ],
+          },
+        ],
+      }),
+    );
 
     return { data: object };
   } catch (error) {

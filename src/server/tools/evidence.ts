@@ -110,7 +110,6 @@ export async function getSourcesForFormula(key: string): Promise<{
   }
 }
 
-
 /**
  * Valor legible: un numero, un rango o una tabla por objetivo.
  *

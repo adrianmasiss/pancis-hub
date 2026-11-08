@@ -2,7 +2,7 @@
 
 import { generateObject } from "ai";
 import { revalidatePath } from "next/cache";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import { hasGeminiApiKey, withGeminiFallback } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { GRUPOS_MUSCULARES } from "@/features/training/lib/library-groups";
 import { analyzeRoutine } from "@/features/training/lib/routine-analysis";
@@ -100,18 +100,20 @@ export async function generateRoutine(
   let feedback = "";
   for (let attempt = 0; attempt < 2 && !routine?.days.length; attempt++) {
     try {
-      const { object } = await generateObject({
-        model: getGeminiModel(),
-        schema: generatedRoutineSchema,
-        system: SYSTEM,
-        prompt:
-          JSON.stringify(brief) +
-          (feedback
-            ? `\n\nLa propuesta anterior tenía estos problemas; corrígelos:\n${feedback}`
-            : ""),
-        maxRetries: 1,
-        abortSignal: AbortSignal.timeout(90_000),
-      });
+      const { object } = await withGeminiFallback("fino", (model) =>
+        generateObject({
+          model,
+          schema: generatedRoutineSchema,
+          system: SYSTEM,
+          prompt:
+            JSON.stringify(brief) +
+            (feedback
+              ? `\n\nLa propuesta anterior tenía estos problemas; corrígelos:\n${feedback}`
+              : ""),
+          maxRetries: 1,
+          abortSignal: AbortSignal.timeout(90_000),
+        }),
+      );
       const candidate = validateGenerated(object, refs, q.daysPerWeek);
       if (!candidate) {
         feedback = `Debe tener exactamente ${q.daysPerWeek} días con al menos 3 ejercicios válidos de la lista cada uno.`;

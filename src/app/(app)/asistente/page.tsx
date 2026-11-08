@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: t.title };
 
 // Gemini + consultas de contexto pueden tardar mas que el limite por
 // defecto de una Server Action en Vercel.
-export const maxDuration = 30;
+export const maxDuration = 120;
 
 export default async function AssistantPage({
   searchParams,

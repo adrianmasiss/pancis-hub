@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import { hasGeminiApiKey, withGeminiFallback } from "@/lib/ai/google";
 import { uploadPrivateFile } from "@/lib/storage/upload-private-file";
 import { SEGMENTOS } from "./queries";
 
@@ -117,27 +117,29 @@ export async function readInbodyReport(
     };
   }
   try {
-    const { object } = await generateObject({
-      model: getGeminiModel(),
-      schema: readingSchema,
-      // Copiar una tabla no necesita razonar; con «thinking» tarda mucho mas.
-      providerOptions: {
-        google: { thinkingConfig: { thinkingBudget: 0 } },
-      },
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: PROMPT },
-            {
-              type: "file",
-              mediaType: file.type,
-              data: new Uint8Array(await file.arrayBuffer()),
-            },
-          ],
+    const { object } = await withGeminiFallback("fino", async (model) =>
+      generateObject({
+        model,
+        schema: readingSchema,
+        // Copiar una tabla no necesita razonar; con «thinking» tarda mucho mas.
+        providerOptions: {
+          google: { thinkingConfig: { thinkingBudget: 0 } },
         },
-      ],
-    });
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: PROMPT },
+              {
+                type: "file",
+                mediaType: file.type,
+                data: new Uint8Array(await file.arrayBuffer()),
+              },
+            ],
+          },
+        ],
+      }),
+    );
     if (
       object.weightKg === null &&
       object.bodyFatPercentage === null &&

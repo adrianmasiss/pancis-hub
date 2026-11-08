@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import type { AssistantReply } from "@/features/assistant/types";
 import { messages } from "@/i18n/es-419";
 import { cn } from "@/lib/utils";
+import { FoodResearchResults } from "./food-research-results";
 
 const t = messages.assistant;
 const c = messages.assistant.copilot;
@@ -23,9 +24,18 @@ const c = messages.assistant.copilot;
  * —la razon, cuando reevaluar y las fuentes— se pliega. El handoff lo llama
  * "¿Por que?" y es donde vive lo que sostiene la cifra.
  */
-export function AssistantReplyCard({ reply }: { reply: AssistantReply }) {
+export function AssistantReplyCard({
+  reply,
+  onDeeper,
+}: {
+  reply: AssistantReply;
+  /** Solo en respuestas del modelo rapido: repetir con el fino. */
+  onDeeper?: () => void;
+}) {
   const [whyOpen, setWhyOpen] = useState(false);
-  const grounded = Boolean(reply.sources && reply.sources.length > 0);
+  const grounded = Boolean(
+    reply.sources?.length || reply.foodResearch?.some((r) => r.sources.length),
+  );
 
   return (
     <article className="surface-card max-w-[92%] self-start p-5">
@@ -65,6 +75,7 @@ export function AssistantReplyCard({ reply }: { reply: AssistantReply }) {
         </p>
       </div>
 
+      <FoodResearchResults results={reply.foodResearch} />
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <button
           type="button"
@@ -83,11 +94,8 @@ export function AssistantReplyCard({ reply }: { reply: AssistantReply }) {
         </button>
 
         {/*
-          El handoff pone aqui "aceptar" y "descartar". Este copiloto NO tiene
-          herramientas de escritura —devuelve propuestas, es la regla del
-          producto—, asi que no hay nada que aceptar: un boton que promete
-          aplicar y no aplica seria mentir. Se enlaza donde el cambio SI se
-          puede hacer, con su veredicto y su confirmacion.
+          Los cambios al plan siguen siendo propuestas. Las importaciones a
+          la biblioteca muestran su resultado y enlace en FoodResearchResults.
         */}
         <Link
           href="/nutricion"
@@ -95,6 +103,16 @@ export function AssistantReplyCard({ reply }: { reply: AssistantReply }) {
         >
           {c.goToPlan}
         </Link>
+        {onDeeper ? (
+          <button
+            type="button"
+            onClick={onDeeper}
+            className="text-muted-foreground hover:text-primary focus-visible:ring-ring/40 flex items-center gap-1.5 rounded-sm text-[14px] font-medium transition-colors outline-none focus-visible:ring-2"
+          >
+            <Sparkles className="size-3.5" aria-hidden="true" />
+            {c.deeper}
+          </button>
+        ) : null}
       </div>
 
       {whyOpen ? (

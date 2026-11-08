@@ -16,7 +16,8 @@ import type { AssistantReply } from "@/features/assistant/types";
 import { messages } from "@/i18n/es-419";
 
 type ChatEntry =
-  { role: "user"; text: string } | { role: "assistant"; reply: AssistantReply };
+  | { role: "user"; text: string; deep?: boolean }
+  | { role: "assistant"; reply: AssistantReply };
 type Conversation = { id: string | null; title: string; entries: ChatEntry[] };
 const prompts = [
   {
@@ -65,16 +66,20 @@ export function AssistantChat({
         block: "nearest",
       });
   }, [entries.length, pending]);
-  function send(text: string) {
+  function send(text: string, deep = false) {
     const trimmed = text.trim();
     if (!trimmed || pending) return;
-    setEntries((previous) => [...previous, { role: "user", text: trimmed }]);
+    setEntries((previous) => [
+      ...previous,
+      { role: "user", text: trimmed, deep },
+    ]);
     setMessage("");
     startTransition(async () => {
       try {
         const result = await askAssistant({
           message: trimmed,
           conversationId: conversationId ?? undefined,
+          deep,
         });
         if ("error" in result) {
           toast.error(result.error);
@@ -288,10 +293,22 @@ export function AssistantChat({
             {entries.map((e, i) =>
               e.role === "user" ? (
                 <p className="assistant-user-message" key={i}>
+                  {e.deep ? `${messages.assistant.copilot.deeperAsked} ` : ""}
                   {e.text}
                 </p>
               ) : (
-                <AssistantReplyCard key={i} reply={e.reply} />
+                <AssistantReplyCard
+                  key={i}
+                  reply={e.reply}
+                  onDeeper={
+                    e.reply.depth === "rapida" && !pending
+                      ? () => {
+                          const asked = entries[i - 1];
+                          if (asked?.role === "user") send(asked.text, true);
+                        }
+                      : undefined
+                  }
+                />
               ),
             )}
             {pending && (

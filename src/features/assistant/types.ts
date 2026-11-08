@@ -22,6 +22,13 @@ export type AssistantOption = {
 };
 
 export type AssistantReply = {
+  /** Resultado real de buscar/importar: lo adjunta el servidor, no el modelo. */
+  foodResearch?: import("@/features/foods/lib/web-food").WebFoodResult[];
+  /**
+   * Que modelo contesto. `rapida` ofrece "Analizar a fondo" (la misma
+   * pregunta con el modelo fino); sin el campo, contesto el motor propio.
+   */
+  depth?: "rapida" | "detallada";
   observation: string;
   interpretation: string;
   confidence: AssistantConfidence;

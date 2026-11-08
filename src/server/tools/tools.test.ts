@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  proposalResult,
-  readResult,
-  requiresConfirmation,
-} from "./types";
+import { proposalResult, readResult, requiresConfirmation } from "./types";
 import { formatSourcesForPrompt, formatValue } from "./evidence";
 import type { ToolSource } from "./types";
 
@@ -73,7 +69,8 @@ describe("formatValue", () => {
 
 describe("formatSourcesForPrompt", () => {
   const fuente: ToolSource = {
-    title: "Dose-response relationship between weekly resistance training volume",
+    title:
+      "Dose-response relationship between weekly resistance training volume",
     year: 2017,
     identifier: "PMID 27433992",
     evidenceGrade: "A",

@@ -37,6 +37,12 @@ export type NormalizedFood = {
    * Facts publica esas en las mismas casillas `_100g`, pero son por 100 ml.
    */
   per100g: MacroSet;
+  /**
+   * Macros que la fuente NO publica y que `per100g` muestra como 0. Solo lo
+   * llena Open Food Facts; sirve para no guardar en automatico una ficha con
+   * ceros que en realidad son huecos.
+   */
+  missingNutrients?: ("proteinG" | "carbohydrateG" | "fatG" | "fiberG")[];
   /** Sobre qué cantidad están `per100g`. Ausente = 100 g. */
   nutritionBasis?: "100g" | "100ml";
   sugarG: number | null;

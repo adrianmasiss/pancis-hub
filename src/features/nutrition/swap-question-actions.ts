@@ -2,7 +2,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import { hasGeminiApiKey, withGeminiFallback } from "@/lib/ai/google";
 import { createClient } from "@/lib/supabase/server";
 import { messages } from "@/i18n/es-419";
 import {
@@ -177,22 +177,24 @@ export async function answerSwapQuestion(
   }
 
   try {
-    const { object } = await generateObject({
-      model: getGeminiModel(),
-      schema: estimateSchema,
-      schemaName: "food_macro_estimate",
-      schemaDescription:
-        "Macronutrientes por 100 g de un alimento que no esta en el catalogo.",
-      system: [
-        "Eres un motor de estimacion nutricional para una app de nutricion.",
-        "Devuelves macronutrientes por 100 g de producto, en espanol.",
-        "Usa valores tipicos de tablas de composicion de alimentos.",
-        "Si el producto es una marca concreta que no conoces, estima a partir",
-        "de su categoria generica y baja la confianza.",
-        "No inventes precision: la confianza debe reflejar cuanto sabes.",
-      ].join(" "),
-      prompt: `Producto consultado: "${toQuery}"`,
-    });
+    const { object } = await withGeminiFallback("rapido", (model) =>
+      generateObject({
+        model,
+        schema: estimateSchema,
+        schemaName: "food_macro_estimate",
+        schemaDescription:
+          "Macronutrientes por 100 g de un alimento que no esta en el catalogo.",
+        system: [
+          "Eres un motor de estimacion nutricional para una app de nutricion.",
+          "Devuelves macronutrientes por 100 g de producto, en espanol.",
+          "Usa valores tipicos de tablas de composicion de alimentos.",
+          "Si el producto es una marca concreta que no conoces, estima a partir",
+          "de su categoria generica y baja la confianza.",
+          "No inventes precision: la confianza debe reflejar cuanto sabes.",
+        ].join(" "),
+        prompt: `Producto consultado: "${toQuery}"`,
+      }),
+    );
 
     const toPer100g: FoodMacrosPer100g = object.per100g;
     return {

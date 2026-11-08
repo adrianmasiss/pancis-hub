@@ -1226,6 +1226,7 @@ export type Database = {
           source_updated_at: string | null
           sugar_g: number | null
           updated_at: string
+          web_provenance: Json | null
           verified: boolean
         }
         Insert: {
@@ -1260,6 +1261,7 @@ export type Database = {
           source_updated_at?: string | null
           sugar_g?: number | null
           updated_at?: string
+          web_provenance?: Json | null
           verified?: boolean
         }
         Update: {
@@ -1294,6 +1296,7 @@ export type Database = {
           source_updated_at?: string | null
           sugar_g?: number | null
           updated_at?: string
+          web_provenance?: Json | null
           verified?: boolean
         }
         Relationships: []

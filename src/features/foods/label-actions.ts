@@ -3,7 +3,7 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getGeminiModel, hasGeminiApiKey } from "@/lib/ai/google";
+import { hasGeminiApiKey, withGeminiFallback } from "@/lib/ai/google";
 import {
   labelReadingSchema,
   labelToPer100g,
@@ -51,28 +51,30 @@ export async function readNutritionLabel(input: unknown): Promise<LabelResult> {
     };
   }
   try {
-    const { object } = await generateObject({
-      model: getGeminiModel(),
-      schema: labelReadingSchema,
-      // Transcribing a table needs no reasoning; with thinking on, Gemini 2.5
-      // Flash spent ~45 s on a label it then copies in a few.
-      providerOptions: {
-        google: { thinkingConfig: { thinkingBudget: 0 } },
-      },
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: PROMPT },
-            {
-              type: "file",
-              mediaType: "image/jpeg",
-              data: parsed.data.imageBase64,
-            },
-          ],
+    const { object } = await withGeminiFallback("fino", (model) =>
+      generateObject({
+        model,
+        schema: labelReadingSchema,
+        // Transcribing a table needs no reasoning; with thinking on, Gemini 2.5
+        // Flash spent ~45 s on a label it then copies in a few.
+        providerOptions: {
+          google: { thinkingConfig: { thinkingBudget: 0 } },
         },
-      ],
-    });
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: PROMPT },
+              {
+                type: "file",
+                mediaType: "image/jpeg",
+                data: parsed.data.imageBase64,
+              },
+            ],
+          },
+        ],
+      }),
+    );
     const converted = labelToPer100g(object);
     if ("error" in converted) return converted;
     return {

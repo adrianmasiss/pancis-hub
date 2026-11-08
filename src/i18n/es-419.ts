@@ -566,6 +566,9 @@ export const messages = {
       /** El asistente propone en texto; aplicar vive donde se puede aplicar. */
       applyHint: "Los cambios se aplican en la pantalla del plan.",
       goToPlan: "Ir a Nutrición",
+      /** Repite la pregunta con el modelo fino (ver `routeAssistantQuestion`). */
+      deeper: "Analizar a fondo",
+      deeperAsked: "A fondo:",
     },
     inputPlaceholder: "Escribe tu pregunta…",
     send: "Enviar",
